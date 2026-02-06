@@ -125,9 +125,9 @@ def import_playlist():
     spotify_playlist_thumbnail_url = spotify_playlist_thumbnail_metadata.get("url")
     _update_jellyfin_playlist_image(
         playlist_id=playlist_id,
-        image_url=None
+        image_url=spotify_playlist_thumbnail_url
         if spotify_playlist_thumbnail_url.endswith((".png", "jpg", "jpeg"))
-        else spotify_playlist_thumbnail_url,
+        else None,
     )
     end = time.time()
 
