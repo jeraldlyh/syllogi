@@ -250,14 +250,15 @@ for song in songs:
         "profile"
     ]["name"]
     album_song_name = song["itemV2"]["data"]["albumOfTrack"]["name"]
+    logger.info(f"{artist_name} - {album_song_name}: SEARCHING")
 
     track = find_track(artist_name=artist_name, title=album_song_name)
     if not track.get("track").get("id"):
-        logger.info(f"{artist_name} - {album_song_name}: RETRYING")
         album_song_name = song["itemV2"]["data"]["name"]
+        logger.warning(f"{artist_name} - {album_song_name}: RETRYING")
         track = find_track(artist_name=artist_name, title=album_song_name)
 
-    if not track.get("track").get("id"):
+    if track.get("track").get("id"):
         logger.info(f"{artist_name} - {album_song_name}: OK")
     else:
         logger.warning(f"{artist_name} - {album_song_name}: MISSING")
