@@ -2,7 +2,6 @@ from flask import Blueprint, current_app
 
 from lib.spotify import get_songs_by_playlist
 from lib.track import _find_track
-from lib.utils import dump_results
 
 bp = Blueprint("spotify", __name__)
 
@@ -28,4 +27,4 @@ def import_playlist(id: str):
         else:
             current_app.logger.warning(f"{artist_name} - {album_song_name}: MISSING")
         tracks.append(track)
-    dump_results("result", tracks)
+    return tracks
