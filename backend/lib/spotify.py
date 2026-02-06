@@ -38,6 +38,7 @@ def _get_songs_by_playlist(playlist_id: str) -> List[dict]:
         offset += limit
         playlist_info = playlist.get_playlist_info(offset=offset, limit=limit)
         current_app.logger.info(f"Fetched {len(songs)} songs...")
+        break
 
     current_app.logger.info(f"Total songs fetched: {len(songs)}")
 

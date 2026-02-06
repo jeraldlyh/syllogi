@@ -2,10 +2,13 @@ from flask import Blueprint, current_app, jsonify, request
 
 from lib.jellyfin import (
     _get_jellyfin_playlists,
-    _get_jellyfin_users,
+    _add_songs_to_jellyfin_playlist,
     _get_jellyfin_user_by_name,
     _create_jellyfin_playlist,
+    _get_jellyfin_playlist_songs,
+    _delete_songs_from_jellyfin_playlist,
 )
+
 from lib.spotify import _get_songs_by_playlist, _get_playlist
 from lib.track import _find_track
 
@@ -35,7 +38,7 @@ def import_playlist():
     songs = _get_songs_by_playlist(playlist_id=playlist_id)
     user = _get_jellyfin_user_by_name(username=username)
 
-    tracks = []
+    lidarr_songs = []
     for song in songs:
         artist_name = song["itemV2"]["data"]["albumOfTrack"]["artists"]["items"][0][
             "profile"
@@ -52,9 +55,9 @@ def import_playlist():
             current_app.logger.info(f"{artist_name} - {album_song_name}: OK")
         else:
             current_app.logger.warning(f"{artist_name} - {album_song_name}: MISSING")
-        tracks.append(track)
+        lidarr_songs.append(track)
 
-    if len(tracks) > 0:
+    if len(lidarr_songs) > 0:
         spotify_playlist_name = spotify_playlist["data"]["playlistV2"]["name"]
         jellyfin_user_id = user.get("Id")
         jellyfin_playlists = _get_jellyfin_playlists(user_id=jellyfin_user_id)
@@ -62,7 +65,7 @@ def import_playlist():
         existing_playlist = next(
             (
                 playlist
-                for playlist in jellyfin_playlists["Items"]
+                for playlist in jellyfin_playlists
                 if spotify_playlist_name == playlist.get("Name")
             ),
             {},
@@ -75,4 +78,33 @@ def import_playlist():
                 playlist_name=spotify_playlist_name, user_id=jellyfin_user_id
             )
             existing_playlist_id = new_playlist.get("Id")
-    return tracks
+
+        existing_songs = _get_jellyfin_playlist_songs(
+            playlist_id=existing_playlist_id, user_id=jellyfin_user_id
+        )
+        existing_track_ids = [track.get("Id") for track in existing_songs]
+
+        lidarr_track_ids = [track["track"]["id"] for track in lidarr_songs]
+        new_track_ids = list(set(lidarr_track_ids) - set(existing_track_ids))
+        outdated_track_ids = list(set(existing_track_ids) - set(lidarr_track_ids))
+
+        if len(new_track_ids) > 0:
+            current_app.logger.info(
+                f"Adding {len(new_track_ids)} songs to {spotify_playlist_name} playlist"
+            )
+            print(new_track_ids)
+            _add_songs_to_jellyfin_playlist(
+                playlist_id=existing_playlist_id,
+                user_id=jellyfin_user_id,
+                track_ids=new_track_ids,
+            )
+
+        if len(outdated_track_ids) > 0:
+            current_app.logger.info(
+                f"Deleting {len(outdated_track_ids)} songs from {spotify_playlist_name} playlist"
+            )
+            _delete_songs_from_jellyfin_playlist(
+                playlist_id=existing_playlist_id, track_ids=outdated_track_ids
+            )
+
+    return lidarr_songs

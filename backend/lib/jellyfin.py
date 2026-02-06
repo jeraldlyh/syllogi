@@ -2,6 +2,7 @@ import os
 import requests
 
 from flask import jsonify
+from typing import List
 
 JELLYFIN_API_KEY = os.getenv("JELLYFIN_API_KEY")
 JELLYFIN_BASE_URL = os.getenv("JELLYFIN_BASE_URL")
@@ -39,11 +40,12 @@ def _get_jellyfin_users() -> dict:
     return _jellyfin("/Users")
 
 
-def _get_jellyfin_playlists(user_id: str) -> dict:
-    return _jellyfin(
+def _get_jellyfin_playlists(user_id: str) -> List[dict]:
+    response = _jellyfin(
         f"/Users/{user_id}/Items",
         params={"IncludeItemTypes": "Playlist", "Recursive": True},
     )
+    return response.get("Items")
 
 
 def _get_jellyfin_user_by_name(username: str) -> dict:
@@ -59,7 +61,7 @@ def _get_jellyfin_user_by_name(username: str) -> dict:
 def _create_jellyfin_playlist(
     playlist_name: str,
     user_id: str,
-) -> None:
+) -> dict:
     return _jellyfin(
         "/Playlists",
         method="POST",
@@ -72,3 +74,38 @@ def _create_jellyfin_playlist(
             "IsPublic": True,
         },
     )
+
+
+def _add_songs_to_jellyfin_playlist(
+    playlist_id: str,
+    user_id: str,
+    track_ids: List[int],
+) -> dict:
+    return _jellyfin(
+        f"/Playlists/{playlist_id}/Items",
+        method="POST",
+        params={
+            "playlistId": playlist_id,
+            "userId": user_id,
+            "ids": ",".join(map(str, track_ids)),
+        },
+    )
+
+
+def _delete_songs_from_jellyfin_playlist(
+    playlist_id: str,
+    track_ids: List[int],
+) -> dict:
+    return _jellyfin(
+        f"/Playlists/{playlist_id}/Items",
+        method="DELETE",
+        params={
+            "playlistId": playlist_id,
+            "entryIds": ",".join(map(str, track_ids)),
+        },
+    )
+
+
+def _get_jellyfin_playlist_songs(playlist_id: str, user_id: str) -> List[dict]:
+    response = _jellyfin(f"/Playlists/{playlist_id}/Items", params={"userId": user_id})
+    return response.get("Items")

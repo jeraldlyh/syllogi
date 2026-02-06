@@ -35,10 +35,8 @@ def _lidarr(
 
 
 def _get_potential_lidarr_songs(track_name: str, artist_id: str) -> List[dict]:
-    tracks = _lidarr("/track", artistId=artist_id)
-    albums = _lidarr("/album", artistId=artist_id)
-
-    dump_results("tracks", tracks)
+    tracks = _lidarr("/track", params={"artistId": artist_id})
+    albums = _lidarr("/album", params={"artistId": artist_id})
 
     candidates = []
     for track in tracks:
@@ -96,8 +94,6 @@ def _get_potential_lidarr_songs(track_name: str, artist_id: str) -> List[dict]:
 
 def _get_lidarr_artist(name: str) -> str:
     artists = _lidarr("/artist")
-    # dump_results("artist", artists)
-
     best_match, best_score = None, 0.0
 
     for artist in artists:
