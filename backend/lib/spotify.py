@@ -19,12 +19,17 @@ from spotapi.playlist import PublicPlaylist
 from spotapi.album import PublicAlbum
 
 
-def get_songs_by_playlist(playlist_id: str) -> List[dict]:
+def _get_playlist(playlist_id: str) -> dict:
+    playlist = PublicPlaylist(playlist_id)
+
+    return playlist.get_playlist_info()
+
+
+def get_songs_by_playlist(playlist: PublicPlaylist) -> List[dict]:
     offset = 0
     limit = 50
     songs = []
 
-    playlist = PublicPlaylist(playlist_id)
     playlist_info = playlist.get_playlist_info(limit=limit)
 
     while offset < playlist_info["data"]["playlistV2"]["content"]["totalCount"]:

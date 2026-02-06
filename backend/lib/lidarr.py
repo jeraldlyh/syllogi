@@ -9,10 +9,25 @@ LIDARR_BASE_URL = os.getenv("LIDARR_BASE_URL")
 LIDARR_API_KEY = os.getenv("LIDARR_API_KEY")
 
 
-def _lidarr(path: str, **params) -> dict:
+def _lidarr(
+    path: str,
+    *,
+    method: str = "GET",
+    params: dict | None = None,
+    json: dict | list | None = None,
+    data: dict | str | bytes | None = None,
+    timeout: float = 30.0,
+) -> dict:
     headers = {"X-Api-Key": LIDARR_API_KEY}
-    response = requests.get(
-        f"{LIDARR_BASE_URL}/api/v1{path}", headers=headers, params=params
+
+    response = requests.request(
+        method.upper(),
+        f"{LIDARR_BASE_URL}/api/v1{path}",
+        headers=headers,
+        params=params,
+        json=json,
+        data=data,
+        timeout=timeout,
     )
     response.raise_for_status()
 
