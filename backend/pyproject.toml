@@ -1,2 +1,2 @@
 [tool.ruff.lint.per-file-ignores]
-"main.py" = ["E402"]
+"lib/spotify.py" = ["E402"]
