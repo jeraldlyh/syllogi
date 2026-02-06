@@ -16,7 +16,7 @@ def _jellyfin(
     json: dict | list | None = None,
     data: dict | str | bytes | None = None,
     timeout: float = 30.0,
-) -> dict:
+) -> dict | None:
     headers = {"X-Emby-Token": JELLYFIN_API_KEY, "Content-Type": "application/json"}
     response = requests.request(
         method.upper(),
@@ -29,7 +29,8 @@ def _jellyfin(
     )
     response.raise_for_status()
 
-    return response.json()
+    if method != "DELETE":
+        return response.json()
 
 
 def _get_jellyfin_artist(name: str) -> dict:
@@ -58,6 +59,23 @@ def _get_jellyfin_user_by_name(username: str) -> dict:
     return user
 
 
+def _search_jellyfin_songs(artist_name: str, title: str) -> List[dict]:
+    response = _jellyfin(
+        "/Items",
+        params={
+            "includeItemTypes": "Audio",
+            "recursive": "true",
+            "artists": artist_name,
+            "searchTerm": title,
+            "Fields": "ProviderIds,Path,Album,Artists",
+            "limit": 10,
+            "enableTotalRecordCount": "false",
+            "enableImages": "false",
+        },
+    )
+    return response.get("Items")
+
+
 def _create_jellyfin_playlist(
     playlist_name: str,
     user_id: str,
@@ -79,7 +97,7 @@ def _create_jellyfin_playlist(
 def _add_songs_to_jellyfin_playlist(
     playlist_id: str,
     user_id: str,
-    track_ids: List[int],
+    track_ids: List[str],
 ) -> dict:
     return _jellyfin(
         f"/Playlists/{playlist_id}/Items",
@@ -87,21 +105,20 @@ def _add_songs_to_jellyfin_playlist(
         params={
             "playlistId": playlist_id,
             "userId": user_id,
-            "ids": ",".join(map(str, track_ids)),
+            "ids": ",".join(track_ids),
         },
     )
 
 
 def _delete_songs_from_jellyfin_playlist(
     playlist_id: str,
-    track_ids: List[int],
+    track_ids: List[str],
 ) -> dict:
     return _jellyfin(
         f"/Playlists/{playlist_id}/Items",
         method="DELETE",
         params={
-            "playlistId": playlist_id,
-            "entryIds": ",".join(map(str, track_ids)),
+            "entryIds": ",".join(track_ids),
         },
     )
 
