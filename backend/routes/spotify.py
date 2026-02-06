@@ -1,3 +1,5 @@
+import os
+import time
 from flask import Blueprint, current_app, jsonify, request
 
 from lib.jellyfin import (
@@ -10,9 +12,12 @@ from lib.jellyfin import (
 )
 from lib.spotify import _get_songs_by_playlist, _get_playlist
 from lib.track import _find_track
-from lib.utils import dump_results
+from lib.notification import _send_discord_notification
+from lib.utils import _convert_seconds_to_readable_time
+
 
 bp = Blueprint("spotify", __name__)
+DISCORD_WEBHOOK_URL = os.getenv("DISCORD_WEBHOOK_URL", "")
 
 
 @bp.get("/<id>")
@@ -34,6 +39,7 @@ def import_playlist():
     if not username:
         return jsonify(error="username is required"), 400
 
+    start = time.time()
     spotify_playlist = _get_playlist(playlist_id=playlist_id)
     songs = _get_songs_by_playlist(playlist_id=playlist_id)
     user = _get_jellyfin_user_by_name(username=username)
@@ -56,6 +62,8 @@ def import_playlist():
             jellyfin_songs.append(track)
         else:
             current_app.logger.warning(f"{artist_name} - {album_song_name}: MISSING")
+
+    num_of_new_tracks, num_of_outdated_tracks = 0, 0
 
     if len(jellyfin_songs) > 0:
         spotify_playlist_name = spotify_playlist["data"]["playlistV2"]["name"]
@@ -88,9 +96,12 @@ def import_playlist():
         new_track_ids = list(set(jellyfin_track_ids) - set(existing_track_ids))
         outdated_track_ids = list(set(existing_track_ids) - set(jellyfin_track_ids))
 
-        if len(new_track_ids) > 0:
+        num_of_new_tracks = len(new_track_ids)
+        num_of_outdated_tracks = len(outdated_track_ids)
+
+        if num_of_new_tracks > 0:
             current_app.logger.info(
-                f"Adding {len(new_track_ids)} songs to {spotify_playlist_name} playlist"
+                f"Adding {num_of_new_tracks} songs to {spotify_playlist_name} playlist"
             )
             _add_songs_to_jellyfin_playlist(
                 playlist_id=existing_playlist_id,
@@ -98,11 +109,43 @@ def import_playlist():
                 track_ids=new_track_ids,
             )
 
-        if len(outdated_track_ids) > 0:
+        if num_of_outdated_tracks > 0:
             current_app.logger.info(
-                f"Deleting {len(outdated_track_ids)} songs from {spotify_playlist_name} playlist"
+                f"Deleting {num_of_outdated_tracks} songs from {spotify_playlist_name} playlist"
             )
             _delete_songs_from_jellyfin_playlist(
                 playlist_id=existing_playlist_id, track_ids=outdated_track_ids
             )
+    end = time.time()
+
+    _send_discord_notification(
+        DISCORD_WEBHOOK_URL,
+        title="Import Summary",
+        fields=[
+            {"name": "Username", "value": username, "inline": True},
+            {"name": "Playlist", "value": spotify_playlist_name, "inline": True},
+            {
+                "name": "New/Outdated Tracks(s)",
+                "value": f"{num_of_new_tracks} 🔺 {num_of_outdated_tracks} 🔻",
+                "inline": True,
+            },
+            {
+                "name": "Missing Tracks(s)",
+                "value": len(songs) - len(jellyfin_track_ids),
+                "inline": True,
+            },
+            {
+                "name": "Total Tracks(s)",
+                "value": len(songs),
+                "inline": True,
+            },
+            {
+                "name": "Time Taken",
+                "value": _convert_seconds_to_readable_time(seconds=end - start),
+                "inline": True,
+            },
+        ],
+        timestamp=True,
+    )
+
     return jellyfin_songs

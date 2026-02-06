@@ -1,9 +1,10 @@
 import re
 import json
 import unicodedata
+from time import gmtime, strftime
 
 
-def get_clean_name(name: str) -> str:
+def _get_clean_name(name: str) -> str:
     normalized = unicodedata.normalize("NFKD", name)
     normalized = "".join(ch for ch in normalized if not unicodedata.combining(ch))
     # NOTE: Temporarily removing this for chinese songs
@@ -13,6 +14,10 @@ def get_clean_name(name: str) -> str:
     return non_symbols
 
 
-def dump_results(file_name: str, data: dict) -> None:
+def _dump_results(file_name: str, data: dict) -> None:
     with open(f"{file_name}.json", "w") as file:
         json.dump(data, file, indent=4)
+
+
+def _convert_seconds_to_readable_time(seconds: float | int) -> str:
+    return strftime("%H:%M:%S", gmtime(seconds))
