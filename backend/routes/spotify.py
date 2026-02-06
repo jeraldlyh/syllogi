@@ -9,6 +9,7 @@ from lib.jellyfin import (
     _create_jellyfin_playlist,
     _get_jellyfin_playlist_songs,
     _delete_songs_from_jellyfin_playlist,
+    _update_jellyfin_playlist_image,
 )
 from lib.spotify import _get_songs_by_playlist, _get_playlist
 from lib.track import _find_track
@@ -116,6 +117,18 @@ def import_playlist():
             _delete_songs_from_jellyfin_playlist(
                 playlist_id=existing_playlist_id, track_ids=outdated_track_ids
             )
+
+    spotify_playlist_thumbnail_metadata = max(
+        spotify_playlist["data"]["playlistV2"]["ownerV2"]["data"]["avatar"]["sources"],
+        key=lambda x: x.get("height"),
+    )
+    spotify_playlist_thumbnail_url = spotify_playlist_thumbnail_metadata.get("url")
+    _update_jellyfin_playlist_image(
+        playlist_id=playlist_id,
+        image_url=None
+        if spotify_playlist_thumbnail_url.endswith((".png", "jpg", "jpeg"))
+        else spotify_playlist_thumbnail_url,
+    )
     end = time.time()
 
     _send_discord_notification(

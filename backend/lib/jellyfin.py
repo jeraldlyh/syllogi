@@ -1,7 +1,7 @@
 import os
 import requests
 
-from flask import jsonify
+from flask import jsonify, current_app
 from typing import List
 
 JELLYFIN_API_KEY = os.getenv("JELLYFIN_API_KEY")
@@ -13,15 +13,20 @@ def _jellyfin(
     *,
     method: str = "GET",
     params: dict | None = None,
+    headers: dict | None = None,
     json: dict | list | None = None,
     data: dict | str | bytes | None = None,
     timeout: float = 30.0,
 ) -> dict | None:
-    headers = {"X-Emby-Token": JELLYFIN_API_KEY, "Content-Type": "application/json"}
+    base_headers = {
+        "X-Emby-Token": JELLYFIN_API_KEY,
+        "Content-Type": "application/json",
+    }
+
     response = requests.request(
         method.upper(),
         f"{JELLYFIN_BASE_URL}{path}",
-        headers=headers,
+        headers={**base_headers, **(headers or {})},
         params=params,
         json=json,
         data=data,
@@ -127,3 +132,32 @@ def _delete_songs_from_jellyfin_playlist(
 def _get_jellyfin_playlist_songs(playlist_id: str, user_id: str) -> List[dict]:
     response = _jellyfin(f"/Playlists/{playlist_id}/Items", params={"userId": user_id})
     return response.get("Items")
+
+
+def _update_jellyfin_playlist_image(playlist_id: str, image_url: str | None) -> dict:
+    if not image_url:
+        return
+
+    try:
+        _jellyfin(
+            f"/Items/{playlist_id}/RemoteImages/Download",
+            method="POST",
+            params={"type": "Primary", "imageUrl": image_url},
+        )
+    except requests.HTTPError as e:
+        if not (e.response is not None and e.response.status_code == 400):
+            current_app.logger.error(
+                "Failed to update playlist image with remote image"
+            )
+
+    thumbnail_response = requests.get(image_url)
+    thumbnail_response.raise_for_status()
+    mime = thumbnail_response.headers.get("Content-Type") or (
+        "image/png" if image_url.lower().endswith(".png") else "image/jpeg"
+    )
+    return _jellyfin(
+        f"/Items/{playlist_id}/Images/Primary",
+        method="POST",
+        headers={"Content-Type": mime},
+        data=thumbnail_response.content,
+    )
