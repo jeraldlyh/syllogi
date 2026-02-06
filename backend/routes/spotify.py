@@ -32,7 +32,7 @@ def import_playlist():
         return jsonify(error="username is required"), 400
 
     spotify_playlist = _get_playlist(playlist_id=playlist_id)
-    songs = _get_songs_by_playlist(spotify_playlist)
+    songs = _get_songs_by_playlist(playlist_id=playlist_id)
     user = _get_jellyfin_user_by_name(username=username)
 
     tracks = []
@@ -68,10 +68,11 @@ def import_playlist():
             {},
         )
 
-        existing_playlist_id = existing_playlist.get("id")
+        existing_playlist_id = existing_playlist.get("Id")
 
         if not existing_playlist_id:
-            existing_playlist_id = _create_jellyfin_playlist(
+            new_playlist = _create_jellyfin_playlist(
                 playlist_name=spotify_playlist_name, user_id=jellyfin_user_id
             )
+            existing_playlist_id = new_playlist.get("Id")
     return tracks

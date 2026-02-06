@@ -25,11 +25,12 @@ def _get_playlist(playlist_id: str) -> dict:
     return playlist.get_playlist_info()
 
 
-def _get_songs_by_playlist(playlist: PublicPlaylist) -> List[dict]:
+def _get_songs_by_playlist(playlist_id: str) -> List[dict]:
     offset = 0
     limit = 50
     songs = []
 
+    playlist = PublicPlaylist(playlist_id)
     playlist_info = playlist.get_playlist_info(limit=limit)
 
     while offset < playlist_info["data"]["playlistV2"]["content"]["totalCount"]:
