@@ -1,7 +1,10 @@
+import os
 from difflib import SequenceMatcher
 
 from lib.jellyfin import _search_jellyfin_songs
 from lib.utils import get_clean_name
+
+CONFIDENCE_LEVEL = float(os.getenv("CONFIDENCE_LEVEL", "0.90"))
 
 
 def _find_track(artist_name: str, track_name: str) -> dict:
@@ -43,7 +46,7 @@ def _find_track(artist_name: str, track_name: str) -> dict:
                 None, jellyfin_track_name.casefold(), track_name.casefold()
             ).ratio(),
         )
-        if score >= 0.90 and score > best_score:
+        if score >= CONFIDENCE_LEVEL and score > best_score:
             best_score = score
             best_match = track
 

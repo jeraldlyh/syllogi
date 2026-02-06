@@ -29,8 +29,9 @@ def _jellyfin(
     )
     response.raise_for_status()
 
-    if method != "DELETE":
-        return response.json()
+    if response.status_code == 204 or not response.content:
+        return None
+    return response.json()
 
 
 def _get_jellyfin_artist(name: str) -> dict:
