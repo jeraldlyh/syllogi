@@ -1,12 +1,12 @@
 from flask import Blueprint, current_app, jsonify, request
 
 from lib.jellyfin import (
-    get_jellyfin_playlists,
-    get_jellyfin_users,
-    get_jellyfin_user_by_name,
+    _get_jellyfin_playlists,
+    _get_jellyfin_users,
+    _get_jellyfin_user_by_name,
     _create_jellyfin_playlist,
 )
-from lib.spotify import get_songs_by_playlist, _get_playlist
+from lib.spotify import _get_songs_by_playlist, _get_playlist
 from lib.track import _find_track
 
 bp = Blueprint("spotify", __name__)
@@ -32,8 +32,8 @@ def import_playlist():
         return jsonify(error="username is required"), 400
 
     spotify_playlist = _get_playlist(playlist_id=playlist_id)
-    songs = get_songs_by_playlist(spotify_playlist)
-    user = get_jellyfin_user_by_name(username=username)
+    songs = _get_songs_by_playlist(spotify_playlist)
+    user = _get_jellyfin_user_by_name(username=username)
 
     tracks = []
     for song in songs:
@@ -57,7 +57,7 @@ def import_playlist():
     if len(tracks) > 0:
         spotify_playlist_name = spotify_playlist["data"]["playlistV2"]["name"]
         jellyfin_user_id = user.get("Id")
-        jellyfin_playlists = get_jellyfin_playlists(user_id=jellyfin_user_id)
+        jellyfin_playlists = _get_jellyfin_playlists(user_id=jellyfin_user_id)
 
         existing_playlist = next(
             (
@@ -65,11 +65,13 @@ def import_playlist():
                 for playlist in jellyfin_playlists["Items"]
                 if spotify_playlist_name == playlist.get("Name")
             ),
-            None,
+            {},
         )
 
-        if not existing_playlist:
-            _create_jellyfin_playlist(
+        existing_playlist_id = existing_playlist.get("id")
+
+        if not existing_playlist_id:
+            existing_playlist_id = _create_jellyfin_playlist(
                 playlist_name=spotify_playlist_name, user_id=jellyfin_user_id
             )
     return tracks

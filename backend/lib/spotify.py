@@ -25,7 +25,7 @@ def _get_playlist(playlist_id: str) -> dict:
     return playlist.get_playlist_info()
 
 
-def get_songs_by_playlist(playlist: PublicPlaylist) -> List[dict]:
+def _get_songs_by_playlist(playlist: PublicPlaylist) -> List[dict]:
     offset = 0
     limit = 50
     songs = []
@@ -43,7 +43,7 @@ def get_songs_by_playlist(playlist: PublicPlaylist) -> List[dict]:
     return songs
 
 
-def get_album_by_id(album_id: str) -> dict:
+def _get_album_by_id(album_id: str) -> dict:
     album = PublicAlbum(album_id)
     album_info = album.get_album_info()
 

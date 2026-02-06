@@ -34,7 +34,7 @@ def _lidarr(
     return response.json()
 
 
-def get_potential_lidarr_songs(track_name: str, artist_id: str) -> List[dict]:
+def _get_potential_lidarr_songs(track_name: str, artist_id: str) -> List[dict]:
     tracks = _lidarr("/track", artistId=artist_id)
     albums = _lidarr("/album", artistId=artist_id)
 
@@ -94,7 +94,7 @@ def get_potential_lidarr_songs(track_name: str, artist_id: str) -> List[dict]:
     return candidates
 
 
-def get_lidarr_artist(name: str) -> str:
+def _get_lidarr_artist(name: str) -> str:
     artists = _lidarr("/artist")
     # dump_results("artist", artists)
 
@@ -124,5 +124,5 @@ def get_lidarr_artist(name: str) -> str:
     return None if not best_match else best_match
 
 
-def get_lidarr_track_metadata(trackfile_id: str) -> dict:
+def _get_lidarr_track_metadata(trackfile_id: str) -> dict:
     return _lidarr(f"/trackfile/{trackfile_id}")

@@ -31,23 +31,23 @@ def _jellyfin(
     return response.json()
 
 
-def get_jellyfin_artist(name: str) -> dict:
+def _get_jellyfin_artist(name: str) -> dict:
     return _jellyfin(f"/Artists/{name}")
 
 
-def get_jellyfin_users() -> dict:
+def _get_jellyfin_users() -> dict:
     return _jellyfin("/Users")
 
 
-def get_jellyfin_playlists(user_id: str) -> dict:
+def _get_jellyfin_playlists(user_id: str) -> dict:
     return _jellyfin(
         f"/Users/{user_id}/Items",
         params={"IncludeItemTypes": "Playlist", "Recursive": True},
     )
 
 
-def get_jellyfin_user_by_name(username: str) -> dict:
-    jellyfin_users = get_jellyfin_users()
+def _get_jellyfin_user_by_name(username: str) -> dict:
+    jellyfin_users = _get_jellyfin_users()
 
     user = next(user for user in jellyfin_users if user.get("Name") == username)
 

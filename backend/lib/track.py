@@ -1,7 +1,7 @@
 from lib.lidarr import (
-    get_lidarr_artist,
-    get_potential_lidarr_songs,
-    get_lidarr_track_metadata,
+    _get_lidarr_artist,
+    _get_potential_lidarr_songs,
+    _get_lidarr_track_metadata,
 )
 
 
@@ -16,17 +16,17 @@ def _find_track(artist_name: str, title: str) -> dict:
         "quality": None,
     }
 
-    artist = get_lidarr_artist(artist_name)
+    artist = _get_lidarr_artist(artist_name)
 
     if not artist:
         return empty_result
 
     artist_id = artist.get("id")
-    candidates = get_potential_lidarr_songs(title, artist_id)
+    candidates = _get_potential_lidarr_songs(title, artist_id)
 
     for candidate in candidates:
         if candidate.get("hasFile") and candidate.get("trackFileId"):
-            file_meta = get_lidarr_track_metadata(candidate.get("trackFileId"))
+            file_meta = _get_lidarr_track_metadata(candidate.get("trackFileId"))
 
             return {
                 "artist_name": artist_name,
