@@ -4,7 +4,8 @@ import uuid
 import sqlalchemy as sa
 from sqlalchemy.dialects.postgresql import UUID
 
-from lib.mixin import SerializerMixin
+from lib.mixin.serializer import SerializerMixin
+from lib.mixin.default import DefaultAttrMixin
 from models.db import db
 
 
@@ -12,7 +13,13 @@ class Channel(enum.Enum):
     discord = "discord"
 
 
-class Notification(db.Model, SerializerMixin):
+class Notification(db.Model, SerializerMixin, DefaultAttrMixin):
+    DEFAULTS = {
+        "channel": Channel.discord.value,
+        "webhook_url": "",
+        "enabled": True,
+    }
+
     __tablename__ = "notification"
 
     id = db.Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)

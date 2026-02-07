@@ -1,10 +1,13 @@
-from flask import Blueprint, jsonify
-from db.notification import Notification
+from flask import Blueprint
+from models.notification import Notification
 
 bp = Blueprint("notification", __name__)
 
 
 @bp.get("/")
-def health():
-    rows = Notification.query.all()
-    return jsonify(status="ok")
+def get_notifications():
+    notification = Notification.query.first()
+
+    if notification:
+        return notification.to_dict()
+    return Notification.get_default()
