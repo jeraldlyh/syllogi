@@ -5,7 +5,7 @@ bp = Blueprint("user", __name__)
 
 
 @bp.get("/jellyfin")
-def _get_jellyfin_users():
+def get_jellyfin_users():
     users = _get_jellyfin_users()
 
     return [
