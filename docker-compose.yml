@@ -1,3 +1,9 @@
+x-healthcheck: &default-healthcheck
+  interval: 5m
+  timeout: 10s
+  retries: 3
+  start_period: 20s
+
 services:
   api:
     build:
@@ -9,4 +15,19 @@ services:
       - 8000:8000
     volumes:
       - ./backend:/app
+    healthcheck:
+      <<: *default-healthcheck
+      test: curl --fail http://localhost:8000/api/health || exit 1
     command: flask run --host=0.0.0.0 --port 8000 --debug
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      - POSTGRES_USER=syllogi
+      - POSTGRES_DB=syllogi
+      - POSTGRES_PASSWORD=syllogi
+    volumes:
+      - ./postgres/data:/var/lib/postgresql/data
+    healthcheck:
+      <<: *default-healthcheck
+      test: pg_isready -U $$POSTGRES_USER -d $$POSTGRES_DB
+    restart: unless-stopped
