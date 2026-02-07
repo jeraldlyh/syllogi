@@ -10,6 +10,7 @@ services:
     build:
       context: ./backend
       dockerfile: Dockerfile
+    command: flask run --host=0.0.0.0 --port 8000 --debug
     env_file:
       - ./backend/.env
     ports:
@@ -19,7 +20,8 @@ services:
     healthcheck:
       <<: *default-healthcheck
       test: curl --fail http://localhost:8000/api/health || exit 1
-    command: flask run --host=0.0.0.0 --port 8000 --debug
+    restart: unless-stopped
+
   syllogi-postgres:
     container_name: syllogi-postgres
     image: postgres:16-alpine
@@ -34,4 +36,18 @@ services:
     healthcheck:
       <<: *default-healthcheck
       test: pg_isready -U $$POSTGRES_USER -d $$POSTGRES_DB
+    restart: unless-stopped
+
+  syllogi-web:
+    container_name: syllogi-web
+    build:
+      context: ./web
+      dockerfile: Dockerfile
+      target: development
+    environment:
+      - NEXT_PUBLIC_BACKEND_URL=http://localhost:8000
+    ports:
+      - 3000:3000
+    volumes:
+      - ./web:/app
     restart: unless-stopped
