@@ -1,21 +1,22 @@
 import os
 import time
-from flask import Blueprint, current_app, jsonify, request
+
+from flask import Blueprint, current_app, request
+from werkzeug.exceptions import BadRequest, UnsupportedMediaType, NotFound
 
 from lib.jellyfin import (
-    _get_jellyfin_playlists,
     _add_songs_to_jellyfin_playlist,
-    _get_jellyfin_user_by_name,
     _create_jellyfin_playlist,
-    _get_jellyfin_playlist_songs,
     _delete_songs_from_jellyfin_playlist,
+    _get_jellyfin_playlist_songs,
+    _get_jellyfin_playlists,
+    _get_jellyfin_user_by_name,
     _update_jellyfin_playlist_image,
 )
-from lib.spotify import _get_songs_by_playlist, _get_playlist
-from lib.track import _find_track
 from lib.notification import _send_discord_notification
+from lib.spotify import _get_playlist, _get_songs_by_playlist
+from lib.track import _find_track
 from lib.utils import _convert_seconds_to_readable_time
-
 
 bp = Blueprint("spotify", __name__)
 DISCORD_WEBHOOK_URL = os.getenv("DISCORD_WEBHOOK_URL", "")
@@ -29,21 +30,24 @@ def get_playlist(id: str) -> dict:
 @bp.post("/import")
 def import_playlist():
     if not request.is_json:
-        return jsonify({"error": "Content-Type must be application/json"}), 415
+        raise UnsupportedMediaType(description="Content-Type must be application/json")
     body = request.get_json()
     playlist_id = body.get("id")
     username = body.get("username")
 
     if not playlist_id:
-        return jsonify(error="id is required"), 400
+        raise BadRequest(description="playlist_id is required")
 
     if not username:
-        return jsonify(error="username is required"), 400
+        raise BadRequest(description="username is required")
 
     start = time.time()
     spotify_playlist = _get_playlist(playlist_id=playlist_id)
     songs = _get_songs_by_playlist(playlist_id=playlist_id)
     user = _get_jellyfin_user_by_name(username=username)
+
+    if not user:
+        raise NotFound(description=f"Unable to find username: {username}")
 
     jellyfin_songs = []
     for song in songs:

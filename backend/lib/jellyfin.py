@@ -60,8 +60,6 @@ def _get_jellyfin_user_by_name(username: str) -> dict:
 
     user = next(user for user in jellyfin_users if user.get("Name") == username)
 
-    if not user:
-        return jsonify({"error": f"Unable to find user: {username}"}), 400
     return user
 
 

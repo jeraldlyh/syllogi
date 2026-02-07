@@ -1,4 +1,6 @@
-from flask import Blueprint, jsonify, request
+from flask import Blueprint, request
+from werkzeug.exceptions import BadRequest
+
 from lib.track import _find_track
 
 bp = Blueprint("track", __name__)
@@ -10,8 +12,8 @@ def find_track():
     title = request.args.get("title")
 
     if not artist_name:
-        return jsonify(error="artist_name is required"), 400
+        raise BadRequest(description="artist_name is required")
     if not title:
-        return jsonify(error="title is required"), 400
+        raise BadRequest(description="title is required")
 
     return _find_track(artist_name, title)

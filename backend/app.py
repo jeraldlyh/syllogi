@@ -1,9 +1,10 @@
 import os
-from flask import Flask
+from flask import Flask, jsonify, request
 from routes import register_routes
 from logging.config import dictConfig
 from dotenv import load_dotenv
 
+from werkzeug.exceptions import HTTPException
 from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
 
@@ -30,6 +31,8 @@ load_dotenv()
 db = SQLAlchemy()
 migrate = Migrate()
 
+from db.notification import Notification
+
 
 def get_connection_string() -> str:
     username = os.getenv("DATABASE_USERNAME")
@@ -38,7 +41,7 @@ def get_connection_string() -> str:
     name = os.getenv("DATABASE_NAME")
 
     if username and password and url and name:
-        return f"postgresql://{username}:{password}@{url}/${name}"
+        return f"postgresql://{username}:{password}@{url}/{name}"
     return "postgresql://syllogi:syllogi@localhost:5432/syllogi"
 
 
@@ -47,6 +50,60 @@ def create_app() -> Flask:
     app.config["SQLALCHEMY_DATABASE_URI"] = get_connection_string()
     db.init_app(app)
     migrate.init_app(app, db)
+
+    @app.errorhandler(HTTPException)
+    def _handle_http_error(e: HTTPException):
+        payload = {
+            "success": False,
+            "error": {
+                "code": e.code,
+                "name": e.name,
+                "message": e.description,
+            },
+        }
+        response = jsonify(payload)
+        response.status_code = e.code
+        return response
+
+    @app.errorhandler(Exception)
+    def _handle_unexpected_error(e: Exception):
+        app.logger.exception("Unhandled exception")
+        payload = {
+            "success": False,
+            "error": {
+                "code": 500,
+                "name": "Internal Server Error",
+                "message": "Something went wrong",
+            },
+        }
+        response = jsonify(payload)
+        response.status_code = 500
+        return response
+
+    @app.after_request
+    def _format_response(response):
+        if not request.path.startswith("/api"):
+            return response
+
+        data = (
+            response.get_json(silent=True)
+            if response.is_json
+            else response.get_data(as_text=True)
+        )
+        if isinstance(data, dict) and any(
+            k in data for k in ("success", "error", "data")
+        ):
+            return response
+
+        envelope = {"success": 200 <= response.status_code < 300, "data": data}
+        response = jsonify(envelope)
+        response.status_code = response.status_code
+
+        for k, v in response.headers.items():
+            if k.lower() not in ("content-length", "content-type"):
+                response.headers[k] = v
+        return response
+
     return app
 
 
