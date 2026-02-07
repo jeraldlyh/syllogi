@@ -1,12 +1,13 @@
 import os
-from flask import Flask, jsonify, request
-from routes import register_routes
 from logging.config import dictConfig
-from dotenv import load_dotenv
 
-from werkzeug.exceptions import HTTPException
-from flask_sqlalchemy import SQLAlchemy
+from dotenv import load_dotenv
+from flask import Flask, jsonify, request
 from flask_migrate import Migrate
+from werkzeug.exceptions import HTTPException
+
+from models.db import db
+from routes import register_routes
 
 dictConfig(
     {
@@ -28,10 +29,7 @@ dictConfig(
 )
 
 load_dotenv()
-db = SQLAlchemy()
 migrate = Migrate()
-
-from db.notification import Notification
 
 
 def get_connection_string() -> str:
@@ -50,6 +48,8 @@ def create_app() -> Flask:
     app.config["SQLALCHEMY_DATABASE_URI"] = get_connection_string()
     db.init_app(app)
     migrate.init_app(app, db)
+
+    register_routes(app)
 
     @app.errorhandler(HTTPException)
     def _handle_http_error(e: HTTPException):
@@ -108,7 +108,6 @@ def create_app() -> Flask:
 
 
 app = create_app()
-register_routes(app)
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=8000, debug=True)
