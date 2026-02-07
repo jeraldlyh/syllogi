@@ -4,6 +4,7 @@ import { Inter, JetBrains_Mono } from "next/font/google";
 import { Toaster } from "sonner";
 
 import "./globals.css";
+import Providers from "./providers";
 
 const _inter = Inter({ subsets: ["latin"], variable: "--font-inter" });
 const _jetbrainsMono = JetBrains_Mono({
@@ -29,8 +30,10 @@ export default function RootLayout({
   return (
     <html lang="en" className={`${_inter.variable} ${_jetbrainsMono.variable}`}>
       <body className="font-sans antialiased">
-        {children}
-        <Toaster />
+        <Providers>
+          {children}
+          <Toaster />
+        </Providers>
       </body>
     </html>
   );
