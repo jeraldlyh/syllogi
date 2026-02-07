@@ -10,7 +10,7 @@ services:
     build:
       context: ./backend
       dockerfile: Dockerfile
-    command: flask run --host=0.0.0.0 --port 8000 --debug
+    command: uvicorn app:app --host 0.0.0.0 --port 8000 --reload
     env_file:
       - ./backend/.env
     ports:

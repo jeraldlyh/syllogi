@@ -1,11 +1,11 @@
-from flask import Blueprint
+from fastapi import APIRouter
 from lib.jellyfin import _get_jellyfin_users
 
-bp = Blueprint("user", __name__)
+router = APIRouter()
 
 
-@bp.get("/jellyfin")
-def get_jellyfin_users():
+@router.get(path="/jellyfin")
+async def get_jellyfin_users():
     users = _get_jellyfin_users()
 
     return [

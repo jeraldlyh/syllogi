@@ -1,11 +1,12 @@
 import os
+import logging
 import requests
 
-from flask import jsonify, current_app
 from typing import List
 
 JELLYFIN_API_KEY = os.getenv("JELLYFIN_API_KEY")
 JELLYFIN_BASE_URL = os.getenv("JELLYFIN_BASE_URL")
+logger = logging.getLogger(__name__)
 
 
 def _jellyfin(
@@ -144,9 +145,7 @@ def _update_jellyfin_playlist_image(playlist_id: str, image_url: str | None) -> 
         )
     except requests.HTTPError as e:
         if not (e.response is not None and e.response.status_code == 400):
-            current_app.logger.error(
-                "Failed to update playlist image with remote image"
-            )
+            logger.error("Failed to update playlist image with remote image")
 
     thumbnail_response = requests.get(image_url)
     thumbnail_response.raise_for_status()

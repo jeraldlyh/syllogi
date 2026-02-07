@@ -1,38 +1,30 @@
 import enum
 import uuid
+from datetime import datetime, timezone
 
-import sqlalchemy as sa
-from sqlalchemy.dialects.postgresql import UUID
-
+from sqlmodel import Field, SQLModel
 from lib.mixin.serializer import SerializerMixin
-from lib.mixin.default import DefaultAttrMixin
-from models.db import db
 
 
 class Channel(enum.Enum):
     discord = "discord"
 
 
-class Notification(db.Model, SerializerMixin, DefaultAttrMixin):
-    DEFAULTS = {
-        "channel": Channel.discord.value,
-        "webhook_url": "",
-        "enabled": True,
-    }
+class Notification(
+    SerializerMixin,
+    SQLModel,
+    table=True,
+):
+    id: uuid.UUID = Field(default_factory=uuid.uuid4, primary_key=True, nullable=False)
+    channel: Channel = Field(default=Channel.discord, unique=True, nullable=False)
+    webhook_url: str = Field(default="", max_length=1024, nullable=False)
+    enabled: bool = Field(default=True, nullable=False)
 
-    __tablename__ = "notification"
-
-    id = db.Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
-    channel = db.Column(sa.Enum(Channel, name="channel"), nullable=False, unique=True)
-    webhook_url = db.Column(db.String(1024), nullable=False)
-    enabled = db.Column(sa.Boolean, nullable=False, server_default=sa.text("true"))
-
-    created_at = db.Column(
-        sa.DateTime(timezone=True), server_default=sa.func.now(), nullable=False
+    created_at: datetime = Field(
+        default_factory=lambda: datetime.now(timezone.utc),
+        nullable=False,
     )
-    updated_at = db.Column(
-        sa.DateTime(timezone=True),
-        server_default=sa.func.now(),
-        onupdate=sa.func.now(),
+    updated_at: datetime = Field(
+        default_factory=lambda: datetime.now(timezone.utc),
         nullable=False,
     )

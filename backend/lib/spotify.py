@@ -1,8 +1,8 @@
 import sys
+import logging
 
 from pathlib import Path
 from typing import List
-from flask import current_app
 
 
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -17,6 +17,8 @@ else:
 
 from spotapi.playlist import PublicPlaylist
 from spotapi.album import PublicAlbum
+
+logger = logging.getLogger(__name__)
 
 
 def _get_playlist(playlist_id: str) -> dict:
@@ -37,9 +39,8 @@ def _get_songs_by_playlist(playlist_id: str) -> List[dict]:
         songs.extend(playlist_info["data"]["playlistV2"]["content"]["items"])
         offset += limit
         playlist_info = playlist.get_playlist_info(offset=offset, limit=limit)
-        current_app.logger.info(f"Fetched {len(songs)} songs...")
-
-    current_app.logger.info(f"Total songs fetched: {len(songs)}")
+        logger.info(f"Fetched {len(songs)} songs...")
+    logger.info(f"Total songs fetched: {len(songs)}")
 
     return songs
 

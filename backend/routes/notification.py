@@ -1,11 +1,11 @@
-from flask import Blueprint
+from fastapi import APIRouter
 from models.notification import Notification
 
-bp = Blueprint("notification", __name__)
+router = APIRouter()
 
 
-@bp.get("/")
-def get_notifications():
+@router.get(path="")
+async def get_notifications():
     notification = Notification.query.first()
 
     if notification:

@@ -1,19 +1,19 @@
-from flask import Blueprint, request
-from werkzeug.exceptions import BadRequest
+from typing import Annotated
+
+from fastapi import APIRouter, Query
 
 from lib.track import _find_track
 
-bp = Blueprint("track", __name__)
+router = APIRouter()
 
 
-@bp.get("/")
-def find_track():
-    artist_name = request.args.get("artist_name")
-    title = request.args.get("title")
-
-    if not artist_name:
-        raise BadRequest(description="artist_name is required")
-    if not title:
-        raise BadRequest(description="title is required")
-
+@router.get(
+    path="",
+    summary="Find a track",
+    description="Look up a track by artist and title and return the best match.",
+)
+async def find_track(
+    artist_name: Annotated[str, Query(description="Artist name")],
+    title: Annotated[str, Query(description="Track title")],
+):
     return _find_track(artist_name, title)

@@ -1,14 +1,14 @@
-from flask import Flask
-from routes.health import bp as health_bp
-from routes.track import bp as track_bp
-from routes.user import bp as user_bp
-from routes.spotify import bp as spotify_bp
-from routes.notification import bp as notification_bp
+from fastapi import FastAPI
+from routes.health import router as health_router
+from routes.track import router as track_router
+from routes.user import router as user_router
+from routes.spotify import router as spotify_router
+from routes.notification import router as notification_router
 
 
-def register_routes(app: Flask) -> None:
-    app.register_blueprint(health_bp, url_prefix="/api")
-    app.register_blueprint(track_bp, url_prefix="/api/track")
-    app.register_blueprint(user_bp, url_prefix="/api/user")
-    app.register_blueprint(spotify_bp, url_prefix="/api/spotify")
-    app.register_blueprint(notification_bp, url_prefix="/api/notification")
+def register_routes(app: FastAPI) -> None:
+    app.include_router(router=health_router)
+    app.include_router(router=track_router, prefix="/track")
+    app.include_router(router=user_router, prefix="/user")
+    app.include_router(router=spotify_router, prefix="/spotify")
+    app.include_router(router=notification_router, prefix="/notification")

@@ -1,31 +1,17 @@
-from datetime import datetime
-from uuid import UUID as _UUID
-import enum
-from sqlalchemy.inspection import inspect
+from typing import Any, Dict, Optional
+
+from pydantic import ConfigDict
+from sqlmodel import SQLModel
 
 
-class SerializerMixin:
-    __serialize_include__ = None
-    __serialize_exclude__ = set()
+class SerializerMixin(SQLModel):
+    model_config = ConfigDict(use_enum_values=True)
 
-    def to_dict(self):
-        mapper = inspect(self).mapper
-        columns = [column.key for column in mapper.column_attrs]
-        include = set(self.__serialize_include__ or columns) - set(
-            self.__serialize_exclude__
+    def to_dict(
+        self,
+        *,
+        exclude: Optional[set[str]] = None,
+    ) -> Dict[str, Any]:
+        return self.model_dump(
+            exclude=exclude or set(),
         )
-        out = {}
-        for key in include:
-            val = getattr(self, key)
-            out[key] = _coerce_json(val)
-        return out
-
-
-def _coerce_json(val):
-    if isinstance(val, enum.Enum):
-        return val.value
-    if isinstance(val, _UUID):
-        return str(val)
-    if isinstance(val, datetime):
-        return val.isoformat()
-    return val

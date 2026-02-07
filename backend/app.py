@@ -1,35 +1,20 @@
+import json
+import logging
 import os
-from logging.config import dictConfig
+from http import HTTPStatus
+from typing import Annotated
 
-from dotenv import load_dotenv
-from flask import Flask, jsonify, request
-from flask_migrate import Migrate
-from werkzeug.exceptions import HTTPException
-
-from models.db import db
 from routes import register_routes
-
-dictConfig(
-    {
-        "version": 1,
-        "formatters": {
-            "default": {
-                "format": "[%(asctime)s] %(levelname)s [%(module)s]: %(message)s",
-            }
-        },
-        "handlers": {
-            "wsgi": {
-                "class": "logging.StreamHandler",
-                "stream": "ext://flask.logging.wsgi_errors_stream",
-                "formatter": "default",
-            }
-        },
-        "root": {"level": "INFO", "handlers": ["wsgi"]},
-    }
-)
+from dotenv import load_dotenv
+from fastapi import Depends, FastAPI, HTTPException, Request
+from fastapi.responses import JSONResponse, Response
+from sqlmodel import Session, SQLModel, create_engine
+from starlette.middleware.base import BaseHTTPMiddleware
 
 load_dotenv()
-migrate = Migrate()
+
+
+logger = logging.getLogger(__name__)
 
 
 def get_connection_string() -> str:
@@ -43,31 +28,85 @@ def get_connection_string() -> str:
     return "postgresql://syllogi:syllogi@localhost:5432/syllogi"
 
 
-def create_app() -> Flask:
-    app = Flask(__name__)
-    app.config["SQLALCHEMY_DATABASE_URI"] = get_connection_string()
-    db.init_app(app)
-    migrate.init_app(app, db)
+engine = create_engine(get_connection_string())
 
+
+def create_db_and_tables():
+    SQLModel.metadata.create_all(engine)
+
+
+def get_session():
+    with Session(engine) as session:
+        yield session
+
+
+SessionDep = Annotated[Session, Depends(get_session)]
+
+
+class ApiResponseMiddleware(BaseHTTPMiddleware):
+    async def dispatch(self, request: Request, call_next):
+        response: Response = await call_next(request)
+
+        if not request.url.path.startswith("/api"):
+            return response
+
+        body = b""
+        async for chunk in response.body_iterator:
+            body += chunk
+        content_type = response.headers.get("content-type", "").lower()
+        is_json = "application/json" in content_type
+
+        try:
+            data = (
+                json.loads(body) if is_json else body.decode("utf-8", errors="ignore")
+            )
+        except Exception:
+            data = None
+
+        if isinstance(data, dict) and any(
+            k in data for k in ("success", "error", "data")
+        ):
+            return response
+
+        content = {"success": 200 <= response.status_code < 300, "data": data}
+        formatted_response = JSONResponse(
+            content=content, status_code=response.status_code
+        )
+
+        for k, v in response.headers.items():
+            if k.lower() not in ("content-length", "content-type"):
+                formatted_response.headers[k] = v
+        return formatted_response
+
+
+def create_app() -> FastAPI:
+    app = FastAPI(root_path="/api")
+    app.add_middleware(ApiResponseMiddleware)
     register_routes(app)
 
-    @app.errorhandler(HTTPException)
-    def _handle_http_error(e: HTTPException):
+    @app.on_event("startup")
+    def on_startup():
+        create_db_and_tables()
+
+    @app.exception_handler(HTTPException)
+    async def http_exception_handler(request: Request, e: HTTPException):
+        try:
+            name = HTTPStatus(e.status_code).phrase
+        except Exception:
+            name = "HTTP Error"
         payload = {
             "success": False,
             "error": {
                 "code": e.code,
-                "name": e.name,
+                "name": name,
                 "message": e.description,
             },
         }
-        response = jsonify(payload)
-        response.status_code = e.code
-        return response
+        return JSONResponse(status_code=e.status_code, content=payload)
 
-    @app.errorhandler(Exception)
-    def _handle_unexpected_error(e: Exception):
-        app.logger.exception("Unhandled exception")
+    @app.exception_handler(Exception)
+    async def exception_handler(_, e: Exception):
+        logger.exception("Unhandled exception")
         payload = {
             "success": False,
             "error": {
@@ -76,38 +115,9 @@ def create_app() -> Flask:
                 "message": "Something went wrong",
             },
         }
-        response = jsonify(payload)
-        response.status_code = 500
-        return response
-
-    @app.after_request
-    def _format_response(response):
-        if not request.path.startswith("/api"):
-            return response
-
-        data = (
-            response.get_json(silent=True)
-            if response.is_json
-            else response.get_data(as_text=True)
-        )
-        if isinstance(data, dict) and any(
-            k in data for k in ("success", "error", "data")
-        ):
-            return response
-
-        envelope = {"success": 200 <= response.status_code < 300, "data": data}
-        response = jsonify(envelope)
-        response.status_code = response.status_code
-
-        for k, v in response.headers.items():
-            if k.lower() not in ("content-length", "content-type"):
-                response.headers[k] = v
-        return response
+        return JSONResponse(status_code=500, content=payload)
 
     return app
 
 
 app = create_app()
-
-if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=8000, debug=True)

@@ -1,8 +1,10 @@
 import os
 import time
+import logging
 
-from flask import Blueprint, current_app, request
-from werkzeug.exceptions import BadRequest, UnsupportedMediaType, NotFound
+from typing import Annotated
+from fastapi import APIRouter, HTTPException, Path
+from pydantic import BaseModel
 
 from lib.jellyfin import (
     _add_songs_to_jellyfin_playlist,
@@ -18,28 +20,28 @@ from lib.spotify import _get_playlist, _get_songs_by_playlist
 from lib.track import _find_track
 from lib.utils import _convert_seconds_to_readable_time
 
-bp = Blueprint("spotify", __name__)
+router = APIRouter()
+logger = logging.getLogger(__name__)
+
 DISCORD_WEBHOOK_URL = os.getenv("DISCORD_WEBHOOK_URL", "")
 
 
-@bp.get("/<id>")
-def get_playlist(id: str) -> dict:
+class ImportPlaylist(BaseModel):
+    playlist_id: str
+    username: str
+
+
+@router.get("/{id}")
+async def get_playlist(
+    id: Annotated[str, Path(min_length=1, description="Spotify Playlist ID")],
+) -> dict:
     return _get_playlist(id)
 
 
-@bp.post("/import")
-def import_playlist():
-    if not request.is_json:
-        raise UnsupportedMediaType(description="Content-Type must be application/json")
-    body = request.get_json()
-    playlist_id = body.get("id")
-    username = body.get("username")
-
-    if not playlist_id:
-        raise BadRequest(description="playlist_id is required")
-
-    if not username:
-        raise BadRequest(description="username is required")
+@router.post("/import")
+async def import_playlist(item: ImportPlaylist):
+    playlist_id = item.get("id")
+    username = item.get("username")
 
     start = time.time()
     spotify_playlist = _get_playlist(playlist_id=playlist_id)
@@ -47,7 +49,9 @@ def import_playlist():
     user = _get_jellyfin_user_by_name(username=username)
 
     if not user:
-        raise NotFound(description=f"Unable to find username: {username}")
+        raise HTTPException(
+            status_code=400, detail=f"Unable to find username: {username}"
+        )
 
     jellyfin_songs = []
     for song in songs:
@@ -58,15 +62,15 @@ def import_playlist():
 
         track = _find_track(artist_name=artist_name, track_name=album_song_name)
         if not track.get("track").get("id"):
-            current_app.logger.info(f"{artist_name} - {album_song_name}: RETRYING")
+            logger.info(f"{artist_name} - {album_song_name}: RETRYING")
             album_song_name = song["itemV2"]["data"]["name"]
             track = _find_track(artist_name=artist_name, track_name=album_song_name)
 
         if track.get("track").get("id"):
-            current_app.logger.info(f"{artist_name} - {album_song_name}: OK")
+            logger.info(f"{artist_name} - {album_song_name}: OK")
             jellyfin_songs.append(track)
         else:
-            current_app.logger.warning(f"{artist_name} - {album_song_name}: MISSING")
+            logger.warning(f"{artist_name} - {album_song_name}: MISSING")
 
     num_of_new_tracks, num_of_outdated_tracks = 0, 0
 
@@ -105,7 +109,7 @@ def import_playlist():
         num_of_outdated_tracks = len(outdated_track_ids)
 
         if num_of_new_tracks > 0:
-            current_app.logger.info(
+            logger.info(
                 f"Adding {num_of_new_tracks} songs to {spotify_playlist_name} playlist"
             )
             _add_songs_to_jellyfin_playlist(
@@ -115,7 +119,7 @@ def import_playlist():
             )
 
         if num_of_outdated_tracks > 0:
-            current_app.logger.info(
+            logger.info(
                 f"Deleting {num_of_outdated_tracks} songs from {spotify_playlist_name} playlist"
             )
             _delete_songs_from_jellyfin_playlist(
