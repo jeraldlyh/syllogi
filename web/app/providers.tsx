@@ -1,3 +1,4 @@
+"use client";
 import { fetcher } from "@/lib/api";
 import { SWRConfig } from "swr";
 
