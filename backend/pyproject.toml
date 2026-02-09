@@ -1,5 +1,3 @@
-[tool.ruff.lint.per-file-ignores]
-"lib/spotify.py" = ["E402"]
-
 [tool.basedpyright]
+typeCheckingMode = "basic"
 extraPaths = ["SpotAPI"]
