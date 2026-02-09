@@ -1,46 +1,19 @@
 import json
 import logging
-import os
 from http import HTTPStatus
-from typing import Annotated
 
-from routes import register_routes
 from dotenv import load_dotenv
-from fastapi import Depends, FastAPI, HTTPException, Request
+from fastapi import FastAPI, HTTPException, Request
 from fastapi.responses import JSONResponse, Response
-from sqlmodel import Session, SQLModel, create_engine
 from starlette.middleware.base import BaseHTTPMiddleware
+
+from lib.db import create_db_and_tables
+from routes import register_routes
 
 load_dotenv()
 
 
 logger = logging.getLogger(__name__)
-
-
-def get_connection_string() -> str:
-    username = os.getenv("DATABASE_USERNAME")
-    password = os.getenv("DATABASE_PASSWORD")
-    url = os.getenv("DATABASE_URL")
-    name = os.getenv("DATABASE_NAME")
-
-    if username and password and url and name:
-        return f"postgresql://{username}:{password}@{url}/{name}"
-    return "postgresql://syllogi:syllogi@localhost:5432/syllogi"
-
-
-engine = create_engine(get_connection_string())
-
-
-def create_db_and_tables():
-    SQLModel.metadata.create_all(engine)
-
-
-def get_session():
-    with Session(engine) as session:
-        yield session
-
-
-SessionDep = Annotated[Session, Depends(get_session)]
 
 
 class ApiResponseMiddleware(BaseHTTPMiddleware):

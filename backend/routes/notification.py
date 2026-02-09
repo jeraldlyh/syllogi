@@ -1,13 +1,13 @@
 from fastapi import APIRouter
 from models.notification import Notification
+from sqlmodel import select
+from lib.db import SessionDep
 
 router = APIRouter()
 
 
 @router.get(path="")
-async def get_notifications():
-    notification = Notification.query.first()
+async def get_notifications(session: SessionDep):
+    notifications = session.exec(select(Notification)).all()
 
-    if notification:
-        return notification.to_dict()
-    return Notification.get_default()
+    return [notification.to_dict() for notification in notifications]
