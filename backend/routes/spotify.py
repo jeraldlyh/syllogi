@@ -1,12 +1,16 @@
+import logging
 import os
 import time
 import logging
 from typing import Annotated, Any, Mapping
 
 from typing import Annotated
+
 from fastapi import APIRouter, HTTPException, Path
 from pydantic import BaseModel
 
+from db.notification import _get_all_notifications
+from db.session import SessionDep
 from lib.jellyfin import (
     _add_songs_to_jellyfin_playlist,
     _create_jellyfin_playlist,
@@ -20,6 +24,7 @@ from lib.notification import _send_discord_notification
 from lib.spotify import _get_playlist, _get_songs_by_playlist
 from lib.track import _find_track
 from lib.utils import _convert_seconds_to_readable_time
+from models.notification import NotificationChannel
 
 router = APIRouter()
 logger = logging.getLogger(__name__)
@@ -40,7 +45,7 @@ async def get_playlist(
 
 
 @router.post("/import")
-async def import_playlist(item: ImportPlaylist):
+async def import_playlist(item: ImportPlaylist, session: SessionDep):
     playlist_id = item.playlist_id
     username = item.username
 
@@ -152,34 +157,42 @@ async def import_playlist(item: ImportPlaylist):
     )
     end = time.time()
 
-    _send_discord_notification(
-        DISCORD_WEBHOOK_URL,
-        title="Import Summary",
-        fields=[
-            {"name": "Username", "value": username, "inline": True},
-            {"name": "Playlist", "value": spotify_playlist_name, "inline": True},
-            {
-                "name": "New/Outdated Tracks(s)",
-                "value": f"{num_of_new_tracks} 🔺 {num_of_outdated_tracks} 🔻",
-                "inline": True,
-            },
-            {
-                "name": "Missing Tracks(s)",
-                "value": len(songs) - len(jellyfin_track_ids),
-                "inline": True,
-            },
-            {
-                "name": "Total Tracks(s)",
-                "value": len(songs),
-                "inline": True,
-            },
-            {
-                "name": "Time Taken",
-                "value": _convert_seconds_to_readable_time(seconds=end - start),
-                "inline": True,
-            },
-        ],
-        timestamp=True,
-    )
+    notifications = _get_all_notifications(session=session)
+
+    for notification in notifications:
+        if notification.channel == NotificationChannel.discord:
+            _send_discord_notification(
+                DISCORD_WEBHOOK_URL,
+                title="Import Summary",
+                fields=[
+                    {"name": "Username", "value": username, "inline": True},
+                    {
+                        "name": "Playlist",
+                        "value": spotify_playlist_name,
+                        "inline": True,
+                    },
+                    {
+                        "name": "New/Outdated Tracks(s)",
+                        "value": f"{num_of_new_tracks} 🔺 {num_of_outdated_tracks} 🔻",
+                        "inline": True,
+                    },
+                    {
+                        "name": "Missing Tracks(s)",
+                        "value": len(songs) - len(jellyfin_track_ids),
+                        "inline": True,
+                    },
+                    {
+                        "name": "Total Tracks(s)",
+                        "value": len(songs),
+                        "inline": True,
+                    },
+                    {
+                        "name": "Time Taken",
+                        "value": _convert_seconds_to_readable_time(seconds=end - start),
+                        "inline": True,
+                    },
+                ],
+                timestamp=True,
+            )
 
     return jellyfin_songs
