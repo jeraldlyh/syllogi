@@ -1,8 +1,8 @@
 import os
 import logging
+from typing import Any
 import requests
 
-from typing import List
 
 JELLYFIN_API_KEY = os.getenv("JELLYFIN_API_KEY")
 JELLYFIN_BASE_URL = os.getenv("JELLYFIN_BASE_URL")
@@ -13,12 +13,12 @@ def _jellyfin(
     path: str,
     *,
     method: str = "GET",
-    params: dict | None = None,
-    headers: dict | None = None,
-    json: dict | list | None = None,
-    data: dict | str | bytes | None = None,
+    params: dict[str, Any] | None = None,
+    headers: dict[str, Any] | None = None,
+    json: dict[str, Any] | list[Any] | None = None,
+    data: dict[str, Any] | str | bytes | None = None,
     timeout: float = 30.0,
-) -> dict | None:
+) -> Any:
     base_headers = {
         "X-Emby-Token": JELLYFIN_API_KEY,
         "Content-Type": "application/json",
@@ -40,15 +40,15 @@ def _jellyfin(
     return response.json()
 
 
-def _get_jellyfin_artist(name: str) -> dict:
+def _get_jellyfin_artist(name: str) -> dict[str, Any]:
     return _jellyfin(f"/Artists/{name}")
 
 
-def _get_jellyfin_users() -> dict:
+def _get_jellyfin_users() -> list[dict[str, Any]]:
     return _jellyfin("/Users")
 
 
-def _get_jellyfin_playlists(user_id: str) -> List[dict]:
+def _get_jellyfin_playlists(user_id: str) -> list[dict[str, Any]]:
     response = _jellyfin(
         f"/Users/{user_id}/Items",
         params={"IncludeItemTypes": "Playlist", "Recursive": True},
@@ -56,7 +56,7 @@ def _get_jellyfin_playlists(user_id: str) -> List[dict]:
     return response.get("Items")
 
 
-def _get_jellyfin_user_by_name(username: str) -> dict:
+def _get_jellyfin_user_by_name(username: str) -> dict[str, Any]:
     jellyfin_users = _get_jellyfin_users()
 
     user = next(user for user in jellyfin_users if user.get("Name") == username)
@@ -64,7 +64,7 @@ def _get_jellyfin_user_by_name(username: str) -> dict:
     return user
 
 
-def _search_jellyfin_songs(artist_name: str, title: str) -> List[dict]:
+def _search_jellyfin_songs(artist_name: str, title: str) -> list[dict[str, Any]]:
     response = _jellyfin(
         "/Items",
         params={
@@ -84,7 +84,7 @@ def _search_jellyfin_songs(artist_name: str, title: str) -> List[dict]:
 def _create_jellyfin_playlist(
     playlist_name: str,
     user_id: str,
-) -> dict:
+) -> dict[str, Any]:
     return _jellyfin(
         "/Playlists",
         method="POST",
@@ -102,8 +102,8 @@ def _create_jellyfin_playlist(
 def _add_songs_to_jellyfin_playlist(
     playlist_id: str,
     user_id: str,
-    track_ids: List[str],
-) -> dict:
+    track_ids: list[str],
+) -> dict[str, Any]:
     return _jellyfin(
         f"/Playlists/{playlist_id}/Items",
         method="POST",
@@ -117,8 +117,8 @@ def _add_songs_to_jellyfin_playlist(
 
 def _delete_songs_from_jellyfin_playlist(
     playlist_id: str,
-    track_ids: List[str],
-) -> dict:
+    track_ids: list[str],
+) -> dict[str, Any]:
     return _jellyfin(
         f"/Playlists/{playlist_id}/Items",
         method="DELETE",
@@ -128,12 +128,16 @@ def _delete_songs_from_jellyfin_playlist(
     )
 
 
-def _get_jellyfin_playlist_songs(playlist_id: str, user_id: str) -> List[dict]:
+def _get_jellyfin_playlist_songs(
+    playlist_id: str, user_id: str
+) -> list[dict[str, Any]]:
     response = _jellyfin(f"/Playlists/{playlist_id}/Items", params={"userId": user_id})
     return response.get("Items")
 
 
-def _update_jellyfin_playlist_image(playlist_id: str, image_url: str | None) -> dict:
+def _update_jellyfin_playlist_image(
+    playlist_id: str, image_url: str | None
+) -> dict[str, Any] | None:
     if not image_url:
         return
 
