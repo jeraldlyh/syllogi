@@ -1,12 +1,12 @@
 from datetime import datetime, timezone
-from typing import Iterable, TypedDict, Any, cast
+from typing import Iterable, TypedDict, Any
 
 import requests
 
 
 class EmbedField(TypedDict):
     name: str
-    value: str
+    value: str | int
     inline: bool
 
 
@@ -29,7 +29,7 @@ def _send_discord_notification(
     title: str | None = None,
     description: str | None = None,
     url: str | None = None,
-    color: int | str | None = "#5865F2",
+    color: int | str = "#5865F2",
     fields: Iterable[EmbedField] | None = None,
     footer_text: str | None = None,
     footer_icon_url: str | None = None,
@@ -83,14 +83,12 @@ def _send_discord_notification(
         for entry in fields:
             name = str(entry["name"])
             value = str(entry["value"])
-            inline = bool(entry["inline"]) if "inline" in entry else None
-            item = {"name": name, "value": value}
-            if inline is not None:
-                item["inline"] = inline
+            inline = bool(entry["inline"]) if "inline" in entry else True
+            item = {"name": name, "value": value, "inline": inline}
             field_list.append(item)
         embed["fields"] = field_list
 
-    payload = {"embeds": [embed]}
+    payload: dict[str, Any] = {"embeds": [embed]}
 
     if content:
         payload["content"] = content

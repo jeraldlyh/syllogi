@@ -2,7 +2,8 @@ import sys
 import logging
 
 from pathlib import Path
-from typing import List
+from typing import Any
+from collections.abc import Mapping
 
 
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -21,16 +22,16 @@ from spotapi.album import PublicAlbum
 logger = logging.getLogger(__name__)
 
 
-def _get_playlist(playlist_id: str) -> dict:
+def _get_playlist(playlist_id: str) -> Mapping[str, Any]:
     playlist = PublicPlaylist(playlist_id)
 
     return playlist.get_playlist_info()
 
 
-def _get_songs_by_playlist(playlist_id: str) -> List[dict]:
+def _get_songs_by_playlist(playlist_id: str) -> list[dict[str, Any]]:
     offset = 0
     limit = 50
-    songs = []
+    songs: list[dict[str, Any]] = []
 
     playlist = PublicPlaylist(playlist_id)
     playlist_info = playlist.get_playlist_info(limit=limit)
@@ -45,7 +46,7 @@ def _get_songs_by_playlist(playlist_id: str) -> List[dict]:
     return songs
 
 
-def _get_album_by_id(album_id: str) -> dict:
+def _get_album_by_id(album_id: str) -> Mapping[str, Any]:
     album = PublicAlbum(album_id)
     album_info = album.get_album_info()
 

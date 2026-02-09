@@ -1,6 +1,7 @@
 import os
 import time
 import logging
+from typing import Annotated, Any, Mapping
 
 from typing import Annotated
 from fastapi import APIRouter, HTTPException, Path
@@ -34,14 +35,14 @@ class ImportPlaylist(BaseModel):
 @router.get("/{id}")
 async def get_playlist(
     id: Annotated[str, Path(min_length=1, description="Spotify Playlist ID")],
-) -> dict:
+) -> Mapping[str, Any]:
     return _get_playlist(id)
 
 
 @router.post("/import")
 async def import_playlist(item: ImportPlaylist):
-    playlist_id = item.get("id")
-    username = item.get("username")
+    playlist_id = item.playlist_id
+    username = item.username
 
     start = time.time()
     spotify_playlist = _get_playlist(playlist_id=playlist_id)
@@ -61,12 +62,12 @@ async def import_playlist(item: ImportPlaylist):
         album_song_name = song["itemV2"]["data"]["albumOfTrack"]["name"]
 
         track = _find_track(artist_name=artist_name, track_name=album_song_name)
-        if not track.get("track").get("id"):
+        if not track.get("track", {}).get("id"):
             logger.info(f"{artist_name} - {album_song_name}: RETRYING")
             album_song_name = song["itemV2"]["data"]["name"]
             track = _find_track(artist_name=artist_name, track_name=album_song_name)
 
-        if track.get("track").get("id"):
+        if track.get("track", {}).get("id") is not None:
             logger.info(f"{artist_name} - {album_song_name}: OK")
             jellyfin_songs.append(track)
         else:
@@ -77,6 +78,11 @@ async def import_playlist(item: ImportPlaylist):
     if len(jellyfin_songs) > 0:
         spotify_playlist_name = spotify_playlist["data"]["playlistV2"]["name"]
         jellyfin_user_id = user.get("Id")
+
+        if not jellyfin_user_id:
+            raise HTTPException(
+                status_code=400, detail=f"Unable to find user ID from {username}"
+            )
         jellyfin_playlists = _get_jellyfin_playlists(user_id=jellyfin_user_id)
 
         existing_playlist = next(
@@ -96,6 +102,11 @@ async def import_playlist(item: ImportPlaylist):
             )
             existing_playlist_id = new_playlist.get("Id")
 
+        if not existing_playlist_id:
+            raise HTTPException(
+                status_code=500, detail="Unable to determine existing playlist ID"
+            )
+
         existing_songs = _get_jellyfin_playlist_songs(
             playlist_id=existing_playlist_id, user_id=jellyfin_user_id
         )
@@ -103,7 +114,9 @@ async def import_playlist(item: ImportPlaylist):
         jellyfin_track_ids = [track["track"]["id"] for track in jellyfin_songs]
 
         new_track_ids = list(set(jellyfin_track_ids) - set(existing_track_ids))
-        outdated_track_ids = list(set(existing_track_ids) - set(jellyfin_track_ids))
+        outdated_track_ids = list(
+            filter(None, list(set(existing_track_ids) - set(jellyfin_track_ids)))
+        )
 
         num_of_new_tracks = len(new_track_ids)
         num_of_outdated_tracks = len(outdated_track_ids)

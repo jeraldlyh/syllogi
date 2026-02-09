@@ -1,6 +1,8 @@
 import os
 from difflib import SequenceMatcher
 
+from fastapi import HTTPException
+
 from lib.jellyfin import _search_jellyfin_songs
 from lib.utils import _get_clean_name
 
@@ -23,6 +25,10 @@ def _find_track(artist_name: str, track_name: str) -> dict:
 
     for track in tracks:
         jellyfin_track_name = track.get("Name")
+
+        if not jellyfin_track_name:
+            raise HTTPException(status_code=500, detail="Missing Jellyfin track name")
+
         clean_jellyfin_track_name = _get_clean_name(name=jellyfin_track_name)
         clean_search_track_name = _get_clean_name(name=track_name)
 

@@ -1,13 +1,14 @@
 import json
 import logging
 from http import HTTPStatus
+from typing import cast
 
 from dotenv import load_dotenv
 from fastapi import FastAPI, HTTPException, Request
-from fastapi.responses import JSONResponse, Response
+from fastapi.responses import JSONResponse, Response, StreamingResponse
 from starlette.middleware.base import BaseHTTPMiddleware
 
-from lib.db import create_db_and_tables
+from db.session import create_db_and_tables
 from routes import register_routes
 
 load_dotenv()
@@ -23,9 +24,23 @@ class ApiResponseMiddleware(BaseHTTPMiddleware):
         if not request.url.path.startswith("/api"):
             return response
 
-        body = b""
-        async for chunk in response.body_iterator:
-            body += chunk
+        body: bytes = b""
+        if isinstance(response, StreamingResponse):
+            stream_resp = cast(StreamingResponse, response)
+            async for chunk in stream_resp.body_iterator:
+                if isinstance(chunk, memoryview):
+                    chunk = chunk.tobytes()
+                elif isinstance(chunk, bytearray):
+                    chunk = bytes(chunk)
+                elif isinstance(chunk, str):
+                    chunk = chunk.encode("utf-8", "ignore")
+                body += chunk
+        else:
+            rb = response.body
+            if isinstance(rb, (bytes, bytearray)):
+                body = bytes(rb)
+            elif isinstance(rb, str):
+                body = rb.encode("utf-8", "ignore")
         content_type = response.headers.get("content-type", "").lower()
         is_json = "application/json" in content_type
 
@@ -58,7 +73,7 @@ def create_app() -> FastAPI:
     register_routes(app)
 
     @app.on_event("startup")
-    def on_startup():
+    async def on_startup():
         create_db_and_tables()
 
     @app.exception_handler(HTTPException)
@@ -70,9 +85,9 @@ def create_app() -> FastAPI:
         payload = {
             "success": False,
             "error": {
-                "code": e.code,
+                "code": e.status_code,
                 "name": name,
-                "message": e.description,
+                "message": e.detail,
             },
         }
         return JSONResponse(status_code=e.status_code, content=payload)
