@@ -1,11 +1,11 @@
 import json
 import logging
+import logging.config
 from http import HTTPStatus
-from typing import cast
 
 from dotenv import load_dotenv
 from fastapi import FastAPI, HTTPException, Request
-from fastapi.responses import JSONResponse, Response, StreamingResponse
+from fastapi.responses import JSONResponse, Response
 from starlette.middleware.base import BaseHTTPMiddleware
 
 from db.session import create_db_and_tables
@@ -13,6 +13,49 @@ from routes import register_routes
 
 load_dotenv()
 
+
+logging.config.dictConfig(
+    {
+        "version": 1,
+        "disable_existing_loggers": False,
+        "formatters": {
+            "default": {
+                "format": "[%(asctime)s] %(levelname)s [%(module)s]: %(message)s",
+            },
+            "access": {
+                "format": "[%(asctime)s] %(levelname)s [%(module)s]: %(message)s",
+            },
+        },
+        "handlers": {
+            "default": {
+                "formatter": "default",
+                "class": "logging.StreamHandler",
+                "stream": "ext://sys.stderr",
+            },
+            "access": {
+                "formatter": "default",
+                "class": "logging.StreamHandler",
+                "stream": "ext://sys.stdout",
+            },
+        },
+        "loggers": {
+            "uvicorn.error": {
+                "level": "DEBUG",
+                "handlers": ["default"],
+                "propagate": False,
+            },
+            "uvicorn.access": {
+                "level": "DEBUG",
+                "handlers": ["default"],
+                "propagate": False,
+            },
+        },
+        "root": {
+            "level": "INFO",
+            "handlers": ["default"],
+        },
+    }
+)
 
 logger = logging.getLogger(__name__)
 
@@ -24,10 +67,16 @@ class ApiResponseMiddleware(BaseHTTPMiddleware):
         if not request.url.path.startswith("/api"):
             return response
 
+        content_type = response.headers.get("content-type", "").lower()
+        is_json = "application/json" in content_type
+        is_streaming = hasattr(response, "body_iterator")
+
+        if is_streaming and not is_json:
+            return response
+
         body: bytes = b""
-        if isinstance(response, StreamingResponse):
-            stream_resp = cast(StreamingResponse, response)
-            async for chunk in stream_resp.body_iterator:
+        if is_streaming:
+            async for chunk in response.body_iterator:  # type: ignore[attr-defined]
                 if isinstance(chunk, memoryview):
                     chunk = chunk.tobytes()
                 elif isinstance(chunk, bytearray):
@@ -36,7 +85,7 @@ class ApiResponseMiddleware(BaseHTTPMiddleware):
                     chunk = chunk.encode("utf-8", "ignore")
                 body += chunk
         else:
-            rb = response.body
+            rb = getattr(response, "body", b"")
             if isinstance(rb, (bytes, bytearray)):
                 body = bytes(rb)
             elif isinstance(rb, str):
