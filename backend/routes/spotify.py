@@ -1,10 +1,7 @@
 import logging
 import os
 import time
-import logging
 from typing import Annotated, Any, Mapping
-
-from typing import Annotated
 
 from fastapi import APIRouter, HTTPException, Path
 from pydantic import BaseModel
@@ -24,7 +21,7 @@ from lib.notification import _send_discord_notification
 from lib.spotify import _get_playlist, _get_songs_by_playlist
 from lib.track import _find_track
 from lib.utils import _convert_seconds_to_readable_time
-from models.notification import NotificationChannel
+from db.models.notification import NotificationChannel
 
 router = APIRouter()
 logger = logging.getLogger(__name__)
