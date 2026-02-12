@@ -7,7 +7,7 @@ from datetime import datetime, timezone
 from fastapi import APIRouter, HTTPException, Path
 from pydantic import BaseModel
 
-from db.notification import _get_all_notifications
+from db.notification import _get_notifications
 from db.import_session import _create_import_session, _build_tracks
 from db.session import SessionDep
 from lib.jellyfin import (
@@ -203,7 +203,7 @@ async def import_playlist(item: ImportPlaylist, session: SessionDep):
     )
     end = time.time()
 
-    notifications = _get_all_notifications(session=session)
+    notifications = _get_notifications(session=session)
 
     for notification in notifications:
         if notification.channel == NotificationChannel.discord:
