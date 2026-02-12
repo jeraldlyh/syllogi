@@ -3,7 +3,7 @@ import uuid
 from datetime import datetime, timezone
 from typing import Optional
 
-from sqlmodel import Field, SQLModel
+from sqlmodel import Field, Relationship, SQLModel
 
 from lib.mixin.serializer import SerializerMixin
 
@@ -11,6 +11,13 @@ from lib.mixin.serializer import SerializerMixin
 class ImportProvider(enum.Enum):
     spotify = "spotify"
     youtube = "youtube"
+
+
+class TrackListKind(enum.Enum):
+    total = "total"
+    new = "new"
+    outdated = "outdated"
+    missing = "missing"
 
 
 class ImportSession(SerializerMixin, SQLModel, table=True):
@@ -25,10 +32,7 @@ class ImportSession(SerializerMixin, SQLModel, table=True):
     target_playlist_id: str = Field(max_length=128, nullable=False, index=True)
     target_playlist_name: str = Field(default="", max_length=512, nullable=False)
 
-    total_tracks: int = Field(default=0, nullable=False)
-    new_tracks: int = Field(default=0, nullable=False)
-    outdated_tracks: int = Field(default=0, nullable=False)
-    missing_tracks: int = Field(default=0, nullable=False)
+    tracks: list["ImportSessionTrack"] = Relationship(back_populates="session")
 
     started_at: datetime = Field(
         default_factory=lambda: datetime.now(timezone.utc), nullable=False
@@ -44,3 +48,18 @@ class ImportSession(SerializerMixin, SQLModel, table=True):
     updated_at: datetime = Field(
         default_factory=lambda: datetime.now(timezone.utc), nullable=False
     )
+
+
+class ImportSessionTrack(SerializerMixin, SQLModel, table=True):
+    id: uuid.UUID = Field(default_factory=uuid.uuid4, primary_key=True, nullable=False)
+
+    import_session_id: uuid.UUID = Field(
+        foreign_key="importsession.id", index=True, nullable=False
+    )
+    kind: TrackListKind = Field(nullable=False, index=True)
+    name: str = Field(max_length=512, nullable=False)
+
+    created_at: datetime = Field(
+        default_factory=lambda: datetime.now(timezone.utc), nullable=False
+    )
+    session: ImportSession = Relationship(back_populates="tracks")
