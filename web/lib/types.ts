@@ -1,4 +1,4 @@
-export interface IApiConfig {
+export interface ApiConfig {
   method: "GET" | "POST" | "PUT" | "DELETE";
   body?: any;
   headers?: Record<string, string>;
@@ -8,7 +8,7 @@ export interface IApiConfig {
   cache?: RequestCache;
 }
 
-export interface IApiResponse<T> {
+export interface ApiResponse<T> {
   statusCode: number;
   errorMessage?: string;
   data?: T;

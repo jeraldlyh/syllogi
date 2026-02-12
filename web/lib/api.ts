@@ -1,6 +1,6 @@
-import { IApiConfig, IApiResponse } from "./types";
+import { ApiConfig, ApiResponse } from "./types";
 
-export const api = async <T>(config: IApiConfig): Promise<IApiResponse<T>> => {
+export const api = async <T>(config: ApiConfig): Promise<ApiResponse<T>> => {
   let endpoint =
     `${process.env.NEXT_PUBLIC_BACKEND_URL}/api` || "http://localhost:8000/api";
 
@@ -45,10 +45,12 @@ export const api = async <T>(config: IApiConfig): Promise<IApiResponse<T>> => {
 };
 
 export const fetcher = async <T>(
-  input: string | URL,
+  path: string | URL,
   init?: RequestInit,
 ): Promise<T> => {
-  const response = await fetch(input, {
+  const endpoint =
+    `${process.env.NEXT_PUBLIC_BACKEND_URL}/api` || "http://localhost:8000/api";
+  const response = await fetch(`${endpoint}${path}`, {
     ...init,
     headers: { "Content-Type": "application/json", ...(init?.headers || {}) },
   });
