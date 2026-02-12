@@ -2,6 +2,7 @@ from fastapi import APIRouter
 
 from db.import_session import _get_import_sessions, _get_import_session_tracks
 from db.session import SessionDep
+from lib.utils import _format_time_with_locale
 
 router = APIRouter()
 
@@ -42,13 +43,13 @@ async def get_import_sessions(session: SessionDep):
                 "new_tracks": import_session_tracks["new"],
                 "outdated_tracks": import_session_tracks["outdated"],
                 "missing_tracks": import_session_tracks["missing"],
-                "started_at": import_session.started_at,
-                "finished_at": import_session.finished_at,
+                "started_at": _format_time_with_locale(import_session.started_at),
+                "finished_at": _format_time_with_locale(import_session.finished_at),
                 "duration_seconds": import_session.duration_seconds,
                 "success": import_session.success,
                 "error_message": import_session.error_message,
-                "created_at": import_session.created_at,
-                "updated_at": import_session.updated_at,
+                "created_at": _format_time_with_locale(import_session.created_at),
+                "updated_at": _format_time_with_locale(import_session.updated_at),
             }
         )
 

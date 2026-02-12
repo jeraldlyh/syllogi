@@ -6,6 +6,7 @@ from http import HTTPStatus
 from dotenv import load_dotenv
 from fastapi import FastAPI, HTTPException, Request
 from fastapi.responses import JSONResponse, Response
+from fastapi.middleware.cors import CORSMiddleware
 from starlette.middleware.base import BaseHTTPMiddleware
 
 from db.session import create_db_and_tables
@@ -118,6 +119,13 @@ class ApiResponseMiddleware(BaseHTTPMiddleware):
 
 def create_app() -> FastAPI:
     app = FastAPI(root_path="/api")
+    app.add_middleware(
+        CORSMiddleware,
+        allow_origins=["http://localhost:3000"],
+        allow_credentials=True,
+        allow_methods=["*"],
+        allow_headers=["*"],
+    )
     app.add_middleware(ApiResponseMiddleware)
     register_routes(app)
 

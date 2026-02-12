@@ -1,7 +1,11 @@
-import re
 import json
+import os
+import re
 import unicodedata
+from datetime import datetime
 from time import gmtime, strftime
+
+import pytz
 
 
 def _get_clean_name(name: str) -> str:
@@ -21,3 +25,11 @@ def _dump_results(file_name: str, data: dict) -> None:
 
 def _convert_seconds_to_readable_time(seconds: float | int) -> str:
     return strftime("%H:%M:%S", gmtime(seconds))
+
+
+def _get_now() -> datetime:
+    return datetime.now(pytz.timezone(os.getenv("TZ", "Asia/Singapore")))
+
+
+def _format_time_with_locale(date: datetime) -> datetime:
+    return date.astimezone(pytz.timezone(os.getenv("TZ", "Asia/Singapore")))

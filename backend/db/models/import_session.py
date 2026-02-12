@@ -1,11 +1,14 @@
 import enum
 import uuid
-from datetime import datetime, timezone
-from typing import Optional
+import sqlalchemy as sa
+from datetime import datetime
+from typing import Any, Optional, cast
 
 from sqlmodel import Field, Relationship, SQLModel
 
+from lib.utils import _get_now
 from lib.mixin.serializer import SerializerMixin
+from lib.mixin.metadata import TimestampsMixin
 
 
 class ImportProvider(enum.Enum):
@@ -20,7 +23,7 @@ class TrackListKind(enum.Enum):
     missing = "missing"
 
 
-class ImportSession(SerializerMixin, SQLModel, table=True):
+class ImportSession(TimestampsMixin, SerializerMixin, SQLModel, table=True):
     id: uuid.UUID = Field(default_factory=uuid.uuid4, primary_key=True, nullable=False)
 
     provider: ImportProvider = Field(nullable=False, index=True)
@@ -35,22 +38,23 @@ class ImportSession(SerializerMixin, SQLModel, table=True):
     tracks: list["ImportSessionTrack"] = Relationship(back_populates="session")
 
     started_at: datetime = Field(
-        default_factory=lambda: datetime.now(timezone.utc), nullable=False
+        default=_get_now(),
+        sa_type=cast(type[Any], sa.DateTime(timezone=True)),
+        sa_column_kwargs={"server_default": sa.func.now()},
+        nullable=False,
     )
-    finished_at: Optional[datetime] = Field(default=None, nullable=True)
+    finished_at: datetime = Field(
+        default=_get_now(),
+        sa_type=cast(type[Any], sa.DateTime(timezone=True)),
+        sa_column_kwargs={"server_default": sa.func.now()},
+        nullable=False,
+    )
     duration_seconds: int = Field(default=0, nullable=False)
     success: bool = Field(default=True, nullable=False)
     error_message: Optional[str] = Field(default=None, max_length=1024, nullable=True)
 
-    created_at: datetime = Field(
-        default_factory=lambda: datetime.now(timezone.utc), nullable=False
-    )
-    updated_at: datetime = Field(
-        default_factory=lambda: datetime.now(timezone.utc), nullable=False
-    )
 
-
-class ImportSessionTrack(SerializerMixin, SQLModel, table=True):
+class ImportSessionTrack(TimestampsMixin, SerializerMixin, SQLModel, table=True):
     id: uuid.UUID = Field(default_factory=uuid.uuid4, primary_key=True, nullable=False)
 
     import_session_id: uuid.UUID = Field(
@@ -59,7 +63,4 @@ class ImportSessionTrack(SerializerMixin, SQLModel, table=True):
     kind: TrackListKind = Field(nullable=False, index=True)
     name: str = Field(max_length=512, nullable=False)
 
-    created_at: datetime = Field(
-        default_factory=lambda: datetime.now(timezone.utc), nullable=False
-    )
     session: ImportSession = Relationship(back_populates="tracks")

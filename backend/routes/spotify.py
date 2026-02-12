@@ -1,14 +1,14 @@
 import logging
 import os
-import time
 from typing import Annotated, Any, Mapping
-from datetime import datetime, timezone
 
 from fastapi import APIRouter, HTTPException, Path
 from pydantic import BaseModel
 
+from db.import_session import _build_tracks, _create_import_session
+from db.models.import_session import ImportProvider, ImportSession, TrackListKind
+from db.models.notification import NotificationChannel
 from db.notification import _get_notifications
-from db.import_session import _create_import_session, _build_tracks
 from db.session import SessionDep
 from lib.jellyfin import (
     _add_songs_to_jellyfin_playlist,
@@ -22,9 +22,7 @@ from lib.jellyfin import (
 from lib.notification import _send_discord_notification
 from lib.spotify import _get_playlist, _get_songs_by_playlist
 from lib.track import _find_track
-from lib.utils import _convert_seconds_to_readable_time
-from db.models.notification import NotificationChannel
-from db.models.import_session import ImportProvider, ImportSession, TrackListKind
+from lib.utils import _convert_seconds_to_readable_time, _get_now
 
 router = APIRouter()
 logger = logging.getLogger(__name__)
@@ -44,12 +42,12 @@ async def get_playlist(
     return _get_playlist(id)
 
 
-@router.post("/import")
+@router.post("")
 async def import_playlist(item: ImportPlaylist, session: SessionDep):
     playlist_id = item.playlist_id
     username = item.username
 
-    start = time.time()
+    started_at = _get_now()
     spotify_playlist = _get_playlist(playlist_id=playlist_id)
     songs = _get_songs_by_playlist(playlist_id=playlist_id)
     user = _get_jellyfin_user_by_name(username=username)
@@ -115,7 +113,7 @@ async def import_playlist(item: ImportPlaylist, session: SessionDep):
         )
 
     if len(jellyfin_tracks) == 0:
-        end = time.time()
+        finished_at = _get_now()
         import_session = ImportSession(
             provider=ImportProvider.spotify,
             provider_playlist_id=playlist_id,
@@ -124,9 +122,9 @@ async def import_playlist(item: ImportPlaylist, session: SessionDep):
             target_username=username,
             target_playlist_id=existing_playlist_id,
             target_playlist_name=spotify_playlist_name,
-            started_at=datetime.fromtimestamp(start, tz=timezone.utc),
-            finished_at=datetime.fromtimestamp(end, tz=timezone.utc),
-            duration_seconds=int(end - start),
+            started_at=started_at,
+            finished_at=finished_at,
+            duration_seconds=int(finished_at.timestamp() - started_at.timestamp()),
             success=False,
         )
         import_session.tracks = _build_tracks(
@@ -201,9 +199,10 @@ async def import_playlist(item: ImportPlaylist, session: SessionDep):
         if spotify_playlist_thumbnail_url.endswith((".png", "jpg", "jpeg"))
         else None,
     )
-    end = time.time()
 
+    finished_at = _get_now()
     notifications = _get_notifications(session=session)
+    duration_taken = finished_at.timestamp() - started_at.timestamp()
 
     for notification in notifications:
         if notification.channel == NotificationChannel.discord:
@@ -234,7 +233,9 @@ async def import_playlist(item: ImportPlaylist, session: SessionDep):
                     },
                     {
                         "name": "Time Taken",
-                        "value": _convert_seconds_to_readable_time(seconds=end - start),
+                        "value": _convert_seconds_to_readable_time(
+                            seconds=duration_taken
+                        ),
                         "inline": True,
                     },
                 ],
@@ -248,9 +249,9 @@ async def import_playlist(item: ImportPlaylist, session: SessionDep):
         target_username=username,
         target_playlist_id=existing_playlist_id,
         target_playlist_name=spotify_playlist_name,
-        started_at=datetime.fromtimestamp(start, tz=timezone.utc),
-        finished_at=datetime.fromtimestamp(end, tz=timezone.utc),
-        duration_seconds=int(end - start),
+        started_at=started_at,
+        finished_at=finished_at,
+        duration_seconds=int(duration_taken),
         success=True,
     )
 
