@@ -4,10 +4,10 @@ import { RefreshCw } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import Image from "next/image";
-import { useImportSessions } from "@/hooks/useImportSessions";
+import { useSyncSessions } from "@/hooks/useSyncSessions";
 
 export function DashboardHeader() {
-  const { data, isError, isLoading } = useImportSessions();
+  const { data, isError, isLoading } = useSyncSessions();
 
   const handleOnClick = (): void => {
     toast.success("Sync started", {

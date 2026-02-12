@@ -5,8 +5,8 @@ from typing import Annotated, Any, Mapping
 from fastapi import APIRouter, HTTPException, Path
 from pydantic import BaseModel
 
-from db.import_session import _build_tracks, _create_import_session
-from db.models.import_session import ImportProvider, ImportSession, TrackListKind
+from db.sync_session import _build_tracks, _create_sync_session
+from db.models.sync_session import SyncProvider, SyncSession, TrackListKind
 from db.models.notification import NotificationChannel
 from db.notification import _get_notifications
 from db.session import SessionDep
@@ -114,8 +114,8 @@ async def import_playlist(item: ImportPlaylist, session: SessionDep):
 
     if len(jellyfin_tracks) == 0:
         finished_at = _get_now()
-        import_session = ImportSession(
-            provider=ImportProvider.spotify,
+        sync_session = SyncSession(
+            provider=SyncProvider.spotify,
             provider_playlist_id=playlist_id,
             provider_playlist_name=spotify_playlist_name,
             target_user_id=jellyfin_user_id,
@@ -127,12 +127,12 @@ async def import_playlist(item: ImportPlaylist, session: SessionDep):
             duration_seconds=int(finished_at.timestamp() - started_at.timestamp()),
             success=False,
         )
-        import_session.tracks = _build_tracks(
-            import_session_id=import_session.id,
+        sync_session.tracks = _build_tracks(
+            sync_session_id=sync_session.id,
             names=track_names,
             kind=TrackListKind.total,
         )
-        _create_import_session(session=session, import_session=import_session)
+        _create_sync_session(session=session, sync_session=sync_session)
         return
 
     existing_tracks = _get_jellyfin_playlist_songs(
@@ -241,8 +241,8 @@ async def import_playlist(item: ImportPlaylist, session: SessionDep):
                 ],
                 timestamp=True,
             )
-    import_session = ImportSession(
-        provider=ImportProvider.spotify,
+    sync_session = SyncSession(
+        provider=SyncProvider.spotify,
         provider_playlist_id=playlist_id,
         provider_playlist_name=spotify_playlist_name,
         target_user_id=jellyfin_user_id,
@@ -258,29 +258,29 @@ async def import_playlist(item: ImportPlaylist, session: SessionDep):
     new_track_names = [track["track"]["name"] for track in new_tracks]
     outdated_track_names = [track["Name"] for track in outdated_tracks]
 
-    import_session.tracks = (
+    sync_session.tracks = (
         _build_tracks(
-            import_session_id=import_session.id,
+            sync_session_id=sync_session.id,
             names=track_names,
             kind=TrackListKind.total,
         )
         + _build_tracks(
-            import_session_id=import_session.id,
+            sync_session_id=sync_session.id,
             names=missing_track_names,
             kind=TrackListKind.missing,
         )
         + _build_tracks(
-            import_session_id=import_session.id,
+            sync_session_id=sync_session.id,
             names=new_track_names,
             kind=TrackListKind.new,
         )
         + _build_tracks(
-            import_session_id=import_session.id,
+            sync_session_id=sync_session.id,
             names=outdated_track_names,
             kind=TrackListKind.outdated,
         )
     )
 
-    _create_import_session(session=session, import_session=import_session)
+    _create_sync_session(session=session, sync_session=sync_session)
 
     return jellyfin_tracks

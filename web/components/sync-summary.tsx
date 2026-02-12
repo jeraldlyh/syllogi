@@ -1,11 +1,11 @@
 "use client";
-import { ImportSession, useImportSessions } from "@/hooks/useImportSessions";
+import { SyncSession, useSyncSessions } from "@/hooks/useSyncSessions";
 import { ListMusic, User, Music, Plus, Minus, Clock, Hash } from "lucide-react";
 import { StatusBadge } from "./common/status-badge";
 import { Card, CardHeader, CardTitle, CardContent } from "./ui/card";
 
 export const SyncSummary = () => {
-  const { data, isError, isLoading } = useImportSessions();
+  const { data, isError, isLoading } = useSyncSessions();
 
   if (isError || isLoading || !data || data.length === 0) return <></>;
   const latestRun = data[0];

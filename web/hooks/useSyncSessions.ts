@@ -2,7 +2,7 @@ import { fetcher } from "@/lib/api";
 import { ApiResponse } from "@/lib/types";
 import useSWR from "swr";
 
-export interface ImportSession {
+export interface SyncSession {
   id: string;
   provider: string;
   provider_playlist_id: string;
@@ -23,9 +23,9 @@ export interface ImportSession {
   updated_at: string;
 }
 
-export const useImportSessions = () => {
-  const { data, error, isLoading } = useSWR<ApiResponse<ImportSession[]>>(
-    "/import",
+export const useSyncSessions = () => {
+  const { data, error, isLoading } = useSWR<ApiResponse<SyncSession[]>>(
+    "/sync",
     fetcher,
   );
 
