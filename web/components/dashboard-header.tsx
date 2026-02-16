@@ -50,7 +50,9 @@ export function DashboardHeader() {
           </h1>
           <p className="text-xs text-muted-foreground">
             Last sync:&nbsp;
-            {formatLastSyncedTime(new Date(data ? data[0].finished_at : ""))}
+            {formatLastSyncedTime(
+              new Date(data && data.length > 0 ? data[0].finished_at : ""),
+            )}
           </p>
         </div>
       </div>
