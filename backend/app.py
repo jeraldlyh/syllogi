@@ -9,7 +9,6 @@ from fastapi.responses import JSONResponse, Response
 from fastapi.middleware.cors import CORSMiddleware
 from starlette.middleware.base import BaseHTTPMiddleware
 
-from db.session import create_db_and_tables
 from routes import register_routes
 
 load_dotenv()
@@ -128,10 +127,6 @@ def create_app() -> FastAPI:
     )
     app.add_middleware(ApiResponseMiddleware)
     register_routes(app)
-
-    @app.on_event("startup")
-    async def on_startup():
-        create_db_and_tables()
 
     @app.exception_handler(HTTPException)
     async def http_exception_handler(request: Request, e: HTTPException):
