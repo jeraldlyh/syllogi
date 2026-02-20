@@ -23,6 +23,13 @@ class TrackListKind(enum.Enum):
     missing = "missing"
 
 
+class SyncStatus(enum.Enum):
+    pending = "pending"
+    in_progress = "in_progress"
+    completed = "completed"
+    failed = "failed"
+
+
 class SyncSession(TimestampsMixin, SerializerMixin, SQLModel, table=True):
     id: uuid.UUID = Field(default_factory=uuid.uuid4, primary_key=True, nullable=False)
 
@@ -50,7 +57,7 @@ class SyncSession(TimestampsMixin, SerializerMixin, SQLModel, table=True):
         nullable=False,
     )
     duration_seconds: int = Field(default=0, nullable=False)
-    success: bool = Field(default=True, nullable=False)
+    status: SyncStatus = Field(nullable=False)
     error_message: Optional[str] = Field(default=None, max_length=1024, nullable=True)
 
 

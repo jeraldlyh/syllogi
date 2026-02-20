@@ -12,6 +12,12 @@ def _create_sync_session(session: SessionDep, sync_session: SyncSession) -> None
     session.refresh(sync_session)
 
 
+def _update_sync_session(session: SessionDep, sync_session: SyncSession) -> None:
+    session.add(sync_session)
+    session.commit()
+    session.refresh(sync_session)
+
+
 def _get_sync_sessions(session: SessionDep) -> Sequence[SyncSession]:
     return session.exec(
         select(SyncSession).order_by(desc(SyncSession.created_at))
