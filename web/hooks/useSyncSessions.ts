@@ -18,10 +18,10 @@ export interface SyncSession {
   started_at: string;
   finished_at: string;
   duration_seconds: number;
-  success: boolean;
+  status: "pending" | "in_progress" | "completed" | "failed";
+  error_message: string;
   created_at: string;
   updated_at: string;
-  status: "pending" | "in_progress" | "completed" | "failed";
 }
 
 export const useSyncSessions = () => {

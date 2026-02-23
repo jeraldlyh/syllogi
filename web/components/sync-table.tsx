@@ -82,6 +82,26 @@ export const SyncTable = () => {
   const renderDialogContent = (): React.JSX.Element | null => {
     if (!selectedRun) return null;
 
+    if (selectedRun.status === "failed") {
+      return (
+        <DialogContent className="max-w-lg bg-card">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Text value="Sync Failed" className="text-lg font-semibold" />
+              <StatusBadge status={selectedRun.status} />
+            </DialogTitle>
+          </DialogHeader>
+          <div className="p-4 bg-red-500/5 rounded-md text-red-400">
+            <Text value="Stacktrace:" className="text-sm" />
+            <ScrollArea className="max-h-64 mt-2 rounded-md border bg-secondary/50 p-2">
+              <pre className="text-xs">
+                {selectedRun.error_message || "No stacktrace available."}
+              </pre>
+            </ScrollArea>
+          </div>
+        </DialogContent>
+      );
+    }
     return (
       <DialogContent className="max-w-lg bg-card">
         <DialogHeader>
@@ -232,7 +252,7 @@ export const SyncTable = () => {
       <Card>
         <CardHeader className="pb-3">
           <CardTitle className="text-base font-medium text-foreground">
-            Recent Sync Runs
+            Recent Sync Sessions
           </CardTitle>
         </CardHeader>
         <CardContent>
