@@ -22,9 +22,7 @@ async def get_sync_sessions(session: SessionDep):
             session=session, sync_session_id=sync_session_id
         )
         for track in session_tracks:
-            tracks_by_session[str(sync_session_id)][track.kind.value].append(
-                track.name
-            )
+            tracks_by_session[str(sync_session_id)][track.kind.value].append(track.name)
 
     response = []
     for sync_session in sync_sessions:
@@ -46,7 +44,7 @@ async def get_sync_sessions(session: SessionDep):
                 "started_at": _format_time_with_locale(sync_session.started_at),
                 "finished_at": _format_time_with_locale(sync_session.finished_at),
                 "duration_seconds": sync_session.duration_seconds,
-                "success": sync_session.success,
+                "status": sync_session.status,
                 "error_message": sync_session.error_message,
                 "created_at": _format_time_with_locale(sync_session.created_at),
                 "updated_at": _format_time_with_locale(sync_session.updated_at),
