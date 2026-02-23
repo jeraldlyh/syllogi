@@ -21,6 +21,7 @@ export interface SyncSession {
   success: boolean;
   created_at: string;
   updated_at: string;
+  status: "pending" | "in_progress" | "completed" | "failed";
 }
 
 export const useSyncSessions = () => {

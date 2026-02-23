@@ -2,6 +2,7 @@
 
 import { DashboardHeader } from "@/components/dashboard-header";
 import { SyncSummary } from "@/components/sync-summary";
+import { SyncTable } from "@/components/sync-table";
 
 export default function Page() {
   return (
@@ -11,6 +12,7 @@ export default function Page() {
         <div className="mt-6 grid grid-cols-1 gap-6 lg:grid-cols-3">
           <main className="flex flex-col gap-6 lg:col-span-2">
             <SyncSummary />
+            <SyncTable />
           </main>
         </div>
       </div>
