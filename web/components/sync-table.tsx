@@ -34,20 +34,24 @@ import { Text } from "@/components/common/text";
 export const SyncTable = () => {
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("all");
-  const [selectedRun, setSelectedRun] = useState<SyncSession | null>(null);
+  const [selectedSession, setSelectedSession] = useState<SyncSession | null>(
+    null,
+  );
 
   const { data, isError, isLoading } = useSyncSessions();
 
-  const getFilteredRuns = (): SyncSession[] => {
+  const getFilteredSessions = (): SyncSession[] => {
     if (isError || isLoading || !data) return [];
 
-    return data?.filter((run) => {
+    return data?.filter((session) => {
       const matchesSearch =
-        run.target_playlist_name.toLowerCase().includes(search.toLowerCase()) ||
-        run.target_username.toLowerCase().includes(search.toLowerCase());
+        session.target_playlist_name
+          .toLowerCase()
+          .includes(search.toLowerCase()) ||
+        session.target_username.toLowerCase().includes(search.toLowerCase());
 
       const matchesStatus =
-        statusFilter === "all" || run.status === statusFilter;
+        statusFilter === "all" || session.status === statusFilter;
       return matchesSearch && matchesStatus;
     });
   };
@@ -80,22 +84,22 @@ export const SyncTable = () => {
   };
 
   const renderDialogContent = (): React.JSX.Element | null => {
-    if (!selectedRun) return null;
+    if (!selectedSession) return null;
 
-    if (selectedRun.status === "failed") {
+    if (selectedSession.status === "failed") {
       return (
         <DialogContent className="max-w-lg bg-card">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
               <Text value="Sync Failed" className="text-lg font-semibold" />
-              <StatusBadge status={selectedRun.status} />
+              <StatusBadge status={selectedSession.status} />
             </DialogTitle>
           </DialogHeader>
           <div className="p-4 bg-red-500/5 rounded-md text-red-400">
             <Text value="Stacktrace:" className="text-sm" />
             <ScrollArea className="max-h-64 mt-2 rounded-md border bg-secondary/50 p-2">
               <pre className="text-xs">
-                {selectedRun.error_message || "No stacktrace available."}
+                {selectedSession.error_message || "No stacktrace available."}
               </pre>
             </ScrollArea>
           </div>
@@ -106,42 +110,42 @@ export const SyncTable = () => {
       <DialogContent className="max-w-lg bg-card">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
-            {selectedRun.target_playlist_name}
-            <StatusBadge status={selectedRun.status} />
+            {selectedSession.target_playlist_name}
+            <StatusBadge status={selectedSession.status} />
           </DialogTitle>
         </DialogHeader>
         <div className="grid grid-cols-2 gap-3 text-sm">
           <DialogItem
-            label={`${capitaliseFirstLetter(selectedRun.provider)} ID`}
-            value={selectedRun.provider_playlist_id}
+            label={`${capitaliseFirstLetter(selectedSession.provider)} ID`}
+            value={selectedSession.provider_playlist_id}
           />
-          <DialogItem label="User" value={selectedRun.target_username} />
+          <DialogItem label="User" value={selectedSession.target_username} />
           <DialogItem
             label="Total tracks"
-            value={String(selectedRun.total_tracks.length)}
+            value={String(selectedSession.total_tracks.length)}
           />
           <DialogItem
             label="Duration"
-            value={`${selectedRun.duration_seconds}s`}
+            value={`${selectedSession.duration_seconds}s`}
           />
           <DialogItem
             label="Started At"
-            value={formatDateTime(selectedRun.started_at)}
+            value={formatDateTime(selectedSession.started_at)}
           />
           <DialogItem
             label="Finished At"
-            value={formatDateTime(selectedRun.finished_at)}
+            value={formatDateTime(selectedSession.finished_at)}
           />
         </div>
         <div className="mt-2 grid grid-cols-1 gap-4 sm:grid-cols-2">
           <TrackList
-            title={`Added tracks (${selectedRun.new_tracks.length})`}
-            tracks={selectedRun.new_tracks}
+            title={`Added tracks (${selectedSession.new_tracks.length})`}
+            tracks={selectedSession.new_tracks}
             accent="text-emerald-400"
           />
           <TrackList
-            title={`Outdated tracks (${selectedRun.outdated_tracks.length})`}
-            tracks={selectedRun.outdated_tracks}
+            title={`Outdated tracks (${selectedSession.outdated_tracks.length})`}
+            tracks={selectedSession.outdated_tracks}
             accent="text-amber-400"
           />
         </div>
@@ -149,7 +153,7 @@ export const SyncTable = () => {
     );
   };
   const renderTable = (): React.JSX.Element => {
-    if (getFilteredRuns().length === 0) {
+    if (getFilteredSessions().length === 0) {
       return (
         <div className="flex items-center justify-center py-6">
           <Text
@@ -157,7 +161,7 @@ export const SyncTable = () => {
             value={
               data && data.length === 0
                 ? "Run your first sync"
-                : "No runs match your filters"
+                : "No sessions match your filters"
             }
           />
         </div>
@@ -188,56 +192,56 @@ export const SyncTable = () => {
             </TableRow>
           </TableHeader>
           <TableBody>
-            {getFilteredRuns().map((run) => (
+            {getFilteredSessions().map((session) => (
               <TableRow
-                key={run.id}
+                key={session.id}
                 className="cursor-pointer transition-colors hover:bg-secondary/50"
-                onClick={() => setSelectedRun(run)}
+                onClick={() => setSelectedSession(session)}
               >
                 <TableCell>
                   <Text
                     className="text-muted-foreground"
-                    value={formatDateTime(run.finished_at)}
+                    value={formatDateTime(session.finished_at)}
                   />
                 </TableCell>
                 <TableCell>
                   <Text
                     className="text-center"
-                    value={run.target_playlist_name}
+                    value={session.target_playlist_name}
                   />
                 </TableCell>
                 <TableCell className="hidden sm:table-cell">
                   <Text
                     className="text-muted-foreground"
-                    value={run.target_username}
+                    value={session.target_username}
                   />
                 </TableCell>
                 <TableCell className="hidden md:table-cell">
                   <Text
                     className="text-center text-muted-foreground"
-                    value={String(run.total_tracks.length)}
+                    value={String(session.total_tracks.length)}
                   />
                 </TableCell>
                 <TableCell className="hidden md:table-cell text-emerald-400">
                   <Text
                     className="text-center"
-                    value={`+${run.new_tracks.length}`}
+                    value={`+${session.new_tracks.length}`}
                   />
                 </TableCell>
                 <TableCell className="hidden lg:table-cell">
                   <Text
                     className="text-center text-amber-400"
-                    value={`-${run.outdated_tracks.length}`}
+                    value={`-${session.outdated_tracks.length}`}
                   />
                 </TableCell>
                 <TableCell className="hidden lg:table-cell">
                   <Text
                     className="text-center text-muted-foreground"
-                    value={`${run.duration_seconds}s`}
+                    value={`${session.duration_seconds}s`}
                   />
                 </TableCell>
                 <TableCell align="center">
-                  <StatusBadge status={run.status} />
+                  <StatusBadge status={session.status} />
                 </TableCell>
               </TableRow>
             ))}
@@ -262,8 +266,8 @@ export const SyncTable = () => {
         </CardContent>
       </Card>
       <Dialog
-        open={selectedRun !== null}
-        onOpenChange={(open) => !open && setSelectedRun(null)}
+        open={selectedSession !== null}
+        onOpenChange={(open) => !open && setSelectedSession(null)}
       >
         {renderDialogContent()}
       </Dialog>
