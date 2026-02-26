@@ -174,21 +174,15 @@ export const SyncTable = () => {
           <TableHeader>
             <TableRow className="hover:bg-transparent text-xs text-muted-foreground">
               <TableHead>Time</TableHead>
-              <TableHead className="text-center">Playlist</TableHead>
+              <TableHead>Playlist</TableHead>
               <TableHead className="hidden sm:table-cell">User</TableHead>
-              <TableHead className="text-center hidden md:table-cell">
-                Total
-              </TableHead>
-              <TableHead className="text-center hidden md:table-cell">
+              <TableHead className="hidden md:table-cell">Total</TableHead>
+              <TableHead className="text-centerhidden md:table-cell">
                 Added
               </TableHead>
-              <TableHead className="text-center hidden lg:table-cell">
-                Outdated
-              </TableHead>
-              <TableHead className="text-center hidden lg:table-cell">
-                Duration
-              </TableHead>
-              <TableHead className="text-center">Status</TableHead>
+              <TableHead className="hidden lg:table-cell">Outdated</TableHead>
+              <TableHead className="hidden lg:table-cell">Duration</TableHead>
+              <TableHead>Status</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -205,10 +199,7 @@ export const SyncTable = () => {
                   />
                 </TableCell>
                 <TableCell>
-                  <Text
-                    className="text-center"
-                    value={session.target_playlist_name}
-                  />
+                  <Text value={session.target_playlist_name} />
                 </TableCell>
                 <TableCell className="hidden sm:table-cell">
                   <Text
@@ -218,29 +209,26 @@ export const SyncTable = () => {
                 </TableCell>
                 <TableCell className="hidden md:table-cell">
                   <Text
-                    className="text-center text-muted-foreground"
+                    className="text-muted-foreground"
                     value={String(session.total_tracks.length)}
                   />
                 </TableCell>
                 <TableCell className="hidden md:table-cell text-emerald-400">
-                  <Text
-                    className="text-center"
-                    value={`+${session.new_tracks.length}`}
-                  />
+                  <Text value={`+${session.new_tracks.length}`} />
                 </TableCell>
                 <TableCell className="hidden lg:table-cell">
                   <Text
-                    className="text-center text-amber-400"
+                    className="text-amber-400"
                     value={`-${session.outdated_tracks.length}`}
                   />
                 </TableCell>
                 <TableCell className="hidden lg:table-cell">
                   <Text
-                    className="text-center text-muted-foreground"
+                    className="text-muted-foreground"
                     value={`${session.duration_seconds}s`}
                   />
                 </TableCell>
-                <TableCell align="center">
+                <TableCell>
                   <StatusBadge status={session.status} />
                 </TableCell>
               </TableRow>
