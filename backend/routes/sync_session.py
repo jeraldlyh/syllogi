@@ -32,10 +32,10 @@ def get_sync_sessions(session: SessionDep):
         sync_session_tracks = tracks_by_session[str(sync_session.id)]
         sync_session_dict = sync_session.to_dict()
 
-        sync_session_dict["total_tracks"] = (sync_session_tracks["total"],)
-        sync_session_dict["new_tracks"] = (sync_session_tracks["new"],)
-        sync_session_dict["outdated_tracks"] = (sync_session_tracks["outdated"],)
-        sync_session_dict["missing_tracks"] = (sync_session_tracks["missing"],)
+        sync_session_dict["total_tracks"] = sync_session_tracks["total"]
+        sync_session_dict["new_tracks"] = sync_session_tracks["new"]
+        sync_session_dict["outdated_tracks"] = sync_session_tracks["outdated"]
+        sync_session_dict["missing_tracks"] = sync_session_tracks["missing"]
 
         response.append(sync_session_dict)
     return response
