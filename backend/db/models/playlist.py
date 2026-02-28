@@ -3,6 +3,7 @@ import uuid
 
 from sqlmodel import Field, SQLModel
 
+from lib.utils import _format_time_with_locale
 from lib.mixin.metadata import TimestampMixin
 from lib.mixin.serializer import SerializerMixin
 
@@ -23,3 +24,16 @@ class Playlist(TimestampMixin, SerializerMixin, SQLModel, table=True):
     username: str = Field(default="", max_length=128, nullable=False, index=True)
     enabled: bool = Field(default=True, nullable=False)
     cron_expression: str = Field(default="", max_length=128, nullable=False)
+
+    def to_dict(self) -> dict:
+        return {
+            "id": str(self.id),
+            "provider": self.provider.value,
+            "playlist_id": self.playlist_id,
+            "playlist_name": self.playlist_name,
+            "username": self.username,
+            "enabled": self.enabled,
+            "cron_expression": self.cron_expression,
+            "created_at": _format_time_with_locale(self.created_at),
+            "updated_at": _format_time_with_locale(self.updated_at),
+        }

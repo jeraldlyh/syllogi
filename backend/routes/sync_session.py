@@ -2,7 +2,6 @@ from fastapi import APIRouter
 
 from db.sync_session import _get_sync_sessions, _get_sync_session_tracks
 from db.session import SessionDep
-from lib.utils import _format_time_with_locale
 
 router = APIRouter()
 
@@ -31,28 +30,12 @@ def get_sync_sessions(session: SessionDep):
     response = []
     for sync_session in sync_sessions:
         sync_session_tracks = tracks_by_session[str(sync_session.id)]
-        response.append(
-            {
-                "id": str(sync_session.id),
-                "provider": sync_session.provider.value,
-                "provider_playlist_id": sync_session.provider_playlist_id,
-                "provider_playlist_name": sync_session.provider_playlist_name,
-                "target_user_id": sync_session.target_user_id,
-                "target_username": sync_session.target_username,
-                "target_playlist_id": sync_session.target_playlist_id,
-                "target_playlist_name": sync_session.target_playlist_name,
-                "total_tracks": sync_session_tracks["total"],
-                "new_tracks": sync_session_tracks["new"],
-                "outdated_tracks": sync_session_tracks["outdated"],
-                "missing_tracks": sync_session_tracks["missing"],
-                "started_at": _format_time_with_locale(sync_session.started_at),
-                "finished_at": _format_time_with_locale(sync_session.finished_at),
-                "duration_seconds": sync_session.duration_seconds,
-                "status": sync_session.status,
-                "error_message": sync_session.error_message,
-                "created_at": _format_time_with_locale(sync_session.created_at),
-                "updated_at": _format_time_with_locale(sync_session.updated_at),
-            }
-        )
+        sync_session_dict = sync_session.to_dict()
 
+        sync_session_dict["total_tracks"] = (sync_session_tracks["total"],)
+        sync_session_dict["new_tracks"] = (sync_session_tracks["new"],)
+        sync_session_dict["outdated_tracks"] = (sync_session_tracks["outdated"],)
+        sync_session_dict["missing_tracks"] = (sync_session_tracks["missing"],)
+
+        response.append(sync_session_dict)
     return response

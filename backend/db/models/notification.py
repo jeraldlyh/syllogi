@@ -3,6 +3,7 @@ import uuid
 
 from sqlmodel import Field, SQLModel
 
+from lib.utils import _format_time_with_locale
 from lib.mixin.metadata import TimestampMixin
 from lib.mixin.serializer import SerializerMixin
 
@@ -23,3 +24,13 @@ class Notification(
     )
     webhook_url: str = Field(default="", max_length=1024, nullable=False)
     enabled: bool = Field(default=True, nullable=False)
+
+    def to_dict(self) -> dict:
+        return {
+            "id": str(self.id),
+            "channel": self.channel.value,
+            "webhook_url": self.webhook_url,
+            "enabled": self.enabled,
+            "created_at": _format_time_with_locale(self.created_at),
+            "updated_at": _format_time_with_locale(self.updated_at),
+        }

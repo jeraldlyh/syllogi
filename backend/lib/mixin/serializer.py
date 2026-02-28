@@ -1,11 +1,11 @@
-from typing import Any, Dict, Optional
+from typing import Any, Dict, Optional, cast
 
 from pydantic import ConfigDict
 from sqlmodel import SQLModel
 
 
 class SerializerMixin(SQLModel):
-    model_config = ConfigDict(use_enum_values=True)
+    model_config = cast(Any, ConfigDict(use_enum_values=True))
 
     def to_dict(
         self,

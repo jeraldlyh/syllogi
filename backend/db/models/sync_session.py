@@ -6,7 +6,7 @@ from typing import Any, Optional, cast
 
 from sqlmodel import Field, Relationship, SQLModel
 
-from lib.utils import _get_now
+from lib.utils import _get_now, _format_time_with_locale
 from lib.mixin.serializer import SerializerMixin
 from lib.mixin.metadata import TimestampMixin
 
@@ -59,6 +59,25 @@ class SyncSession(TimestampMixin, SerializerMixin, SQLModel, table=True):
     duration_seconds: int = Field(default=0, nullable=False)
     status: SyncStatus = Field(nullable=False)
     error_message: Optional[str] = Field(default=None, max_length=1024, nullable=True)
+
+    def to_dict(self) -> dict:
+        return {
+            "id": str(self.id),
+            "provider": self.provider.value,
+            "provider_playlist_id": self.provider_playlist_id,
+            "provider_playlist_name": self.provider_playlist_name,
+            "target_user_id": self.target_user_id,
+            "target_username": self.target_username,
+            "target_playlist_id": self.target_playlist_id,
+            "target_playlist_name": self.target_playlist_name,
+            "started_at": _format_time_with_locale(self.started_at),
+            "finished_at": _format_time_with_locale(self.finished_at),
+            "duration_seconds": self.duration_seconds,
+            "status": self.status,
+            "error_message": self.error_message,
+            "created_at": _format_time_with_locale(self.created_at),
+            "updated_at": _format_time_with_locale(self.updated_at),
+        }
 
 
 class SyncSessionTrack(TimestampMixin, SerializerMixin, SQLModel, table=True):
