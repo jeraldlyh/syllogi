@@ -42,6 +42,7 @@ import {
 } from "@/hooks/usePlaylist";
 import { capitaliseFirstLetter, cn } from "@/lib/utils";
 import { Text } from "./common/text";
+import { useJellyfinUsers } from "@/hooks/useUsers";
 
 interface FormState {
   provider: (typeof PROVIDERS)[number]["value"];
@@ -76,7 +77,13 @@ export const Playlists = () => {
   const [form, setForm] = useState<FormState>(DEFAULT_FORM);
   const [errors, setErrors] = useState<FormErrors>({});
 
-  const { data: playlists, isLoading, isError } = usePlaylists();
+  const { data: users } = useJellyfinUsers();
+  const {
+    data: playlists,
+    isLoading,
+    isError,
+    mutate: fetchPlaylist,
+  } = usePlaylists();
   const {
     trigger: createPlaylist,
     data: createPlaylistResponse,
@@ -145,8 +152,10 @@ export const Playlists = () => {
       toast.success("Playlist updated");
     } else {
       await createPlaylist(mappingData);
+
       toast.success("Playlist created");
     }
+    await fetchPlaylist();
     setDialogOpen(false);
   };
 
@@ -366,11 +375,18 @@ export const Playlists = () => {
                 onValueChange={(val) =>
                   setForm((prev) => ({ ...prev, username: val }))
                 }
+                disabled={!users || users.length === 0}
               >
                 <SelectTrigger>
                   <SelectValue placeholder="Select user" />
                 </SelectTrigger>
-                <SelectContent></SelectContent>
+                <SelectContent>
+                  {users?.map((user) => (
+                    <SelectItem key={user.id} value={user.name}>
+                      {user.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
               </Select>
             </div>
             <div className="flex flex-col gap-2">
@@ -408,7 +424,7 @@ export const Playlists = () => {
                   onClick={() =>
                     setForm((prev) => ({
                       ...prev,
-                      cronMode: "custom",
+                      cron_mode: "custom",
                     }))
                   }
                   className={cn(
@@ -428,7 +444,7 @@ export const Playlists = () => {
                 <Select
                   value={form.cron_expression}
                   onValueChange={(value) =>
-                    setForm((prev) => ({ ...prev, cronExpression: value }))
+                    setForm((prev) => ({ ...prev, cron_expression: value }))
                   }
                 >
                   <SelectTrigger>

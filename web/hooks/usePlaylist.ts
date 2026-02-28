@@ -13,7 +13,7 @@ export interface Playlist {
 }
 
 export const usePlaylists = () => {
-  const { data, error, isLoading } = useSWR<ApiResponse<Playlist[]>>(
+  const { data, error, isLoading, mutate } = useSWR<ApiResponse<Playlist[]>>(
     "/playlist",
     fetcher,
   );
@@ -22,6 +22,7 @@ export const usePlaylists = () => {
     data: data?.data,
     isLoading,
     isError: error,
+    mutate,
   };
 };
 
