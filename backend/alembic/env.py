@@ -11,6 +11,7 @@ load_dotenv()
 from db.session import get_connection_string
 from db.models.sync_session import SyncSession, SyncSessionTrack
 from db.models.notification import Notification
+from db.models.playlist import Playlist
 
 config = context.config
 

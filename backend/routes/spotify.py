@@ -43,7 +43,7 @@ async def get_playlist(
 
 
 @router.post("")
-async def import_playlist(item: ImportPlaylist, session: SessionDep) -> dict[str, str]:
+def import_playlist(item: ImportPlaylist, session: SessionDep) -> dict[str, str]:
     playlist_id = item.playlist_id
     username = item.username
 

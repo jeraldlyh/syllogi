@@ -12,7 +12,7 @@ router = APIRouter()
     summary="Get sync sessions",
     description="Retrieve a list of all sync sessions.",
 )
-async def get_sync_sessions(session: SessionDep):
+def get_sync_sessions(session: SessionDep):
     sync_sessions = _get_sync_sessions(session)
 
     tracks_by_session: dict[str, dict[str, list[str]]] = {
