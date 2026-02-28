@@ -6,10 +6,12 @@ from fastapi import APIRouter, HTTPException, Path
 from pydantic import BaseModel
 
 from db.sync_session import _build_tracks, _create_sync_session, _update_sync_session
+from db.models.playlist import Playlist
 from db.models.sync_session import SyncProvider, SyncSession, SyncStatus, TrackListKind
 from db.models.notification import NotificationChannel
 from db.notification import _get_notifications
 from db.session import SessionDep
+from db.playlist import _get_playlist_by_id
 from lib.jellyfin import (
     _add_songs_to_jellyfin_playlist,
     _create_jellyfin_playlist,
@@ -35,16 +37,31 @@ class ImportPlaylist(BaseModel):
     username: str
 
 
-@router.get("/{id}")
+@router.get(
+    path="/{id}",
+    summary="Get playlist",
+    description="Retrieve a Spotify playlist by its ID.",
+)
 async def get_playlist(
     id: Annotated[str, Path(min_length=1, description="Spotify Playlist ID")],
 ) -> Mapping[str, Any]:
     return _get_playlist(id)
 
 
-@router.post("")
-def import_playlist(item: ImportPlaylist, session: SessionDep) -> dict[str, str]:
-    playlist_id = item.playlist_id
+@router.post(
+    path="",
+    summary="Sync playlist",
+    description="Sync a Spotify playlist to Jellyfin.",
+)
+def sync_playlist(item: Playlist, session: SessionDep) -> dict[str, str]:
+    playlist = _get_playlist_by_id(session=session, playlist_id=item.id)
+
+    if not playlist:
+        raise HTTPException(
+            status_code=404, detail=f"Unable to find playlist: {item.playlist_id}"
+        )
+
+    playlist_id = playlist.playlist_id
     username = item.username
 
     started_at = _get_now()

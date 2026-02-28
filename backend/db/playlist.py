@@ -1,3 +1,4 @@
+import uuid
 from sqlmodel import select
 from db.models.playlist import Playlist
 from db.session import SessionDep
@@ -7,7 +8,7 @@ def _get_playlists(session: SessionDep):
     return session.exec(select(Playlist)).all()
 
 
-def _get_playlist_by_id(session: SessionDep, playlist_id: str):
+def _get_playlist_by_id(session: SessionDep, playlist_id: uuid.UUID):
     return session.get(Playlist, playlist_id)
 
 

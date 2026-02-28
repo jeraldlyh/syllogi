@@ -14,5 +14,5 @@ def register_routes(app: FastAPI) -> None:
     app.include_router(router=jellyfin_router, prefix="/jellyfin")
     app.include_router(router=notification_router, prefix="/notification")
     app.include_router(router=sync_session_router, prefix="/sync")
-    app.include_router(router=spotify_router, prefix="/sync/spotify")
+    app.include_router(router=spotify_router, prefix="/spotify")
     app.include_router(router=playlist_router, prefix="/playlist")

@@ -2,6 +2,7 @@ import json
 import logging
 import logging.config
 from http import HTTPStatus
+from typing import Callable
 
 from dotenv import load_dotenv
 from fastapi import FastAPI, HTTPException, Request
@@ -61,50 +62,21 @@ logger = logging.getLogger(__name__)
 
 
 class ApiResponseMiddleware(BaseHTTPMiddleware):
-    async def dispatch(self, request: Request, call_next):
+    async def dispatch(self, request: Request, call_next: Callable):
         response: Response = await call_next(request)
 
-        if not request.url.path.startswith("/api"):
-            return response
-
-        content_type = response.headers.get("content-type", "").lower()
-        is_json = "application/json" in content_type
-        is_streaming = hasattr(response, "body_iterator")
-
-        if is_streaming and not is_json:
-            return response
-
-        body: bytes = b""
-        if is_streaming:
-            async for chunk in response.body_iterator:  # type: ignore[attr-defined]
-                if isinstance(chunk, memoryview):
-                    chunk = chunk.tobytes()
-                elif isinstance(chunk, bytearray):
-                    chunk = bytes(chunk)
-                elif isinstance(chunk, str):
-                    chunk = chunk.encode("utf-8", "ignore")
-                body += chunk
-        else:
-            rb = getattr(response, "body", b"")
-            if isinstance(rb, (bytes, bytearray)):
-                body = bytes(rb)
-            elif isinstance(rb, str):
-                body = rb.encode("utf-8", "ignore")
-        content_type = response.headers.get("content-type", "").lower()
-        is_json = "application/json" in content_type
-
-        try:
-            data = (
-                json.loads(body) if is_json else body.decode("utf-8", errors="ignore")
-            )
-        except Exception:
-            data = None
-
-        if isinstance(data, dict) and any(
-            k in data for k in ("success", "error", "data")
+        if (
+            not request.url.path.startswith("/api")
+            or request.method == "OPTIONS"
+            or response.status_code > 300
         ):
             return response
 
+        body: bytes = b""
+        async for chunk in response.body_iterator:  # type: ignore[attr-defined]
+            body += chunk
+
+        data = json.loads(body.decode("utf-8"))
         content = {"success": 200 <= response.status_code < 300, "data": data}
         formatted_response = JSONResponse(
             content=content, status_code=response.status_code
