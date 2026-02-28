@@ -3,6 +3,7 @@
 import React, { useState } from "react";
 import { Plus, Pencil, Trash2, Clock } from "lucide-react";
 import { toast } from "sonner";
+import useSWRMutation from "swr/mutation";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -32,53 +33,68 @@ import {
 } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { CRON_PRESETS, PROVIDERS } from "@/lib/types";
-import { Playlist } from "@/hooks/usePlaylist";
+import {
+  createPlaylistMutation,
+  deletePlaylistMutation,
+  Playlist,
+  updatePlaylistMutation,
+  usePlaylists,
+} from "@/hooks/usePlaylist";
 import { capitaliseFirstLetter, cn } from "@/lib/utils";
 import { Text } from "./common/text";
 
 interface FormState {
   provider: (typeof PROVIDERS)[number]["value"];
-  playlistId: string;
-  playlistName: string;
+  playlist_id: string;
+  playlist_name: string;
   username: string;
   enabled: boolean;
-  cronExpression: string;
-  cronMode: "simple" | "custom";
+  cron_expression: string;
+  cron_mode: "simple" | "custom";
 }
 
 interface FormErrors {
-  playlistId?: string;
-  playlistName?: string;
+  playlist_id?: string;
+  playlist_name?: string;
   username?: string;
-  cronExpression?: string;
+  cron_expression?: string;
 }
 
 const DEFAULT_FORM: FormState = {
   provider: "spotify",
-  playlistId: "",
-  playlistName: "",
+  playlist_id: "",
+  playlist_name: "",
   username: "",
   enabled: true,
-  cronExpression: "0 * * * *",
-  cronMode: "simple",
+  cron_expression: "0 * * * *",
+  cron_mode: "simple",
 };
 
 export const Playlists = () => {
-  const [playlists, setPlaylists] = useState<Playlist[]>([
-    {
-      id: "1",
-      provider: "spotify",
-      playlistId: "3cEYpjA9oz9GiPac4AsH4n",
-      playlistName: "Today's Top Hits",
-      username: "john_doe",
-      enabled: true,
-      cronExpression: "0 * * * *",
-    },
-  ]);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [form, setForm] = useState<FormState>(DEFAULT_FORM);
   const [errors, setErrors] = useState<FormErrors>({});
+
+  const { data: playlists, isLoading, isError } = usePlaylists();
+  const {
+    trigger: createPlaylist,
+    data: createPlaylistResponse,
+    error: createPlaylistError,
+    isMutating: isCreating,
+  } = useSWRMutation("/playlist", createPlaylistMutation);
+  const {
+    trigger: updatePlaylist,
+    data: updatePlaylistResponse,
+    error: updatePlaylistError,
+    isMutating: isUpdating,
+  } = useSWRMutation("/playlist", updatePlaylistMutation);
+  const {
+    trigger: deletePlaylist,
+    data: deletePlaylistResponse,
+    error: deletePlaylistError,
+    isMutating: isDeleting,
+  } = useSWRMutation("/playlist", deletePlaylistMutation);
 
   const handleAddPlaylist = () => {
     setEditingId(null);
@@ -90,17 +106,12 @@ export const Playlists = () => {
   const handleEditPlaylist = (playlist: Playlist) => {
     setEditingId(playlist.id);
     const isPreset = CRON_PRESETS.some(
-      (p) => p.value === playlist.cronExpression,
+      (p) => p.value === playlist.cron_expression,
     );
 
     setForm({
-      provider: playlist.provider,
-      playlistId: playlist.playlistId,
-      playlistName: playlist.playlistName,
-      username: playlist.username,
-      enabled: playlist.enabled,
-      cronExpression: playlist.cronExpression,
-      cronMode: isPreset ? "simple" : "custom",
+      ...playlist,
+      cron_mode: isPreset ? "simple" : "custom",
     });
     setErrors({});
     setDialogOpen(true);
@@ -108,52 +119,40 @@ export const Playlists = () => {
 
   const isFormError = (): boolean => {
     const newErrors: FormErrors = {};
-    if (!form.playlistId.trim()) newErrors.playlistId = "Required";
-    if (!form.playlistName.trim()) newErrors.playlistName = "Required";
+    if (!form.playlist_id.trim()) newErrors.playlist_id = "Required";
+    if (!form.playlist_name.trim()) newErrors.playlist_name = "Required";
     if (!form.username) newErrors.username = "Required";
-    if (!form.cronExpression.trim()) {
-      newErrors.cronExpression = "Required";
+    if (!form.cron_expression.trim()) {
+      newErrors.cron_expression = "Required";
     }
 
-    const parts = form.cronExpression.trim().split(/\s+/);
+    const parts = form.cron_expression.trim().split(/\s+/);
     if (parts.length !== 5) {
-      newErrors.cronExpression =
+      newErrors.cron_expression =
         "Must have exactly 5 fields (min hour dom mon dow)";
     }
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
 
-  const handleSavePlaylist = (): void => {
+  const handleSavePlaylist = async (): Promise<void> => {
     if (!isFormError()) return;
 
-    const { cronMode, ...mappingData } = form;
+    const { cron_mode, ...mappingData } = form;
 
     if (editingId) {
-      setPlaylists((prev) =>
-        prev.map((playlist) =>
-          playlist.id === editingId
-            ? { ...playlist, ...mappingData }
-            : playlist,
-        ),
-      );
-      toast.success("Mapping updated");
+      await updatePlaylist({ id: editingId, ...mappingData });
+      toast.success("Playlist updated");
     } else {
-      setPlaylists((prev) => [
-        ...prev,
-        {
-          ...mappingData,
-          id: Date.now().toString(),
-        },
-      ]);
-      toast.success("Mapping added");
+      await createPlaylist(mappingData);
+      toast.success("Playlist created");
     }
     setDialogOpen(false);
   };
 
-  const handleDeletePlaylist = (id: string): void => {
-    setPlaylists((prev) => prev.filter((playlist) => playlist.id !== id));
-    toast.success("Mapping deleted");
+  const handleDeletePlaylist = async (id: string): Promise<void> => {
+    await deletePlaylist(id);
+    toast.success("Playlist deleted");
   };
 
   const renderErrorMessage = (
@@ -165,7 +164,7 @@ export const Playlists = () => {
   };
 
   const renderPlaylists = (): React.JSX.Element => {
-    if (playlists.length === 0) {
+    if (!playlists || playlists.length === 0) {
       return (
         <p className="py-6 text-center text-sm text-muted-foreground">
           No playlist yet. Add one to get started.
@@ -202,10 +201,10 @@ export const Playlists = () => {
                   </Badge>
                 </TableCell>
                 <TableCell>
-                  <Text value={playlist.playlistName} />
+                  <Text value={playlist.playlist_name} />
                   <Text
-                    value={playlist.playlistId}
-                    className="text-muted-foreground"
+                    value={playlist.playlist_id}
+                    className="text-muted-foreground mt-1"
                     mono
                   />
                 </TableCell>
@@ -221,8 +220,8 @@ export const Playlists = () => {
                     <Text
                       value={
                         CRON_PRESETS.find(
-                          (cron) => cron.value === playlist.cronExpression,
-                        )?.label ?? playlist.cronExpression
+                          (cron) => cron.value === playlist.cron_expression,
+                        )?.label ?? playlist.cron_expression
                       }
                     />
                   </div>
@@ -301,22 +300,22 @@ export const Playlists = () => {
             </div>
             <div className="flex flex-col gap-2">
               <Label
-                htmlFor="playlistId"
+                htmlFor="playlist_id"
                 className="flex justify-between items-center"
               >
                 <Text
                   value={`${capitaliseFirstLetter(form.provider)} Playlist ID`}
                   className="text-xs text-muted-foreground"
                 />
-                {renderErrorMessage(errors.playlistId)}
+                {renderErrorMessage(errors.playlist_id)}
               </Label>
               <Input
-                id="playlistId"
-                value={form.playlistId}
+                id="playlist_id"
+                value={form.playlist_id}
                 onChange={(e) =>
                   setForm((prev) => ({
                     ...prev,
-                    playlistId: e.target.value,
+                    playlist_id: e.target.value,
                   }))
                 }
                 placeholder={
@@ -329,22 +328,22 @@ export const Playlists = () => {
             </div>
             <div className="flex flex-col gap-2">
               <Label
-                htmlFor="playlistName"
+                htmlFor="playlist_name"
                 className="flex justify-between items-center"
               >
                 <Text
                   value="Playlist Name"
                   className="text-xs text-muted-foreground"
                 />
-                {renderErrorMessage(errors.playlistName)}
+                {renderErrorMessage(errors.playlist_name)}
               </Label>
               <Input
-                id="playlistName"
-                value={form.playlistName}
+                id="playlist_name"
+                value={form.playlist_name}
                 onChange={(e) =>
                   setForm((prev) => ({
                     ...prev,
-                    playlistName: e.target.value,
+                    playlist_name: e.target.value,
                   }))
                 }
                 placeholder="e.g. Lo-Fi Beats"
@@ -380,7 +379,7 @@ export const Playlists = () => {
                   value="Sync Schedule"
                   className="text-xs text-muted-foreground"
                 />
-                {renderErrorMessage(errors.cronExpression)}
+                {renderErrorMessage(errors.cron_expression)}
               </Label>
               <div className="flex items-center gap-2">
                 <button
@@ -388,17 +387,17 @@ export const Playlists = () => {
                   onClick={() =>
                     setForm((prev) => ({
                       ...prev,
-                      cronMode: "simple",
-                      cronExpression: CRON_PRESETS[0].value,
+                      cron_mode: "simple",
+                      cron_expression: CRON_PRESETS[0].value,
                     }))
                   }
                   className={cn(
                     "rounded-md px-3 py-1.5 text-xs font-medium transition-colors",
                     {
                       "bg-primary text-primary-foreground":
-                        form.cronMode === "simple",
+                        form.cron_mode === "simple",
                       "bg-secondary text-secondary-foreground hover:bg-secondary/80":
-                        form.cronMode !== "simple",
+                        form.cron_mode !== "simple",
                     },
                   )}
                 >
@@ -416,18 +415,18 @@ export const Playlists = () => {
                     "rounded-md px-3 py-1.5 text-xs font-medium transition-colors",
                     {
                       "bg-primary text-primary-foreground":
-                        form.cronMode === "custom",
+                        form.cron_mode === "custom",
                       "bg-secondary text-secondary-foreground hover:bg-secondary/80":
-                        form.cronMode !== "custom",
+                        form.cron_mode !== "custom",
                     },
                   )}
                 >
                   Custom
                 </button>
               </div>
-              {form.cronMode === "simple" ? (
+              {form.cron_mode === "simple" ? (
                 <Select
-                  value={form.cronExpression}
+                  value={form.cron_expression}
                   onValueChange={(value) =>
                     setForm((prev) => ({ ...prev, cronExpression: value }))
                   }
@@ -449,11 +448,11 @@ export const Playlists = () => {
               ) : (
                 <div>
                   <Input
-                    value={form.cronExpression}
+                    value={form.cron_expression}
                     onChange={(e) =>
                       setForm((prev) => ({
                         ...prev,
-                        cronExpression: e.target.value,
+                        cron_expression: e.target.value,
                       }))
                     }
                     placeholder="*/15 * * * *"
@@ -468,7 +467,7 @@ export const Playlists = () => {
             </div>
             <div className="flex items-center gap-3">
               <Switch
-                id="enableSync"
+                id="enable_sync"
                 checked={form.enabled}
                 onCheckedChange={(checked) =>
                   setForm((prev) => ({ ...prev, enabled: checked }))
