@@ -14,13 +14,13 @@ from db.playlist import (
 router = APIRouter()
 
 
-class CreatePlaylist(BaseModel):
+class CreateOrUpdatePlaylist(BaseModel):
     provider: PlaylistProvider
-    playlistId: str
-    playlistName: str
+    playlist_id: str
+    playlist_name: str
     username: str
     enabled: bool
-    cronExpression: str
+    cron_expression: str
 
 
 @router.get(
@@ -39,14 +39,14 @@ def get_playlists(session: SessionDep):
     summary="Create playlist",
     description="Create a new playlist.",
 )
-def create_playlist(item: CreatePlaylist, session: SessionDep):
+def create_playlist(item: CreateOrUpdatePlaylist, session: SessionDep):
     playlist = Playlist(
         provider=item.provider,
-        playlist_id=item.playlistId,
-        playlist_name=item.playlistName,
+        playlist_id=item.playlist_id,
+        playlist_name=item.playlist_name,
         username=item.username,
         enabled=item.enabled,
-        cron_expression=item.cronExpression,
+        cron_expression=item.cron_expression,
     )
     _create_playlist(session=session, playlist=playlist)
 
@@ -58,7 +58,9 @@ def create_playlist(item: CreatePlaylist, session: SessionDep):
     summary="Update playlist",
     description="Update an existing playlist by its ID.",
 )
-def update_playlist(playlist_id: str, item: CreatePlaylist, session: SessionDep):
+def update_playlist(
+    playlist_id: str, item: CreateOrUpdatePlaylist, session: SessionDep
+):
     playlist = _get_playlist_by_id(session=session, playlist_id=playlist_id)
 
     if not playlist:
@@ -67,11 +69,11 @@ def update_playlist(playlist_id: str, item: CreatePlaylist, session: SessionDep)
         )
 
     playlist.provider = item.provider
-    playlist.playlist_id = item.playlistId
-    playlist.playlist_name = item.playlistName
+    playlist.playlist_id = item.playlist_id
+    playlist.playlist_name = item.playlist_name
     playlist.username = item.username
     playlist.enabled = item.enabled
-    playlist.cron_expression = item.cronExpression
+    playlist.cron_expression = item.cron_expression
 
     _update_playlist(session=session, playlist=playlist)
 

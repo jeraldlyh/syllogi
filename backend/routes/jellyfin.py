@@ -5,7 +5,7 @@ router = APIRouter()
 
 
 @router.get(
-    path="/jellyfin",
+    path="/users",
     summary="Get Jellyfin users",
     description="Retrieve a list of all Jellyfin users.",
 )
