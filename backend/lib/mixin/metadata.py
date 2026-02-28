@@ -6,7 +6,7 @@ from sqlmodel import Field
 from lib.utils import _get_now
 
 
-class TimestampsMixin:
+class TimestampMixin:
     created_at: datetime = Field(
         default=_get_now(),
         sa_type=cast(type[Any], sa.DateTime(timezone=True)),

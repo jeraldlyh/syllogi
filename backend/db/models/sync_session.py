@@ -8,7 +8,7 @@ from sqlmodel import Field, Relationship, SQLModel
 
 from lib.utils import _get_now
 from lib.mixin.serializer import SerializerMixin
-from lib.mixin.metadata import TimestampsMixin
+from lib.mixin.metadata import TimestampMixin
 
 
 class SyncProvider(enum.Enum):
@@ -30,7 +30,7 @@ class SyncStatus(enum.Enum):
     failed = "failed"
 
 
-class SyncSession(TimestampsMixin, SerializerMixin, SQLModel, table=True):
+class SyncSession(TimestampMixin, SerializerMixin, SQLModel, table=True):
     id: uuid.UUID = Field(default_factory=uuid.uuid4, primary_key=True, nullable=False)
 
     provider: SyncProvider = Field(nullable=False, index=True)
@@ -61,7 +61,7 @@ class SyncSession(TimestampsMixin, SerializerMixin, SQLModel, table=True):
     error_message: Optional[str] = Field(default=None, max_length=1024, nullable=True)
 
 
-class SyncSessionTrack(TimestampsMixin, SerializerMixin, SQLModel, table=True):
+class SyncSessionTrack(TimestampMixin, SerializerMixin, SQLModel, table=True):
     id: uuid.UUID = Field(default_factory=uuid.uuid4, primary_key=True, nullable=False)
 
     sync_session_id: uuid.UUID = Field(
