@@ -8,10 +8,16 @@ export interface ApiConfig {
   cache?: RequestCache;
 }
 
+export interface ErrorResponse {
+  code: string;
+  name: string;
+  message: string;
+}
+
 export interface ApiResponse<T> {
   statusCode: number;
-  errorMessage?: string;
   data?: T;
+  error?: ErrorResponse;
 }
 
 export const PROVIDERS = [

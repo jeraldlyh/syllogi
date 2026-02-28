@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
-import { Plus, Pencil, Trash2, Clock } from "lucide-react";
+import { Plus, Pencil, Trash2, Clock, RefreshCw, Play } from "lucide-react";
 import { toast } from "sonner";
 import useSWRMutation from "swr/mutation";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -32,7 +32,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
-import { CRON_PRESETS, PROVIDERS } from "@/lib/types";
+import { CRON_PRESETS, ErrorResponse, PROVIDERS } from "@/lib/types";
 import {
   createPlaylistMutation,
   deletePlaylistMutation,
@@ -43,6 +43,7 @@ import {
 import { capitaliseFirstLetter, cn } from "@/lib/utils";
 import { Text } from "./common/text";
 import { useJellyfinUsers } from "@/hooks/useUsers";
+import { api } from "@/lib/api";
 
 interface FormState {
   provider: (typeof PROVIDERS)[number]["value"];
@@ -159,6 +160,29 @@ export const Playlists = () => {
     setDialogOpen(false);
   };
 
+  const handleSyncPlaylist = async (playlist: Playlist): Promise<void> => {
+    let response;
+
+    if (playlist.provider === "spotify") {
+      response = await api({
+        method: "POST",
+        service: "spotify",
+        body: playlist,
+      });
+    }
+
+    if (response && response.statusCode !== 201) {
+      const errorResponse = response.error as ErrorResponse;
+      toast.error(errorResponse.name, {
+        description: errorResponse.message,
+      });
+      return;
+    }
+    toast.success("Sync started", {
+      description: "Running sync for the playlist...",
+    });
+  };
+
   const handleDeletePlaylist = async (id: string): Promise<void> => {
     await deletePlaylist(id);
     toast.success("Playlist deleted");
@@ -237,6 +261,14 @@ export const Playlists = () => {
                 </TableCell>
                 <TableCell>
                   <div className="flex items-center gap-1">
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="h-7 w-7 text-muted-foreground hover:text-foreground"
+                      onClick={() => handleSyncPlaylist(playlist)}
+                    >
+                      <Play className="h-4 w-4" />
+                    </Button>
                     <Button
                       variant="ghost"
                       size="icon"

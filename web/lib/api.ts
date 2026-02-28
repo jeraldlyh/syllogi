@@ -26,21 +26,16 @@ export const api = async <T>(config: ApiConfig): Promise<ApiResponse<T>> => {
   const response = await fetch(endpoint, {
     method: config.method,
     headers,
-    credentials: "include",
     ...(config.cache ? { cache: config.cache } : { cache: "no-cache" }),
     ...(config.body && { body: JSON.stringify(config.body) }),
   });
 
   const payload = await response.json();
-  if (!response.ok) {
-    throw new Error(
-      `HTTP ${response.status} ${response.statusText}: ${payload.message}`,
-    );
-  }
 
   return {
     statusCode: response.status,
     data: payload.data as T,
+    error: payload.error,
   };
 };
 
