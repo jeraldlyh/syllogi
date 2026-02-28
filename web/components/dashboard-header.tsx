@@ -25,13 +25,12 @@ export function DashboardHeader() {
 
     const rtf = new Intl.RelativeTimeFormat("en-US", { numeric: "auto" });
 
-    console.log(date);
     if (years > 0) return rtf.format(0 - years, "year");
     if (months > 0) return rtf.format(0 - months, "month");
     if (days > 0) return rtf.format(0 - days, "day");
     if (hours > 0) return rtf.format(0 - hours, "hour");
     if (minutes > 0) return rtf.format(0 - minutes, "minute");
-    console.log(years, months, days, hours, minutes);
+
     return "just now";
   };
 
