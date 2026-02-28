@@ -4,7 +4,11 @@ from lib.jellyfin import _get_jellyfin_users
 router = APIRouter()
 
 
-@router.get(path="/jellyfin")
+@router.get(
+    path="/jellyfin",
+    summary="Get Jellyfin users",
+    description="Retrieve a list of all Jellyfin users.",
+)
 async def get_jellyfin_users():
     users = _get_jellyfin_users()
 

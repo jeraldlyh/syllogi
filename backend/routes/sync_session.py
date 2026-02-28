@@ -7,7 +7,11 @@ from lib.utils import _format_time_with_locale
 router = APIRouter()
 
 
-@router.get(path="")
+@router.get(
+    path="",
+    summary="Get sync sessions",
+    description="Retrieve a list of all sync sessions.",
+)
 async def get_sync_sessions(session: SessionDep):
     sync_sessions = _get_sync_sessions(session)
 
