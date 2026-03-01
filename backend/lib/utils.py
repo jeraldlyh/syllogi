@@ -33,3 +33,18 @@ def _get_now() -> datetime:
 
 def _format_time_with_locale(date: datetime) -> datetime:
     return date.astimezone(pytz.timezone(os.getenv("TZ", "Asia/Singapore")))
+
+
+def _parse_cron_expression(cron_expression: str) -> dict:
+    parts = cron_expression.split()
+
+    if len(parts) != 5:
+        raise ValueError("Invalid cron expression. Expected 5 parts.")
+
+    return {
+        "minute": parts[0],
+        "hour": parts[1],
+        "day": parts[2],
+        "month": parts[3],
+        "day_of_week": parts[4],
+    }

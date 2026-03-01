@@ -1,4 +1,3 @@
-from typing import cast
 import uuid
 from sqlmodel import select
 from db.models.playlist import Playlist
@@ -9,8 +8,10 @@ def _get_playlists(session: SessionDep):
     return session.exec(select(Playlist)).all()
 
 
-def _get_playlist_by_id(session: SessionDep, playlist_id: str):
-    return session.get(Playlist, cast(uuid.UUID, playlist_id))
+def _get_playlist_by_id(
+    session: SessionDep, playlist_id: str | uuid.UUID
+) -> Playlist | None:
+    return session.get(Playlist, playlist_id)
 
 
 def _create_playlist(session: SessionDep, playlist: Playlist) -> None:

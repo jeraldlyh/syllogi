@@ -2,14 +2,16 @@ from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel
 
 from db.models.playlist import Playlist, PlaylistProvider
-from db.session import SessionDep
 from db.playlist import (
-    _get_playlists,
-    _get_playlist_by_id,
     _create_playlist,
-    _update_playlist,
     _delete_playlist,
+    _get_playlist_by_id,
+    _get_playlists,
+    _update_playlist,
 )
+from db.session import SessionDep
+from lib.cron import _delete_job, _update_job, _create_job
+from lib.spotify import _sync_spotify_playlist
 
 router = APIRouter()
 
@@ -50,6 +52,18 @@ def create_playlist(item: CreateOrUpdatePlaylist, session: SessionDep):
     )
     _create_playlist(session=session, playlist=playlist)
 
+    cron_func = (
+        _sync_spotify_playlist
+        if playlist.provider == PlaylistProvider.spotify
+        else lambda: None
+    )
+    _create_job(
+        func=cron_func,
+        kwargs={"item": playlist, "session": session},
+        playlist_id=playlist.id,
+        cron_expression=playlist.cron_expression,
+    )
+
     return {"id": str(playlist.id)}
 
 
@@ -77,6 +91,17 @@ def update_playlist(
 
     _update_playlist(session=session, playlist=playlist)
 
+    cron_func = (
+        _sync_spotify_playlist
+        if playlist.provider == PlaylistProvider.spotify
+        else lambda: None
+    )
+    _update_job(
+        func=cron_func,
+        playlist_id=playlist_id,
+        cron_expression=playlist.cron_expression,
+    )
+
     return {"message": "Playlist updated successfully"}
 
 
@@ -94,5 +119,6 @@ def delete_playlist(playlist_id: str, session: SessionDep):
         )
 
     _delete_playlist(session=session, playlist=playlist)
+    _delete_job(playlist_id=playlist_id)
 
     return {"message": "Playlist deleted successfully"}
