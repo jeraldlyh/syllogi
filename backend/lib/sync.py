@@ -1,10 +1,11 @@
-from db.models.playlist import Playlist
+from db.models.playlist import Playlist, PlaylistProvider
+from db.session import SessionDep
 from lib.spotify import _sync_spotify_playlist
 
 
-def sync_playlist(playlist: Playlist):
+def _sync_playlist(playlist: Playlist, session: SessionDep) -> dict[str, str]:
     match playlist.provider:
-        case "spotify":
-            return _sync_spotify_playlist(playlist=playlist)
+        case PlaylistProvider.spotify:
+            return _sync_spotify_playlist(item=playlist, session=session)
         case _:
-            return
+            return {}

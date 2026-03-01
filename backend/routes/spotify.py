@@ -6,7 +6,8 @@ from pydantic import BaseModel
 
 from db.models.playlist import Playlist
 from db.session import SessionDep
-from lib.spotify import _get_playlist, _sync_spotify_playlist
+from lib.spotify import _get_playlist
+from lib.sync import _sync_playlist
 
 router = APIRouter()
 logger = logging.getLogger(__name__)
@@ -34,7 +35,7 @@ def get_playlist(
     description="Sync a Spotify playlist to Jellyfin.",
 )
 def sync_playlist(item: Playlist, session: SessionDep) -> dict[str, str]:
-    return _sync_spotify_playlist(
-        item=item,
+    return _sync_playlist(
+        playlist=item,
         session=session,
     )

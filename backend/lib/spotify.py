@@ -76,7 +76,7 @@ def _get_album_by_id(album_id: str) -> Mapping[str, Any]:
     return album_info
 
 
-def _sync_spotify_playlist(item: Playlist, session: SessionDep):
+def _sync_spotify_playlist(item: Playlist, session: SessionDep) -> dict[str, str]:
     playlist = _get_playlist_by_id(session=session, playlist_id=item.id)
 
     if not playlist:
