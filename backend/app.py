@@ -6,11 +6,15 @@ from typing import Callable
 
 from dotenv import load_dotenv
 from fastapi import FastAPI, HTTPException, Request
-from fastapi.responses import JSONResponse, Response
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import JSONResponse, Response
 from starlette.middleware.base import BaseHTTPMiddleware
 
-from lib.cron import scheduler
+from db.models.playlist import PlaylistProvider
+from db.playlist import _get_playlists
+from db.session import get_session
+from lib.cron import _create_job
+from lib.spotify import _sync_spotify_playlist
 from routes import register_routes
 
 load_dotenv()
@@ -131,6 +135,29 @@ def create_app() -> FastAPI:
             },
         }
         return JSONResponse(status_code=500, content=payload)
+
+    @app.on_event("startup")
+    def startup_event():
+        logger.info("Starting up application and initializing cron jobs")
+        session = get_session()
+        playlists = _get_playlists(session=next(session))
+
+        for playlist in playlists:
+            if playlist.cron_expression:
+                logger.info(
+                    f"Registering cron job for playlist {playlist.id} with cron expression: {playlist.cron_expression}"
+                )
+                cron_func = (
+                    _sync_spotify_playlist
+                    if playlist.provider == PlaylistProvider.spotify
+                    else lambda: None
+                )
+                _create_job(
+                    func=cron_func,
+                    kwargs={"item": playlist, "session": session},
+                    playlist_id=playlist.id,
+                    cron_expression=playlist.cron_expression,
+                )
 
     return app
 
