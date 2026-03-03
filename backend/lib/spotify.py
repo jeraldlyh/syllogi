@@ -272,7 +272,7 @@ def _sync_spotify_playlist(item: Playlist, session: SessionDep) -> dict[str, str
         duration_taken = finished_at.timestamp() - started_at.timestamp()
 
         for notification in notifications:
-            if notification.channel == NotificationChannel.discord:
+            if notification.channel == "discord":
                 _send_discord_notification(
                     DISCORD_WEBHOOK_URL,
                     title="Import Summary",
