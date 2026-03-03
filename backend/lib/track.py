@@ -1,4 +1,4 @@
-import os
+import re
 from difflib import SequenceMatcher
 
 from fastapi import HTTPException
@@ -6,10 +6,66 @@ from fastapi import HTTPException
 from lib.jellyfin import _search_jellyfin_songs
 from lib.utils import _get_clean_name
 
-CONFIDENCE_LEVEL = float(os.getenv("CONFIDENCE_LEVEL", "0.90"))
+
+def _normalize(text: str) -> str:
+    """Normalize a name for comparison."""
+
+    text = re.compile(
+        r"\s*[\(\[](remaster(ed)?|deluxe|bonus|feat\.?[^\)\]]*|live|remix|edition|version|anniversary|explicit)[\)\]]",
+        re.IGNORECASE,
+    ).sub("", text)
+    text = _get_clean_name(name=text)
+    return text.casefold().strip()
 
 
-def _find_track(artist_name: str, track_name: str) -> dict:
+def _similarity_score(a: str, b: str) -> float:
+    """Compare two strings using both raw and normalized forms."""
+
+    norm_a, norm_b = _normalize(a), _normalize(b)
+
+    if norm_a == norm_b:
+        return 1.0
+
+    return max(
+        SequenceMatcher(None, norm_a, norm_b).ratio(),
+        SequenceMatcher(None, a.casefold(), b.casefold()).ratio(),
+    )
+
+
+def _score_track(
+    track: dict,
+    artist_name: str,
+    track_name: str,
+    album_name: str,
+    year: str,
+) -> float:
+    """Score a candidate track on multiple fields."""
+
+    title_score = _similarity_score(track.get("Name", ""), track_name)
+
+    artist_score = 0.0
+    for artist in track.get("Artists", []):
+        artist_score = max(artist_score, _similarity_score(artist, artist_name))
+
+    album_score = 0.0
+    if album_name and track.get("Album"):
+        album_score = _similarity_score(track.get("Album", ""), album_name)
+
+    year_score = 0.0
+    if year and str(track.get("ProductionYear", "")) == str(year):
+        year_score = 1.0
+
+    return (
+        (title_score * 0.4)
+        + (artist_score * 0.3)
+        + (album_score * 0.1)
+        + (year_score * 0.05)
+    )
+
+
+def _find_track(artist_name: str, track_name: str, album_name: str, year: str) -> dict:
+    """Find the best matching track in Jellyfin based on the provided metadata."""
+
     empty_result = {
         "artist_name": artist_name,
         "track": {"name": None, "id": None, "file_id": None},
@@ -20,7 +76,9 @@ def _find_track(artist_name: str, track_name: str) -> dict:
         "quality": None,
     }
 
-    tracks = _search_jellyfin_songs(artist_name=artist_name, title=track_name)
+    tracks = _search_jellyfin_songs(
+        artist=artist_name, title=track_name, album=album_name, year=year
+    )
     best_match, best_score = None, 0.0
 
     for track in tracks:
@@ -29,30 +87,14 @@ def _find_track(artist_name: str, track_name: str) -> dict:
         if not jellyfin_track_name:
             raise HTTPException(status_code=500, detail="Missing Jellyfin track name")
 
-        clean_jellyfin_track_name = _get_clean_name(name=jellyfin_track_name)
-        clean_search_track_name = _get_clean_name(name=track_name)
-
-        if jellyfin_track_name.casefold() == track_name.casefold():
-            return {
-                "artist_name": artist_name,
-                "track": {"id": track.get("Id"), "name": jellyfin_track_name},
-                "album": {
-                    "id": track.get("AlbumId"),
-                    "name": track.get("Album"),
-                },
-                "search_name": track_name,
-                "exists": True,
-            }
-
-        score = max(
-            SequenceMatcher(
-                None, clean_jellyfin_track_name, clean_search_track_name
-            ).ratio(),
-            SequenceMatcher(
-                None, jellyfin_track_name.casefold(), track_name.casefold()
-            ).ratio(),
+        score = _score_track(
+            track=track,
+            artist_name=artist_name,
+            track_name=track_name,
+            album_name=album_name,
+            year=year,
         )
-        if score >= CONFIDENCE_LEVEL and score > best_score:
+        if score > best_score:
             best_score = score
             best_match = track
 

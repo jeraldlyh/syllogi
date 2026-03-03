@@ -7,10 +7,8 @@ from typing import Any
 
 from fastapi import HTTPException
 
-from db.models.notification import NotificationChannel
 from db.models.playlist import Playlist
 from db.models.sync_session import SyncProvider, SyncSession, SyncStatus, TrackListKind
-from db.notification import _get_notifications
 from db.playlist import _get_playlist_by_id
 from db.session import SessionDep
 from db.sync_session import _build_tracks, _create_sync_session, _update_sync_session
@@ -123,16 +121,27 @@ def _sync_spotify_playlist(item: Playlist, session: SessionDep) -> dict[str, str
             artist_name = song["itemV2"]["data"]["albumOfTrack"]["artists"]["items"][0][
                 "profile"
             ]["name"]
-            album_song_name = song["itemV2"]["data"]["albumOfTrack"]["name"]
-            formatted_track_name = f"{artist_name} - {album_song_name}"
+            album_metadata = song["itemV3"]["data"]["identityTrait"][
+                "contentHierarchyParent"
+            ]
+            album_song_year = album_metadata["publishingMetadataTrait"][
+                "firstPublishedAt"
+            ]["isoString"][:4]
+            track_name = song["itemV2"]["data"]["name"]
+            album_name = album_metadata["identityTrait"]["name"]
+
+            formatted_track_name = (
+                f"{artist_name} - {album_name}: {track_name} ({album_song_year})"
+            )
 
             track_names.append(formatted_track_name)
 
-            track = _find_track(artist_name=artist_name, track_name=album_song_name)
-            if not track.get("track", {}).get("id"):
-                logger.info(f"{formatted_track_name} - {album_song_name}: RETRYING")
-                album_song_name = song["itemV2"]["data"]["name"]
-                track = _find_track(artist_name=artist_name, track_name=album_song_name)
+            track = _find_track(
+                artist_name=artist_name,
+                track_name=track_name,
+                album_name=album_name,
+                year=album_song_year,
+            )
 
             if track.get("track", {}).get("id") is not None:
                 logger.info(f"{formatted_track_name}: OK")
@@ -268,46 +277,44 @@ def _sync_spotify_playlist(item: Playlist, session: SessionDep) -> dict[str, str
         )
 
         finished_at = _get_now()
-        notifications = _get_notifications(session=session)
         duration_taken = finished_at.timestamp() - started_at.timestamp()
 
-        for notification in notifications:
-            if notification.channel == "discord":
-                _send_discord_notification(
-                    DISCORD_WEBHOOK_URL,
-                    title="Import Summary",
-                    fields=[
-                        {"name": "Username", "value": username, "inline": True},
-                        {
-                            "name": "Playlist",
-                            "value": spotify_playlist_name,
-                            "inline": True,
-                        },
-                        {
-                            "name": "New/Outdated Tracks(s)",
-                            "value": f"{num_of_new_tracks} 🔺 {num_of_outdated_tracks} 🔻",
-                            "inline": True,
-                        },
-                        {
-                            "name": "Missing Tracks(s)",
-                            "value": num_of_missing_tracks,
-                            "inline": True,
-                        },
-                        {
-                            "name": "Total Tracks(s)",
-                            "value": len(songs),
-                            "inline": True,
-                        },
-                        {
-                            "name": "Time Taken",
-                            "value": _convert_seconds_to_readable_time(
-                                seconds=duration_taken
-                            ),
-                            "inline": True,
-                        },
-                    ],
-                    timestamp=True,
-                )
+        if len(DISCORD_WEBHOOK_URL) > 0:
+            _send_discord_notification(
+                DISCORD_WEBHOOK_URL,
+                title="Import Summary",
+                fields=[
+                    {"name": "Username", "value": username, "inline": True},
+                    {
+                        "name": "Playlist",
+                        "value": spotify_playlist_name,
+                        "inline": True,
+                    },
+                    {
+                        "name": "New/Outdated Tracks(s)",
+                        "value": f"{num_of_new_tracks} 🔺 {num_of_outdated_tracks} 🔻",
+                        "inline": True,
+                    },
+                    {
+                        "name": "Missing Tracks(s)",
+                        "value": num_of_missing_tracks,
+                        "inline": True,
+                    },
+                    {
+                        "name": "Total Tracks(s)",
+                        "value": len(songs),
+                        "inline": True,
+                    },
+                    {
+                        "name": "Time Taken",
+                        "value": _convert_seconds_to_readable_time(
+                            seconds=duration_taken
+                        ),
+                        "inline": True,
+                    },
+                ],
+                timestamp=True,
+            )
 
         new_track_names = [track["track"]["name"] for track in new_tracks]
         outdated_track_names = [track["Name"] for track in outdated_tracks]

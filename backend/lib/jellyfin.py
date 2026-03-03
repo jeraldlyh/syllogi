@@ -64,15 +64,19 @@ def _get_jellyfin_user_by_name(username: str) -> dict[str, Any]:
     return user
 
 
-def _search_jellyfin_songs(artist_name: str, title: str) -> list[dict[str, Any]]:
+def _search_jellyfin_songs(
+    artist: str, title: str, album: str, year: str
+) -> list[dict[str, Any]]:
     response = _jellyfin(
         "/Items",
         params={
             "includeItemTypes": "Audio",
             "recursive": "true",
-            "artists": artist_name,
+            "artists": artist,
             "searchTerm": title,
+            "album": album,
             "Fields": "ProviderIds,Path,Album,Artists",
+            "years": year,
             "limit": 10,
             "enableTotalRecordCount": "false",
             "enableImages": "false",
