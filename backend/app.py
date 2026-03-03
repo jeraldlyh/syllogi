@@ -105,8 +105,6 @@ def create_app() -> FastAPI:
     app.add_middleware(ApiResponseMiddleware)
     register_routes(app)
 
-    # TODO: add on start event to register all cron jobs
-
     @app.exception_handler(HTTPException)
     async def http_exception_handler(request: Request, e: HTTPException):
         try:
@@ -155,7 +153,6 @@ def create_app() -> FastAPI:
                 _create_job(
                     func=cron_func,
                     kwargs={"item": playlist, "session": session},
-                    playlist_id=playlist.id,
                     cron_expression=playlist.cron_expression,
                 )
 

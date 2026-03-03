@@ -1,8 +1,9 @@
 import logging
-from typing import Callable
+from typing import Callable, cast
 import uuid
 
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
+from db.models.playlist import Playlist
 from lib.utils import _parse_cron_expression
 
 scheduler = AsyncIOScheduler()
@@ -16,9 +17,8 @@ def _get_job(playlist_id: str | uuid.UUID):
     return scheduler.get_job(job_id=playlist_id)
 
 
-def _create_job(
-    func: Callable, kwargs: dict, playlist_id: str | uuid.UUID, cron_expression: str
-):
+def _create_job(func: Callable, kwargs: dict, cron_expression: str):
+    playlist_id = str(cast(Playlist, kwargs.get("item")).id)
     job = _get_job(playlist_id=playlist_id)
 
     if job:
@@ -36,7 +36,8 @@ def _create_job(
     )
 
 
-def _update_job(func: Callable, playlist_id: str | uuid.UUID, cron_expression: str):
+def _update_job(func: Callable, kwargs: dict, cron_expression: str):
+    playlist_id = str(cast(Playlist, kwargs.get("item")).id)
     job = _get_job(playlist_id=playlist_id)
 
     logger.info(
@@ -44,6 +45,7 @@ def _update_job(func: Callable, playlist_id: str | uuid.UUID, cron_expression: s
     )
     scheduler.add_job(
         func=func,
+        kwargs=kwargs,
         trigger="cron",
         id=playlist_id,
         replace_existing=True if job else False,

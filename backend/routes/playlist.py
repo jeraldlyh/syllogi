@@ -60,7 +60,6 @@ def create_playlist(item: CreateOrUpdatePlaylist, session: SessionDep):
     _create_job(
         func=cron_func,
         kwargs={"item": playlist, "session": session},
-        playlist_id=playlist.id,
         cron_expression=playlist.cron_expression,
     )
 
@@ -98,7 +97,7 @@ def update_playlist(
     )
     _update_job(
         func=cron_func,
-        playlist_id=playlist_id,
+        kwargs={"item": playlist, "session": session},
         cron_expression=playlist.cron_expression,
     )
 
