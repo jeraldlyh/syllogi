@@ -171,7 +171,7 @@ export const Playlists = () => {
       });
     }
 
-    if (response && response.statusCode !== 201) {
+    if (response && response.statusCode !== 200) {
       const errorResponse = response.error as ErrorResponse;
       toast.error(errorResponse.name, {
         description: errorResponse.message,
