@@ -31,7 +31,7 @@ Provide credentials and connection details via environment variables or a config
 ## How it works
 
 1. Read a Spotify playlist with [SpotAPI](https://github.com/Aran404/SpotAPI/tree/main) and fetch playlist metadata without requiring any credentials.
-2. Match each track against your Jellyfin library by tags (artist name and title).
+2. Match each track against your Jellyfin library by tags (artist, album, year and title).
 3. Syncs Jellyfin playlist that exists in Spotify playlist and containing only the tracks found locally.
 
 ## Credits
