@@ -25,7 +25,7 @@ export interface SyncSession {
 }
 
 export const useSyncSessions = () => {
-  const { data, error, isLoading } = useSWR<ApiResponse<SyncSession[]>>(
+  const { data, error, isLoading, mutate } = useSWR<ApiResponse<SyncSession[]>>(
     "/sync",
     fetcher,
   );
@@ -34,5 +34,6 @@ export const useSyncSessions = () => {
     data: data?.data,
     isLoading,
     isError: error,
+    mutate,
   };
 };

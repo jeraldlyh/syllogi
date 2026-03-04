@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Search } from "lucide-react";
+import { RefreshCw, Search } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import {
@@ -30,6 +30,7 @@ import { SyncSession, useSyncSessions } from "@/hooks/useSyncSessions";
 import { StatusBadge } from "@/components/common/status-badge";
 import { capitaliseFirstLetter, cn, formatDateTime } from "@/lib/utils";
 import { Text } from "@/components/common/text";
+import { Button } from "./ui/button";
 
 export const SyncTable = () => {
   const [search, setSearch] = useState("");
@@ -38,7 +39,12 @@ export const SyncTable = () => {
     null,
   );
 
-  const { data, isError, isLoading } = useSyncSessions();
+  const {
+    data,
+    isError,
+    isLoading,
+    mutate: fetchSyncSessions,
+  } = useSyncSessions();
 
   const getFilteredSessions = (): SyncSession[] => {
     if (isError || isLoading || !data) return [];
@@ -213,7 +219,7 @@ export const SyncTable = () => {
                     value={String(session.total_tracks.length)}
                   />
                 </TableCell>
-                <TableCell className="hidden md:table-cell text-emerald-400">
+                <TableCell className="text-emerald-400">
                   <Text value={`+${session.new_tracks.length}`} />
                 </TableCell>
                 <TableCell className="hidden lg:table-cell">
@@ -242,10 +248,14 @@ export const SyncTable = () => {
   return (
     <>
       <Card>
-        <CardHeader className="pb-3">
+        <CardHeader className="flex flex-row items-center justify-between">
           <CardTitle className="text-base font-medium text-foreground">
             Recent Sync Sessions
           </CardTitle>
+          <Button size="sm" onClick={() => fetchSyncSessions()}>
+            <RefreshCw className="w-4 h-4" />
+            Refresh
+          </Button>
         </CardHeader>
         <CardContent>
           {renderTableHeader()}

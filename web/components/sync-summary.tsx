@@ -86,7 +86,7 @@ const SummaryItem = ({
       {icon}
       <p className="text-xs text-muted-foreground">{label}</p>
       <div />
-      <Text value={String(value)} mono={mono} />
+      <Text className="truncate" value={String(value)} mono={mono} />
     </div>
   );
 };
