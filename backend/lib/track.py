@@ -10,10 +10,10 @@ from lib.utils import _get_clean_name
 def _normalize(text: str) -> str:
     """Normalize a name for comparison."""
 
-    text = re.compile(
-        r"\s*[\(\[](remaster(ed)?|deluxe|bonus|feat\.?[^\)\]]*|live|remix|edition|version|anniversary|explicit)[\)\]]",
-        re.IGNORECASE,
-    ).sub("", text)
+    # text = re.compile(
+    #     r"\s*[\(\[](remaster(ed)?|deluxe|bonus|feat\.?[^\)\]]*|live|remix|edition|version|anniversary|explicit)[\)\]]",
+    #     re.IGNORECASE,
+    # ).sub("", text)
     text = _get_clean_name(name=text)
     return text.casefold().strip()
 
