@@ -137,8 +137,9 @@ def create_app() -> FastAPI:
     @app.on_event("startup")
     def startup_event():
         logger.info("Starting up application and initializing cron jobs")
-        session = get_session()
-        playlists = _get_playlists(session=next(session))
+        session = next(get_session())
+
+        playlists = _get_playlists(session=session)
 
         for playlist in playlists:
             if playlist.cron_expression:
