@@ -16,6 +16,9 @@ export const metadata: Metadata = {
   title: "syllogi - Spotify to Jellyfin Sync",
   description:
     "Dashboard for managing Spotify to Jellyfin playlist synchronization",
+  icons: {
+    icon: "/favicon.ico",
+  },
 };
 
 export const viewport: Viewport = {
