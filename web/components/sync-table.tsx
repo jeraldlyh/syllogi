@@ -175,7 +175,7 @@ export const SyncTable = () => {
     }
 
     return (
-      <div className="overflow-x-auto rounded-md border border-border">
+      <div className="overflow-x-auto rounded-md border border-border max-h-96">
         <Table>
           <TableHeader>
             <TableRow className="hover:bg-transparent text-xs text-muted-foreground">
@@ -191,7 +191,7 @@ export const SyncTable = () => {
               <TableHead>Status</TableHead>
             </TableRow>
           </TableHeader>
-          <TableBody>
+          <TableBody className="overflow-y-auto">
             {getFilteredSessions().map((session) => (
               <TableRow
                 key={session.id}
@@ -259,7 +259,6 @@ export const SyncTable = () => {
         </CardHeader>
         <CardContent>
           {renderTableHeader()}
-
           {renderTable()}
         </CardContent>
       </Card>

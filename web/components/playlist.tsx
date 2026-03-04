@@ -206,7 +206,7 @@ export const Playlists = () => {
     }
 
     return (
-      <div className="overflow-x-auto rounded-md border border-border">
+      <div className="overflow-x-auto rounded-md border border-border max-h-96">
         <Table>
           <TableHeader>
             <TableRow className="hover:bg-transparent text-xs text-muted-foreground">
@@ -217,7 +217,7 @@ export const Playlists = () => {
               <TableHead>Actions</TableHead>
             </TableRow>
           </TableHeader>
-          <TableBody>
+          <TableBody className="overflow-y-auto">
             {playlists.map((playlist) => (
               <TableRow key={playlist.id}>
                 <TableCell>
@@ -237,7 +237,7 @@ export const Playlists = () => {
                   <Text value={playlist.playlist_name} />
                   <Text
                     value={playlist.playlist_id}
-                    className="text-muted-foreground mt-1"
+                    className="text-muted-foreground mt-0.5"
                     mono
                   />
                 </TableCell>
