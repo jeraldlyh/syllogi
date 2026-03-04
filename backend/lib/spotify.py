@@ -109,6 +109,9 @@ def _sync_spotify_playlist_task(
                 "firstPublishedAt"
             ]["isoString"][:4]
             track_name = song["itemV2"]["data"]["name"]
+            track_duration = song["itemV3"]["data"]["consumptionExperienceTrait"][
+                "duration"
+            ]["seconds"]
             album_name = album_metadata["identityTrait"]["name"]
 
             formatted_track_name = (
@@ -122,6 +125,7 @@ def _sync_spotify_playlist_task(
                 track_name=track_name,
                 album_name=album_name,
                 year=album_song_year,
+                duration=track_duration,
             )
 
             if track.get("track", {}).get("id") is not None:

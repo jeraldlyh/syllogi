@@ -1,7 +1,7 @@
 import logging
 from typing import Annotated, Any, Mapping
 
-from fastapi import APIRouter, BackgroundTasks, Path, HTTPException
+from fastapi import APIRouter, BackgroundTasks, HTTPException, Path
 from pydantic import BaseModel
 
 from db.models.playlist import Playlist
@@ -10,7 +10,6 @@ from db.playlist import _get_playlist_by_id
 from db.session import SessionDep
 from db.sync_session import _create_sync_session
 from lib.spotify import _get_playlist, _sync_spotify_playlist_task
-from lib.sync import _sync_playlist
 from lib.utils import _get_now
 
 router = APIRouter()

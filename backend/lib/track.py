@@ -38,6 +38,7 @@ def _score_track(
     track_name: str,
     album_name: str,
     year: str,
+    duration: int,
 ) -> float:
     """Score a candidate track on multiple fields."""
 
@@ -55,15 +56,29 @@ def _score_track(
     if year and str(track.get("ProductionYear", "")) == str(year):
         year_score = 1.0
 
+    duration_score = 0.0
+    if duration and track.get("CumulativeRunTimeTicks"):
+        track_duration = track.get("CumulativeRunTimeTicks", 0) / 10_000_000
+        interim_duration_score = max(
+            0.0, 1.0 - abs(track_duration - duration) / max(duration, track_duration)
+        )
+
+        duration_score = (
+            interim_duration_score if interim_duration_score > 0.85 else 0.0
+        )
+
     return (
         (title_score * 0.4)
         + (artist_score * 0.3)
         + (album_score * 0.1)
         + (year_score * 0.05)
+        + (duration_score * 0.15)
     )
 
 
-def _find_track(artist_name: str, track_name: str, album_name: str, year: str) -> dict:
+def _find_track(
+    artist_name: str, track_name: str, album_name: str, year: str, duration: int
+) -> dict:
     """Find the best matching track in Jellyfin based on the provided metadata."""
 
     empty_result = {
@@ -93,6 +108,7 @@ def _find_track(artist_name: str, track_name: str, album_name: str, year: str) -
             track_name=track_name,
             album_name=album_name,
             year=year,
+            duration=duration,
         )
         if score > best_score:
             best_score = score
