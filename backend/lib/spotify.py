@@ -5,7 +5,7 @@ from collections.abc import Mapping
 from pathlib import Path
 from typing import Any
 
-from fastapi import HTTPException
+from fastapi import HTTPException, BackgroundTasks
 
 from db.models.playlist import Playlist
 from db.models.sync_session import SyncProvider, SyncSession, SyncStatus, TrackListKind
@@ -74,33 +74,14 @@ def _get_album_by_id(album_id: str) -> Mapping[str, Any]:
     return album_info
 
 
-def _sync_spotify_playlist(item: Playlist, session: SessionDep) -> dict[str, str]:
-    playlist = _get_playlist_by_id(session=session, playlist_id=item.id)
-
-    if not playlist:
-        raise HTTPException(
-            status_code=404, detail=f"Unable to find playlist: {item.playlist_id}"
-        )
-
+def _sync_spotify_playlist_task(
+    playlist: Playlist,
+    session: SessionDep,
+    sync_session: SyncSession,
+) -> None:
     playlist_id = playlist.playlist_id
-    username = item.username
-
-    started_at = _get_now()
-
-    sync_session = SyncSession(
-        provider=SyncProvider.spotify,
-        provider_playlist_id=playlist_id,
-        provider_playlist_name="",
-        target_user_id="",
-        target_username=username,
-        target_playlist_id="",
-        target_playlist_name="",
-        started_at=started_at,
-        finished_at=started_at,
-        duration_seconds=0,
-        status=SyncStatus.pending,
-    )
-    _create_sync_session(session=session, sync_session=sync_session)
+    username = playlist.username
+    started_at = sync_session.started_at
 
     try:
         spotify_playlist = _get_playlist(playlist_id=playlist_id)
@@ -207,7 +188,7 @@ def _sync_spotify_playlist(item: Playlist, session: SessionDep) -> dict[str, str
                 kind=TrackListKind.total,
             )
             _create_sync_session(session=session, sync_session=sync_session)
-            return {"id": str(sync_session.id)}
+            return
 
         existing_tracks = _get_jellyfin_playlist_songs(
             playlist_id=existing_playlist_id, user_id=jellyfin_user_id
@@ -346,7 +327,6 @@ def _sync_spotify_playlist(item: Playlist, session: SessionDep) -> dict[str, str
         )
 
         _update_sync_session(session=session, sync_session=sync_session)
-        return {"id": str(sync_session.id)}
     except Exception as e:
         finished_at = _get_now()
         sync_session.status = SyncStatus.failed
@@ -355,5 +335,40 @@ def _sync_spotify_playlist(item: Playlist, session: SessionDep) -> dict[str, str
             finished_at.timestamp() - started_at.timestamp()
         )
         sync_session.error_message = str(e)
+        sync_session.target_playlist_name = playlist.playlist_name
         _update_sync_session(session=session, sync_session=sync_session)
-        return {"id": str(sync_session.id)}
+
+
+def _sync_spotify_playlist(
+    item: Playlist,
+    session: SessionDep,
+) -> dict[str, str]:
+    playlist = _get_playlist_by_id(session=session, playlist_id=item.id)
+
+    if not playlist:
+        raise HTTPException(
+            status_code=404, detail=f"Unable to find playlist: {item.playlist_id}"
+        )
+
+    playlist_id = playlist.playlist_id
+    username = item.username
+    started_at = _get_now()
+
+    sync_session = SyncSession(
+        provider=SyncProvider.spotify,
+        provider_playlist_id=playlist_id,
+        provider_playlist_name="",
+        target_user_id="",
+        target_username=username,
+        target_playlist_id="",
+        target_playlist_name="",
+        started_at=started_at,
+        finished_at=started_at,
+        duration_seconds=0,
+        status=SyncStatus.pending,
+    )
+    _create_sync_session(session=session, sync_session=sync_session)
+    _sync_spotify_playlist_task(
+        playlist=playlist, session=session, sync_session=sync_session
+    )
+    return {"id": str(sync_session.id)}

@@ -1,13 +1,17 @@
 import logging
 from typing import Annotated, Any, Mapping
 
-from fastapi import APIRouter, Path
+from fastapi import APIRouter, BackgroundTasks, Path, HTTPException
 from pydantic import BaseModel
 
 from db.models.playlist import Playlist
+from db.models.sync_session import SyncProvider, SyncSession, SyncStatus
+from db.playlist import _get_playlist_by_id
 from db.session import SessionDep
-from lib.spotify import _get_playlist
+from db.sync_session import _create_sync_session
+from lib.spotify import _get_playlist, _sync_spotify_playlist_task
 from lib.sync import _sync_playlist
+from lib.utils import _get_now
 
 router = APIRouter()
 logger = logging.getLogger(__name__)
@@ -34,8 +38,39 @@ def get_playlist(
     summary="Sync playlist",
     description="Sync a Spotify playlist to Jellyfin.",
 )
-def sync_playlist(item: Playlist, session: SessionDep) -> dict[str, str]:
-    return _sync_playlist(
-        playlist=item,
-        session=session,
+def sync_playlist(
+    item: Playlist, session: SessionDep, background_tasks: BackgroundTasks
+) -> dict[str, str]:
+    playlist = _get_playlist_by_id(session=session, playlist_id=item.id)
+
+    if not playlist:
+        raise HTTPException(
+            status_code=404, detail=f"Unable to find playlist: {item.playlist_id}"
+        )
+
+    playlist_id = playlist.playlist_id
+    username = item.username
+    started_at = _get_now()
+
+    sync_session = SyncSession(
+        provider=SyncProvider.spotify,
+        provider_playlist_id=playlist_id,
+        provider_playlist_name="",
+        target_user_id="",
+        target_username=username,
+        target_playlist_id="",
+        target_playlist_name="",
+        started_at=started_at,
+        finished_at=started_at,
+        duration_seconds=0,
+        status=SyncStatus.pending,
     )
+    _create_sync_session(session=session, sync_session=sync_session)
+    background_tasks.add_task(
+        _sync_spotify_playlist_task,
+        playlist=playlist,
+        session=session,
+        sync_session=sync_session,
+    )
+
+    return {"id": str(sync_session.id)}
