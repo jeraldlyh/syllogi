@@ -9,7 +9,11 @@ from db.models.sync_session import SyncProvider, SyncSession, SyncStatus
 from db.playlist import _get_playlist_by_id
 from db.session import SessionDep, get_isolated_session
 from db.sync_session import _create_sync_session
-from lib.spotify import _get_playlist, _sync_spotify_playlist_task
+from lib.spotify import (
+    _get_spotify_playlist,
+    _sync_spotify_playlist_task,
+    _get_spotify_playlist_songs,
+)
 from lib.utils import _get_now
 
 router = APIRouter()
@@ -26,18 +30,35 @@ class ImportPlaylist(BaseModel):
     summary="Get playlist",
     description="Retrieve a Spotify playlist by its ID.",
 )
-def get_playlist(
+def get_spotify_playlist(
     id: Annotated[str, Path(min_length=1, description="Spotify Playlist ID")],
 ) -> Mapping[str, Any]:
-    return _get_playlist(id)
+    playlist = _get_spotify_playlist(id)
+
+    return playlist.to_dict()
+
+
+@router.get(
+    path="/{id}/songs",
+    summary="Get Spotify playlist songs",
+    description="Retrieve a Spotify playlist songs by its ID.",
+)
+def get_spotify_playlist_songs(
+    id: Annotated[str, Path(min_length=1, description="Spotify Playlist ID")],
+) -> list[dict[str, Any]]:
+    songs = _get_spotify_playlist_songs(playlist_id=id)
+
+    return [song.to_dict() for song in songs]
 
 
 @router.post(
-    path="",
+    path="/sync",
     summary="Sync playlist",
     description="Sync a Spotify playlist to Jellyfin.",
 )
-def sync_playlist(item: Playlist, background_tasks: BackgroundTasks) -> dict[str, str]:
+def sync_spotify_playlist(
+    item: Playlist, background_tasks: BackgroundTasks
+) -> dict[str, str]:
     session = get_isolated_session()
     playlist = _get_playlist_by_id(session=session, playlist_id=item.id)
 

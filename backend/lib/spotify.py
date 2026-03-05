@@ -12,6 +12,7 @@ from db.models.sync_session import SyncProvider, SyncSession, SyncStatus, TrackL
 from db.playlist import _get_playlist_by_id
 from db.session import SessionDep, get_isolated_session
 from db.sync_session import _build_tracks, _create_sync_session, _update_sync_session
+from lib.common import ExternalPlaylist, Song
 from lib.jellyfin import (
     _add_songs_to_jellyfin_playlist,
     _create_jellyfin_playlist,
@@ -43,50 +44,74 @@ logger = logging.getLogger(__name__)
 DISCORD_WEBHOOK_URL = os.getenv("DISCORD_WEBHOOK_URL", "")
 
 
-def _get_playlist(playlist_id: str) -> Mapping[str, Any]:
+def _get_spotify_playlist(playlist_id: str) -> ExternalPlaylist:
     playlist = PublicPlaylist(playlist_id)
+    playlist_info = playlist.get_playlist_info()
 
-    return playlist.get_playlist_info()
+    thumbnail_metadata = max(
+        playlist_info["data"]["playlistV2"]["ownerV2"]["data"]["avatar"]["sources"],
+        key=lambda x: x.get("height"),
+    )
+
+    return ExternalPlaylist(
+        id=playlist_id,
+        name=playlist.get_playlist_info()["data"]["playlistV2"]["name"],
+        total=playlist.get_playlist_info()["data"]["playlistV2"]["content"][
+            "totalCount"
+        ],
+        thumbnail_url=thumbnail_metadata.get("url"),
+    )
 
 
-def _get_songs_by_playlist(playlist_id: str) -> list[dict[str, Any]]:
+def _get_spotify_playlist_songs(playlist_id: str) -> list[Song]:
     offset = 0
     limit = 50
-    songs: list[dict[str, Any]] = []
+    songs: list[Song] = []
 
     playlist = PublicPlaylist(playlist_id)
     playlist_info = playlist.get_playlist_info(limit=limit)
 
     while offset < playlist_info["data"]["playlistV2"]["content"]["totalCount"]:
-        songs.extend(playlist_info["data"]["playlistV2"]["content"]["items"])
+        for item in playlist_info["data"]["playlistV2"]["content"]["items"]:
+            album_metadata = item["itemV3"]["data"]["identityTrait"][
+                "contentHierarchyParent"
+            ]
+            song = Song(
+                artist_name=item["itemV2"]["data"]["albumOfTrack"]["artists"]["items"][
+                    0
+                ]["profile"]["name"],
+                year=album_metadata["publishingMetadataTrait"]["firstPublishedAt"][
+                    "isoString"
+                ][:4],
+                track_name=item["itemV2"]["data"]["name"],
+                duration=item["itemV3"]["data"]["consumptionExperienceTrait"][
+                    "duration"
+                ]["seconds"],
+                album_name=album_metadata["identityTrait"]["name"],
+            )
+            songs.append(song)
         offset += limit
         playlist_info = playlist.get_playlist_info(offset=offset, limit=limit)
         logger.info(f"Fetched {len(songs)} songs...")
-    logger.info(f"Total songs fetched: {len(songs)}")
+    logger.info(f"Total songs fetched from Spotify playlist: {len(songs)}")
 
     return songs
-
-
-def _get_album_by_id(album_id: str) -> Mapping[str, Any]:
-    album = PublicAlbum(album_id)
-    album_info = album.get_album_info()
-
-    return album_info
 
 
 def _sync_spotify_playlist_task(
     playlist: Playlist,
     sync_session: SyncSession,
 ) -> None:
+    """Sync a Spotify playlist to Jellyfin."""
     with get_isolated_session() as session:
         playlist_id = playlist.playlist_id
         username = playlist.username
         started_at = sync_session.started_at
 
         try:
-            spotify_playlist = _get_playlist(playlist_id=playlist_id)
-            spotify_playlist_name = spotify_playlist["data"]["playlistV2"]["name"]
-            songs = _get_songs_by_playlist(playlist_id=playlist_id)
+            spotify_playlist = _get_spotify_playlist(playlist_id=playlist_id)
+            spotify_playlist_name = spotify_playlist.name
+            songs = _get_spotify_playlist_songs(playlist_id=playlist_id)
             user = _get_jellyfin_user_by_name(username=username)
 
             jellyfin_user_id = user.get("Id")
@@ -99,33 +124,16 @@ def _sync_spotify_playlist_task(
             missing_track_names: list[str] = []
             track_names: list[str] = []
             for song in songs:
-                artist_name = song["itemV2"]["data"]["albumOfTrack"]["artists"][
-                    "items"
-                ][0]["profile"]["name"]
-                album_metadata = song["itemV3"]["data"]["identityTrait"][
-                    "contentHierarchyParent"
-                ]
-                album_song_year = album_metadata["publishingMetadataTrait"][
-                    "firstPublishedAt"
-                ]["isoString"][:4]
-                track_name = song["itemV2"]["data"]["name"]
-                track_duration = song["itemV3"]["data"]["consumptionExperienceTrait"][
-                    "duration"
-                ]["seconds"]
-                album_name = album_metadata["identityTrait"]["name"]
-
-                formatted_track_name = (
-                    f"{artist_name} - {album_name}: {track_name} ({album_song_year})"
-                )
+                formatted_track_name = f"{song.artist_name} - {song.album_name}: {song.track_name} ({song.year})"
 
                 track_names.append(formatted_track_name)
 
                 track = _find_track(
-                    artist_name=artist_name,
-                    track_name=track_name,
-                    album_name=album_name,
-                    year=album_song_year,
-                    duration=track_duration,
+                    artist_name=song.artist_name,
+                    track_name=song.track_name,
+                    album_name=song.album_name,
+                    year=song.year,
+                    duration=song.duration,
                 )
 
                 if track.get("track", {}).get("id") is not None:
@@ -250,15 +258,7 @@ def _sync_spotify_playlist_task(
                     playlist_id=existing_playlist_id, track_ids=outdated_track_ids
                 )
 
-            spotify_playlist_thumbnail_metadata = max(
-                spotify_playlist["data"]["playlistV2"]["ownerV2"]["data"]["avatar"][
-                    "sources"
-                ],
-                key=lambda x: x.get("height"),
-            )
-            spotify_playlist_thumbnail_url = spotify_playlist_thumbnail_metadata.get(
-                "url"
-            )
+            spotify_playlist_thumbnail_url = spotify_playlist.thumbnail_url
             _update_jellyfin_playlist_image(
                 playlist_id=playlist_id,
                 image_url=spotify_playlist_thumbnail_url
@@ -352,6 +352,7 @@ def _sync_spotify_playlist(
     item: Playlist,
     session: SessionDep,
 ) -> dict[str, str]:
+    """Sync a Spotify playlist to Jellyfin."""
     playlist = _get_playlist_by_id(session=session, playlist_id=item.id)
 
     if not playlist:
