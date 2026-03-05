@@ -21,6 +21,10 @@ def get_session():
         yield session
 
 
+def get_isolated_session():
+    return Session(engine)
+
+
 SessionDep = Annotated[Session, Depends(get_session)]
 
 engine = create_engine(get_connection_string())

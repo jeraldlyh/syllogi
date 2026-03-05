@@ -7,7 +7,7 @@ from pydantic import BaseModel
 from db.models.playlist import Playlist
 from db.models.sync_session import SyncProvider, SyncSession, SyncStatus
 from db.playlist import _get_playlist_by_id
-from db.session import SessionDep
+from db.session import SessionDep, get_isolated_session
 from db.sync_session import _create_sync_session
 from lib.spotify import _get_playlist, _sync_spotify_playlist_task
 from lib.utils import _get_now
@@ -37,9 +37,8 @@ def get_playlist(
     summary="Sync playlist",
     description="Sync a Spotify playlist to Jellyfin.",
 )
-def sync_playlist(
-    item: Playlist, session: SessionDep, background_tasks: BackgroundTasks
-) -> dict[str, str]:
+def sync_playlist(item: Playlist, background_tasks: BackgroundTasks) -> dict[str, str]:
+    session = get_isolated_session()
     playlist = _get_playlist_by_id(session=session, playlist_id=item.id)
 
     if not playlist:
@@ -68,7 +67,6 @@ def sync_playlist(
     background_tasks.add_task(
         _sync_spotify_playlist_task,
         playlist=playlist,
-        session=session,
         sync_session=sync_session,
     )
 

@@ -12,7 +12,7 @@ from starlette.middleware.base import BaseHTTPMiddleware
 
 from db.models.playlist import PlaylistProvider
 from db.playlist import _get_playlists
-from db.session import get_session
+from db.session import get_isolated_session, get_isolated_session
 from lib.cron import _create_job
 from lib.spotify import _sync_spotify_playlist
 from routes import register_routes
@@ -137,7 +137,7 @@ def create_app() -> FastAPI:
     @app.on_event("startup")
     def startup_event():
         logger.info("Starting up application and initializing cron jobs")
-        session = next(get_session())
+        session = get_isolated_session()
 
         playlists = _get_playlists(session=session)
 
