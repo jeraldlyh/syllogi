@@ -161,15 +161,12 @@ export const Playlists = () => {
   };
 
   const handleSyncPlaylist = async (playlist: Playlist): Promise<void> => {
-    let response;
-
-    if (playlist.provider === "spotify") {
-      response = await api({
-        method: "POST",
-        service: "spotify",
-        body: playlist,
-      });
-    }
+    const response = await api({
+      method: "POST",
+      service: "sync",
+      path: "/",
+      body: playlist,
+    });
 
     if (response && response.statusCode !== 200) {
       const errorResponse = response.error as ErrorResponse;

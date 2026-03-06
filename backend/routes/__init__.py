@@ -7,6 +7,8 @@ from routes.notification import router as notification_router
 from routes.sync_session import router as sync_session_router
 from routes.playlist import router as playlist_router
 from routes.cron import router as cron_router
+from routes.youtube import router as youtube_router
+from routes.sync import router as sync_router
 
 
 def register_routes(app: FastAPI) -> None:
@@ -14,7 +16,9 @@ def register_routes(app: FastAPI) -> None:
     app.include_router(router=track_router, prefix="/track")
     app.include_router(router=jellyfin_router, prefix="/jellyfin")
     app.include_router(router=notification_router, prefix="/notification")
-    app.include_router(router=sync_session_router, prefix="/sync")
+    app.include_router(router=sync_session_router, prefix="/sync_session")
     app.include_router(router=spotify_router, prefix="/spotify")
     app.include_router(router=playlist_router, prefix="/playlist")
     app.include_router(router=cron_router, prefix="/cron")
+    app.include_router(router=youtube_router, prefix="/youtube")
+    app.include_router(router=sync_router, prefix="/sync")

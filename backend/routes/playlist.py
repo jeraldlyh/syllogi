@@ -10,8 +10,8 @@ from db.playlist import (
     _update_playlist,
 )
 from db.session import SessionDep
+from lib.sync import _sync_playlist
 from lib.cron import _delete_job, _update_job, _create_job
-from lib.spotify import _sync_spotify_playlist
 
 router = APIRouter()
 
@@ -51,15 +51,9 @@ def create_playlist(item: CreateOrUpdatePlaylist, session: SessionDep):
         cron_expression=item.cron_expression,
     )
     _create_playlist(session=session, playlist=playlist)
-
-    cron_func = (
-        _sync_spotify_playlist
-        if playlist.provider == PlaylistProvider.spotify
-        else lambda: None
-    )
     _create_job(
-        func=cron_func,
-        kwargs={"item": playlist, "session": session},
+        func=_sync_playlist,
+        kwargs={"playlist": playlist, "session": session},
         cron_expression=playlist.cron_expression,
     )
 
@@ -89,15 +83,9 @@ def update_playlist(
     playlist.cron_expression = item.cron_expression
 
     _update_playlist(session=session, playlist=playlist)
-
-    cron_func = (
-        _sync_spotify_playlist
-        if playlist.provider == PlaylistProvider.spotify
-        else lambda: None
-    )
     _update_job(
-        func=cron_func,
-        kwargs={"item": playlist, "session": session},
+        func=_sync_playlist,
+        kwargs={"playlist": playlist, "session": session},
         cron_expression=playlist.cron_expression,
     )
 

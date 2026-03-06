@@ -18,7 +18,7 @@ def _get_job(playlist_id: str | uuid.UUID):
 
 
 def _create_job(func: Callable, kwargs: dict, cron_expression: str):
-    playlist_id = str(cast(Playlist, kwargs.get("item")).id)
+    playlist_id = str(cast(Playlist, kwargs.get("playlist")).id)
     job = _get_job(playlist_id=playlist_id)
 
     if job:
@@ -37,7 +37,7 @@ def _create_job(func: Callable, kwargs: dict, cron_expression: str):
 
 
 def _update_job(func: Callable, kwargs: dict, cron_expression: str):
-    playlist_id = str(cast(Playlist, kwargs.get("item")).id)
+    playlist_id = str(cast(Playlist, kwargs.get("playlist")).id)
     job = _get_job(playlist_id=playlist_id)
 
     logger.info(

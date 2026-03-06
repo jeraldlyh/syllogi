@@ -12,9 +12,9 @@ from starlette.middleware.base import BaseHTTPMiddleware
 
 from db.models.playlist import PlaylistProvider
 from db.playlist import _get_playlists
-from db.session import get_isolated_session, get_isolated_session
+from db.session import get_isolated_session
 from lib.cron import _create_job
-from lib.spotify import _sync_spotify_playlist
+from lib.sync import _sync_playlist
 from routes import register_routes
 
 load_dotenv()
@@ -146,14 +146,9 @@ def create_app() -> FastAPI:
                 logger.info(
                     f"Registering cron job for playlist {playlist.id} with cron expression: {playlist.cron_expression}"
                 )
-                cron_func = (
-                    _sync_spotify_playlist
-                    if playlist.provider == PlaylistProvider.spotify
-                    else lambda: None
-                )
                 _create_job(
-                    func=cron_func,
-                    kwargs={"item": playlist, "session": session},
+                    func=_sync_playlist,
+                    kwargs={"playlist": playlist, "session": session},
                     cron_expression=playlist.cron_expression,
                 )
 

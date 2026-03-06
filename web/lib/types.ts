@@ -2,7 +2,7 @@ export interface ApiConfig {
   method: "GET" | "POST" | "PUT" | "DELETE";
   body?: any;
   headers?: Record<string, string>;
-  service: "" | "spotify" | "log" | "playlist";
+  service: "" | "spotify" | "youtube" | "log" | "playlist" | "sync";
   path?: string;
   query?: Record<string, any>;
   cache?: RequestCache;
