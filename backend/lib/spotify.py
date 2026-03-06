@@ -150,7 +150,9 @@ def _sync_spotify_playlist_task(
 
             sync_session.provider_playlist_name = spotify_playlist_name
             sync_session.target_user_id = jellyfin_user_id
-            _update_sync_session(session=session, sync_session=sync_session)
+            sync_session = _update_sync_session(
+                session=session, sync_session=sync_session
+            )
 
             jellyfin_playlists = _get_jellyfin_playlists(user_id=jellyfin_user_id)
             existing_playlist = next(
@@ -178,7 +180,9 @@ def _sync_spotify_playlist_task(
 
             sync_session.target_playlist_id = existing_playlist_id
             sync_session.target_playlist_name = spotify_playlist_name
-            _update_sync_session(session=session, sync_session=sync_session)
+            sync_session = _update_sync_session(
+                session=session, sync_session=sync_session
+            )
 
             if len(jellyfin_tracks) == 0:
                 finished_at = _get_now()
@@ -335,7 +339,9 @@ def _sync_spotify_playlist_task(
                 )
             )
 
-            _update_sync_session(session=session, sync_session=sync_session)
+            sync_session = _update_sync_session(
+                session=session, sync_session=sync_session
+            )
         except Exception as e:
             finished_at = _get_now()
             sync_session.status = SyncStatus.failed
@@ -345,7 +351,9 @@ def _sync_spotify_playlist_task(
             )
             sync_session.error_message = str(e)
             sync_session.target_playlist_name = playlist.playlist_name
-            _update_sync_session(session=session, sync_session=sync_session)
+            sync_session = _update_sync_session(
+                session=session, sync_session=sync_session
+            )
 
 
 def _sync_spotify_playlist(
@@ -378,5 +386,6 @@ def _sync_spotify_playlist(
         status=SyncStatus.pending,
     )
     _create_sync_session(session=session, sync_session=sync_session)
+    session.expunge(sync_session)
     _sync_spotify_playlist_task(playlist=playlist, sync_session=sync_session)
     return {"id": str(sync_session.id)}
