@@ -21,6 +21,7 @@ class TrackListKind(enum.Enum):
     new = "new"
     outdated = "outdated"
     missing = "missing"
+    downloaded = "downloaded"
 
 
 class SyncStatus(enum.Enum):

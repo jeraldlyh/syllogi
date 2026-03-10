@@ -166,3 +166,16 @@ def _update_jellyfin_playlist_image(
         headers={"Content-Type": mime},
         data=thumbnail_response.content,
     )
+
+
+def _rescan_jellyfin_library() -> None:
+    _jellyfin("/Library/Refresh", method="POST")
+
+
+def _is_jellyfin_scanning_library() -> bool:
+    response = _jellyfin("/ScheduledTasks")
+
+    for task in response:
+        if task.get("Name") == "Scan Media Library" and task.get("State") != "Idle":
+            return True
+    return False

@@ -18,6 +18,7 @@ services:
       - 8000:8000
     volumes:
       - ./backend:/app
+      - ./downloads:/downloads
     healthcheck:
       <<: *default-healthcheck
       test: curl --fail http://localhost:8000/api/health || exit 1

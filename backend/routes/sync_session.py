@@ -15,7 +15,7 @@ def get_sync_sessions(session: SessionDep):
     sync_sessions = _get_sync_sessions(session)
 
     tracks_by_session: dict[str, dict[str, list[str]]] = {
-        str(sync_session.id): {"total": [], "new": [], "outdated": [], "missing": []}
+        str(sync_session.id): {"total": [], "new": [], "outdated": [], "missing": [], "downloaded": []}
         for sync_session in sync_sessions
     }
 
@@ -36,6 +36,7 @@ def get_sync_sessions(session: SessionDep):
         sync_session_dict["new_tracks"] = sync_session_tracks["new"]
         sync_session_dict["outdated_tracks"] = sync_session_tracks["outdated"]
         sync_session_dict["missing_tracks"] = sync_session_tracks["missing"]
+        sync_session_dict["downloaded_tracks"] = sync_session_tracks["downloaded"]
 
         response.append(sync_session_dict)
     return response

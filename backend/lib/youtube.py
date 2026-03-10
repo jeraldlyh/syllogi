@@ -18,7 +18,7 @@ logger = logging.getLogger(__name__)
 DISCORD_WEBHOOK_URL = os.getenv("DISCORD_WEBHOOK_URL", "")
 
 
-def _run_ytdlp(url: str, opts: _Params | None = None) -> Any:
+def _run_ytdlp(url: str, opts: _Params | None = None, *, download: bool = False) -> Any:
     """Run yt-dlp with the given URL and options."""
 
     default_opts: _Params = {
@@ -29,7 +29,7 @@ def _run_ytdlp(url: str, opts: _Params | None = None) -> Any:
         default_opts.update(opts)
 
     with yt_dlp.YoutubeDL(params=default_opts) as ydl:
-        return ydl.extract_info(url, download=default_opts.get("download", False))
+        return ydl.extract_info(url, download=download)
 
 
 def _get_youtube_playlist(playlist_id: str) -> ExternalPlaylist:
