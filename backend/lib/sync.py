@@ -277,12 +277,12 @@ def _sync_playlist_task(
                             "inline": True,
                         },
                         {
-                            "name": "Missing Tracks(s)",
+                            "name": "Missing",
                             "value": num_of_missing_tracks,
                             "inline": True,
                         },
                         {
-                            "name": "Total Tracks(s)",
+                            "name": "Total",
                             "value": len(songs),
                             "inline": True,
                         },
