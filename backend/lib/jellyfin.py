@@ -1,11 +1,14 @@
-import os
 import logging
+import os
 from typing import Any
-import requests
 
+import requests
+from fastapi import HTTPException
 
 JELLYFIN_API_KEY = os.getenv("JELLYFIN_API_KEY")
 JELLYFIN_BASE_URL = os.getenv("JELLYFIN_BASE_URL")
+YOUTUBE_LIBRARY_NAME = os.getenv("YOUTUBE_LIBRARY_NAME", "Youtube")
+
 logger = logging.getLogger(__name__)
 
 
@@ -169,7 +172,35 @@ def _update_jellyfin_playlist_image(
 
 
 def _rescan_jellyfin_library() -> None:
-    _jellyfin("/Library/Refresh", method="POST")
+    media_folders_response = _jellyfin("/Library/MediaFolders")
+
+    download_folder = next(
+        (
+            folder
+            for folder in media_folders_response.get("Items", [])
+            if folder.get("Name") == YOUTUBE_LIBRARY_NAME
+        ),
+        None,
+    )
+
+    if download_folder is None:
+        logger.warning(
+            f"Could not find media folder with name '{YOUTUBE_LIBRARY_NAME}' to rescan"
+        )
+        raise HTTPException(status_code=500, detail="Media folder not found")
+
+    _jellyfin(
+        f"/Items/{download_folder.get('Id')}/Refresh",
+        method="POST",
+        params={
+            "Recursive": "true",
+            "ImageRefreshMode": "Default",
+            "MetadataRefreshMode": "Default",
+            "ReplaceAllImages": "false",
+            "RegenerateTrickplay": "false",
+            "ReplaceAllMetadata": "false",
+        },
+    )
 
 
 def _is_jellyfin_scanning_library() -> bool:

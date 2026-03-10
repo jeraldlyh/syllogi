@@ -187,11 +187,14 @@ def _sync_playlist_task(
                     )
 
                     _rescan_jellyfin_library()
-                    while _is_jellyfin_scanning_library():
-                        logger.info(
-                            "Waiting for Jellyfin to finish scanning library..."
-                        )
-                        time.sleep(15)
+
+                    # NOTE: This requires a full library scan which takes a long time depending on the size of library.
+                    # while _is_jellyfin_scanning_library():
+                    #     logger.info(
+                    #         "Waiting for Jellyfin to finish scanning library..."
+                    #     )
+                    #     time.sleep(15)
+                    time.sleep(15)
 
                     newly_found_tracks, still_missing_tracks_after_download = (
                         _resolve_songs(downloaded_tracks)
