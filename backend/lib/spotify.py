@@ -4,7 +4,7 @@ import sys
 from pathlib import Path
 
 
-from lib.common import ExternalPlaylist, Song
+from lib.common import ExternalPlaylist, Track
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 SPOTAPI_DIR = BASE_DIR / "SpotAPI"
@@ -42,10 +42,10 @@ def _get_spotify_playlist(playlist_id: str) -> ExternalPlaylist:
     )
 
 
-def _get_spotify_playlist_songs(playlist_id: str) -> list[Song]:
+def _get_spotify_playlist_songs(playlist_id: str) -> list[Track]:
     offset = 0
     limit = 50
-    songs: list[Song] = []
+    songs: list[Track] = []
 
     playlist = PublicPlaylist(playlist_id)
     playlist_info = playlist.get_playlist_info(limit=limit)
@@ -55,7 +55,7 @@ def _get_spotify_playlist_songs(playlist_id: str) -> list[Song]:
             album_metadata = item["itemV3"]["data"]["identityTrait"][
                 "contentHierarchyParent"
             ]
-            song = Song(
+            song = Track(
                 artist_name=item["itemV2"]["data"]["albumOfTrack"]["artists"]["items"][
                     0
                 ]["profile"]["name"],

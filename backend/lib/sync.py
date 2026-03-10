@@ -9,7 +9,8 @@ from db.models.sync_session import SyncProvider, SyncSession, SyncStatus, TrackL
 from db.playlist import _get_playlist_by_id
 from db.session import SessionDep, get_isolated_session
 from db.sync_session import _build_tracks, _create_sync_session, _update_sync_session
-from lib.common import ExternalPlaylist, Song
+from lib.common import ExternalPlaylist, PlaylistDiff, ResolvedTrack, Track
+from lib.downloader import _download_missing_tracks
 from lib.jellyfin import (
     _add_songs_to_jellyfin_playlist,
     _create_jellyfin_playlist,
@@ -17,11 +18,10 @@ from lib.jellyfin import (
     _get_jellyfin_playlist_songs,
     _get_jellyfin_playlists,
     _get_jellyfin_user_by_name,
-    _update_jellyfin_playlist_image,
-    _rescan_jellyfin_library,
     _is_jellyfin_scanning_library,
+    _rescan_jellyfin_library,
+    _update_jellyfin_playlist_image,
 )
-from lib.downloader import _download_missing_tracks
 from lib.notification import _send_discord_notification
 from lib.spotify import _get_spotify_playlist, _get_spotify_playlist_songs
 from lib.track import _find_track
@@ -33,10 +33,81 @@ logger = logging.getLogger(__name__)
 DISCORD_WEBHOOK_URL = os.getenv("DISCORD_WEBHOOK_URL", "")
 
 
+def _resolve_songs(
+    songs: list[Track],
+) -> tuple[list[ResolvedTrack], list[ResolvedTrack]]:
+    """Verifies which tracks from the source playlist can be found in the Jellyfin library.
+
+    Returns (found_tracks, missing_tracks).
+    """
+    found: list[ResolvedTrack] = []
+    missing: list[ResolvedTrack] = []
+
+    for song in songs:
+        display_name = f"{song.artist_name} - {song.album_name}: {song.track_name}"
+        track = _find_track(
+            artist_name=song.artist_name,
+            track_name=song.track_name,
+            album_name=song.album_name,
+            year=song.year,
+            duration=song.duration,
+        )
+
+        jellyfin_id = track.get("track", {}).get("id")
+
+        resolved = ResolvedTrack(
+            track=song,
+            jellyfin_id=jellyfin_id,
+            display_name=display_name,
+        )
+
+        if resolved.jellyfin_id is not None:
+            logger.info(f"{display_name}: OK")
+            found.append(resolved)
+        else:
+            logger.warning(f"{display_name}: MISSING")
+            missing.append(resolved)
+
+    return found, missing
+
+
+def _diff_tracks(
+    resolved_tracks: list[ResolvedTrack],
+    existing_tracks: list[dict],
+) -> PlaylistDiff:
+    """Compute the difference between the source playlist (resolved_tracks) and the existing Jellyfin playlist (existing_tracks).
+
+    - added:     tracks in source that are NOT in the existing playlist
+    - removed:   tracks in the existing playlist that are NOT in the source
+    - unchanged: tracks present in both
+    """
+    existing_ids: set[str] = {track["Id"] for track in existing_tracks}
+    source_ids: set[str] = {
+        track.jellyfin_id for track in resolved_tracks if track.jellyfin_id is not None
+    }
+
+    diff = PlaylistDiff()
+
+    for track in resolved_tracks:
+        if track.jellyfin_id is None:
+            continue
+
+        if track.jellyfin_id in existing_ids:
+            diff.unchanged.append(track)
+        else:
+            diff.added.append(track)
+
+    for track in existing_tracks:
+        if track["Id"] not in source_ids:
+            diff.removed.append(track)
+
+    return diff
+
+
 def _sync_playlist_task(
     internal_playlist: Playlist,
     external_playlist: ExternalPlaylist,
-    songs: list[Song],
+    songs: list[Track],
     sync_session: SyncSession,
 ) -> None:
     """Sync a playlist (Spotify/Youtube) to Jellyfin in a background task."""
@@ -48,63 +119,23 @@ def _sync_playlist_task(
 
         try:
             user = _get_jellyfin_user_by_name(username=username)
-
-            jellyfin_user_id = user.get("Id")
             if not user:
                 raise HTTPException(
                     status_code=400, detail=f"Unable to find username: {username}"
                 )
 
-            jellyfin_tracks: list[dict] = []
-            missing_tracks: list[Song] = []
-            track_names: list[str] = []
-            for song in songs:
-                formatted_track_name = (
-                    f"{song.artist_name} - {song.album_name}: {song.track_name}"
-                )
-
-                track_names.append(formatted_track_name)
-
-                track = _find_track(
-                    artist_name=song.artist_name,
-                    track_name=song.track_name,
-                    album_name=song.album_name,
-                    year=song.year,
-                    duration=song.duration,
-                )
-
-                if track.get("track", {}).get("id") is not None:
-                    logger.info(f"{formatted_track_name}: OK")
-                    jellyfin_tracks.append(track)
-                else:
-                    missing_tracks.append(
-                        Song(
-                            artist_name=song.artist_name,
-                            track_name=song.track_name,
-                            album_name=song.album_name,
-                            year=song.year,
-                            duration=song.duration,
-                        )
-                    )
-                    logger.warning(f"{formatted_track_name}: MISSING")
-
+            jellyfin_user_id = user.get("Id")
             if not jellyfin_user_id:
                 raise HTTPException(
                     status_code=400, detail=f"Unable to find user ID from {username}"
                 )
 
-            downloaded_tracks: list[Song] = []
+            found_tracks, missing_tracks = _resolve_songs(songs)
 
-            if len(missing_tracks) > 0:
-                downloaded_tracks, still_missing_tracks = _download_missing_tracks(
-                    missing_tracks=missing_tracks
-                )
-                missing_tracks = still_missing_tracks
-
-                if len(downloaded_tracks) > 0:
-                    logger.info(
-                        f"Downloaded {len(downloaded_tracks)} missing songs via yt-dlp"
-                    )
+            track_names = [
+                f"{song.artist_name} - {song.album_name}: {song.track_name}"
+                for song in songs
+            ]
 
             sync_session.provider_playlist_name = external_playlist_name
             sync_session.target_user_id = jellyfin_user_id
@@ -129,7 +160,6 @@ def _sync_playlist_task(
                     playlist_name=external_playlist_name, user_id=jellyfin_user_id
                 )
                 existing_playlist_id = new_playlist.get("Id")
-
                 if not existing_playlist_id:
                     raise HTTPException(
                         status_code=500,
@@ -142,122 +172,79 @@ def _sync_playlist_task(
                 session=session, sync_session=sync_session
             )
 
-            if len(jellyfin_tracks) == 0:
-                finished_at = _get_now()
-                sync_session = SyncSession(
-                    provider=SyncProvider.spotify,
-                    provider_playlist_id=playlist_id,
-                    provider_playlist_name=external_playlist_name,
-                    target_user_id=jellyfin_user_id,
-                    target_username=username,
-                    target_playlist_id=existing_playlist_id,
-                    target_playlist_name=internal_playlist.playlist_name,
-                    started_at=started_at,
-                    finished_at=finished_at,
-                    duration_seconds=int(
-                        finished_at.timestamp() - started_at.timestamp()
-                    ),
-                    status=SyncStatus.completed,
-                )
-                sync_session.tracks = _build_tracks(
-                    sync_session_id=sync_session.id,
-                    names=track_names,
-                    kind=TrackListKind.total,
-                )
-                _create_sync_session(session=session, sync_session=sync_session)
-                return
+            downloaded_tracks: list[Track] = []
 
-            existing_tracks = _get_jellyfin_playlist_songs(
+            if missing_tracks:
+                missing_songs = [missing.track for missing in missing_tracks]
+                newly_downloaded_tracks, still_missing_tracks = (
+                    _download_missing_tracks(missing_tracks=missing_songs)
+                )
+                downloaded_tracks = newly_downloaded_tracks
+
+                if len(downloaded_tracks) > 0:
+                    logger.info(
+                        f"Downloaded {len(downloaded_tracks)} missing songs via yt-dlp"
+                    )
+
+                    _rescan_jellyfin_library()
+                    while _is_jellyfin_scanning_library():
+                        logger.info(
+                            "Waiting for Jellyfin to finish scanning library..."
+                        )
+                        time.sleep(15)
+
+                    newly_found_tracks, still_missing_tracks_after_download = (
+                        _resolve_songs(downloaded_tracks)
+                    )
+                    found_tracks.extend(newly_found_tracks)
+
+                    missing_tracks = [
+                        ResolvedTrack(
+                            track=track,
+                            display_name=f"{track.artist_name} - {track.album_name}: {track.track_name}",
+                        )
+                        for track in still_missing_tracks
+                    ] + still_missing_tracks_after_download
+
+            existing_jellyfin_tracks = _get_jellyfin_playlist_songs(
                 playlist_id=existing_playlist_id, user_id=jellyfin_user_id
             )
 
-            new_tracks: list[dict] = []
-            outdated_tracks: list[dict] = []
+            diff = _diff_tracks(
+                resolved_tracks=found_tracks,
+                existing_tracks=existing_jellyfin_tracks,
+            )
 
-            for jellyfin_track in jellyfin_tracks:
-                jellyfin_track_id = jellyfin_track["track"]["id"]
-
-                existing_track = any(
-                    jellyfin_track_id == existing_track["Id"]
-                    for existing_track in existing_tracks
-                )
-
-                if not existing_track:
-                    new_tracks.append(jellyfin_track)
-
-            for existing_track in existing_tracks:
-                existing_track_id = existing_track["Id"]
-
-                existing_jellyfin_track = any(
-                    existing_track_id == jellyfin_track["track"]["id"]
-                    for jellyfin_track in jellyfin_tracks
-                )
-
-                if not existing_jellyfin_track:
-                    outdated_tracks.append(existing_track)
-
-            num_of_new_tracks = len(new_tracks)
-            num_of_outdated_tracks = len(outdated_tracks)
+            num_of_added_tracks = len(diff.added)
+            num_of_removed_tracks = len(diff.removed)
             num_of_missing_tracks = len(missing_tracks)
             num_of_downloaded_tracks = len(downloaded_tracks)
 
-            if num_of_new_tracks > 0:
+            if num_of_removed_tracks > 0:
                 logger.info(
-                    f"Adding {num_of_new_tracks} songs to {internal_playlist.playlist_name} playlist"
+                    f"Removing {num_of_removed_tracks} outdated songs from "
+                    f"{internal_playlist.playlist_name} playlist"
                 )
-                new_track_ids = [track["track"]["id"] for track in jellyfin_tracks]
-                _add_songs_to_jellyfin_playlist(
-                    playlist_id=existing_playlist_id,
-                    user_id=jellyfin_user_id,
-                    track_ids=new_track_ids,
-                )
-
-            if num_of_outdated_tracks > 0:
-                logger.info(
-                    f"Deleting {num_of_outdated_tracks} songs from {internal_playlist.playlist_name} playlist"
-                )
-                outdated_track_ids = [track["Id"] for track in existing_tracks]
+                removed_entry_ids = [track["Id"] for track in diff.removed]
                 _delete_songs_from_jellyfin_playlist(
-                    playlist_id=existing_playlist_id, track_ids=outdated_track_ids
+                    playlist_id=existing_playlist_id, track_ids=removed_entry_ids
                 )
 
-            if num_of_downloaded_tracks > 0:
-                _rescan_jellyfin_library()
-
-                while _is_jellyfin_scanning_library():
-                    logger.info("Waiting for Jellyfin to finish scanning library...")
-                    time.sleep(15)
-
+            if num_of_added_tracks > 0:
                 logger.info(
-                    f"Adding {num_of_downloaded_tracks} downloaded songs to {internal_playlist.playlist_name} playlist"
+                    f"Adding {num_of_added_tracks} new songs to "
+                    f"{internal_playlist.playlist_name} playlist"
                 )
-
-                new_jellyfin_tracks: list[dict] = []
-                for song in downloaded_tracks:
-                    track = _find_track(
-                        artist_name=song.artist_name,
-                        track_name=song.track_name,
-                        album_name=song.album_name,
-                        year=song.year,
-                        duration=song.duration,
-                    )
-
-                    if track.get("track", {}).get("id") is not None:
-                        logger.info(f"{formatted_track_name}: OK")
-                        new_jellyfin_tracks.append(track)
-                    else:
-                        missing_tracks.append(song)
-                        logger.warning(f"{formatted_track_name}: MISSING")
-
-                new_downloaded_track_ids = [
-                    track["track"]["id"] for track in new_jellyfin_tracks
+                added_track_ids = [
+                    track.jellyfin_id
+                    for track in diff.added
+                    if track.jellyfin_id is not None
                 ]
                 _add_songs_to_jellyfin_playlist(
                     playlist_id=existing_playlist_id,
                     user_id=jellyfin_user_id,
-                    track_ids=new_downloaded_track_ids,
+                    track_ids=added_track_ids,
                 )
-                num_of_new_tracks += len(new_jellyfin_tracks)
 
             spotify_playlist_thumbnail_url = external_playlist.thumbnail_url
             _update_jellyfin_playlist_image(
@@ -283,7 +270,7 @@ def _sync_playlist_task(
                         },
                         {
                             "name": "Tracks",
-                            "value": f"{num_of_new_tracks} 🔺 {num_of_outdated_tracks} 🔻 {num_of_downloaded_tracks} 💾",
+                            "value": f"{num_of_added_tracks} 🔺 {num_of_removed_tracks} 🔻 {num_of_downloaded_tracks} 💾",
                             "inline": True,
                         },
                         {
@@ -307,13 +294,15 @@ def _sync_playlist_task(
                     timestamp=True,
                 )
 
-            new_track_names = [track["track"]["name"] for track in new_tracks]
-            outdated_track_names = [track["Name"] for track in outdated_tracks]
-            missing_track_names = [
-                f"{track.artist_name} - {track.album_name}: {track.track_name}"
-                for track in missing_tracks
+            added_track_names = [track.display_name for track in diff.added]
+            removed_track_names = [
+                jellyfin_track.get("Name", "") for jellyfin_track in diff.removed
             ]
-            downloaded_track_names = [track.track_name for track in downloaded_tracks]
+            missing_track_names = [track.display_name for track in missing_tracks]
+            downloaded_track_names = [
+                f"{track.artist_name} - {track.album_name}: {track.track_name}"
+                for track in downloaded_tracks
+            ]
 
             sync_session.finished_at = finished_at
             sync_session.duration_seconds = int(duration_taken)
@@ -331,12 +320,12 @@ def _sync_playlist_task(
                 )
                 + _build_tracks(
                     sync_session_id=sync_session.id,
-                    names=new_track_names,
+                    names=added_track_names,
                     kind=TrackListKind.new,
                 )
                 + _build_tracks(
                     sync_session_id=sync_session.id,
-                    names=outdated_track_names,
+                    names=removed_track_names,
                     kind=TrackListKind.outdated,
                 )
                 + _build_tracks(
@@ -392,7 +381,7 @@ def _sync_playlist(playlist: Playlist, session: SessionDep) -> dict[str, str]:
     _create_sync_session(session=session, sync_session=sync_session)
     session.expunge(sync_session)
 
-    songs: list[Song] = []
+    songs: list[Track] = []
     external_playlist: ExternalPlaylist | None = None
 
     match internal_playlist.provider:

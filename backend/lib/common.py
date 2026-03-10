@@ -1,4 +1,8 @@
-class Song:
+from dataclasses import dataclass, field
+
+
+@dataclass
+class Track:
     def __init__(
         self,
         artist_name: str,
@@ -23,6 +27,7 @@ class Song:
         }
 
 
+@dataclass
 class ExternalPlaylist:
     def __init__(
         self,
@@ -43,3 +48,21 @@ class ExternalPlaylist:
             "thumbnail_url": self.thumbnail_url,
             "total": self.total,
         }
+
+
+@dataclass
+class ResolvedTrack:
+    """A source song that has been resolved against the Jellyfin library."""
+
+    track: Track
+    jellyfin_id: str | None = None
+    display_name: str = ""
+
+
+@dataclass
+class PlaylistDiff:
+    """Result of diffing resolved source tracks against an existing Jellyfin playlist."""
+
+    added: list[ResolvedTrack] = field(default_factory=list)
+    removed: list[dict] = field(default_factory=list)
+    unchanged: list[ResolvedTrack] = field(default_factory=list)

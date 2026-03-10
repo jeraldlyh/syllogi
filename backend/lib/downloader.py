@@ -2,7 +2,7 @@ import logging
 import os
 from pathlib import Path
 
-from lib.common import Song
+from lib.common import Track
 from lib.youtube import _run_ytdlp
 
 logger = logging.getLogger(__name__)
@@ -68,15 +68,15 @@ def _download_track(
 
 
 def _download_missing_tracks(
-    missing_tracks: list[Song],
-) -> tuple[list[Song], list[Song]]:
+    missing_tracks: list[Track],
+) -> tuple[list[Track], list[Track]]:
     """Download a list of missing songs.
 
     Returns a tuple containing a list of successfully downloaded songs and a list of still missing track names.
     """
 
-    downloaded_tracks: list[Song] = []
-    still_missing_tracks: list[Song] = []
+    downloaded_tracks: list[Track] = []
+    still_missing_tracks: list[Track] = []
 
     for song in missing_tracks:
         artist_name = song.artist_name

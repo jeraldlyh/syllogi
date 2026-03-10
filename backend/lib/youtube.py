@@ -7,7 +7,7 @@ from typing import TYPE_CHECKING, Any
 
 import yt_dlp
 
-from lib.common import ExternalPlaylist, Song
+from lib.common import ExternalPlaylist, Track
 from lib.utils import _dump_results
 
 if TYPE_CHECKING:
@@ -54,7 +54,7 @@ def _get_youtube_playlist(playlist_id: str) -> ExternalPlaylist:
     )
 
 
-def _get_youtube_playlist_songs(playlist_id: str) -> list[Song]:
+def _get_youtube_playlist_songs(playlist_id: str) -> list[Track]:
     """Fetch full metadata for every track in a YouTube playlist."""
     url = f"https://www.youtube.com/playlist?list={playlist_id}"
     playlist = _run_ytdlp(
@@ -66,7 +66,7 @@ def _get_youtube_playlist_songs(playlist_id: str) -> list[Song]:
         },
     )
 
-    songs: list[Song] = []
+    songs: list[Track] = []
     for entry in playlist.get("entries", []):
         # NOTE: Ignore private or deleted videos that don't have metadata
         if entry.get("channel") is None or entry.get("title") is None:
@@ -83,7 +83,7 @@ def _get_youtube_playlist_songs(playlist_id: str) -> list[Song]:
         )
         duration = entry.get("duration") or 0
 
-        song = Song(
+        song = Track(
             track_name=track_name,
             artist_name=artist_name,
             album_name="",
