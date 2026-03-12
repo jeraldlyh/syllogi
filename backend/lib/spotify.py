@@ -16,7 +16,7 @@ else:
         f"SpotAPI submodule not found at {SPOTAPI_DIR}. Did you run `git submodule update --init --recursive`?"
     )
 
-from spotapi.playlist import PublicPlaylist
+from spotapi.playlist import PublicPlaylist  # noqa: E402
 
 logger = logging.getLogger(__name__)
 

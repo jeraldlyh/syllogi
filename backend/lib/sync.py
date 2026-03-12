@@ -18,7 +18,6 @@ from lib.jellyfin import (
     _get_jellyfin_playlist_songs,
     _get_jellyfin_playlists,
     _get_jellyfin_user_by_name,
-    _is_jellyfin_scanning_library,
     _rescan_jellyfin_library,
     _update_jellyfin_playlist_image,
 )
