@@ -75,7 +75,7 @@ def _search_jellyfin_songs(
         params={
             "includeItemTypes": "Audio",
             "recursive": "true",
-            "artists": artist,
+            # "artists": artist,
             "searchTerm": title,
             # "album": album,
             "fields": "Path,Album,Artists,CumulativeRunTimeTicks",
