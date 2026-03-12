@@ -46,11 +46,6 @@ jobs:
         with:
           submodules: true
 
-      - name: Setup Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: 3.12
-
       - name: Install Ruff
         run: pip install ruff
 
