@@ -554,17 +554,19 @@ export const Playlists = () => {
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>Start Playlist Sync</AlertDialogTitle>
-            <AlertDialogDescription>
-              <p>
-                Are you sure you want to start syncing&nbsp;
-                <span className="font-bold">
-                  {confirmPlaylist?.playlist_name}
-                </span>
-                ?
-              </p>
-              <p>
-                This will fetch the latest tracks and sync them to Jellyfin.
-              </p>
+            <AlertDialogDescription asChild>
+              <div>
+                <p>
+                  Are you sure you want to start syncing&nbsp;
+                  <span className="font-bold">
+                    {confirmPlaylist?.playlist_name}
+                  </span>
+                  ?
+                </p>
+                <p>
+                  This will fetch the latest tracks and sync them to Jellyfin.
+                </p>
+              </div>
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
