@@ -5,7 +5,7 @@ import { Plus, Pencil, Trash2, Clock, Play } from "lucide-react";
 import { toast } from "sonner";
 import useSWRMutation from "swr/mutation";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button, buttonVariants } from "@/components/ui/button";
+import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
@@ -596,7 +596,7 @@ export const Playlists = () => {
           <AlertDialogFooter>
             <AlertDialogCancel>Cancel</AlertDialogCancel>
             <AlertDialogAction
-              className={buttonVariants({ variant: "destructive" })}
+              variant="destructive"
               onClick={() =>
                 deletePlayist && handleDeletePlaylist(deletePlayist.id)
               }
