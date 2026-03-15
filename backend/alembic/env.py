@@ -1,10 +1,14 @@
 from logging.config import fileConfig
 
+from dotenv import load_dotenv
 from sqlalchemy import engine_from_config, pool
 from sqlmodel import SQLModel
 
 from alembic import context
-from db.session import get_connection_string
+
+load_dotenv()
+
+from db.session import get_connection_string  # noqa: E402
 
 config = context.config
 
