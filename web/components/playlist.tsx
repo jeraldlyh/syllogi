@@ -87,8 +87,10 @@ export const Playlists = () => {
   const [editingId, setEditingId] = useState<string | null>(null);
   const [form, setForm] = useState<FormState>(DEFAULT_FORM);
   const [errors, setErrors] = useState<FormErrors>({});
-  const [confirmPlaylist, setConfirmPlaylist] = useState<Playlist | null>(null);
-  const [deletePlayist, setDeletePlaylist] = useState<Playlist | null>(null);
+  const [playlistToSync, setPlaylistToSync] = useState<Playlist | null>(null);
+  const [playlistToDelete, setPlaylistToDelete] = useState<Playlist | null>(
+    null,
+  );
 
   const { data: users } = useJellyfinUsers();
   const {
@@ -173,7 +175,7 @@ export const Playlists = () => {
   };
 
   const handleSyncPlaylist = async (playlist: Playlist): Promise<void> => {
-    setConfirmPlaylist(null);
+    setPlaylistToSync(null);
     const response = await api({
       method: "POST",
       service: "sync",
@@ -194,8 +196,8 @@ export const Playlists = () => {
   };
 
   const handleDeletePlaylist = async (id: string): Promise<void> => {
-    setDeletePlaylist(null);
-    await deletePlaylist(id);
+    setPlaylistToDelete(null);
+    await playlistToDelete(id);
     toast.success("Playlist deleted");
   };
 
@@ -276,7 +278,7 @@ export const Playlists = () => {
                       variant="ghost"
                       size="icon"
                       className="h-7 w-7 text-muted-foreground hover:text-foreground"
-                      onClick={() => setConfirmPlaylist(playlist)}
+                      onClick={() => setPlaylistToSync(playlist)}
                     >
                       <Play className="h-4 w-4" />
                     </Button>
@@ -292,7 +294,7 @@ export const Playlists = () => {
                       variant="ghost"
                       size="icon"
                       className="h-7 w-7 text-muted-foreground hover:bg-destructive hover:text-destructive-foreground"
-                      onClick={() => setDeletePlaylist(playlist)}
+                      onClick={() => setPlaylistToDelete(playlist)}
                     >
                       <Trash2 className="h-4 w-4" />
                     </Button>
@@ -548,8 +550,8 @@ export const Playlists = () => {
         </DialogContent>
       </Dialog>
       <AlertDialog
-        open={!!confirmPlaylist}
-        onOpenChange={(open) => !open && setConfirmPlaylist(null)}
+        open={!!playlistToSync}
+        onOpenChange={(open) => !open && setPlaylistToSync(null)}
       >
         <AlertDialogContent>
           <AlertDialogHeader>
@@ -559,7 +561,7 @@ export const Playlists = () => {
                 <p>
                   Are you sure you want to start syncing&nbsp;
                   <span className="font-bold">
-                    {confirmPlaylist?.playlist_name}
+                    {playlistToSync?.playlist_name}
                   </span>
                   ?
                 </p>
@@ -573,7 +575,7 @@ export const Playlists = () => {
             <AlertDialogCancel>Cancel</AlertDialogCancel>
             <AlertDialogAction
               onClick={() =>
-                confirmPlaylist && handleSyncPlaylist(confirmPlaylist)
+                playlistToSync && handleSyncPlaylist(playlistToSync)
               }
             >
               Start Sync
@@ -582,8 +584,8 @@ export const Playlists = () => {
         </AlertDialogContent>
       </AlertDialog>
       <AlertDialog
-        open={!!deletePlayist}
-        onOpenChange={(open) => !open && setDeletePlaylist(null)}
+        open={!!playlistToDelete}
+        onOpenChange={(open) => !open && setPlaylistToDelete(null)}
       >
         <AlertDialogContent>
           <AlertDialogHeader>
@@ -598,7 +600,7 @@ export const Playlists = () => {
             <AlertDialogAction
               variant="destructive"
               onClick={() =>
-                deletePlayist && handleDeletePlaylist(deletePlayist.id)
+                playlistToDelete && handleDeletePlaylist(playlistToDelete.id)
               }
             >
               Delete
