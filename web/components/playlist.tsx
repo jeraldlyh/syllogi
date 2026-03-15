@@ -1,11 +1,11 @@
 "use client";
 
 import React, { useState } from "react";
-import { Plus, Pencil, Trash2, Clock, RefreshCw, Play } from "lucide-react";
+import { Plus, Pencil, Trash2, Clock, Play } from "lucide-react";
 import { toast } from "sonner";
 import useSWRMutation from "swr/mutation";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
+import { Button, buttonVariants } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
@@ -23,6 +23,16 @@ import {
   DialogTitle,
   DialogFooter,
 } from "@/components/ui/dialog";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import {
   Table,
   TableBody,
@@ -77,6 +87,8 @@ export const Playlists = () => {
   const [editingId, setEditingId] = useState<string | null>(null);
   const [form, setForm] = useState<FormState>(DEFAULT_FORM);
   const [errors, setErrors] = useState<FormErrors>({});
+  const [confirmPlaylist, setConfirmPlaylist] = useState<Playlist | null>(null);
+  const [deletePlayist, setDeletePlaylist] = useState<Playlist | null>(null);
 
   const { data: users } = useJellyfinUsers();
   const {
@@ -161,6 +173,7 @@ export const Playlists = () => {
   };
 
   const handleSyncPlaylist = async (playlist: Playlist): Promise<void> => {
+    setConfirmPlaylist(null);
     const response = await api({
       method: "POST",
       service: "sync",
@@ -181,6 +194,7 @@ export const Playlists = () => {
   };
 
   const handleDeletePlaylist = async (id: string): Promise<void> => {
+    setDeletePlaylist(null);
     await deletePlaylist(id);
     toast.success("Playlist deleted");
   };
@@ -262,7 +276,7 @@ export const Playlists = () => {
                       variant="ghost"
                       size="icon"
                       className="h-7 w-7 text-muted-foreground hover:text-foreground"
-                      onClick={() => handleSyncPlaylist(playlist)}
+                      onClick={() => setConfirmPlaylist(playlist)}
                     >
                       <Play className="h-4 w-4" />
                     </Button>
@@ -278,7 +292,7 @@ export const Playlists = () => {
                       variant="ghost"
                       size="icon"
                       className="h-7 w-7 text-muted-foreground hover:bg-destructive hover:text-destructive-foreground"
-                      onClick={() => handleDeletePlaylist(playlist.id)}
+                      onClick={() => setDeletePlaylist(playlist)}
                     >
                       <Trash2 className="h-4 w-4" />
                     </Button>
@@ -533,6 +547,63 @@ export const Playlists = () => {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+      <AlertDialog
+        open={!!confirmPlaylist}
+        onOpenChange={(open) => !open && setConfirmPlaylist(null)}
+      >
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Start Playlist Sync</AlertDialogTitle>
+            <AlertDialogDescription>
+              <p>
+                Are you sure you want to start syncing&nbsp;
+                <span className="font-bold">
+                  {confirmPlaylist?.playlist_name}
+                </span>
+                ?
+              </p>
+              <p>
+                This will fetch the latest tracks and sync them to Jellyfin.
+              </p>
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={() =>
+                confirmPlaylist && handleSyncPlaylist(confirmPlaylist)
+              }
+            >
+              Start Sync
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+      <AlertDialog
+        open={!!deletePlayist}
+        onOpenChange={(open) => !open && setDeletePlaylist(null)}
+      >
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete Playlist</AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to delete this playlist? This action cannot
+              be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              className={buttonVariants({ variant: "destructive" })}
+              onClick={() =>
+                deletePlayist && handleDeletePlaylist(deletePlayist.id)
+              }
+            >
+              Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </>
   );
 };
