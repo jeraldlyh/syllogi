@@ -1,8 +1,8 @@
-name: Publish Release
+name: Publish SHA
 
 on:
-  release:
-    types: [published]
+  push:
+    branches: [main]
 
 env:
   REGISTRY: ghcr.io
@@ -18,8 +18,8 @@ jobs:
     name: Build
     uses: ./.github/workflows/build.yml
 
-  publish-web:
-    name: Publish Web
+  publish-web-sha:
+    name: Publish Web (SHA)
     needs: build
     runs-on: self-hosted
     steps:
@@ -43,14 +43,12 @@ jobs:
           file: ./web/Dockerfile
           target: runner
           push: true
-          tags: |
-            ${{ env.WEB_IMAGE }}:${{ github.event.release.tag_name }}
-            ${{ env.WEB_IMAGE }}:latest
+          tags: ${{ env.WEB_IMAGE }}:sha-${{ github.sha }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
-  publish-backend:
-    name: Publish Backend
+  publish-backend-sha:
+    name: Publish Backend (SHA)
     needs: build
     runs-on: self-hosted
     steps:
@@ -75,8 +73,6 @@ jobs:
           context: ./backend
           file: ./backend/Dockerfile
           push: true
-          tags: |
-            ${{ env.BACKEND_IMAGE }}:${{ github.event.release.tag_name }}
-            ${{ env.BACKEND_IMAGE }}:latest
+          tags: ${{ env.BACKEND_IMAGE }}:sha-${{ github.sha }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
