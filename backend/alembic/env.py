@@ -8,10 +8,7 @@ from alembic import context
 
 load_dotenv()
 
-from db.session import get_connection_string
-from db.models.sync_session import SyncSession, SyncSessionTrack
-from db.models.notification import Notification
-from db.models.playlist import Playlist
+from db.session import get_connection_string  # noqa: E402
 
 config = context.config
 

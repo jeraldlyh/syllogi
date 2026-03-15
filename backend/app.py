@@ -10,7 +10,6 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse, Response
 from starlette.middleware.base import BaseHTTPMiddleware
 
-from db.models.playlist import PlaylistProvider
 from db.playlist import _get_playlists
 from db.session import get_isolated_session
 from lib.cron import _create_job
