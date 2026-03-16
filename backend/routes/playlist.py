@@ -51,11 +51,13 @@ def create_playlist(item: CreateOrUpdatePlaylist, session: SessionDep):
         cron_expression=item.cron_expression,
     )
     _create_playlist(session=session, playlist=playlist)
-    _create_job(
-        func=_sync_playlist,
-        kwargs={"playlist": playlist, "session": session},
-        cron_expression=playlist.cron_expression,
-    )
+
+    if playlist.enabled:
+        _create_job(
+            func=_sync_playlist,
+            kwargs={"playlist": playlist, "session": session},
+            cron_expression=playlist.cron_expression,
+        )
 
     return {"id": str(playlist.id)}
 
@@ -83,11 +85,15 @@ def update_playlist(
     playlist.cron_expression = item.cron_expression
 
     _update_playlist(session=session, playlist=playlist)
-    _update_job(
-        func=_sync_playlist,
-        kwargs={"playlist": playlist, "session": session},
-        cron_expression=playlist.cron_expression,
-    )
+
+    if not playlist.enabled:
+        _delete_job(playlist_id=playlist_id)
+    else:
+        _update_job(
+            func=_sync_playlist,
+            kwargs={"playlist": playlist, "session": session},
+            cron_expression=playlist.cron_expression,
+        )
 
     return {"message": "Playlist updated successfully"}
 

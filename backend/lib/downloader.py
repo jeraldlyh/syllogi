@@ -1,3 +1,4 @@
+import glob
 import logging
 import os
 from pathlib import Path
@@ -30,6 +31,16 @@ def _download_track(
 
     Returns True if the download succeeded, False otherwise.
     """
+
+    download_path = _get_download_path(artist_name, track_name, album_name)
+    existing_paths = glob.glob(f"{glob.escape(download_path)}.*")
+
+    if existing_paths:
+        logger.info(
+            f"Skipping download for '{artist_name} - {album_name}: {track_name}' as it already exists."
+        )
+        logger.info(f"Existing file(s) found: {', '.join(existing_paths)}")
+        return True
 
     search_query = f"{artist_name}"
     if album_name:
