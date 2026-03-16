@@ -7,9 +7,7 @@ x-healthcheck: &default-healthcheck
 services:
   syllogi-backend:
     container_name: syllogi-backend
-    build:
-      context: ./backend
-      dockerfile: Dockerfile
+    image: ghcr.io/jeraldlyh/syllogi/backend:latest
     environment:
       - TZ=Asia/Singapore
       - DATABASE_USERNAME=syllogi
@@ -17,11 +15,10 @@ services:
       - DATABASE_NAME=syllogi
       - DATABASE_URL=syllogi-postgres:5432
       - YOUTUBE_DOWNLOAD_DIR=/downloads
-      - DISCORD_WEBHOOK_URL=${DISCORD_WEBHOOK_URL}
-      - JELLYFIN_API_KEY=${JELLYFIN_API_KEY}
-      - JELLYFIN_BASE_URL=${JELLYFIN_BASE_URL}
-    env_file:
-      - ./backend/.env
+      - DISABLE_MUSIC_VIDEO_DOWNLOADS=true
+      - DISCORD_WEBHOOK_URL=
+      - JELLYFIN_API_KEY=
+      - JELLYFIN_BASE_URL=
     ports:
       - 8000:8000
     volumes:
@@ -50,10 +47,7 @@ services:
 
   syllogi-web:
     container_name: syllogi-web
-    build:
-      context: ./web
-      dockerfile: Dockerfile
-      target: development
+    image: ghcr.io/jeraldlyh/syllogi/web:latest
     environment:
       - NEXT_PUBLIC_BACKEND_URL=http://localhost:8000
     ports:
