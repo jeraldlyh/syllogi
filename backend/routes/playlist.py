@@ -22,6 +22,7 @@ class CreateOrUpdatePlaylist(BaseModel):
     playlist_name: str
     username: str
     enabled: bool
+    enable_download: bool
     cron_expression: str
 
 
@@ -48,6 +49,7 @@ def create_playlist(item: CreateOrUpdatePlaylist, session: SessionDep):
         playlist_name=item.playlist_name,
         username=item.username,
         enabled=item.enabled,
+        enable_download=item.enable_download,
         cron_expression=item.cron_expression,
     )
     _create_playlist(session=session, playlist=playlist)
@@ -82,6 +84,7 @@ def update_playlist(
     playlist.playlist_name = item.playlist_name
     playlist.username = item.username
     playlist.enabled = item.enabled
+    playlist.enable_download = item.enable_download
     playlist.cron_expression = item.cron_expression
 
     _update_playlist(session=session, playlist=playlist)
