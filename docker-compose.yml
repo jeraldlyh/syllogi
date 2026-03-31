@@ -18,18 +18,17 @@ services:
       - DATABASE_NAME=syllogi
       - DATABASE_URL=syllogi-postgres:5432
       - YOUTUBE_DOWNLOAD_DIR=/downloads
-      - DISCORD_WEBHOOK_URL=${DISCORD_WEBHOOK_URL}
-      - JELLYFIN_API_KEY=${JELLYFIN_API_KEY}
-      - JELLYFIN_BASE_URL=${JELLYFIN_BASE_URL}
-      - NEXT_PUBLIC_BACKEND_URL=${NEXT_PUBLIC_BACKEND_URL:-http://localhost:8000}
+      - NEXT_PUBLIC_BACKEND_URL=http://localhost:8000
     env_file:
       - ./backend/.env
     ports:
       - 8000:8000
       - 3000:3000
     volumes:
-      - ./backend:/app/backend
-      - ./web:/app/web
+      - ./backend:/app/backend:delegated
+      - ./web:/app/web:delegated
+      - web_node_modules:/app/web/node_modules
+      - web_next:/app/web/.next
       - ./downloads:/downloads
     healthcheck:
       <<: *default-healthcheck
@@ -54,3 +53,7 @@ services:
       <<: *default-healthcheck
       test: pg_isready -U $$POSTGRES_USER -d $$POSTGRES_DB
     restart: unless-stopped
+
+volumes:
+  web_node_modules:
+  web_next:
