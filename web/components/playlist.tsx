@@ -65,7 +65,7 @@ interface FormState {
   playlist_id: string;
   playlist_name: string;
   username: string;
-  enabled: boolean;
+  enable_sync: boolean;
   enable_download: boolean;
   cron_expression: string;
   cron_mode: "simple" | "custom";
@@ -83,7 +83,7 @@ const DEFAULT_FORM: FormState = {
   playlist_id: "",
   playlist_name: "",
   username: "",
-  enabled: true,
+  enable_sync: true,
   enable_download: true,
   cron_expression: "0 * * * *",
   cron_mode: "simple",
@@ -536,9 +536,9 @@ export const Playlists = () => {
             <div className="flex items-center gap-3">
               <Switch
                 id="enable_sync"
-                checked={form.enabled}
+                checked={form.enable_sync}
                 onCheckedChange={(checked) =>
-                  setForm((prev) => ({ ...prev, enabled: checked }))
+                  setForm((prev) => ({ ...prev, enable_sync: checked }))
                 }
               />
               <Label htmlFor="enableSync" className="text-sm text-foreground">
@@ -610,6 +610,7 @@ export const Playlists = () => {
               onClick={() =>
                 playlistToSync && handleSyncPlaylist(playlistToSync)
               }
+              disabled={playlistToSync?.enable_download === false}
             >
               Start Sync
             </AlertDialogAction>
