@@ -1,5 +1,6 @@
 "use client";
 import { fetcher } from "@/lib/api";
+import { TooltipProvider } from "@/components/ui/tooltip";
 import { SWRConfig } from "swr";
 
 export default function Providers({ children }: { children: React.ReactNode }) {
@@ -11,7 +12,7 @@ export default function Providers({ children }: { children: React.ReactNode }) {
         dedupingInterval: 2000,
       }}
     >
-      {children}
+      <TooltipProvider delayDuration={200}>{children}</TooltipProvider>
     </SWRConfig>
   );
 }

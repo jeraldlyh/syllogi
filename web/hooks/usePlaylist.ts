@@ -9,6 +9,7 @@ export interface Playlist {
   playlist_name: string;
   username: string;
   enabled: boolean;
+  enable_download: boolean;
   cron_expression: string;
 }
 
