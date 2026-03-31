@@ -22,7 +22,7 @@ class Playlist(TimestampMixin, SerializerMixin, SQLModel, table=True):
     playlist_name: str = Field(default="", max_length=512, nullable=False)
 
     username: str = Field(default="", max_length=128, nullable=False, index=True)
-    enabled: bool = Field(default=True, nullable=False)
+    enable_sync: bool = Field(default=True, nullable=False)
     enable_download: bool = Field(default=True, nullable=False)
     cron_expression: str = Field(default="", max_length=128, nullable=False)
 
@@ -33,7 +33,7 @@ class Playlist(TimestampMixin, SerializerMixin, SQLModel, table=True):
             "playlist_id": self.playlist_id,
             "playlist_name": self.playlist_name,
             "username": self.username,
-            "enabled": self.enabled,
+            "enable_sync": self.enable_sync,
             "enable_download": self.enable_download,
             "cron_expression": self.cron_expression,
             "created_at": _format_time_with_locale(self.created_at),
