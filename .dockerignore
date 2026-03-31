@@ -1,0 +1,17 @@
+.git
+.gitmodules
+
+backend/venv
+backend/__pycache__
+backend/**/__pycache__
+backend/.ruff_cache
+backend/.env
+
+web/node_modules
+web/.next
+
+postgres
+downloads
+
+.DS_Store
+**/.DS_Store

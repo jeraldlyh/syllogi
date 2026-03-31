@@ -5,11 +5,12 @@ x-healthcheck: &default-healthcheck
   start_period: 20s
 
 services:
-  syllogi-backend:
-    container_name: syllogi-backend
+  syllogi:
+    container_name: syllogi
     build:
-      context: ./backend
+      context: .
       dockerfile: Dockerfile
+      target: development
     environment:
       - TZ=Asia/Singapore
       - DATABASE_USERNAME=syllogi
@@ -20,17 +21,23 @@ services:
       - DISCORD_WEBHOOK_URL=${DISCORD_WEBHOOK_URL}
       - JELLYFIN_API_KEY=${JELLYFIN_API_KEY}
       - JELLYFIN_BASE_URL=${JELLYFIN_BASE_URL}
+      - NEXT_PUBLIC_BACKEND_URL=${NEXT_PUBLIC_BACKEND_URL:-http://localhost:8000}
     env_file:
       - ./backend/.env
     ports:
       - 8000:8000
+      - 3000:3000
     volumes:
-      - ./backend:/app
+      - ./backend:/app/backend
+      - ./web:/app/web
       - ./downloads:/downloads
     healthcheck:
       <<: *default-healthcheck
       test: curl --fail http://localhost:8000/api/health || exit 1
     restart: unless-stopped
+    depends_on:
+      syllogi-postgres:
+        condition: service_healthy
 
   syllogi-postgres:
     container_name: syllogi-postgres
@@ -46,18 +53,4 @@ services:
     healthcheck:
       <<: *default-healthcheck
       test: pg_isready -U $$POSTGRES_USER -d $$POSTGRES_DB
-    restart: unless-stopped
-
-  syllogi-web:
-    container_name: syllogi-web
-    build:
-      context: ./web
-      dockerfile: Dockerfile
-      target: development
-    environment:
-      - NEXT_PUBLIC_BACKEND_URL=http://localhost:8000
-    ports:
-      - 3000:3000
-    volumes:
-      - ./web:/app
     restart: unless-stopped
