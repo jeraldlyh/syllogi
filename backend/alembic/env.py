@@ -10,6 +10,10 @@ load_dotenv()
 
 from db.session import get_connection_string  # noqa: E402
 
+from db.models.playlist import Playlist  # noqa: E402, F401
+from db.models.sync_session import SyncSession, SyncSessionTrack  # noqa: E402, F401
+from db.models.notification import Notification  # noqa: E402, F401
+
 config = context.config
 
 if config.config_file_name is not None:
