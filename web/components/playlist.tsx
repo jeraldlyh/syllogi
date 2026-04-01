@@ -561,7 +561,13 @@ export const Playlists = () => {
               </Label>
               <Tooltip>
                 <TooltipTrigger asChild>
-                  <Info className="h-4 w-4 text-muted-foreground cursor-help" />
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="text-muted-foreground cursor-help w-4 h-4 hover:bg-inherit hover:text-inherit"
+                  >
+                    <Info className="h-4 w-4" />
+                  </Button>
                 </TooltipTrigger>
                 <TooltipContent side="right" className="max-w-xs">
                   <p>
