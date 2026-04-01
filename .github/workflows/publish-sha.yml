@@ -15,7 +15,6 @@ permissions:
 jobs:
   publish-sha:
     name: Publish Image (SHA)
-    needs: build
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
