@@ -610,7 +610,7 @@ export const Playlists = () => {
               onClick={() =>
                 playlistToSync && handleSyncPlaylist(playlistToSync)
               }
-              disabled={playlistToSync?.enable_download === false}
+              disabled={playlistToSync?.enable_sync === false}
             >
               Start Sync
             </AlertDialogAction>
