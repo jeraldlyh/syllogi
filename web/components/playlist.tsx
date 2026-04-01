@@ -541,7 +541,7 @@ export const Playlists = () => {
                   setForm((prev) => ({ ...prev, enable_sync: checked }))
                 }
               />
-              <Label htmlFor="enableSync" className="text-sm text-foreground">
+              <Label htmlFor="enable_sync" className="text-sm text-foreground">
                 Enable sync
               </Label>
             </div>
