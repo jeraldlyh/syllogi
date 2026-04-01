@@ -4,33 +4,11 @@ on:
   workflow_call:
 
 env:
-  WEB_IMAGE: ghcr.io/${{ github.repository }}/web
-  BACKEND_IMAGE: ghcr.io/${{ github.repository }}/backend
+  IMAGE: ghcr.io/${{ github.repository }}
 
 jobs:
-  build-web:
-    name: Build Web
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-
-      - name: Setup Docker Buildx
-        uses: docker/setup-buildx-action@v3
-
-      - name: Build web Docker image
-        uses: docker/build-push-action@v6
-        with:
-          context: ./web
-          file: ./web/Dockerfile
-          target: runner
-          push: false
-          tags: ${{ env.WEB_IMAGE }}:${{ github.sha }}
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
-
-  build-backend:
-    name: Build Backend
+  build:
+    name: Build Image
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
@@ -41,12 +19,13 @@ jobs:
       - name: Setup Docker Buildx
         uses: docker/setup-buildx-action@v3
 
-      - name: Build backend Docker image
+      - name: Build Docker image
         uses: docker/build-push-action@v6
         with:
-          context: ./backend
-          file: ./backend/Dockerfile
+          context: .
+          file: ./Dockerfile
+          target: production
           push: false
-          tags: ${{ env.BACKEND_IMAGE }}:${{ github.sha }}
+          tags: ${{ env.IMAGE }}:${{ github.sha }}
           cache-from: type=gha
           cache-to: type=gha,mode=max

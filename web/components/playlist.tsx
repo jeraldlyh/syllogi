@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
-import { Plus, Pencil, Trash2, Clock, Play } from "lucide-react";
+import { Plus, Pencil, Trash2, Clock, Play, Info } from "lucide-react";
 import { toast } from "sonner";
 import useSWRMutation from "swr/mutation";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -9,6 +9,11 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 import {
   Select,
   SelectContent,
@@ -60,7 +65,8 @@ interface FormState {
   playlist_id: string;
   playlist_name: string;
   username: string;
-  enabled: boolean;
+  enable_sync: boolean;
+  enable_download: boolean;
   cron_expression: string;
   cron_mode: "simple" | "custom";
 }
@@ -77,7 +83,8 @@ const DEFAULT_FORM: FormState = {
   playlist_id: "",
   playlist_name: "",
   username: "",
-  enabled: true,
+  enable_sync: true,
+  enable_download: true,
   cron_expression: "0 * * * *",
   cron_mode: "simple",
 };
@@ -197,7 +204,7 @@ export const Playlists = () => {
 
   const handleDeletePlaylist = async (id: string): Promise<void> => {
     setPlaylistToDelete(null);
-    await playlistToDelete(id);
+    await deletePlaylist(id);
     toast.success("Playlist deleted");
   };
 
@@ -529,14 +536,46 @@ export const Playlists = () => {
             <div className="flex items-center gap-3">
               <Switch
                 id="enable_sync"
-                checked={form.enabled}
+                checked={form.enable_sync}
                 onCheckedChange={(checked) =>
-                  setForm((prev) => ({ ...prev, enabled: checked }))
+                  setForm((prev) => ({ ...prev, enable_sync: checked }))
                 }
               />
-              <Label htmlFor="enableSync" className="text-sm text-foreground">
+              <Label htmlFor="enable_sync" className="text-sm text-foreground">
                 Enable sync
               </Label>
+            </div>
+            <div className="flex items-center gap-3">
+              <Switch
+                id="enable_download"
+                checked={form.enable_download}
+                onCheckedChange={(checked) =>
+                  setForm((prev) => ({ ...prev, enable_download: checked }))
+                }
+              />
+              <Label
+                htmlFor="enable_download"
+                className="text-sm text-foreground"
+              >
+                Enable download
+              </Label>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="text-muted-foreground cursor-help w-4 h-4 hover:bg-inherit hover:text-inherit"
+                  >
+                    <Info className="h-4 w-4" />
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent side="right" className="max-w-xs">
+                  <p>
+                    When enabled, missing tracks are automatically downloaded
+                    via yt-dlp during sync and added to your Jellyfin library.
+                  </p>
+                </TooltipContent>
+              </Tooltip>
             </div>
           </div>
           <DialogFooter>
@@ -577,6 +616,7 @@ export const Playlists = () => {
               onClick={() =>
                 playlistToSync && handleSyncPlaylist(playlistToSync)
               }
+              disabled={playlistToSync?.enable_sync === false}
             >
               Start Sync
             </AlertDialogAction>

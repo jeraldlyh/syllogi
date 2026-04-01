@@ -173,7 +173,7 @@ def _sync_playlist_task(
 
             downloaded_tracks: list[Track] = []
 
-            if missing_tracks:
+            if missing_tracks and internal_playlist.enable_download:
                 missing_songs = [missing.track for missing in missing_tracks]
                 newly_downloaded_tracks, still_missing_tracks = (
                     _download_missing_tracks(missing_tracks=missing_songs)

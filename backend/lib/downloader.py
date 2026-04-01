@@ -56,7 +56,7 @@ def _download_track(
 
     try:
         result = _run_ytdlp(
-            url=f"ytsearch:{search_query} lyrics",
+            url=f"ytsearch:{search_query}",
             opts={
                 "format": "bestaudio/best",
                 "postprocessors": [

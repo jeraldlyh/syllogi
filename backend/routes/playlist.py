@@ -21,7 +21,8 @@ class CreateOrUpdatePlaylist(BaseModel):
     playlist_id: str
     playlist_name: str
     username: str
-    enabled: bool
+    enable_sync: bool
+    enable_download: bool
     cron_expression: str
 
 
@@ -47,12 +48,13 @@ def create_playlist(item: CreateOrUpdatePlaylist, session: SessionDep):
         playlist_id=item.playlist_id,
         playlist_name=item.playlist_name,
         username=item.username,
-        enabled=item.enabled,
+        enable_sync=item.enable_sync,
+        enable_download=item.enable_download,
         cron_expression=item.cron_expression,
     )
     _create_playlist(session=session, playlist=playlist)
 
-    if playlist.enabled:
+    if playlist.enable_sync:
         _create_job(
             func=_sync_playlist,
             kwargs={"playlist": playlist, "session": session},
@@ -81,12 +83,13 @@ def update_playlist(
     playlist.playlist_id = item.playlist_id
     playlist.playlist_name = item.playlist_name
     playlist.username = item.username
-    playlist.enabled = item.enabled
+    playlist.enable_sync = item.enable_sync
+    playlist.enable_download = item.enable_download
     playlist.cron_expression = item.cron_expression
 
     _update_playlist(session=session, playlist=playlist)
 
-    if not playlist.enabled:
+    if not playlist.enable_sync:
         _delete_job(playlist_id=playlist_id)
     else:
         _update_job(

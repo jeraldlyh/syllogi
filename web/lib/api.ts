@@ -1,4 +1,7 @@
 import { ApiConfig, ApiResponse } from "./types";
+import { createLogger } from "./logger";
+
+const logger = createLogger("api");
 
 export const api = async <T>(config: ApiConfig): Promise<ApiResponse<T>> => {
   let endpoint =
@@ -16,7 +19,7 @@ export const api = async <T>(config: ApiConfig): Promise<ApiResponse<T>> => {
     const queryString = new URLSearchParams(config.query).toString();
     endpoint += `?${queryString}`;
   }
-  console.log(`[endpoint] ${config.method}: ${endpoint}`);
+  logger.info(`${config.method} ${endpoint}`);
 
   const headers = {
     ...config.headers,
