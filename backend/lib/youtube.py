@@ -35,7 +35,7 @@ def _run_ytdlp(url: str, opts: _Params | None = None, *, download: bool = False)
         result = ydl.extract_info(url, download=download)
 
         if IS_DEVELOPMENT:
-            _dump_results("yt-dlp", dict(result))
+            _dump_results(f"yt-dlp-{url}", dict(result))
         return result
 
 
@@ -53,7 +53,7 @@ def _get_youtube_playlist(playlist_id: str) -> ExternalPlaylist:
     )
 
     if IS_DEVELOPMENT:
-        _dump_results("youtube", playlist)
+        _dump_results(f"youtube-{playlist_id}", playlist)
 
     return ExternalPlaylist(
         id=playlist.get("id", ""),

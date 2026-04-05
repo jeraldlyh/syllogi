@@ -1,11 +1,15 @@
 import json
 import os
+from pathlib import Path
 import re
 import unicodedata
 from datetime import datetime
 from time import gmtime, strftime
 
 import pytz
+
+# DEBUG_DIRECTORY = Path(__file__).resolve().parent.parent / "debug"
+DEBUG_DIRECTORY = "debug"
 
 
 def _get_clean_name(name: str) -> str:
@@ -23,7 +27,12 @@ def _get_clean_name(name: str) -> str:
 def _dump_results(file_name: str, data: dict) -> None:
     """Dump results to a JSON file for debugging purposes."""
 
-    with open(f"{file_name}.json", "w") as file:
+    if not os.path.exists(DEBUG_DIRECTORY):
+        os.makedirs(DEBUG_DIRECTORY)
+
+    sanitized_file_name = re.sub(r"[^\w\-]", "_", file_name)
+    debug_path = os.path.join(DEBUG_DIRECTORY, f"{sanitized_file_name}.json")
+    with open(debug_path, "w") as file:
         json.dump(data, file, indent=4)
 
 
