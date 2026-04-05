@@ -1,4 +1,4 @@
-from fastapi import FastAPI
+from fastapi import APIRouter, FastAPI
 from routes.health import router as health_router
 from routes.track import router as track_router
 from routes.jellyfin import router as jellyfin_router
@@ -12,13 +12,15 @@ from routes.sync import router as sync_router
 
 
 def register_routes(app: FastAPI) -> None:
-    app.include_router(router=health_router)
-    app.include_router(router=track_router, prefix="/track")
-    app.include_router(router=jellyfin_router, prefix="/jellyfin")
-    app.include_router(router=notification_router, prefix="/notification")
-    app.include_router(router=sync_session_router, prefix="/sync_session")
-    app.include_router(router=spotify_router, prefix="/spotify")
-    app.include_router(router=playlist_router, prefix="/playlist")
-    app.include_router(router=cron_router, prefix="/cron")
-    app.include_router(router=youtube_router, prefix="/youtube")
-    app.include_router(router=sync_router, prefix="/sync")
+    api = APIRouter(prefix="/api")
+    api.include_router(router=health_router)
+    api.include_router(router=track_router, prefix="/track")
+    api.include_router(router=jellyfin_router, prefix="/jellyfin")
+    api.include_router(router=notification_router, prefix="/notification")
+    api.include_router(router=sync_session_router, prefix="/sync_session")
+    api.include_router(router=spotify_router, prefix="/spotify")
+    api.include_router(router=playlist_router, prefix="/playlist")
+    api.include_router(router=cron_router, prefix="/cron")
+    api.include_router(router=youtube_router, prefix="/youtube")
+    api.include_router(router=sync_router, prefix="/sync")
+    app.include_router(api)
