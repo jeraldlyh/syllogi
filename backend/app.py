@@ -15,7 +15,7 @@ from db.playlist import _get_playlists
 from db.session import get_isolated_session
 from lib.cron import _create_job
 from lib.sync import _sync_playlist
-from routes import register_routes
+from routes import OPENAPI_TAGS, register_routes
 
 load_dotenv()
 
@@ -96,7 +96,7 @@ class ApiResponseMiddleware(BaseHTTPMiddleware):
 
 
 def create_app() -> FastAPI:
-    app = FastAPI()
+    app = FastAPI(openapi_tags=OPENAPI_TAGS)
     app.add_middleware(
         CORSMiddleware,
         allow_origins=["*"],
