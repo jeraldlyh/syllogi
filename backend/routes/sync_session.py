@@ -10,12 +10,54 @@ router = APIRouter()
     path="",
     summary="Get sync sessions",
     description="Retrieve a list of all sync sessions.",
+    responses={
+        200: {
+            "description": "Sync sessions retrieved successfully",
+            "content": {
+                "application/json": {
+                    "example": {
+                        "success": True,
+                        "data": [
+                            {
+                                "id": "473bce59-475e-4119-bf40-117d127f6e57",
+                                "provider": "youtube",
+                                "provider_playlist_id": "PL2veF8tRu_esmG6LMYKYdfby",
+                                "provider_playlist_name": "The Daily Ketchup Podcast (TDK)",
+                                "target_user_id": "3b1adf6f43734fb8a8b9c8e5d1a7c9e",
+                                "target_username": "username",
+                                "target_playlist_id": "c4f9ba0cb0c689e8b8a9d2e5f1a7c9e",
+                                "target_playlist_name": "daily ketchup",
+                                "started_at": "2026-04-04T23:09:53.181078+08:00",
+                                "finished_at": "2026-04-04T23:10:22.417324+08:00",
+                                "duration_seconds": 29,
+                                "status": "completed",
+                                "error_message": None,
+                                "created_at": "2026-04-04T23:09:36.838593+08:00",
+                                "updated_at": "2026-04-04T23:10:06.406705+08:00",
+                                "total_tracks": ["Track A", "Track B"],
+                                "new_tracks": ["Track A"],
+                                "outdated_tracks": [],
+                                "missing_tracks": [],
+                                "downloaded_tracks": ["Track A"],
+                            }
+                        ],
+                    }
+                }
+            },
+        }
+    },
 )
 def get_sync_sessions(session: SessionDep):
     sync_sessions = _get_sync_sessions(session)
 
     tracks_by_session: dict[str, dict[str, list[str]]] = {
-        str(sync_session.id): {"total": [], "new": [], "outdated": [], "missing": [], "downloaded": []}
+        str(sync_session.id): {
+            "total": [],
+            "new": [],
+            "outdated": [],
+            "missing": [],
+            "downloaded": [],
+        }
         for sync_session in sync_sessions
     }
 

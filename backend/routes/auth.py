@@ -31,6 +31,19 @@ class RegisterUserRequest(BaseModel):
     path="/users/me",
     summary="Get current user",
     description="Retrieve information about the currently authenticated user.",
+    responses={
+        200: {
+            "description": "Current user retrieved successfully",
+            "content": {
+                "application/json": {
+                    "example": {
+                        "success": True,
+                        "data": {"id": "1", "username": "jerald"},
+                    }
+                }
+            },
+        }
+    },
 )
 async def read_me(user: Annotated[User, Depends(get_current_user)]) -> User:
     return user
@@ -40,6 +53,37 @@ async def read_me(user: Annotated[User, Depends(get_current_user)]) -> User:
     path="/login",
     summary="Login",
     description="Authenticate a user and return an access token.",
+    responses={
+        200: {
+            "description": "Login successful",
+            "content": {
+                "application/json": {
+                    "example": {
+                        "success": True,
+                        "data": {
+                            "access_token": "<jwt_token>",
+                            "token_type": "bearer",
+                        },
+                    }
+                }
+            },
+        },
+        401: {
+            "description": "Invalid credentials",
+            "content": {
+                "application/json": {
+                    "example": {
+                        "success": False,
+                        "error": {
+                            "code": 401,
+                            "name": "Unauthorized",
+                            "message": "Incorrect username or password",
+                        },
+                    }
+                }
+            },
+        },
+    },
 )
 async def login(
     session: SessionDep, form_data: Annotated[OAuth2PasswordRequestForm, Depends()]
@@ -59,7 +103,40 @@ async def login(
 
 
 @router.post(
-    path="/register", summary="Register", description="Create a new user account."
+    path="/register",
+    summary="Register",
+    description="Create a new user account.",
+    responses={
+        200: {
+            "description": "User registered successfully",
+            "content": {
+                "application/json": {
+                    "example": {
+                        "success": True,
+                        "data": {
+                            "access_token": "<jwt_token>",
+                            "token_type": "bearer",
+                        },
+                    }
+                }
+            },
+        },
+        400: {
+            "description": "Username already exists",
+            "content": {
+                "application/json": {
+                    "example": {
+                        "success": False,
+                        "error": {
+                            "code": 400,
+                            "name": "Bad Request",
+                            "message": "Username already exists",
+                        },
+                    }
+                }
+            },
+        },
+    },
 )
 async def register(session: SessionDep, item: RegisterUserRequest):
     existing_user = _authenticate_user(

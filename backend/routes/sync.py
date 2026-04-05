@@ -24,9 +24,37 @@ logger = logging.getLogger(__name__)
 
 
 @router.post(
-    path="/",
+    path="",
     summary="Sync playlist",
     description="Sync a playlist (Spotify/Youtube) to Jellyfin.",
+    responses={
+        200: {
+            "description": "Sync session created",
+            "content": {
+                "application/json": {
+                    "example": {
+                        "success": True,
+                        "data": {"id": "2baf7b6b-87de-4289-bdd8-42f138f8c9e1"},
+                    }
+                }
+            },
+        },
+        404: {
+            "description": "Playlist not found",
+            "content": {
+                "application/json": {
+                    "example": {
+                        "success": False,
+                        "error": {
+                            "code": 404,
+                            "name": "Not Found",
+                            "message": "Unable to find playlist: <playlist_id>",
+                        },
+                    }
+                }
+            },
+        },
+    },
 )
 def sync_playlist(item: Playlist, background_tasks: BackgroundTasks) -> dict[str, str]:
     session = get_isolated_session()
