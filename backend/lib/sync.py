@@ -2,7 +2,7 @@ import logging
 import os
 import time
 
-from fastapi import HTTPException
+from fastapi import HTTPException, status
 
 from db.models.playlist import Playlist, PlaylistProvider
 from db.models.sync_session import SyncProvider, SyncSession, SyncStatus, TrackListKind
@@ -120,13 +120,15 @@ def _sync_playlist_task(
             user = _get_jellyfin_user_by_name(username=username)
             if not user:
                 raise HTTPException(
-                    status_code=400, detail=f"Unable to find username: {username}"
+                    status_code=status.HTTP_400_BAD_REQUEST,
+                    detail=f"Unable to find username: {username}",
                 )
 
             jellyfin_user_id = user.get("Id")
             if not jellyfin_user_id:
                 raise HTTPException(
-                    status_code=400, detail=f"Unable to find user ID from {username}"
+                    status_code=status.HTTP_400_BAD_REQUEST,
+                    detail=f"Unable to find user ID from {username}",
                 )
 
             found_tracks, missing_tracks = _resolve_songs(songs)
@@ -161,7 +163,7 @@ def _sync_playlist_task(
                 existing_playlist_id = new_playlist.get("Id")
                 if not existing_playlist_id:
                     raise HTTPException(
-                        status_code=500,
+                        status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
                         detail="Unable to create new playlist in Jellyfin",
                     )
 
@@ -360,7 +362,8 @@ def _sync_playlist(playlist: Playlist, session: SessionDep) -> dict[str, str]:
 
     if not internal_playlist:
         raise HTTPException(
-            status_code=404, detail=f"Unable to find playlist: {playlist.playlist_id}"
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Unable to find playlist: {playlist.playlist_id}",
         )
 
     playlist_id = playlist.playlist_id

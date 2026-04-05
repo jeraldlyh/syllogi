@@ -1,6 +1,6 @@
 import logging
 
-from fastapi import APIRouter, BackgroundTasks, HTTPException
+from fastapi import APIRouter, BackgroundTasks, HTTPException, status
 
 from db.models.playlist import Playlist, PlaylistProvider
 from db.models.sync_session import SyncProvider, SyncSession, SyncStatus
@@ -34,7 +34,8 @@ def sync_playlist(item: Playlist, background_tasks: BackgroundTasks) -> dict[str
 
     if not internal_playlist:
         raise HTTPException(
-            status_code=404, detail=f"Unable to find playlist: {item.playlist_id}"
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Unable to find playlist: {item.playlist_id}",
         )
 
     songs: list[Track] = []

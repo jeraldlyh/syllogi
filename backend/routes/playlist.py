@@ -1,4 +1,4 @@
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, HTTPException, status
 from pydantic import BaseModel
 
 from db.models.playlist import Playlist, PlaylistProvider
@@ -76,7 +76,8 @@ def update_playlist(
 
     if not playlist:
         raise HTTPException(
-            status_code=400, detail=f"Unable to find playlist: {playlist_id}"
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"Unable to find playlist: {playlist_id}",
         )
 
     playlist.provider = item.provider
@@ -111,7 +112,8 @@ def delete_playlist(playlist_id: str, session: SessionDep):
 
     if not playlist:
         raise HTTPException(
-            status_code=400, detail=f"Unable to find playlist: {playlist_id}"
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"Unable to find playlist: {playlist_id}",
         )
 
     _delete_playlist(session=session, playlist=playlist)

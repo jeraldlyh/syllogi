@@ -1,6 +1,6 @@
 from difflib import SequenceMatcher
 
-from fastapi import HTTPException
+from fastapi import HTTPException, status
 
 from lib.jellyfin import _search_jellyfin_songs
 from lib.utils import _get_clean_name
@@ -99,7 +99,10 @@ def _find_track(
         jellyfin_track_name = track.get("Name")
 
         if not jellyfin_track_name:
-            raise HTTPException(status_code=500, detail="Missing Jellyfin track name")
+            raise HTTPException(
+                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                detail="Missing Jellyfin track name",
+            )
 
         score = _score_track(
             track=track,
