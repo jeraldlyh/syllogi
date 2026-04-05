@@ -284,7 +284,7 @@ const DialogItem = ({
   return (
     <div>
       <p className="text-xs text-muted-foreground">{label}</p>
-      <Text value={value} mono={mono} />
+      <Text className="truncate" value={value} mono={mono} />
     </div>
   );
 };
