@@ -1,6 +1,7 @@
 import json
 import logging
 import logging.config
+import os
 from http import HTTPStatus
 from typing import Callable
 
@@ -17,6 +18,8 @@ from lib.sync import _sync_playlist
 from routes import register_routes
 
 load_dotenv()
+
+LOG_LEVEL = os.getenv("LOG_LEVEL", "INFO").upper()
 
 
 logging.config.dictConfig(
@@ -45,18 +48,18 @@ logging.config.dictConfig(
         },
         "loggers": {
             "uvicorn.error": {
-                "level": "DEBUG",
+                "level": LOG_LEVEL,
                 "handlers": ["default"],
                 "propagate": False,
             },
             "uvicorn.access": {
-                "level": "DEBUG",
+                "level": LOG_LEVEL,
                 "handlers": ["default"],
                 "propagate": False,
             },
         },
         "root": {
-            "level": "INFO",
+            "level": LOG_LEVEL,
             "handlers": ["default"],
         },
     }

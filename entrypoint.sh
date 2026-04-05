@@ -10,9 +10,11 @@ cd /app/web
 PORT=3000 HOSTNAME=0.0.0.0 node server.js &
 WEB_PID=$!
 
+export LOG_LEVEL=${LOG_LEVEL:-"info"}
+
 echo "Starting backend..."
 cd /app/backend
-exec uvicorn app:app --host 0.0.0.0 --port 8000 &
+exec uvicorn app:app --host 0.0.0.0 --port 8000 --log-level "$LOG_LEVEL" &
 BACKEND_PID=$!
 
 term_handler() {
