@@ -1,3 +1,4 @@
+# pyright: reportUnusedImport=false
 from logging.config import fileConfig
 
 from dotenv import load_dotenv
@@ -13,6 +14,7 @@ from db.session import get_connection_string  # noqa: E402
 from db.models.playlist import Playlist  # noqa: E402, F401
 from db.models.sync_session import SyncSession, SyncSessionTrack  # noqa: E402, F401
 from db.models.notification import Notification  # noqa: E402, F401
+from db.models.user import User  # noqa: E402, F401
 
 config = context.config
 
