@@ -20,6 +20,7 @@ services:
       - JELLYFIN_API_KEY=
       - JELLYFIN_BASE_URL=
       - NEXT_PUBLIC_BACKEND_URL=http://localhost:8000
+      - ENVIRONMENT=production
     ports:
       - 8000:8000
       - 3000:3000
