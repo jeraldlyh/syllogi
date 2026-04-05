@@ -10,7 +10,7 @@ from db.playlist import _get_playlist_by_id
 from db.session import SessionDep, get_isolated_session
 from db.sync_session import _build_tracks, _create_sync_session, _update_sync_session
 from lib.common import ExternalPlaylist, PlaylistDiff, ResolvedTrack, Track
-from lib.downloader import _download_missing_tracks
+from lib.download import _download_missing_tracks
 from lib.jellyfin import (
     _add_songs_to_jellyfin_playlist,
     _create_jellyfin_playlist,

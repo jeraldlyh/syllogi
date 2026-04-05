@@ -114,5 +114,6 @@ def _download_missing_tracks(
         else:
             still_missing_tracks.append(song)
             logger.warning(f"{formatted_name}: STILL MISSING")
+        break
 
     return downloaded_tracks, still_missing_tracks
