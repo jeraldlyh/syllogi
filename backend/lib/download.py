@@ -74,9 +74,17 @@ def _download_track(
             download=True,
         )
 
-        if result:
+        if (
+            len(result["entries"]) > 0
+            and len(result["entries"][0]["requested_downloads"]) > 0
+            and os.path.exists(
+                result["entries"][0]["requested_downloads"][0].get("filepath")
+            )
+        ):
             title = result.get("title", search_query)
-            logger.info(f"Downloaded: {title} -> {output_template}")
+            filepath = result["entries"][0]["requested_downloads"][0].get("filepath")
+
+            logger.info(f"Downloaded: {title} -> {filepath}")
             return True
         logger.warning(f"No results found for: {search_query}")
         return False

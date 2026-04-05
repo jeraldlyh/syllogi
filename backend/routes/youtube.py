@@ -2,14 +2,19 @@ import logging
 from typing import Annotated, Any
 
 from fastapi import APIRouter, Path
+from pydantic import BaseModel
 
-from lib.youtube import (
-    _get_youtube_playlist,
-    _get_youtube_playlist_songs,
-)
+from lib.download import _download_track
+from lib.youtube import _get_youtube_playlist, _get_youtube_playlist_songs
 
 router = APIRouter()
 logger = logging.getLogger(__name__)
+
+
+class DownloadYouTubePlaylist(BaseModel):
+    artist_name: str
+    track_name: str
+    enable_lyrics: bool
 
 
 @router.get(
@@ -36,3 +41,17 @@ def get_youtube_playlist_songs(
     songs = _get_youtube_playlist_songs(playlist_id=id)
 
     return [song.to_dict() for song in songs]
+
+
+@router.post(
+    path="/download",
+    summary="Download YouTube playlist",
+    description="Download songs from YouTube by its ID.",
+)
+async def download_track(item: DownloadYouTubePlaylist) -> dict[str, bool]:
+    is_downloaded = _download_track(
+        artist_name=item.artist_name,
+        track_name=item.track_name,
+        enable_lyrics=item.enable_lyrics,
+    )
+    return {"downloaded": is_downloaded}
