@@ -11,7 +11,7 @@ router = APIRouter()
 logger = logging.getLogger(__name__)
 
 
-class DownloadYouTubePlaylist(BaseModel):
+class DownloadYouTubeTrackRequest(BaseModel):
     artist_name: str
     track_name: str
     enable_lyrics: bool
@@ -48,7 +48,7 @@ def get_youtube_playlist_songs(
     summary="Download YouTube playlist",
     description="Download songs from YouTube by its ID.",
 )
-async def download_track(item: DownloadYouTubePlaylist) -> dict[str, bool]:
+async def download_track(item: DownloadYouTubeTrackRequest) -> dict[str, bool]:
     is_downloaded = _download_track(
         artist_name=item.artist_name,
         track_name=item.track_name,
