@@ -9,9 +9,6 @@ from lib.youtube import _run_ytdlp
 logger = logging.getLogger(__name__)
 
 YOUTUBE_DOWNLOAD_DIR = os.getenv("YOUTUBE_DOWNLOAD_DIR", "/downloads")
-DISABLE_MUSIC_VIDEO_DOWNLOADS = (
-    os.getenv("DISABLE_MUSIC_VIDEO_DOWNLOADS", "true").lower() == "true"
-)
 
 
 def _get_download_path(artist_name: str, track_name: str, album_name: str = "") -> str:
@@ -26,6 +23,7 @@ def _download_track(
     artist_name: str,
     track_name: str,
     album_name: str = "",
+    enable_lyrics: bool = True,
 ) -> bool:
     """Search YouTube for a song and download it as audio using yt-dlp.
 
@@ -47,7 +45,7 @@ def _download_track(
         search_query += f" {album_name}"
     search_query += f" {track_name}"
 
-    if DISABLE_MUSIC_VIDEO_DOWNLOADS:
+    if enable_lyrics:
         search_query += " lyrics"
 
     output_template = (

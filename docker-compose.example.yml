@@ -15,7 +15,6 @@ services:
       - DATABASE_NAME=syllogi
       - DATABASE_URL=syllogi-postgres:5432
       - YOUTUBE_DOWNLOAD_DIR=/downloads
-      - DISABLE_MUSIC_VIDEO_DOWNLOADS=true
       - DISCORD_WEBHOOK_URL=
       - JELLYFIN_API_KEY=
       - JELLYFIN_BASE_URL=

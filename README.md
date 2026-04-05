@@ -29,14 +29,13 @@ syllogi (Greek for "collection") imports playlist metadata from providers such a
 
 Provide configuration through environment variables.
 
-| Name                            | Required | Description                                                                                              |
-| ------------------------------- | -------- | -------------------------------------------------------------------------------------------------------- |
-| `JELLYFIN_API_KEY`              | Yes      | Jellyfin API key for the target user with permission to create and manage playlists.                     |
-| `JELLYFIN_BASE_URL`             | Yes      | Base URL of your Jellyfin server, for example `https://jellyfin.example.com` or `http://localhost:8096`. |
-| `YOUTUBE_LIBRARY_NAME`          | No       | Name of the Jellyfin media folder that contains the yt-dlp downloads. Default: `Youtube`.                |
-| `YOUTUBE_DOWNLOAD_DIR`          | No       | Filesystem path where downloaded tracks are written. Default: `/downloads`.                              |
-| `DISABLE_MUSIC_VIDEO_DOWNLOADS` | No       | If `true`, the download search is biased toward lyric/audio-style uploads. Default: `true`.              |
-| `DISCORD_WEBHOOK_URL`           | No       | Discord webhook URL for sync summary notifications. Leave unset to disable notifications.                |
+| Name                   | Required | Description                                                                                              |
+| ---------------------- | -------- | -------------------------------------------------------------------------------------------------------- |
+| `JELLYFIN_API_KEY`     | Yes      | Jellyfin API key for the target user with permission to create and manage playlists.                     |
+| `JELLYFIN_BASE_URL`    | Yes      | Base URL of your Jellyfin server, for example `https://jellyfin.example.com` or `http://localhost:8096`. |
+| `YOUTUBE_LIBRARY_NAME` | No       | Name of the Jellyfin media folder that contains the yt-dlp downloads. Default: `Youtube`.                |
+| `YOUTUBE_DOWNLOAD_DIR` | No       | Filesystem path where downloaded tracks are written. Default: `/downloads`.                              |
+| `DISCORD_WEBHOOK_URL`  | No       | Discord webhook URL for sync summary notifications. Leave unset to disable notifications.                |
 
 ## How it works
 
