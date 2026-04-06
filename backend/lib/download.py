@@ -1,4 +1,6 @@
 import re
+import unicodedata
+import string
 import glob
 import logging
 import os
@@ -12,12 +14,25 @@ logger = logging.getLogger(__name__)
 YOUTUBE_DOWNLOAD_DIR = os.getenv("YOUTUBE_DOWNLOAD_DIR", "/downloads")
 
 
+def _sanitize_filename(name: str) -> str:
+    """Sanitize a filename by removing or replacing characters that are not allowed in file names."""
+
+    valid_filename_chars = "-_.() %s%s" % (string.ascii_letters, string.digits)
+    cleaned_filename = (
+        unicodedata.normalize("NFKD", name).encode("ASCII", "ignore").decode()
+    )
+    return "".join(
+        char for char in cleaned_filename if char in valid_filename_chars
+    ).strip()
+
+
 def _get_download_path(artist_name: str, track_name: str, album_name: str = "") -> str:
     """Get the directory path where a song should be downloaded based on artist and album."""
 
+    path = f"{Path(YOUTUBE_DOWNLOAD_DIR)}/{artist_name}/Singles/{track_name}"
     if album_name:
-        return f"{Path(YOUTUBE_DOWNLOAD_DIR)}/{artist_name}/{album_name}/{track_name}"
-    return f"{Path(YOUTUBE_DOWNLOAD_DIR)}/{artist_name}/Singles/{track_name}"
+        path = f"{Path(YOUTUBE_DOWNLOAD_DIR)}/{artist_name}/{album_name}/{track_name}"
+    return _sanitize_filename(path)
 
 
 def _score_video(entry):
