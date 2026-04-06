@@ -12,7 +12,6 @@ from lib.auth import (
     _create_access_token,
     _get_password_hash,
 )
-from lib.cron import scheduler
 
 router = APIRouter()
 
