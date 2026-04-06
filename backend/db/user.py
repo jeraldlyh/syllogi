@@ -13,7 +13,7 @@ def _get_user_by_id(session: SessionDep, user_id: str | uuid.UUID) -> User | Non
 
 
 def _get_user_by_username(session: SessionDep, username: str) -> User | None:
-    return session.get(User, username)
+    return session.exec(select(User).where(User.username == username)).first()
 
 
 def _create_user(session: SessionDep, user: User) -> None:
