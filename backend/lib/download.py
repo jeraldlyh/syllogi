@@ -68,6 +68,9 @@ def _download_track(
                 "quiet": True,
                 "no_warnings": True,
                 "noplaylist": True,
+                "sleep_interval": 10,
+                "max_sleep_interval": 30,
+                "sleep_interval_requests": 10,
             },
             download=True,
         )
@@ -99,6 +102,8 @@ def _download_missing_tracks(
     Returns a tuple containing a list of successfully downloaded songs and a list of still missing track names.
     """
 
+    logger.info(f"Attempting to download {len(missing_tracks)} missing tracks...")
+
     downloaded_tracks: list[Track] = []
     still_missing_tracks: list[Track] = []
 
@@ -120,6 +125,4 @@ def _download_missing_tracks(
         else:
             still_missing_tracks.append(song)
             logger.warning(f"{formatted_name}: STILL MISSING")
-        break
-
     return downloaded_tracks, still_missing_tracks

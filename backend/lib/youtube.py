@@ -25,7 +25,7 @@ def _run_ytdlp(url: str, opts: _Params | None = None, *, download: bool = False)
     default_opts: _Params = {
         "quiet": True,
         "no_warnings": True,
-        "sleep_interval": 1,
+        "ignoreerrors": False,
     }
     if opts:
         default_opts.update(opts)
