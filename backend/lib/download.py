@@ -28,11 +28,13 @@ def _sanitize_filename(name: str) -> str:
 
 def _get_download_path(artist_name: str, track_name: str, album_name: str = "") -> str:
     """Get the directory path where a song should be downloaded based on artist and album."""
+    sanitized_artist_name = _sanitize_filename(artist_name)
+    sanitized_track_name = _sanitize_filename(track_name)
 
-    path = f"{Path(YOUTUBE_DOWNLOAD_DIR)}/{artist_name}/Singles/{track_name}"
     if album_name:
-        path = f"{Path(YOUTUBE_DOWNLOAD_DIR)}/{artist_name}/{album_name}/{track_name}"
-    return _sanitize_filename(path)
+        sanitized_album_name = _sanitize_filename(album_name)
+        return f"{Path(YOUTUBE_DOWNLOAD_DIR)}/{sanitized_artist_name}/{sanitized_album_name}/{sanitized_track_name}"
+    return f"{Path(YOUTUBE_DOWNLOAD_DIR)}/{sanitized_artist_name}/Singles/{sanitized_track_name}"
 
 
 def _score_video(entry):
@@ -138,14 +140,14 @@ def _download_track(
             },
         )
         best_entry = _get_best_entry(search_results.get("entries", []))
-        url = best_entry.get("webpage_url") if best_entry else None
+        best_entry_url = best_entry.get("webpage_url") if best_entry else None
 
-        if not best_entry or not url:
+        if not best_entry or not best_entry_url:
             logger.warning(f"No suitable YouTube entry found for: {search_query}")
             return False
 
         result = _run_ytdlp(
-            url=f"ytsearch:{search_query}",
+            url=f"ytsearch:{best_entry_url}",
             opts={
                 "format": "bestaudio/best",
                 "postprocessors": [
