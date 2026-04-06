@@ -14,7 +14,6 @@ logger = logging.getLogger(__name__)
 class DownloadYouTubeTrackRequest(BaseModel):
     artist_name: str
     track_name: str
-    enable_lyrics: bool
 
 
 @router.get(
@@ -101,6 +100,5 @@ async def download_track(item: DownloadYouTubeTrackRequest) -> dict[str, bool]:
     is_downloaded = _download_track(
         artist_name=item.artist_name,
         track_name=item.track_name,
-        enable_lyrics=item.enable_lyrics,
     )
     return {"downloaded": is_downloaded}
