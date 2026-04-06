@@ -1,3 +1,4 @@
+import re
 import glob
 import logging
 import os
@@ -19,11 +20,73 @@ def _get_download_path(artist_name: str, track_name: str, album_name: str = "") 
     return f"{Path(YOUTUBE_DOWNLOAD_DIR)}/{artist_name}/Singles/{track_name}"
 
 
+def _score_video(entry):
+    """Score a YouTube video entry based on heuristics to determine its suitability as a download candidate."""
+
+    score = 0.0
+    title = (entry.get("title") or "").lower()
+    uploader = (entry.get("uploader") or "").lower()
+
+    if "official audio" in title:
+        score += 0.5
+    if "audio" in title:
+        score += 0.3
+    if any(term in uploader for term in ["official", "music video"]):
+        score += 0.2
+
+    score += min(entry.get("view_count") or 0, 1_000_000) // 1_000_000
+    return score
+
+
+def _is_lyrics_video(entry: dict) -> bool:
+    """Determine if a video is a lyric video based on its title."""
+
+    title = (entry.get("title") or "").lower()
+    return bool(re.search(r"\blyrics?\b|\blyric video\b", title))
+
+
+def _is_bad_fallback(entry) -> bool:
+    """Determine if a video is a bad fallback option based on its title."""
+
+    title = (entry.get("title") or "").lower()
+    bad_patterns = [
+        r"\blive\b",
+    ]
+    return any(re.search(pattern, title) for pattern in bad_patterns)
+
+
+def _get_best_entry(entries: list[dict]) -> dict | None:
+    """Get the best entry from a list of yt-dlp search results based on heuristics."""
+
+    lyrics_candidates = []
+    fallback_candidates = []
+
+    for entry in entries:
+        if not entry:
+            continue
+
+        if entry.get("is_live"):
+            continue
+
+        if _is_lyrics_video(entry):
+            lyrics_candidates.append(entry)
+            continue
+
+        if not _is_bad_fallback(entry):
+            fallback_candidates.append(entry)
+
+    if lyrics_candidates:
+        return max(lyrics_candidates, key=lambda e: e.get("view_count") or 0)
+
+    if fallback_candidates:
+        return max(fallback_candidates, key=_score_video)
+    return None
+
+
 def _download_track(
     artist_name: str,
     track_name: str,
     album_name: str = "",
-    enable_lyrics: bool = True,
 ) -> bool:
     """Search YouTube for a song and download it as audio using yt-dlp.
 
@@ -45,14 +108,27 @@ def _download_track(
         search_query += f" {album_name}"
     search_query += f" {track_name}"
 
-    if enable_lyrics:
-        search_query += " lyrics"
-
     output_template = (
         _get_download_path(artist_name, track_name, album_name) + ".%(ext)s"
     )
 
     try:
+        search_results = _run_ytdlp(
+            url=f"ytsearch5:{search_query}",
+            opts={
+                "quiet": True,
+                "no_warnings": True,
+                "noplaylist": True,
+                "skip_download": "",
+            },
+        )
+        best_entry = _get_best_entry(search_results.get("entries", []))
+        url = best_entry.get("webpage_url") if best_entry else None
+
+        if not best_entry or not url:
+            logger.warning(f"No suitable YouTube entry found for: {search_query}")
+            return False
+
         result = _run_ytdlp(
             url=f"ytsearch:{search_query}",
             opts={
