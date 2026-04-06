@@ -32,10 +32,15 @@ def _run_ytdlp(url: str, opts: _Params | None = None, *, download: bool = False)
 
     with yt_dlp.YoutubeDL(params=default_opts) as ydl:
         logger.debug(f"Running yt-dlp for URL: {url} with options: {default_opts}")
-        result = ydl.extract_info(url, download=download)
+        if download:
+            logger.info(f"Downloading content from URL: {url}")
+            ydl.download([url])
+        else:
+            logger.info(f"Extracting information from URL: {url}")
+            result = ydl.extract_info(url, download=download)
 
-        if IS_DEVELOPMENT:
-            _dump_results(f"yt-dlp-{url}", dict(result))
+            if IS_DEVELOPMENT:
+                _dump_results(f"yt-dlp-{url}", dict(result))
         return result
 
 

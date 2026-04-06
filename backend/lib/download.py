@@ -125,9 +125,8 @@ def _download_track(
         search_query += f" {album_name}"
     search_query += f" {track_name}"
 
-    output_template = (
-        _get_download_path(artist_name, track_name, album_name) + ".%(ext)s"
-    )
+    output_path = _get_download_path(artist_name, track_name, album_name)
+    output_template = output_path + ".%(ext)s"
 
     try:
         search_results = _run_ytdlp(
@@ -168,17 +167,12 @@ def _download_track(
             download=True,
         )
 
-        if (
-            len(result["entries"]) > 0
-            and len(result["entries"][0]["requested_downloads"]) > 0
-            and os.path.exists(
-                result["entries"][0]["requested_downloads"][0].get("filepath")
-            )
-        ):
-            title = result.get("title", search_query)
-            filepath = result["entries"][0]["requested_downloads"][0].get("filepath")
+        downloaded_file_path = glob.glob(f"{glob.escape(output_path)}.*")
 
-            logger.info(f"Downloaded: {title} -> {filepath}")
+        if downloaded_file_path:
+            title = result.get("title", search_query)
+
+            logger.info(f"Downloaded: {title} -> {downloaded_file_path}")
             return True
         logger.warning(f"No results found for: {search_query}")
         return False
