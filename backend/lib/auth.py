@@ -15,7 +15,7 @@ SECRET_KEY = os.getenv("SECRET_KEY", "default_secret_key")
 ALGORITHM = "HS256"
 ACCESS_TOKEN_EXPIRE_MINUTES = 30
 HASH = PasswordHash.recommended()
-OAUTH2_SCHEME = OAuth2PasswordBearer(tokenUrl="token")
+OAUTH2_SCHEME = OAuth2PasswordBearer(tokenUrl="/api/auth/login")
 
 
 def _get_password_hash(password: str) -> str:
@@ -43,7 +43,8 @@ def _authenticate_user(
 
 
 def _create_access_token(
-    data: dict, expires_delta: timedelta = timedelta(ACCESS_TOKEN_EXPIRE_MINUTES)
+    data: dict,
+    expires_delta: timedelta = timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES),
 ) -> str:
     """Create a JWT access token."""
     to_encode = data.copy()
