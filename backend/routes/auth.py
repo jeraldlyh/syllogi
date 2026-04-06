@@ -45,6 +45,7 @@ class RegisterUserRequest(BaseModel):
     },
 )
 async def read_me(user: Annotated[User, Depends(get_current_user)]) -> User:
+    del user.password
     return user
 
 
