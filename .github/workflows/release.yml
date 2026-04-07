@@ -8,14 +8,11 @@ env:
   REGISTRY: ghcr.io
   IMAGE: ghcr.io/${{ github.repository }}
 
-permissions:
-  contents: write
-  packages: write
-
 jobs:
   release:
     name: Semantic Release
     runs-on: ubuntu-latest
+    permissions: write-all
     steps:
       - name: Checkout repository
         uses: actions/checkout@v6
@@ -45,6 +42,9 @@ jobs:
 
   publish:
     name: Publish Image
+    permissions:
+      contents: read
+      packages: write
     needs: release
     runs-on: ubuntu-latest
     steps:
