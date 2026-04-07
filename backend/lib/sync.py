@@ -103,7 +103,7 @@ def _diff_tracks(
     return diff
 
 
-def _sync_playlist_task(
+async def _sync_playlist_task(
     internal_playlist: Playlist,
     external_playlist: ExternalPlaylist,
     songs: list[Track],
@@ -177,9 +177,10 @@ def _sync_playlist_task(
 
             if missing_tracks and internal_playlist.enable_download:
                 missing_songs = [missing.track for missing in missing_tracks]
-                newly_downloaded_tracks, still_missing_tracks = (
-                    _download_missing_tracks(missing_tracks=missing_songs)
-                )
+                (
+                    newly_downloaded_tracks,
+                    still_missing_tracks,
+                ) = await _download_missing_tracks(missing_tracks=missing_songs)
                 downloaded_tracks = newly_downloaded_tracks
 
                 if len(downloaded_tracks) > 0:
@@ -356,7 +357,7 @@ def _sync_playlist_task(
             )
 
 
-def _sync_playlist(playlist: Playlist, session: SessionDep) -> dict[str, str]:
+async def _sync_playlist(playlist: Playlist, session: SessionDep) -> dict[str, str]:
     """Sync a playlist (Spotify/Youtube) to Jellyfin."""
     internal_playlist = _get_playlist_by_id(session=session, playlist_id=playlist.id)
 
@@ -397,7 +398,7 @@ def _sync_playlist(playlist: Playlist, session: SessionDep) -> dict[str, str]:
             songs = _get_youtube_playlist_songs(playlist_id=playlist_id)
             external_playlist = _get_youtube_playlist(playlist_id=playlist_id)
 
-    _sync_playlist_task(
+    await _sync_playlist_task(
         internal_playlist=internal_playlist,
         external_playlist=external_playlist,
         songs=songs,

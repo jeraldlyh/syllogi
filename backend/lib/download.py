@@ -1,3 +1,5 @@
+import asyncio
+import functools
 import re
 import unicodedata
 import string
@@ -100,7 +102,7 @@ def _get_best_entry(entries: list[dict]) -> dict | None:
     return None
 
 
-def _download_track(
+async def _download_track(
     artist_name: str,
     track_name: str,
     album_name: str = "",
@@ -145,32 +147,58 @@ def _download_track(
             logger.warning(f"No suitable YouTube entry found for: {search_query}")
             return False
 
-        result = _run_ytdlp(
-            url=f"ytsearch:{best_entry_url}",
-            opts={
-                "format": "bestaudio/best",
-                "postprocessors": [
-                    {
-                        "key": "FFmpegExtractAudio",
-                        "preferredcodec": "opus",
-                        "preferredquality": "0",
-                    }
-                ],
-                "outtmpl": output_template,
-                "quiet": True,
-                "no_warnings": True,
-                "noplaylist": True,
-                "sleep_interval": 10,
-                "max_sleep_interval": 30,
-                "sleep_interval_requests": 10,
-            },
-            download=True,
+        loop = asyncio.get_running_loop()
+        await loop.run_in_executor(
+            None,
+            functools.partial(
+                _run_ytdlp,
+                url=best_entry_url,
+                opts={
+                    "format": "bestaudio/best",
+                    "postprocessors": [
+                        {
+                            "key": "FFmpegExtractAudio",
+                            "preferredcodec": "opus",
+                            "preferredquality": "0",
+                        }
+                    ],
+                    "outtmpl": output_template,
+                    "quiet": True,
+                    "no_warnings": True,
+                    "noplaylist": True,
+                    "sleep_interval": 10,
+                    "max_sleep_interval": 30,
+                    "sleep_interval_requests": 10,
+                },
+                download=True,
+            ),
         )
+        # _run_ytdlp(
+        #     url=f"ytsearch:{best_entry_url}",
+        #     opts={
+        #         "format": "bestaudio/best",
+        #         "postprocessors": [
+        #             {
+        #                 "key": "FFmpegExtractAudio",
+        #                 "preferredcodec": "opus",
+        #                 "preferredquality": "0",
+        #             }
+        #         ],
+        #         "outtmpl": output_template,
+        #         "quiet": True,
+        #         "no_warnings": True,
+        #         "noplaylist": True,
+        #         "sleep_interval": 10,
+        #         "max_sleep_interval": 30,
+        #         "sleep_interval_requests": 10,
+        #     },
+        #     download=True,
+        # )
 
         downloaded_file_path = glob.glob(f"{glob.escape(output_path)}.*")
 
         if downloaded_file_path:
-            title = result.get("title", search_query)
+            title = best_entry.get("title", search_query)
 
             logger.info(f"Downloaded: {title} -> {downloaded_file_path}")
             return True
@@ -181,7 +209,7 @@ def _download_track(
         return False
 
 
-def _download_missing_tracks(
+async def _download_missing_tracks(
     missing_tracks: list[Track],
 ) -> tuple[list[Track], list[Track]]:
     """Download a list of missing songs.
@@ -200,7 +228,7 @@ def _download_missing_tracks(
         album_name = song.album_name
         formatted_name = f"{artist_name} - {album_name}: {track_name}"
 
-        success = _download_track(
+        success = await _download_track(
             artist_name=artist_name,
             track_name=track_name,
             album_name=album_name,

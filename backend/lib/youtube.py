@@ -35,12 +35,13 @@ def _run_ytdlp(url: str, opts: _Params | None = None, *, download: bool = False)
         if download:
             logger.info(f"Downloading content from URL: {url}")
             ydl.download([url])
-        else:
-            logger.info(f"Extracting information from URL: {url}")
-            result = ydl.extract_info(url, download=download)
+            return None
 
-            if IS_DEVELOPMENT:
-                _dump_results(f"yt-dlp-{url}", dict(result))
+        logger.info(f"Extracting information from URL: {url}")
+        result = ydl.extract_info(url, download=download)
+
+        if IS_DEVELOPMENT:
+            _dump_results(f"yt-dlp-{url}", dict(result))
         return result
 
 

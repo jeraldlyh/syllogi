@@ -97,7 +97,7 @@ def get_youtube_playlist_songs(
     },
 )
 async def download_track(item: DownloadYouTubeTrackRequest) -> dict[str, bool]:
-    is_downloaded = _download_track(
+    is_downloaded = await _download_track(
         artist_name=item.artist_name,
         track_name=item.track_name,
     )
