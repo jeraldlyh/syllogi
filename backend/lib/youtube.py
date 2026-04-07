@@ -16,6 +16,7 @@ if TYPE_CHECKING:
 logger = logging.getLogger(__name__)
 
 DISCORD_WEBHOOK_URL = os.getenv("DISCORD_WEBHOOK_URL", "")
+IS_DEVELOPMENT = os.getenv("ENVIRONMENT", "production") == "development"
 
 
 def _run_ytdlp(url: str, opts: _Params | None = None, *, download: bool = False) -> Any:
@@ -24,12 +25,24 @@ def _run_ytdlp(url: str, opts: _Params | None = None, *, download: bool = False)
     default_opts: _Params = {
         "quiet": True,
         "no_warnings": True,
+        "ignoreerrors": False,
     }
     if opts:
         default_opts.update(opts)
 
     with yt_dlp.YoutubeDL(params=default_opts) as ydl:
-        return ydl.extract_info(url, download=download)
+        logger.debug(f"Running yt-dlp for URL: {url} with options: {default_opts}")
+        if download:
+            logger.info(f"Downloading content from URL: {url}")
+            ydl.download([url])
+            return None
+
+        logger.info(f"Extracting information from URL: {url}")
+        result = ydl.extract_info(url, download=download)
+
+        if IS_DEVELOPMENT:
+            _dump_results(f"yt-dlp-{url}", dict(result))
+        return result
 
 
 def _get_youtube_playlist(playlist_id: str) -> ExternalPlaylist:
@@ -44,7 +57,9 @@ def _get_youtube_playlist(playlist_id: str) -> ExternalPlaylist:
             "ignoreerrors": True,
         },
     )
-    _dump_results("youtube", playlist)
+
+    if IS_DEVELOPMENT:
+        _dump_results(f"youtube-{playlist_id}", playlist)
 
     return ExternalPlaylist(
         id=playlist.get("id", ""),

@@ -6,7 +6,28 @@ router = APIRouter()
 
 
 @router.get(
-    path="", summary="Get cron jobs", description="Retrieve a list of all cron jobs."
+    path="",
+    summary="Get cron jobs",
+    description="Retrieve a list of all cron jobs.",
+    responses={
+        200: {
+            "description": "Cron jobs retrieved successfully",
+            "content": {
+                "application/json": {
+                    "example": {
+                        "success": True,
+                        "data": [
+                            {
+                                "id": "playlist-sync-1",
+                                "name": "playlist-sync-1",
+                                "next_run_time": "2026-04-05T15:00:00+00:00",
+                            }
+                        ],
+                    }
+                }
+            },
+        }
+    },
 )
 async def get_cron_jobs():
     schedules = []

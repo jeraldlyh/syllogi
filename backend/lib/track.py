@@ -1,6 +1,6 @@
 from difflib import SequenceMatcher
 
-from fastapi import HTTPException
+from fastapi import HTTPException, status
 
 from lib.jellyfin import _search_jellyfin_songs
 from lib.utils import _get_clean_name
@@ -39,7 +39,7 @@ def _score_track(
     year: str,
     duration: int,
 ) -> float:
-    """Score a candidate track on multiple fields."""
+    """Score a track based on heuristic comparisons of its metadata against the provided metadata."""
 
     title_score = _similarity_score(track.get("Name", ""), track_name)
 
@@ -58,13 +58,10 @@ def _score_track(
     duration_score = 0.0
     if duration and track.get("CumulativeRunTimeTicks"):
         track_duration = track.get("CumulativeRunTimeTicks", 0) / 10_000_000
-        interim_duration_score = max(
+        duration_difference = max(
             0.0, 1.0 - abs(track_duration - duration) / max(duration, track_duration)
         )
-
-        duration_score = (
-            interim_duration_score if interim_duration_score > 0.85 else 0.0
-        )
+        duration_score = duration_difference if duration_difference > 0.85 else 0.0
 
     return (
         (title_score * 0.4)
@@ -99,7 +96,10 @@ def _find_track(
         jellyfin_track_name = track.get("Name")
 
         if not jellyfin_track_name:
-            raise HTTPException(status_code=500, detail="Missing Jellyfin track name")
+            raise HTTPException(
+                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                detail="Missing Jellyfin track name",
+            )
 
         score = _score_track(
             track=track,

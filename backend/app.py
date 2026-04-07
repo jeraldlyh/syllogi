@@ -1,6 +1,7 @@
 import json
 import logging
 import logging.config
+import os
 from http import HTTPStatus
 from typing import Callable
 
@@ -14,9 +15,11 @@ from db.playlist import _get_playlists
 from db.session import get_isolated_session
 from lib.cron import _create_job
 from lib.sync import _sync_playlist
-from routes import register_routes
+from routes import OPENAPI_TAGS, register_routes
 
 load_dotenv()
+
+LOG_LEVEL = os.getenv("LOG_LEVEL", "INFO").upper()
 
 
 logging.config.dictConfig(
@@ -45,18 +48,18 @@ logging.config.dictConfig(
         },
         "loggers": {
             "uvicorn.error": {
-                "level": "DEBUG",
+                "level": LOG_LEVEL,
                 "handlers": ["default"],
                 "propagate": False,
             },
             "uvicorn.access": {
-                "level": "DEBUG",
+                "level": LOG_LEVEL,
                 "handlers": ["default"],
                 "propagate": False,
             },
         },
         "root": {
-            "level": "INFO",
+            "level": LOG_LEVEL,
             "handlers": ["default"],
         },
     }
@@ -93,7 +96,7 @@ class ApiResponseMiddleware(BaseHTTPMiddleware):
 
 
 def create_app() -> FastAPI:
-    app = FastAPI(root_path="/api")
+    app = FastAPI(openapi_tags=OPENAPI_TAGS)
     app.add_middleware(
         CORSMiddleware,
         allow_origins=["*"],

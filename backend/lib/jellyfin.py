@@ -3,7 +3,7 @@ import os
 from typing import Any
 
 import requests
-from fastapi import HTTPException
+from fastapi import HTTPException, status
 
 JELLYFIN_API_KEY = os.getenv("JELLYFIN_API_KEY")
 JELLYFIN_BASE_URL = os.getenv("JELLYFIN_BASE_URL")
@@ -187,7 +187,10 @@ def _rescan_jellyfin_library() -> None:
         logger.warning(
             f"Could not find media folder with name '{YOUTUBE_LIBRARY_NAME}' to rescan"
         )
-        raise HTTPException(status_code=500, detail="Media folder not found")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Media folder not found",
+        )
 
     _jellyfin(
         f"/Items/{download_folder.get('Id')}/Refresh",

@@ -2,7 +2,7 @@ import logging
 import os
 import time
 
-from fastapi import HTTPException
+from fastapi import HTTPException, status
 
 from db.models.playlist import Playlist, PlaylistProvider
 from db.models.sync_session import SyncProvider, SyncSession, SyncStatus, TrackListKind
@@ -10,7 +10,7 @@ from db.playlist import _get_playlist_by_id
 from db.session import SessionDep, get_isolated_session
 from db.sync_session import _build_tracks, _create_sync_session, _update_sync_session
 from lib.common import ExternalPlaylist, PlaylistDiff, ResolvedTrack, Track
-from lib.downloader import _download_missing_tracks
+from lib.download import _download_missing_tracks
 from lib.jellyfin import (
     _add_songs_to_jellyfin_playlist,
     _create_jellyfin_playlist,
@@ -103,7 +103,7 @@ def _diff_tracks(
     return diff
 
 
-def _sync_playlist_task(
+async def _sync_playlist_task(
     internal_playlist: Playlist,
     external_playlist: ExternalPlaylist,
     songs: list[Track],
@@ -120,13 +120,15 @@ def _sync_playlist_task(
             user = _get_jellyfin_user_by_name(username=username)
             if not user:
                 raise HTTPException(
-                    status_code=400, detail=f"Unable to find username: {username}"
+                    status_code=status.HTTP_400_BAD_REQUEST,
+                    detail=f"Unable to find username: {username}",
                 )
 
             jellyfin_user_id = user.get("Id")
             if not jellyfin_user_id:
                 raise HTTPException(
-                    status_code=400, detail=f"Unable to find user ID from {username}"
+                    status_code=status.HTTP_400_BAD_REQUEST,
+                    detail=f"Unable to find user ID from {username}",
                 )
 
             found_tracks, missing_tracks = _resolve_songs(songs)
@@ -161,7 +163,7 @@ def _sync_playlist_task(
                 existing_playlist_id = new_playlist.get("Id")
                 if not existing_playlist_id:
                     raise HTTPException(
-                        status_code=500,
+                        status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
                         detail="Unable to create new playlist in Jellyfin",
                     )
 
@@ -175,9 +177,10 @@ def _sync_playlist_task(
 
             if missing_tracks and internal_playlist.enable_download:
                 missing_songs = [missing.track for missing in missing_tracks]
-                newly_downloaded_tracks, still_missing_tracks = (
-                    _download_missing_tracks(missing_tracks=missing_songs)
-                )
+                (
+                    newly_downloaded_tracks,
+                    still_missing_tracks,
+                ) = await _download_missing_tracks(missing_tracks=missing_songs)
                 downloaded_tracks = newly_downloaded_tracks
 
                 if len(downloaded_tracks) > 0:
@@ -354,13 +357,14 @@ def _sync_playlist_task(
             )
 
 
-def _sync_playlist(playlist: Playlist, session: SessionDep) -> dict[str, str]:
+async def _sync_playlist(playlist: Playlist, session: SessionDep) -> dict[str, str]:
     """Sync a playlist (Spotify/Youtube) to Jellyfin."""
     internal_playlist = _get_playlist_by_id(session=session, playlist_id=playlist.id)
 
     if not internal_playlist:
         raise HTTPException(
-            status_code=404, detail=f"Unable to find playlist: {playlist.playlist_id}"
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Unable to find playlist: {playlist.playlist_id}",
         )
 
     playlist_id = playlist.playlist_id
@@ -394,7 +398,7 @@ def _sync_playlist(playlist: Playlist, session: SessionDep) -> dict[str, str]:
             songs = _get_youtube_playlist_songs(playlist_id=playlist_id)
             external_playlist = _get_youtube_playlist(playlist_id=playlist_id)
 
-    _sync_playlist_task(
+    await _sync_playlist_task(
         internal_playlist=internal_playlist,
         external_playlist=external_playlist,
         songs=songs,
