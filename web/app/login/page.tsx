@@ -4,15 +4,13 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
+import { useSettings } from "@/hooks/useSettings";
 import { Layers } from "lucide-react";
 import Image from "next/image";
 import React, { useState } from "react";
 
-export default function LoginPage({
-  isOAuthEnabled,
-}: {
-  isOAuthEnabled: boolean;
-}) {
+export default function LoginPage() {
+  const { data } = useSettings();
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
 
@@ -26,7 +24,7 @@ export default function LoginPage({
   };
 
   const renderAuthentikButton = (): React.JSX.Element | undefined => {
-    if (!isOAuthEnabled) return;
+    if (!data || !data.isOAuthEnabled) return;
 
     return (
       <>
