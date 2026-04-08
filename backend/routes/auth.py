@@ -27,7 +27,7 @@ class RegisterUserRequest(BaseModel):
 
 
 @router.get(
-    path="/users/me",
+    path="/me",
     summary="Get current user",
     description="Retrieve information about the currently authenticated user.",
     responses={
