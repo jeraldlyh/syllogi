@@ -12,6 +12,7 @@ from routes.sync import router as sync_router
 from routes.sync_session import router as sync_session_router
 from routes.track import router as track_router
 from routes.youtube import router as youtube_router
+from routes.settings import router as settings_router
 
 OPENAPI_TAGS = [
     {"name": "Auth", "description": "Authentication and current-user endpoints."},
@@ -28,6 +29,7 @@ OPENAPI_TAGS = [
     {"name": "Playlist", "description": "Managed playlists configuration endpoints."},
     {"name": "Cron", "description": "Scheduler and cron job endpoints."},
     {"name": "YouTube", "description": "YouTube playlist and download endpoints."},
+    {"name": "Settings", "description": "User settings endpoints."},
 ]
 
 
@@ -88,5 +90,10 @@ def register_routes(app: FastAPI) -> None:
         prefix="/youtube",
         dependencies=[Depends(get_current_user)],
         tags=["YouTube"],
+    )
+    api.include_router(
+        router=settings_router,
+        prefix="/settings",
+        tags=["Settings"],
     )
     app.include_router(api)
