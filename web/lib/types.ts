@@ -9,7 +9,8 @@ export interface ApiConfig {
     | "log"
     | "playlist"
     | "sync"
-    | "settings";
+    | "settings"
+    | "auth";
   path?: string;
   query?: Record<string, any>;
   cache?: RequestCache;
