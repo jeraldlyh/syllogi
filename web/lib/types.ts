@@ -1,6 +1,7 @@
 export interface ApiConfig {
   method: "GET" | "POST" | "PUT" | "DELETE";
   body?: any;
+  formData?: FormData;
   headers?: Record<string, string>;
   service:
     | ""

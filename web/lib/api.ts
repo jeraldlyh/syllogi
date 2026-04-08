@@ -12,7 +12,7 @@ export const api = async <T>(config: ApiConfig): Promise<ApiResponse<T>> => {
   }
 
   if (config.path) {
-    endpoint += `${config.path}`;
+    endpoint += `/${config.path}`;
   }
 
   if (config.query) {
@@ -29,8 +29,10 @@ export const api = async <T>(config: ApiConfig): Promise<ApiResponse<T>> => {
   const response = await fetch(endpoint, {
     method: config.method,
     headers,
+    credentials: "include",
     ...(config.cache ? { cache: config.cache } : { cache: "no-cache" }),
     ...(config.body && { body: JSON.stringify(config.body) }),
+    ...(config.formData && { body: config.formData }),
   });
 
   const payload = await response.json();
@@ -51,6 +53,7 @@ export const fetcher = async <T>(
   const response = await fetch(`${endpoint}${path}`, {
     ...init,
     headers: { "Content-Type": "application/json", ...(init?.headers || {}) },
+    credentials: "include",
   });
 
   const payload = await response.json();

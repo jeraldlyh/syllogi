@@ -5,18 +5,56 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
 import { useSettings } from "@/hooks/useSettings";
+import { api } from "@/lib/api";
 import { Layers } from "lucide-react";
 import Image from "next/image";
-import React, { useState } from "react";
+import { useRouter } from "next/navigation";
+import React, { useEffect, useState } from "react";
+import { toast } from "sonner";
 
 export default function LoginPage() {
   const { data } = useSettings();
+  const router = useRouter();
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
 
-  const handlePasswordLogin = (e: React.FormEvent): void => {
+  useEffect(() => {
+    const redirect = async (): Promise<void> => {
+      const response = await api({
+        method: "GET",
+        service: "auth",
+        path: "me",
+      });
+
+      if (response.data && response.statusCode === 200) {
+        router.push("/");
+      }
+    };
+
+    redirect();
+  }, [router]);
+
+  const handlePasswordLogin = async (e: React.FormEvent): Promise<void> => {
     e.preventDefault();
-    console.log("Login attempted with:", { username, password });
+
+    const formData = new FormData();
+    formData.append("username", username);
+    formData.append("password", password);
+
+    const response = await api({
+      service: "auth",
+      method: "POST",
+      path: "login",
+      formData,
+    });
+
+    if (response.statusCode === 200) {
+      router.push("/");
+    } else {
+      toast.error("Login failed", {
+        description: response.error?.message || "An unknown error occurred",
+      });
+    }
   };
 
   const handleOAuthLogin = (): void => {
