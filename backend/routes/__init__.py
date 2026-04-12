@@ -1,6 +1,6 @@
 from fastapi import APIRouter, Depends, FastAPI
 
-from lib.auth import get_current_user
+from lib.auth import _get_current_user
 from routes.auth import router as auth_router
 from routes.cron import router as cron_router
 from routes.health import router as health_router
@@ -40,55 +40,55 @@ def register_routes(app: FastAPI) -> None:
     api.include_router(
         router=track_router,
         prefix="/track",
-        dependencies=[Depends(get_current_user)],
+        dependencies=[Depends(_get_current_user)],
         tags=["Track"],
     )
     api.include_router(
         router=jellyfin_router,
         prefix="/jellyfin",
-        dependencies=[Depends(get_current_user)],
+        dependencies=[Depends(_get_current_user)],
         tags=["Jellyfin"],
     )
     api.include_router(
         router=notification_router,
         prefix="/notification",
-        dependencies=[Depends(get_current_user)],
+        dependencies=[Depends(_get_current_user)],
         tags=["Notification"],
     )
     api.include_router(
         router=sync_router,
         prefix="/sync",
-        dependencies=[Depends(get_current_user)],
+        dependencies=[Depends(_get_current_user)],
         tags=["Sync"],
     )
     api.include_router(
         router=sync_session_router,
         prefix="/sync_session",
-        dependencies=[Depends(get_current_user)],
+        dependencies=[Depends(_get_current_user)],
         tags=["Sync Session"],
     )
     api.include_router(
         router=spotify_router,
         prefix="/spotify",
-        dependencies=[Depends(get_current_user)],
+        dependencies=[Depends(_get_current_user)],
         tags=["Spotify"],
     )
     api.include_router(
         router=playlist_router,
         prefix="/playlist",
-        dependencies=[Depends(get_current_user)],
+        dependencies=[Depends(_get_current_user)],
         tags=["Playlist"],
     )
     api.include_router(
         router=cron_router,
         prefix="/cron",
-        dependencies=[Depends(get_current_user)],
+        dependencies=[Depends(_get_current_user)],
         tags=["Cron"],
     )
     api.include_router(
         router=youtube_router,
         prefix="/youtube",
-        dependencies=[Depends(get_current_user)],
+        dependencies=[Depends(_get_current_user)],
         tags=["YouTube"],
     )
     api.include_router(

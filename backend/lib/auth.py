@@ -61,7 +61,7 @@ def _create_access_token(
     return encoded_jwt
 
 
-def get_current_user(
+def _get_current_user(
     session: SessionDep,
     access_token: Annotated[str | None, Cookie()] = None,
 ) -> User | None:
