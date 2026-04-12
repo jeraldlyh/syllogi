@@ -1,4 +1,4 @@
-FROM node:20-alpine AS web-deps
+FROM node:25-alpine AS web-deps
 
 RUN apk add --no-cache libc6-compat
 WORKDIR /web
@@ -6,7 +6,7 @@ WORKDIR /web
 COPY web/package.json web/pnpm-lock.yaml ./
 RUN corepack enable pnpm && pnpm i --frozen-lockfile
 
-FROM node:20-alpine AS web-builder
+FROM node:25-alpine AS web-builder
 
 RUN apk add --no-cache libc6-compat
 WORKDIR /web
