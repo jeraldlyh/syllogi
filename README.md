@@ -10,32 +10,76 @@ syllogi (Greek for "collection") imports playlist metadata from providers such a
 
 ## Features
 
-- [x] Sync external playlists into Jellyfin
-  - [x] Spotify
-  - [x] YouTube
-- [x] Optionally download missing tracks with `yt-dlp`
-- [ ] Support notification messages
-  - [x] Discord
-- [ ] Allow tagging of downloaded tracks for easier future matching
+### Sync
+
+- Create and manage multiple playlists with different sources and sync cron schedules.
+- Download missing tracks from YouTube with `yt-dlp` and automatically add them to Jellyfin.
+
+### Authentication
+
+- Basic username and password authentication for the web UI>
+- OAuth-based SSO authentication with external providers - [Authentik](https://goauthentik.io).
+
+### Notifications
+
+- Sync session summary messages with Discord webhooks.
 
 ## Requirements
 
-- A running Jellyfin server
-- A Jellyfin API key with permission to manage playlists
-- A Jellyfin library that includes your local music
-- `ffmpeg` installed if you want `yt-dlp` audio post-processing to work reliably
+- A running Jellyfin server with an API key that has permission to manage playlists.
+- A Jellyfin library that includes your local music.
+- `docker` and `docker-compose`.
+
+## Quick Start
+
+1. Copy the example compose file:
+
+   ```bash
+   cp docker-compose.example.yml docker-compose.yml
+   ```
+
+2. Fill in the required environment variables (see [Configuration](#configuration) below).
+
+3. Start the stack:
+
+   ```bash
+   docker compose up -d
+   ```
+
+4. Open the dashboard at `http://localhost:8000` and register your first account.
+
+5. Add a playlist, set a sync schedule, and syllogi will take it from there.
 
 ## Configuration
 
-Provide configuration through environment variables.
+All configuration is supplied through environment variables on the `syllogi` container.
 
-| Name                   | Required | Description                                                                                              |
-| ---------------------- | -------- | -------------------------------------------------------------------------------------------------------- |
-| `JELLYFIN_API_KEY`     | Yes      | Jellyfin API key for the target user with permission to create and manage playlists.                     |
-| `JELLYFIN_BASE_URL`    | Yes      | Base URL of your Jellyfin server, for example `https://jellyfin.example.com` or `http://localhost:8096`. |
-| `YOUTUBE_LIBRARY_NAME` | No       | Name of the Jellyfin media folder that contains the yt-dlp downloads. Default: `Youtube`.                |
-| `YOUTUBE_DOWNLOAD_DIR` | No       | Filesystem path where downloaded tracks are written. Default: `/downloads`.                              |
-| `DISCORD_WEBHOOK_URL`  | No       | Discord webhook URL for sync summary notifications. Leave unset to disable notifications.                |
+### Required
+
+| Name                | Description                                                                                       |
+| ------------------- | ------------------------------------------------------------------------------------------------- |
+| `JELLYFIN_API_KEY`  | Jellyfin API key for the target user with permission to create and manage playlists.              |
+| `JELLYFIN_BASE_URL` | Base URL of your Jellyfin server, e.g. `https://jellyfin.example.com` or `http://localhost:8096`. |
+| `DATABASE_URL`      | PostgreSQL host and port, e.g. `syllogi-postgres:5432`.                                           |
+| `DATABASE_USERNAME` | PostgreSQL username.                                                                              |
+| `DATABASE_PASSWORD` | PostgreSQL password.                                                                              |
+| `DATABASE_NAME`     | PostgreSQL database name.                                                                         |
+| `NEXT_PUBLIC_URL`   | Public URL of the syllogi web UI, e.g. `http://localhost:8000`. Used for OAuth redirect URIs.     |
+
+### Optional
+
+| Name                   | Default         | Description                                                                         |
+| ---------------------- | --------------- | ----------------------------------------------------------------------------------- |
+| `YOUTUBE_LIBRARY_NAME` | `Youtube`       | Name of the Jellyfin media folder that contains the yt-dlp downloads.               |
+| `YOUTUBE_DOWNLOAD_DIR` | `/downloads`    | Filesystem path inside the container where downloaded tracks are written.           |
+| `DISCORD_WEBHOOK_URL`  | _(unset)_       | Discord webhook URL for sync summary notifications. Leave unset to disable.         |
+| `SECRET_KEY`           | _(default key)_ | Secret used to sign JWT session tokens. Set to a long random string in production.  |
+| `LOG_LEVEL`            | `INFO`          | Python logging level (`DEBUG`, `INFO`, `WARNING`, `ERROR`).                         |
+| `AUTHENTIK_CLIENT_ID`  | _(unset)_       | Authentik OAuth application client ID. Required only if you want SSO via Authentik. |
+| `AUTHENTIK_SECRET`     | _(unset)_       | Authentik OAuth application client secret.                                          |
+| `AUTHENTIK_ISSUER`     | _(unset)_       | Authentik OIDC issuer URL, e.g. `https://auth.example.com/application/o/syllogi/`.  |
+| `TZ`                   | _(unset)_       | Container timezone, e.g. `Asia/Singapore`. Affects cron scheduling.                 |
+| `ENVIRONMENT`          | `production`    | Set to `production` to use the built Next.js output.                                |
 
 ## How it works
 
@@ -43,38 +87,22 @@ Provide configuration through environment variables.
    - Spotify playlists are fetched through [SpotAPI](https://github.com/Aran404/SpotAPI/tree/main).
    - YouTube playlists are fetched through `yt-dlp` metadata extraction.
 2. syllogi converts each provider entry into a normalized internal track representation.
-3. If missing tracks exist, syllogi can try to download them with `yt-dlp` into `YOUTUBE_DOWNLOAD_DIR`.
-4. After downloading, syllogi requests a Jellyfin rescan of the media folder named by `YOUTUBE_LIBRARY_NAME`.
-5. Newly indexed downloads are matched again.
-6. syllogi compares the source playlist with the existing Jellyfin playlist and:
-   - adds newly found tracks that are missing from the Jellyfin playlist
-   - removes tracks that are no longer in the source playlist
-   - leaves unchanged tracks as-is
+3. Each track is searched in the Jellyfin library using title, artist, album, year, and duration.
+4. The difference between the source playlist and the existing Jellyfin playlist is computed:
+   - **Added** — tracks in the source that are not yet in Jellyfin.
+   - **Removed** — tracks in Jellyfin that are no longer in the source.
+   - **Unchanged** — tracks present in both.
+5. If missing tracks exist and `enable_download` is set, syllogi tries to fetch them with `yt-dlp`.
+6. After downloading, Jellyfin is asked to refresh the configured download library and the newly indexed tracks are matched again.
+7. The Jellyfin playlist is updated and the playlist thumbnail is synced from the source.
+8. A sync session record is saved to the database with a full per-track breakdown.
+9. If `DISCORD_WEBHOOK_URL` is set, a summary embed is posted to the webhook.
 
-## Matching behavior
-
-Track resolution is based on metadata from the source playlist and the items available in Jellyfin. The search currently prioritizes title matching and then validates the result using metadata such as:
-
-- artist
-- album
-- year
-- duration
-
-## Download behavior
-
-When a track is missing from Jellyfin, syllogi can try to fetch it with `yt-dlp`.
-
-- Downloads are written under `YOUTUBE_DOWNLOAD_DIR`
-- Files are organized by artist and album, or under `Singles` when no album is available
-- Audio is extracted to an Opus-based output through ffmpeg post-processing
-- After download, Jellyfin is asked to refresh the configured download library so the track can be matched and added to the playlist in the subsequent run
-
-Downloaded tracks are only useful for syncing once Jellyfin has indexed them successfully.
-
-## Current limitations
-
-- Matching is only as good as the metadata available from the provider and inside Jellyfin
-- Jellyfin library refresh timing may vary depending on server size, so newly downloaded tracks may not appear immediately
+> Current limitations
+>
+> - Matching of tracks between source and provider is only as good as the metadata available from the provider and inside Jellyfin
+> - Jellyfin library refresh timing may vary depending on server size, so newly downloaded tracks may not appear immediately after a single sync run
+> - OAuth state is stored in-memory, hence a container restart will invalidate any in-flight OAuth flows
 
 ## Credits
 
