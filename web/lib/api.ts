@@ -5,7 +5,7 @@ const logger = createLogger("api");
 
 export const api = async <T>(config: ApiConfig): Promise<ApiResponse<T>> => {
   let endpoint =
-    `${process.env.NEXT_PUBLIC_BACKEND_URL}/api` || "http://localhost:8000/api";
+    `${process.env.NEXT_PUBLIC_URL}/api` || "http://localhost:8000/api";
 
   if (config.service) {
     endpoint += `/${config.service}`;
@@ -49,7 +49,7 @@ export const fetcher = async <T>(
   init?: RequestInit,
 ): Promise<T> => {
   const endpoint =
-    `${process.env.NEXT_PUBLIC_BACKEND_URL}/api` || "http://localhost:8000/api";
+    `${process.env.NEXT_PUBLIC_URL}/api` || "http://localhost:8000/api";
   const response = await fetch(`${endpoint}${path}`, {
     ...init,
     headers: { "Content-Type": "application/json", ...(init?.headers || {}) },

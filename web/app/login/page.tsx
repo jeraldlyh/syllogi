@@ -58,8 +58,7 @@ export default function LoginPage() {
   };
 
   const handleOAuthLogin = (): void => {
-    const backendUrl =
-      process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:8000";
+    const backendUrl = process.env.NEXT_PUBLIC_URL || "http://localhost:8000";
     window.location.href = `${backendUrl}/api/oauth/authorize`;
   };
 
