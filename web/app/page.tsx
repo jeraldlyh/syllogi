@@ -8,27 +8,27 @@ import { SyncTable } from "@/components/sync-table";
 import { api } from "@/lib/api";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 export default function Page() {
   const router = useRouter();
   const [loading, setLoading] = useState(true);
-  const [timer, setTimer] = useState<NodeJS.Timeout>();
+  const timerRef = useRef<NodeJS.Timeout | undefined>(undefined);
 
   useEffect(() => {
     const startTimer = (): void => {
-      if (timer) {
-        clearTimeout(timer);
+      if (timerRef.current) {
+        clearTimeout(timerRef.current);
       }
       const newTimer = setTimeout(() => setLoading(false), 10000);
-      setTimer(newTimer);
+      timerRef.current = newTimer;
     };
 
     startTimer();
 
     return () => {
-      if (timer) {
-        clearTimeout(timer);
+      if (timerRef.current) {
+        clearTimeout(timerRef.current);
       }
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -46,8 +46,8 @@ export default function Page() {
         router.push("/login");
       }
 
-      clearTimeout(timer);
-      setTimer(undefined);
+      clearTimeout(timerRef.current);
+      timerRef.current = undefined;
       setLoading(false);
     };
 
