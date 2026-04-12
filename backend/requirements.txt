@@ -34,7 +34,7 @@ MarkupSafe==3.0.3
 mdurl==0.1.2
 mypy_extensions==1.1.0
 packaging==26.0
-parso==0.8.5
+parso==0.8.6
 pathspec==1.0.4
 platformdirs==4.5.1
 pluggy==1.6.0
