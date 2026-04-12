@@ -13,12 +13,6 @@ def _get_authentik_config() -> dict:
     AUTHENTIK_SECRET = os.getenv("AUTHENTIK_SECRET", "")
     AUTHENTIK_ISSUER = os.getenv("AUTHENTIK_ISSUER", "").rstrip("/")
 
-    if not AUTHENTIK_CLIENT_ID or not AUTHENTIK_SECRET or not AUTHENTIK_ISSUER:
-        raise HTTPException(
-            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
-            detail="OAuth is not configured on this server",
-        )
-
     auth_url = AUTHENTIK_ISSUER.split("application")[0].rstrip("/")
     return {
         "client_id": AUTHENTIK_CLIENT_ID,
