@@ -12,8 +12,8 @@ def get_connection_string() -> str:
     name = os.getenv("DATABASE_NAME")
 
     if username and password and url and name:
-        return f"postgresql://{username}:{password}@{url}/{name}"
-    return "postgresql://syllogi:syllogi@localhost:5432/syllogi"
+        return f"postgresql+psycopg://{username}:{password}@{url}/{name}"
+    return "postgresql+psycopg://syllogi:syllogi@localhost:5432/syllogi"
 
 
 def get_session():

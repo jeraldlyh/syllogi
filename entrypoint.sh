@@ -1,6 +1,8 @@
 #!/usr/bin/env bash
 set -e
 
+export PATH="/app/.venv/bin:$PATH"
+
 echo "Running database migrations..."
 cd /app/backend
 alembic upgrade head
