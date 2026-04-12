@@ -1,4 +1,3 @@
-import os
 from typing import Annotated
 
 from fastapi import APIRouter, Depends, HTTPException, Response, status
@@ -16,11 +15,6 @@ from lib.auth import (
 )
 
 router = APIRouter()
-
-PUBLIC_URL = os.getenv("PUBLIC_URL", "http://localhost:3000")
-
-# NOTE: Might consider shifting to Redis if required
-_oauth_states: dict[str, str] = {}
 
 
 class Token(BaseModel):
