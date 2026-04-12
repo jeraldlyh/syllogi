@@ -20,7 +20,7 @@ ENV NEXT_TELEMETRY_DISABLED=1
 
 RUN corepack enable pnpm && pnpm build
 
-FROM python:3.10-slim AS development
+FROM python:3.14-slim AS development
 
 RUN apt-get update \
   && apt-get install -y --no-install-recommends \
@@ -50,7 +50,7 @@ ENV HOSTNAME=0.0.0.0
 
 ENTRYPOINT ["/app/entrypoint.dev.sh"]
 
-FROM python:3.10-slim AS production
+FROM python:3.14-slim AS production
 
 RUN apt-get update \
   && apt-get install -y --no-install-recommends \
