@@ -57,7 +57,7 @@ def oauth_authorize():
         "create or retrieve the local user, issue a session cookie, and redirect to the app."
     ),
 )
-async def oauth_callback(
+def oauth_callback(
     _: Response,
     session: SessionDep,
     code: str,
@@ -70,11 +70,15 @@ async def oauth_callback(
         )
     redirect_uri = _oauth_states.pop(state)
 
-    access_token_from_authentik = _get_authentik_token(
-        oauth_url=redirect_uri, oauth_code=code
-    )
+    access_token = _get_authentik_token(oauth_url=redirect_uri, oauth_code=code)
 
-    userinfo = _get_authentik_userinfo(access_token=access_token_from_authentik)
+    if not access_token:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Failed to obtain access token from Authentik",
+        )
+
+    userinfo = _get_authentik_userinfo(access_token=access_token)
     oauth_id = userinfo.get("sub")
     username = userinfo.get("preferred_username") or userinfo.get("name") or oauth_id
 
