@@ -1,12 +1,12 @@
-FROM node:20-alpine AS web-deps
+FROM node:25-alpine AS web-deps
 
 RUN apk add --no-cache libc6-compat
 WORKDIR /web
 
 COPY web/package.json web/pnpm-lock.yaml ./
-RUN corepack enable pnpm && pnpm i --frozen-lockfile
+RUN npm install -g pnpm && pnpm install --frozen-lockfile
 
-FROM node:20-alpine AS web-builder
+FROM node:25-alpine AS web-builder
 
 RUN apk add --no-cache libc6-compat
 WORKDIR /web
@@ -18,16 +18,15 @@ ARG NEXT_PUBLIC_URL=http://localhost:8000
 ENV NEXT_PUBLIC_URL=${NEXT_PUBLIC_URL}
 ENV NEXT_TELEMETRY_DISABLED=1
 
-RUN corepack enable pnpm && pnpm build
+RUN npm install -g pnpm && pnpm build
 
-FROM python:3.10-slim AS development
+FROM python:3.14-slim AS development
 
 RUN apt-get update \
   && apt-get install -y --no-install-recommends \
   curl ca-certificates ffmpeg nginx \
   nodejs npm \
-  && npm i -g corepack \
-  && corepack enable pnpm \
+  && npm install -g pnpm \
   && rm -f /etc/nginx/sites-enabled/default \
   && rm -rf /var/lib/apt/lists/*
 
@@ -50,7 +49,7 @@ ENV HOSTNAME=0.0.0.0
 
 ENTRYPOINT ["/app/entrypoint.dev.sh"]
 
-FROM python:3.10-slim AS production
+FROM python:3.14-slim AS production
 
 RUN apt-get update \
   && apt-get install -y --no-install-recommends \
