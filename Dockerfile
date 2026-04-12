@@ -14,8 +14,8 @@ WORKDIR /web
 COPY --from=web-deps /web/node_modules ./node_modules
 COPY web/ .
 
-ARG NEXT_PUBLIC_BACKEND_URL=http://localhost:8000
-ENV NEXT_PUBLIC_BACKEND_URL=${NEXT_PUBLIC_BACKEND_URL}
+ARG NEXT_PUBLIC_URL=http://localhost:8000
+ENV NEXT_PUBLIC_URL=${NEXT_PUBLIC_URL}
 ENV NEXT_TELEMETRY_DISABLED=1
 
 RUN corepack enable pnpm && pnpm build
@@ -24,10 +24,11 @@ FROM python:3.10-slim AS development
 
 RUN apt-get update \
   && apt-get install -y --no-install-recommends \
-  curl ca-certificates ffmpeg \
+  curl ca-certificates ffmpeg nginx \
   nodejs npm \
   && npm i -g corepack \
   && corepack enable pnpm \
+  && rm -f /etc/nginx/sites-enabled/default \
   && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /app/backend
@@ -38,10 +39,11 @@ WORKDIR /app/web
 COPY --from=web-deps /web/node_modules ./node_modules
 
 WORKDIR /app
+COPY nginx/nginx.conf /etc/nginx/conf.d/default.conf
 COPY entrypoint.dev.sh /app/entrypoint.dev.sh
 RUN chmod +x /app/entrypoint.dev.sh
 
-EXPOSE 8000 3000
+EXPOSE 80
 
 ENV NEXT_TELEMETRY_DISABLED=1
 ENV HOSTNAME=0.0.0.0
@@ -52,8 +54,9 @@ FROM python:3.10-slim AS production
 
 RUN apt-get update \
   && apt-get install -y --no-install-recommends \
-  curl ca-certificates ffmpeg \
+  curl ca-certificates ffmpeg nginx \
   nodejs \
+  && rm -f /etc/nginx/sites-enabled/default \
   && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /app/backend
@@ -66,10 +69,11 @@ COPY --from=web-builder /web/.next/standalone ./
 COPY --from=web-builder /web/.next/static ./.next/static
 
 WORKDIR /app
+COPY nginx/nginx.conf /etc/nginx/conf.d/default.conf
 COPY entrypoint.sh /app/entrypoint.sh
 RUN chmod +x /app/entrypoint.sh
 
-EXPOSE 8000 3000
+EXPOSE 80
 
 ENV NODE_ENV=production
 ENV NEXT_TELEMETRY_DISABLED=1

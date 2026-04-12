@@ -14,24 +14,28 @@ export LOG_LEVEL=${LOG_LEVEL:-"info"}
 
 echo "Starting backend..."
 cd /app/backend
-exec uvicorn app:app --host 0.0.0.0 --port 8000 --log-level "$LOG_LEVEL" &
+uvicorn app:app --host 0.0.0.0 --port 8000 --log-level "$LOG_LEVEL" &
 BACKEND_PID=$!
 
+echo "Starting nginx..."
+nginx -g "daemon off;" &
+NGINX_PID=$!
+
 term_handler() {
-  echo "Signal received, terminating dev processes..."
-  kill "$WEB_PID" "$BACKEND_PID" 2>/dev/null || true
-  wait "$WEB_PID" "$BACKEND_PID" 2>/dev/null || true
+  echo "Signal received, terminating processes..."
+  kill "$WEB_PID" "$BACKEND_PID" "$NGINX_PID" 2>/dev/null || true
+  wait "$WEB_PID" "$BACKEND_PID" "$NGINX_PID" 2>/dev/null || true
   exit 0
 }
 
 trap term_handler SIGINT SIGTERM
 
 set +e
-wait -n "$WEB_PID" "$BACKEND_PID"
+wait -n "$WEB_PID" "$BACKEND_PID" "$NGINX_PID"
 
 STATUS=$?
-echo "A dev process exited with status $STATUS, stopping remaining dev processes..."
+echo "A process exited with status $STATUS, stopping remaining processes..."
 
-kill "$WEB_PID" "$BACKEND_PID" 2>/dev/null || true
-wait "$WEB_PID" "$BACKEND_PID" 2>/dev/null || true
+kill "$WEB_PID" "$BACKEND_PID" "$NGINX_PID" 2>/dev/null || true
+wait "$WEB_PID" "$BACKEND_PID" "$NGINX_PID" 2>/dev/null || true
 exit "$STATUS"

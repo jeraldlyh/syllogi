@@ -16,6 +16,10 @@ def _get_user_by_username(session: SessionDep, username: str) -> User | None:
     return session.exec(select(User).where(User.username == username)).first()
 
 
+def _get_user_by_oauth_id(session: SessionDep, oauth_id: str) -> User | None:
+    return session.exec(select(User).where(User.oauth_id == oauth_id)).first()
+
+
 def _create_user(session: SessionDep, user: User) -> None:
     session.add(user)
     session.commit()

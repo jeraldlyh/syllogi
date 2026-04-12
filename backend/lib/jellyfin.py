@@ -28,8 +28,8 @@ def _jellyfin(
     }
 
     response = requests.request(
-        method.upper(),
-        f"{JELLYFIN_BASE_URL}{path}",
+        method=method.upper(),
+        url=f"{JELLYFIN_BASE_URL}{path}",
         headers={**base_headers, **(headers or {})},
         params=params,
         json=json,

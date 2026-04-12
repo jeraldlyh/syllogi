@@ -4,15 +4,16 @@ import { createLogger } from "./logger";
 const logger = createLogger("api");
 
 export const api = async <T>(config: ApiConfig): Promise<ApiResponse<T>> => {
-  let endpoint =
-    `${process.env.NEXT_PUBLIC_BACKEND_URL}/api` || "http://localhost:8000/api";
+  let endpoint = process.env.NEXT_PUBLIC_URL
+    ? `${process.env.NEXT_PUBLIC_URL}/api`
+    : "http://localhost:8000/api";
 
   if (config.service) {
     endpoint += `/${config.service}`;
   }
 
   if (config.path) {
-    endpoint += `${config.path}`;
+    endpoint += `/${config.path}`;
   }
 
   if (config.query) {
@@ -26,11 +27,26 @@ export const api = async <T>(config: ApiConfig): Promise<ApiResponse<T>> => {
     ...(config.body && { "Content-Type": "application/json" }),
   };
 
+  if (config.formData && config.body) {
+    logger.error("Cannot use both body and formData in the same request");
+    return {
+      statusCode: 500,
+      data: undefined,
+      error: {
+        code: "InvalidRequest",
+        name: "InvalidRequest",
+        message: "Cannot use both body and formData in the same request",
+      },
+    };
+  }
+
   const response = await fetch(endpoint, {
     method: config.method,
     headers,
+    credentials: "include",
     ...(config.cache ? { cache: config.cache } : { cache: "no-cache" }),
     ...(config.body && { body: JSON.stringify(config.body) }),
+    ...(config.formData && { body: config.formData }),
   });
 
   const payload = await response.json();
@@ -47,10 +63,11 @@ export const fetcher = async <T>(
   init?: RequestInit,
 ): Promise<T> => {
   const endpoint =
-    `${process.env.NEXT_PUBLIC_BACKEND_URL}/api` || "http://localhost:8000/api";
+    `${process.env.NEXT_PUBLIC_URL}/api` || "http://localhost:8000/api";
   const response = await fetch(`${endpoint}${path}`, {
     ...init,
     headers: { "Content-Type": "application/json", ...(init?.headers || {}) },
+    credentials: "include",
   });
 
   const payload = await response.json();

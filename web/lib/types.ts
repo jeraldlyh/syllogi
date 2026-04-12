@@ -1,8 +1,17 @@
 export interface ApiConfig {
   method: "GET" | "POST" | "PUT" | "DELETE";
   body?: any;
+  formData?: FormData;
   headers?: Record<string, string>;
-  service: "" | "spotify" | "youtube" | "log" | "playlist" | "sync";
+  service:
+    | ""
+    | "spotify"
+    | "youtube"
+    | "log"
+    | "playlist"
+    | "sync"
+    | "settings"
+    | "auth";
   path?: string;
   query?: Record<string, any>;
   cache?: RequestCache;
