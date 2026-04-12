@@ -9,7 +9,12 @@ from pwdlib import PasswordHash
 
 from db.models.user import User
 from db.session import SessionDep
-from db.user import _get_user_by_username
+from db.user import (
+    _get_user_by_username,
+    _get_user_by_oauth_id,
+    _create_user,
+    _update_user,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -38,7 +43,7 @@ def _authenticate_user(
     if not user:
         return None
 
-    if not _verify_password(password, user.password):
+    if not user.password or not _verify_password(password, user.password):
         return None
     return user
 
@@ -92,3 +97,25 @@ def _get_current_user(
         return user
     except jwt.InvalidTokenError:
         raise unauthorized_exception
+
+
+def _get_or_create_oauth_user(
+    session: SessionDep, oauth_id: str, username: str
+) -> User:
+    """Get an existing OAuth user or create a new one."""
+
+    user = _get_user_by_username(session=session, username=username)
+
+    if user:
+        user.oauth_id = oauth_id
+        _update_user(session=session, user=user)
+        return user
+
+    user = _get_user_by_oauth_id(session=session, oauth_id=oauth_id)
+
+    if user:
+        return user
+
+    new_user = User(username=username, password="", oauth_id=oauth_id)
+    _create_user(session=session, user=new_user)
+    return new_user

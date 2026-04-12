@@ -1,0 +1,95 @@
+import os
+import requests
+
+from typing import Any
+
+from fastapi import HTTPException, status
+
+
+def _get_authentik_config() -> dict:
+    """Validate that Authentik env vars are set and return them."""
+
+    AUTHENTIK_CLIENT_ID = os.getenv("AUTHENTIK_CLIENT_ID", "")
+    AUTHENTIK_SECRET = os.getenv("AUTHENTIK_SECRET", "")
+    AUTHENTIK_ISSUER = os.getenv("AUTHENTIK_ISSUER", "").rstrip("/")
+
+    if not AUTHENTIK_CLIENT_ID or not AUTHENTIK_SECRET or not AUTHENTIK_ISSUER:
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail="OAuth is not configured on this server",
+        )
+
+    auth_url = AUTHENTIK_ISSUER.split("application")[0].rstrip("/")
+    return {
+        "client_id": AUTHENTIK_CLIENT_ID,
+        "client_secret": AUTHENTIK_SECRET,
+        "issuer": AUTHENTIK_ISSUER,
+        "authorize_url": f"{auth_url}/application/o/authorize/",
+        "token_url": f"{auth_url}/application/o/token/",
+        "userinfo_url": f"{auth_url}/application/o/userinfo/",
+    }
+
+
+def _authentik(
+    url: str,
+    *,
+    method: str = "GET",
+    params: dict[str, Any] | None = None,
+    headers: dict[str, Any] | None = None,
+    json: dict[str, Any] | list[Any] | None = None,
+    data: dict[str, Any] | str | bytes | None = None,
+    timeout: float = 30.0,
+) -> requests.Response:
+    base_headers = {
+        "Content-Type": "application/x-www-form-urlencoded",
+    }
+    return requests.request(
+        method=method.upper(),
+        url=url,
+        headers={**base_headers, **(headers or {})},
+        params=params,
+        json=json,
+        data=data,
+        timeout=timeout,
+    )
+
+
+def _get_authentik_token(oauth_url: str, oauth_code: str) -> str:
+    """Get an access token from Authentik using client credentials."""
+    authentik = _get_authentik_config()
+    response = _authentik(
+        url=authentik["token_url"],
+        method="POST",
+        data={
+            "grant_type": "authorization_code",
+            "code": oauth_code,
+            "redirect_uri": oauth_url,
+            "client_id": authentik["client_id"],
+            "client_secret": authentik["client_secret"],
+        },
+    )
+
+    if response.status_code != 200:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Failed to exchange authorization code for tokens",
+        )
+    data = response.json()
+    return data.get("access_token")
+
+
+def _get_authentik_userinfo(access_token: str) -> dict[str, Any]:
+    """Get user info from Authentik using an access token."""
+    authentik = _get_authentik_config()
+    response = _authentik(
+        url=authentik["userinfo_url"],
+        method="GET",
+        headers={"Authorization": f"Bearer {access_token}"},
+    )
+
+    if response.status_code != 200:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Failed to retrieve user info from Authentik",
+        )
+    return response.json()

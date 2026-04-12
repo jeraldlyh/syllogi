@@ -1,19 +1,26 @@
+import os
 from typing import Annotated
+
 from fastapi import APIRouter, Depends, HTTPException, Response, status
 from fastapi.security import OAuth2PasswordRequestForm
 from pydantic import BaseModel
 
 from db.models.user import User
-from db.user import _create_user
 from db.session import SessionDep
+from db.user import _create_user
 from lib.auth import (
     _authenticate_user,
-    get_current_user,
     _create_access_token,
+    _get_current_user,
     _get_password_hash,
 )
 
 router = APIRouter()
+
+PUBLIC_URL = os.getenv("PUBLIC_URL", "http://localhost:3000")
+
+# NOTE: Might consider shifting to Redis if required
+_oauth_states: dict[str, str] = {}
 
 
 class Token(BaseModel):
@@ -44,7 +51,7 @@ class RegisterUserRequest(BaseModel):
         }
     },
 )
-async def read_me(user: Annotated[User, Depends(get_current_user)]) -> User:
+async def read_me(user: Annotated[User, Depends(_get_current_user)]) -> User:
     del user.password
     return user
 
@@ -153,7 +160,11 @@ async def register(response: Response, session: SessionDep, item: RegisterUserRe
             detail="Username already exists",
         )
 
-    new_user = User(username=item.username, password=_get_password_hash(item.password))
+    new_user = User(
+        username=item.username,
+        password=_get_password_hash(item.password),
+        oauth_id=None,
+    )
 
     _create_user(session=session, user=new_user)
     access_token = _create_access_token(data={"sub": new_user.username})

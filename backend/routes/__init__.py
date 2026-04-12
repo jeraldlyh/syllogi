@@ -2,6 +2,7 @@ from fastapi import APIRouter, Depends, FastAPI
 
 from lib.auth import _get_current_user
 from routes.auth import router as auth_router
+from routes.oauth import router as oauth_router
 from routes.cron import router as cron_router
 from routes.health import router as health_router
 from routes.jellyfin import router as jellyfin_router
@@ -16,6 +17,7 @@ from routes.settings import router as settings_router
 
 OPENAPI_TAGS = [
     {"name": "Auth", "description": "Authentication and current-user endpoints."},
+    {"name": "OAuth", "description": "OAuth login endpoints."},
     {"name": "Health", "description": "Service health and readiness checks."},
     {"name": "Track", "description": "Track search and matching endpoints."},
     {"name": "Jellyfin", "description": "Jellyfin integration endpoints."},
@@ -36,6 +38,7 @@ OPENAPI_TAGS = [
 def register_routes(app: FastAPI) -> None:
     api = APIRouter(prefix="/api")
     api.include_router(router=auth_router, prefix="/auth", tags=["Auth"])
+    api.include_router(router=oauth_router, prefix="/oauth", tags=["OAuth"])
     api.include_router(router=health_router, tags=["Health"])
     api.include_router(
         router=track_router,

@@ -1,5 +1,5 @@
-import os
 from fastapi import APIRouter
+from lib.authentik import _get_authentik_config
 
 router = APIRouter()
 
@@ -23,11 +23,12 @@ router = APIRouter()
     },
 )
 def settings():
-    AUTH_AUTHENTIK_ID = os.getenv("AUTH_AUTHENTIK_ID")
-    AUTH_AUTHENTIK_SECRET = os.getenv("AUTH_AUTHENTIK_SECRET")
-    AUTH_AUTHENTIK_ISSUER = os.getenv("AUTH_AUTHENTIK_ISSUER")
+    authentik_config = _get_authentik_config()
+
     return {
         "is_oauth_enabled": bool(
-            AUTH_AUTHENTIK_ID and AUTH_AUTHENTIK_SECRET and AUTH_AUTHENTIK_ISSUER
+            authentik_config.get("client_id")
+            and authentik_config.get("client_secret")
+            and authentik_config.get("issuer")
         )
     }
