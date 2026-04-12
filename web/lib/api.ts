@@ -4,8 +4,9 @@ import { createLogger } from "./logger";
 const logger = createLogger("api");
 
 export const api = async <T>(config: ApiConfig): Promise<ApiResponse<T>> => {
-  let endpoint =
-    `${process.env.NEXT_PUBLIC_URL}/api` || "http://localhost:8000/api";
+  let endpoint = process.env.NEXT_PUBLIC_URL
+    ? `${process.env.NEXT_PUBLIC_URL}/api`
+    : "http://localhost:8000/api";
 
   if (config.service) {
     endpoint += `/${config.service}`;
@@ -25,6 +26,19 @@ export const api = async <T>(config: ApiConfig): Promise<ApiResponse<T>> => {
     ...config.headers,
     ...(config.body && { "Content-Type": "application/json" }),
   };
+
+  if (config.formData && config.body) {
+    logger.error("Cannot use both body and formData in the same request");
+    return {
+      statusCode: 500,
+      data: undefined,
+      error: {
+        code: "InvalidRequest",
+        name: "InvalidRequest",
+        message: "Cannot use both body and formData in the same request",
+      },
+    };
+  }
 
   const response = await fetch(endpoint, {
     method: config.method,
