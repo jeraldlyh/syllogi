@@ -186,7 +186,7 @@ export const Playlists = () => {
     const response = await api({
       method: "POST",
       service: "sync",
-      path: "/",
+      path: "",
       body: playlist,
     });
 

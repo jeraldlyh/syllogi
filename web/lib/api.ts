@@ -62,8 +62,10 @@ export const fetcher = async <T>(
   path: string | URL,
   init?: RequestInit,
 ): Promise<T> => {
-  const endpoint =
-    `${process.env.NEXT_PUBLIC_URL}/api` || "http://localhost:8000/api";
+  const endpoint = process.env.NEXT_PUBLIC_URL
+    ? `${process.env.NEXT_PUBLIC_URL}/api`
+    : "http://localhost:8000/api";
+
   const response = await fetch(`${endpoint}${path}`, {
     ...init,
     headers: { "Content-Type": "application/json", ...(init?.headers || {}) },
