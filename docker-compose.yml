@@ -18,13 +18,12 @@ services:
       - DATABASE_NAME=syllogi
       - DATABASE_URL=syllogi-postgres:5432
       - YOUTUBE_DOWNLOAD_DIR=/downloads
-      - NEXT_PUBLIC_BACKEND_URL=http://localhost:8000
+      - NEXT_PUBLIC_URL=http://localhost:8000
       - ENVIRONMENT=development
     env_file:
       - ./backend/.env
     ports:
-      - 8000:8000
-      - 3000:3000
+      - 8000:80
     volumes:
       - ./backend:/app/backend:delegated
       - ./web:/app/web:delegated

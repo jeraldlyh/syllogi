@@ -18,11 +18,13 @@ services:
       - DISCORD_WEBHOOK_URL=
       - JELLYFIN_API_KEY=
       - JELLYFIN_BASE_URL=
-      - NEXT_PUBLIC_BACKEND_URL=http://localhost:8000
+      - NEXT_PUBLIC_URL=http://localhost:8000
+      - AUTHENTIK_CLIENT_ID=
+      - AUTHENTIK_SECRET=
+      - AUTHENTIK_ISSUER=
       - ENVIRONMENT=production
     ports:
-      - 8000:8000
-      - 3000:3000
+      - 8000:80
     volumes:
       - ./downloads:/downloads
     healthcheck:
