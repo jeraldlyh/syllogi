@@ -1,0 +1,95 @@
+version: 2
+
+updates:
+  - package-ecosystem: "npm"
+    directory: "/web"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+    open-pull-requests-limit: 5
+    commit-message:
+      prefix: "chore"
+      include: "scope"
+    labels:
+      - "dependencies"
+      - "web"
+    groups:
+      radix-ui:
+        patterns:
+          - "@radix-ui/*"
+      types:
+        patterns:
+          - "@types/*"
+      tailwind:
+        patterns:
+          - "tailwindcss"
+          - "tailwindcss-animate"
+          - "@tailwindcss/*"
+          - "autoprefixer"
+          - "tailwind-merge"
+
+  - package-ecosystem: "pip"
+    directory: "/backend"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+    open-pull-requests-limit: 5
+    commit-message:
+      prefix: "chore"
+      include: "scope"
+    labels:
+      - "dependencies"
+      - "backend"
+    groups:
+      pydantic:
+        patterns:
+          - "pydantic*"
+      fastapi:
+        patterns:
+          - "fastapi*"
+          - "starlette"
+          - "uvicorn"
+
+  - package-ecosystem: "pip"
+    directory: "/backend/SpotAPI"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+    open-pull-requests-limit: 5
+    commit-message:
+      prefix: "chore"
+      include: "scope"
+    labels:
+      - "dependencies"
+      - "backend"
+      - "spotapi"
+
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+    open-pull-requests-limit: 5
+    commit-message:
+      prefix: "chore"
+      include: "scope"
+    labels:
+      - "dependencies"
+      - "ci"
+    groups:
+      actions:
+        patterns:
+          - "*"
+
+  - package-ecosystem: "docker"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+    open-pull-requests-limit: 5
+    commit-message:
+      prefix: "chore"
+      include: "scope"
+    labels:
+      - "dependencies"
+      - "docker"
