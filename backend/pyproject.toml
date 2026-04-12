@@ -1,3 +1,34 @@
+[project]
+name = "syllogi"
+version = "0.1.0"
+requires-python = ">=3.14"
+dependencies = [
+    "alembic",
+    "apscheduler",
+    "fastapi[standard]",
+    "httpx",
+    "psycopg[binary,pool]",
+    "pytz",
+    "pyjwt",
+    "python-dotenv",
+    "python-multipart",
+    "requests",
+    "sqlmodel",
+    "uvicorn[standard]",
+    "yt-dlp",
+    "spotapi[websocket,redis,pymongo]",
+    "pwdlib[argon2]>=0.3.0",
+]
+
+[tool.uv.sources]
+spotapi = { path = "SpotAPI", editable = true }
+
+[dependency-groups]
+dev = [
+    "black",
+    "ruff",
+]
+
 [tool.ruff]
 extend-exclude = ["SpotAPI"]
 

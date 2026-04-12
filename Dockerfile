@@ -29,9 +29,18 @@ RUN apt-get update \
   && rm -f /etc/nginx/sites-enabled/default \
   && rm -rf /var/lib/apt/lists/*
 
+COPY --from=ghcr.io/astral-sh/uv:latest /uv /usr/local/bin/uv
+
+# NOTE: Set UV_PROJECT_ENVIRONMENT to avoid issues with overwriting the dependencies
+ENV UV_COMPILE_BYTECODE=1 \
+  UV_PYTHON="python3" \
+  UV_PROJECT_ENVIRONMENT="/app/.venv" \
+  PATH="/app/.venv/bin:$PATH"
+
 WORKDIR /app/backend
-COPY backend/requirements.txt .
-RUN pip install --no-cache-dir -r requirements.txt
+COPY backend/pyproject.toml backend/uv.lock ./
+COPY backend/SpotAPI ./SpotAPI
+RUN uv sync --frozen --no-dev
 
 WORKDIR /app/web
 COPY --from=web-deps /web/node_modules ./node_modules
@@ -57,9 +66,18 @@ RUN apt-get update \
   && rm -f /etc/nginx/sites-enabled/default \
   && rm -rf /var/lib/apt/lists/*
 
+COPY --from=ghcr.io/astral-sh/uv:latest /uv /usr/local/bin/uv
+
+ENV UV_COMPILE_BYTECODE=1 \
+  UV_PYTHON="python3" \
+  UV_PROJECT_ENVIRONMENT="/app/.venv" \
+  PATH="/app/.venv/bin:$PATH"
+
 WORKDIR /app/backend
+COPY backend/pyproject.toml backend/uv.lock ./
+COPY backend/SpotAPI ./SpotAPI
+RUN uv sync --frozen --no-dev
 COPY backend/ .
-RUN pip install --no-cache-dir -r requirements.txt
 
 WORKDIR /app/web
 COPY --from=web-builder /web/public ./public
