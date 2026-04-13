@@ -13,6 +13,9 @@ updates:
     labels:
       - "dependencies"
       - "web"
+    ignore:
+      - dependency-name: "*"
+        update-types: ["version-update:semver-major"]
     groups:
       radix-ui:
         patterns:
@@ -40,6 +43,9 @@ updates:
     labels:
       - "dependencies"
       - "backend"
+    ignore:
+      - dependency-name: "*"
+        update-types: ["version-update:semver-major"]
     groups:
       pydantic:
         patterns:
@@ -63,6 +69,9 @@ updates:
       - "dependencies"
       - "backend"
       - "spotapi"
+    ignore:
+      - dependency-name: "*"
+        update-types: ["version-update:semver-major"]
 
   - package-ecosystem: "github-actions"
     directory: "/"
@@ -93,3 +102,6 @@ updates:
     labels:
       - "dependencies"
       - "docker"
+    ignore:
+      - dependency-name: "*"
+        update-types: ["version-update:semver-major"]

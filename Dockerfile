@@ -4,7 +4,7 @@ RUN apk add --no-cache libc6-compat
 WORKDIR /web
 
 COPY web/package.json web/pnpm-lock.yaml ./
-RUN npm install -g pnpm && pnpm install --frozen-lockfile
+RUN npm install -g pnpm@9 && pnpm install --frozen-lockfile
 
 FROM node:25-alpine AS web-builder
 
@@ -17,7 +17,7 @@ COPY web/ .
 ENV NEXT_PUBLIC_URL=${NEXT_PUBLIC_URL:-http://localhost:8000}
 ENV NEXT_TELEMETRY_DISABLED=1
 
-RUN npm install -g pnpm && pnpm build
+RUN npm install -g pnpm@9 && pnpm build
 
 FROM python:3.14-slim AS development
 
@@ -25,7 +25,7 @@ RUN apt-get update \
   && apt-get install -y --no-install-recommends \
   curl ca-certificates ffmpeg nginx \
   nodejs npm \
-  && npm install -g pnpm \
+  && npm install -g pnpm@9 \
   && rm -f /etc/nginx/sites-enabled/default \
   && rm -rf /var/lib/apt/lists/*
 
