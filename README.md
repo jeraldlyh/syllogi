@@ -81,6 +81,58 @@ All configuration is supplied through environment variables on the `syllogi` con
 | `TZ`                   | _(unset)_       | Container timezone, e.g. `Asia/Singapore`. Affects cron scheduling.                 |
 | `ENVIRONMENT`          | `production`    | Set to `production` to use the built Next.js output.                                |
 
+## OIDC Setup with Authentik
+
+This section walks you through creating an OIDC provider in [Authentik](https://goauthentik.io) and wiring it up to syllogi.
+
+### 1. Create an OIDC Provider in Authentik
+
+1. Log in to your Authentik admin interface (e.g. `https://auth.example.com/if/admin/`).
+2. Click **Create** and select **OAuth2/OpenID Connect Provider**.
+3. Fill in the following fields:
+   - **Name** - e.g. `syllogi`
+   - **Authorization flow** - select your desired authorization flow (e.g. `default-provider-authorization-explicit-consent`).
+   - **Client type** - `Confidential`
+   - **Redirect URIs/Origins** - add the callback URL:
+     ```
+     <public-url-of-syllogi>/oauth/callback # i.e. https://syllogi.com/oauth/callback
+     ```
+4. Leave all other settings at their defaults and click **Save**.
+5. On the provider detail page, note down the **Client ID** and **Client Secret**
+
+### 2. Create an Authentik Application
+
+1. Navigate to **Applications → Applications** in the sidebar.
+2. Click **Create** and fill in:
+   - **Name** - e.g. `syllogi`
+   - **Slug** - e.g. `syllogi`
+   - **Provider** - select the provider you just created.
+3. Click **Save**.
+
+### 3. Retrieve the OIDC Issuer URL
+
+1. Go back to **Applications → Providers** and open the provider you created.
+2. Scroll down to the **OpenID Configuration** section.
+3. Copy the **OpenID Configuration URL** - it will look like:
+   ```
+   https://auth.example.com/application/o/syllogi/
+   ```
+   This is your issuer URL (`AUTHENTIK_ISSUER`).
+
+### 4. Configure syllogi
+
+Set the following environment variables on the `syllogi` container in your `docker-compose.yml`:
+
+```yaml
+environment:
+  AUTHENTIK_CLIENT_ID: "<client-id-from-step-1>"
+  AUTHENTIK_SECRET: "<client-secret-from-step-1>"
+  AUTHENTIK_ISSUER: "<issuer-url-from-step-3>"
+  NEXT_PUBLIC_URL: "<public-url-of-syllogi>"
+```
+
+---
+
 ## How it works
 
 1. A playlist is read from a supported provider.
@@ -89,9 +141,9 @@ All configuration is supplied through environment variables on the `syllogi` con
 2. syllogi converts each provider entry into a normalized internal track representation.
 3. Each track is searched in the Jellyfin library using title, artist, album, year, and duration.
 4. The difference between the source playlist and the existing Jellyfin playlist is computed:
-   - **Added** — tracks in the source that are not yet in Jellyfin.
-   - **Removed** — tracks in Jellyfin that are no longer in the source.
-   - **Unchanged** — tracks present in both.
+   - **Added** - tracks in the source that are not yet in Jellyfin.
+   - **Removed** - tracks in Jellyfin that are no longer in the source.
+   - **Unchanged** - tracks present in both.
 5. If missing tracks exist and `enable_download` is set, syllogi tries to fetch them with `yt-dlp`.
 6. After downloading, Jellyfin is asked to refresh the configured download library and the newly indexed tracks are matched again.
 7. The Jellyfin playlist is updated and the playlist thumbnail is synced from the source.
