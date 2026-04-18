@@ -144,12 +144,13 @@ async def _sync_playlist_task(
                 session=session, sync_session=sync_session
             )
 
+            internal_playlist_name = internal_playlist.playlist_name
             jellyfin_playlists = _get_jellyfin_playlists(user_id=jellyfin_user_id)
             existing_playlist = next(
                 (
                     playlist
                     for playlist in jellyfin_playlists
-                    if external_playlist_name == playlist.get("Name")
+                    if internal_playlist_name == playlist.get("Name")
                 ),
                 {},
             )
@@ -158,7 +159,7 @@ async def _sync_playlist_task(
 
             if not existing_playlist_id:
                 new_playlist = _create_jellyfin_playlist(
-                    playlist_name=external_playlist_name, user_id=jellyfin_user_id
+                    playlist_name=internal_playlist_name, user_id=jellyfin_user_id
                 )
                 existing_playlist_id = new_playlist.get("Id")
                 if not existing_playlist_id:
