@@ -8,7 +8,7 @@ from typing import TYPE_CHECKING, Any
 import yt_dlp
 
 from lib.common import ExternalPlaylist, Track
-from lib.utils import _dump_results
+from lib.utils import dump_results
 
 if TYPE_CHECKING:
     from yt_dlp import _Params
@@ -41,7 +41,7 @@ def _run_ytdlp(url: str, opts: _Params | None = None, *, download: bool = False)
         result = ydl.extract_info(url, download=download)
 
         if IS_DEVELOPMENT:
-            _dump_results(f"yt-dlp-{url}", dict(result))
+            dump_results(f"yt-dlp-{url}", dict(result))
         return result
 
 
@@ -59,7 +59,7 @@ def _get_youtube_playlist(playlist_id: str) -> ExternalPlaylist:
     )
 
     if IS_DEVELOPMENT:
-        _dump_results(f"youtube-{playlist_id}", playlist)
+        dump_results(f"youtube-{playlist_id}", playlist)
 
     return ExternalPlaylist(
         id=playlist.get("id", ""),

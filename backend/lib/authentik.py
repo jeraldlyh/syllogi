@@ -48,7 +48,7 @@ def _authentik(
     )
 
 
-def _get_authentik_token(oauth_url: str, oauth_code: str) -> str:
+def get_authentik_token(oauth_url: str, oauth_code: str) -> str:
     """Get an access token from Authentik using client credentials."""
     authentik = _get_authentik_config()
     response = _authentik(
@@ -72,7 +72,7 @@ def _get_authentik_token(oauth_url: str, oauth_code: str) -> str:
     return data.get("access_token")
 
 
-def _get_authentik_userinfo(access_token: str) -> dict[str, Any]:
+def get_authentik_userinfo(access_token: str) -> dict[str, Any]:
     """Get user info from Authentik using an access token."""
     authentik = _get_authentik_config()
     response = _authentik(

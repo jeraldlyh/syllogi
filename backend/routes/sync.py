@@ -4,20 +4,20 @@ from fastapi import APIRouter, BackgroundTasks, HTTPException, status
 
 from db.models.playlist import Playlist, PlaylistProvider
 from db.models.sync_session import SyncProvider, SyncSession, SyncStatus
-from db.playlist import _get_playlist_by_id
+from db.playlist import get_playlist_by_id
 from db.session import get_isolated_session
-from db.sync_session import _create_sync_session
+from db.sync_session import create_sync_session
 from lib.common import ExternalPlaylist, Track
 from lib.sync import _sync_playlist_task
 from lib.spotify import (
-    _get_spotify_playlist,
-    _get_spotify_playlist_songs,
+    get_spotify_playlist,
+    get_spotify_playlist_songs,
 )
 from lib.youtube import (
     _get_youtube_playlist,
     _get_youtube_playlist_songs,
 )
-from lib.utils import _get_now
+from lib.utils import get_now
 
 router = APIRouter()
 logger = logging.getLogger(__name__)
@@ -58,7 +58,7 @@ logger = logging.getLogger(__name__)
 )
 def sync_playlist(item: Playlist, background_tasks: BackgroundTasks) -> dict[str, str]:
     session = get_isolated_session()
-    internal_playlist = _get_playlist_by_id(session=session, playlist_id=item.id)
+    internal_playlist = get_playlist_by_id(session=session, playlist_id=item.id)
 
     if not internal_playlist:
         raise HTTPException(
@@ -71,15 +71,15 @@ def sync_playlist(item: Playlist, background_tasks: BackgroundTasks) -> dict[str
 
     match internal_playlist.provider:
         case PlaylistProvider.spotify:
-            songs = _get_spotify_playlist_songs(playlist_id=item.playlist_id)
-            external_playlist = _get_spotify_playlist(playlist_id=item.playlist_id)
+            songs = get_spotify_playlist_songs(playlist_id=item.playlist_id)
+            external_playlist = get_spotify_playlist(playlist_id=item.playlist_id)
         case PlaylistProvider.youtube:
             songs = _get_youtube_playlist_songs(playlist_id=item.playlist_id)
             external_playlist = _get_youtube_playlist(playlist_id=item.playlist_id)
 
     playlist_id = internal_playlist.playlist_id
     username = item.username
-    started_at = _get_now()
+    started_at = get_now()
 
     sync_session = SyncSession(
         provider=SyncProvider(internal_playlist.provider.value),
@@ -94,7 +94,7 @@ def sync_playlist(item: Playlist, background_tasks: BackgroundTasks) -> dict[str
         duration_seconds=0,
         status=SyncStatus.pending,
     )
-    _create_sync_session(session=session, sync_session=sync_session)
+    create_sync_session(session=session, sync_session=sync_session)
     background_tasks.add_task(
         _sync_playlist_task,
         internal_playlist=internal_playlist,

@@ -1,5 +1,5 @@
 from fastapi import APIRouter
-from lib.jellyfin import _get_jellyfin_users
+from lib.jellyfin import get_jellyfin_users
 
 router = APIRouter()
 
@@ -25,8 +25,8 @@ router = APIRouter()
         }
     },
 )
-async def get_jellyfin_users():
-    users = _get_jellyfin_users()
+async def _get_jellyfin_users():
+    users = get_jellyfin_users()
 
     return [
         {

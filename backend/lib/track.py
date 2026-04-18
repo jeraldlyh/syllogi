@@ -2,8 +2,8 @@ from difflib import SequenceMatcher
 
 from fastapi import HTTPException, status
 
-from lib.jellyfin import _search_jellyfin_songs
-from lib.utils import _get_clean_name
+from lib.jellyfin import search_jellyfin_songs
+from lib.utils import get_clean_name
 
 
 def _normalize(text: str) -> str:
@@ -13,7 +13,7 @@ def _normalize(text: str) -> str:
     #     r"\s*[\(\[](remaster(ed)?|deluxe|bonus|feat\.?[^\)\]]*|live|remix|edition|version|anniversary|explicit)[\)\]]",
     #     re.IGNORECASE,
     # ).sub("", text)
-    text = _get_clean_name(name=text)
+    text = get_clean_name(name=text)
     return text.casefold().strip()
 
 
@@ -87,7 +87,7 @@ def _find_track(
         "quality": None,
     }
 
-    tracks = _search_jellyfin_songs(
+    tracks = search_jellyfin_songs(
         artist=artist_name, title=track_name, album=album_name, year=year
     )
     best_match, best_score = None, 0.0

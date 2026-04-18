@@ -7,13 +7,13 @@ from fastapi.responses import RedirectResponse
 
 from db.session import SessionDep
 from lib.auth import (
-    _create_access_token,
-    _get_or_create_oauth_user,
+    create_access_token,
+    get_or_create_oauth_user,
 )
 from lib.authentik import (
     _get_authentik_config,
-    _get_authentik_token,
-    _get_authentik_userinfo,
+    get_authentik_token,
+    get_authentik_userinfo,
 )
 
 router = APIRouter()
@@ -70,7 +70,7 @@ def oauth_callback(
         )
     redirect_uri = _oauth_states.pop(state)
 
-    access_token = _get_authentik_token(oauth_url=redirect_uri, oauth_code=code)
+    access_token = get_authentik_token(oauth_url=redirect_uri, oauth_code=code)
 
     if not access_token:
         raise HTTPException(
@@ -78,7 +78,7 @@ def oauth_callback(
             detail="Failed to obtain access token from Authentik",
         )
 
-    userinfo = _get_authentik_userinfo(access_token=access_token)
+    userinfo = get_authentik_userinfo(access_token=access_token)
     oauth_id = userinfo.get("sub")
     username = userinfo.get("preferred_username") or userinfo.get("name") or oauth_id
 
@@ -94,10 +94,10 @@ def oauth_callback(
             detail="OAuth provider did not return a username",
         )
 
-    user = _get_or_create_oauth_user(
+    user = get_or_create_oauth_user(
         session=session, oauth_id=oauth_id, username=username
     )
-    access_token = _create_access_token(data={"sub": user.username})
+    access_token = create_access_token(data={"sub": user.username})
 
     redirect_response = RedirectResponse(url=NEXT_PUBLIC_URL, status_code=302)
     redirect_response.set_cookie(

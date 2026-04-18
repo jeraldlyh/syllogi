@@ -102,7 +102,7 @@ def _get_best_entry(entries: list[dict]) -> dict | None:
     return None
 
 
-async def _download_track(
+async def download_track(
     artist_name: str,
     track_name: str,
     album_name: str = "",
@@ -209,7 +209,7 @@ async def _download_track(
         return False
 
 
-async def _download_missing_tracks(
+async def download_missing_tracks(
     missing_tracks: list[Track],
 ) -> tuple[list[Track], list[Track]]:
     """Download a list of missing songs.
@@ -228,7 +228,7 @@ async def _download_missing_tracks(
         album_name = song.album_name
         formatted_name = f"{artist_name} - {album_name}: {track_name}"
 
-        success = await _download_track(
+        success = await download_track(
             artist_name=artist_name,
             track_name=track_name,
             album_name=album_name,

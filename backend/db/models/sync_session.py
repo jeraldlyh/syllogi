@@ -6,7 +6,7 @@ from typing import Any, Optional, cast
 
 from sqlmodel import Field, Relationship, SQLModel
 
-from lib.utils import _get_now, _format_time_with_locale
+from lib.utils import get_now, format_time_with_locale
 from lib.mixin.serializer import SerializerMixin
 from lib.mixin.metadata import TimestampMixin
 
@@ -46,13 +46,13 @@ class SyncSession(TimestampMixin, SerializerMixin, SQLModel, table=True):
     tracks: list["SyncSessionTrack"] = Relationship(back_populates="session")
 
     started_at: datetime = Field(
-        default=_get_now(),
+        default=get_now(),
         sa_type=cast(type[Any], sa.DateTime(timezone=True)),
         sa_column_kwargs={"server_default": sa.func.now()},
         nullable=False,
     )
     finished_at: datetime = Field(
-        default=_get_now(),
+        default=get_now(),
         sa_type=cast(type[Any], sa.DateTime(timezone=True)),
         sa_column_kwargs={"server_default": sa.func.now()},
         nullable=False,
@@ -71,13 +71,13 @@ class SyncSession(TimestampMixin, SerializerMixin, SQLModel, table=True):
             "target_username": self.target_username,
             "target_playlist_id": self.target_playlist_id,
             "target_playlist_name": self.target_playlist_name,
-            "started_at": _format_time_with_locale(self.started_at),
-            "finished_at": _format_time_with_locale(self.finished_at),
+            "started_at": format_time_with_locale(self.started_at),
+            "finished_at": format_time_with_locale(self.finished_at),
             "duration_seconds": self.duration_seconds,
             "status": self.status,
             "error_message": self.error_message,
-            "created_at": _format_time_with_locale(self.created_at),
-            "updated_at": _format_time_with_locale(self.updated_at),
+            "created_at": format_time_with_locale(self.created_at),
+            "updated_at": format_time_with_locale(self.updated_at),
         }
 
 

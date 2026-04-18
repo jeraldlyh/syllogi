@@ -4,28 +4,28 @@ from db.models.playlist import Playlist
 from db.session import SessionDep
 
 
-def _get_playlists(session: SessionDep):
+def get_playlists(session: SessionDep):
     return session.exec(select(Playlist)).all()
 
 
-def _get_playlist_by_id(
+def get_playlist_by_id(
     session: SessionDep, playlist_id: str | uuid.UUID
 ) -> Playlist | None:
     return session.get(Playlist, playlist_id)
 
 
-def _create_playlist(session: SessionDep, playlist: Playlist) -> None:
+def create_playlist(session: SessionDep, playlist: Playlist) -> None:
     session.add(playlist)
     session.commit()
     session.refresh(playlist)
 
 
-def _update_playlist(session: SessionDep, playlist: Playlist) -> None:
+def update_playlist(session: SessionDep, playlist: Playlist) -> None:
     session.add(playlist)
     session.commit()
     session.refresh(playlist)
 
 
-def _delete_playlist(session: SessionDep, playlist: Playlist) -> None:
+def delete_playlist(session: SessionDep, playlist: Playlist) -> None:
     session.delete(playlist)
     session.commit()

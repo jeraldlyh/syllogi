@@ -4,5 +4,5 @@ from db.session import SessionDep
 from db.models.notification import Notification
 
 
-def _get_notifications(session: SessionDep) -> Sequence[Notification]:
+def get_notifications(session: SessionDep) -> Sequence[Notification]:
     return session.exec(select(Notification)).all()

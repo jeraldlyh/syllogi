@@ -23,7 +23,7 @@ logger = logging.getLogger(__name__)
 DISCORD_WEBHOOK_URL = os.getenv("DISCORD_WEBHOOK_URL", "")
 
 
-def _get_spotify_playlist(playlist_id: str) -> ExternalPlaylist:
+def get_spotify_playlist(playlist_id: str) -> ExternalPlaylist:
     playlist = PublicPlaylist(playlist_id)
     playlist_info = playlist.get_playlist_info()
 
@@ -42,7 +42,7 @@ def _get_spotify_playlist(playlist_id: str) -> ExternalPlaylist:
     )
 
 
-def _get_spotify_playlist_songs(playlist_id: str) -> list[Track]:
+def get_spotify_playlist_songs(playlist_id: str) -> list[Track]:
     offset = 0
     limit = 50
     songs: list[Track] = []

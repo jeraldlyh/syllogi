@@ -6,26 +6,26 @@ from db.models.sync_session import SyncSession, SyncSessionTrack, TrackListKind
 from db.session import SessionDep
 
 
-def _create_sync_session(session: SessionDep, sync_session: SyncSession) -> None:
+def create_sync_session(session: SessionDep, sync_session: SyncSession) -> None:
     session.add(sync_session)
     session.commit()
     session.refresh(sync_session)
 
 
-def _update_sync_session(session: SessionDep, sync_session: SyncSession) -> SyncSession:
+def update_sync_session(session: SessionDep, sync_session: SyncSession) -> SyncSession:
     sync_session = session.merge(sync_session)
     session.commit()
     session.refresh(sync_session)
     return sync_session
 
 
-def _get_sync_sessions(session: SessionDep) -> Sequence[SyncSession]:
+def get_sync_sessions(session: SessionDep) -> Sequence[SyncSession]:
     return session.exec(
         select(SyncSession).order_by(desc(SyncSession.created_at))
     ).all()
 
 
-def _get_sync_session_tracks(
+def get_sync_session_tracks(
     session: SessionDep, sync_session_id: uuid.UUID
 ) -> Sequence[SyncSessionTrack]:
     return session.exec(
@@ -35,7 +35,7 @@ def _get_sync_session_tracks(
     ).all()
 
 
-def _build_tracks(
+def build_tracks(
     sync_session_id: uuid.UUID, names: list[str], kind: TrackListKind
 ) -> list[SyncSessionTrack]:
     return [
