@@ -1,9 +1,20 @@
 from difflib import SequenceMatcher
+from typing import Any
 
 from fastapi import HTTPException, status
 
-from lib.common import JellyfinTrack
-from lib.jellyfin import search_jellyfin_songs
+from lib.common import (
+    JellyfinTrack,
+    LastFMRecentTrack,
+    LastFMSimilarTrack,
+    LastFMTopTrack,
+)
+from lib.jellyfin import search_jellyfin_track
+from lib.lastfm import (
+    get_lastfm_recent_tracks,
+    get_lastfm_similar_tracks,
+    get_lastfm_top_tracks,
+)
 from lib.utils import get_clean_name
 
 
@@ -75,20 +86,10 @@ def _score_track(
 
 def find_track(
     artist_name: str, track_name: str, album_name: str, year: str, duration: int
-) -> dict:
+) -> JellyfinTrack:
     """Find the best matching track in Jellyfin based on the provided metadata."""
 
-    empty_result = {
-        "artist_name": artist_name,
-        "track": {"name": None, "id": None, "file_id": None},
-        "album": {"name": None, "id": None},
-        "search_name": track_name,
-        "exists": False,
-        "path": None,
-        "quality": None,
-    }
-
-    jellyfin_tracks = search_jellyfin_songs(
+    jellyfin_tracks = search_jellyfin_track(
         artist=artist_name, title=track_name, album=album_name, year=year
     )
     best_match, best_score = None, 0.0
@@ -115,14 +116,51 @@ def find_track(
             best_match = jellyfin_track
 
     if best_match:
-        return {
-            "artist_name": artist_name,
-            "track": {"id": best_match.id, "name": jellyfin_track_name},
-            "album": {
-                "id": best_match.album_id,
-                "name": best_match.album_name,
-            },
-            "search_name": track_name,
-            "exists": True,
-        }
-    return empty_result
+        return jellyfin_track
+    return JellyfinTrack(
+        id="",
+        track_name=track_name,
+        album_id="",
+        album_name=album_name,
+        musicbrainz_id="",
+        artists=[],
+        year=year,
+        duration_ticks=0,
+    )
+
+
+def get_recommendations(user: str, num_recommendations: int = 50) -> Any:
+    """Get track recommendations for a user based on their listening history."""
+
+    recent_tracks = get_lastfm_recent_tracks(
+        user=user, limit=round(num_recommendations * 0.7)
+    )
+    top_tracks = get_lastfm_top_tracks(
+        user=user, limit=round(num_recommendations * 0.3)
+    )
+    all_tracks = recent_tracks + top_tracks
+    missing_tracks: list[LastFMTopTrack | LastFMRecentTrack] = []
+    existing_tracks: list[LastFMTopTrack | LastFMRecentTrack] = []
+
+    for track in all_tracks:
+        similar_tracks = get_lastfm_similar_tracks(
+            user=user, artist=track.artist_name, track=track.track_name
+        )
+
+        for similar_track in similar_tracks:
+            jellyfin_track = find_track(
+                artist_name=similar_track.artist_name,
+                track_name=similar_track.track_name,
+                album_name="",
+                year="",
+                duration=similar_track.duration,
+            )
+
+            if jellyfin_track.is_not_found():
+                missing_tracks.append(track)
+            else:
+                existing_tracks.append(track)
+    return {
+        "existing_tracks": [track.to_dict() for track in existing_tracks],
+        "missing_tracks": [track.to_dict() for track in missing_tracks],
+    }

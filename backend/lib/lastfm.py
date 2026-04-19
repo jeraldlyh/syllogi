@@ -6,8 +6,8 @@ import requests
 
 from lib.common import LastFMRecentTrack, LastFMSimilarTrack, LastFMTopTrack
 
-LASTFM_API_KEY = "http://ws.audioscrobbler.com/2.0"
-LASTFM_BASE_URL = os.getenv("LASTFM_BASE_URL")
+LASTFM_API_KEY = os.getenv("LASTFM_API_KEY")
+LASTFM_BASE_URL = os.getenv("LASTFM_BASE_URL", "https://ws.audioscrobbler.com/2.0/")
 
 logger = logging.getLogger(__name__)
 
@@ -47,8 +47,10 @@ def _lastfm(
     return response.json()
 
 
-def get_recent_tracks(user: str, limit=30) -> list[LastFMRecentTrack]:
-    data = _lastfm("user.getRecentTracks", params={"user": user, "limit": limit})
+def get_lastfm_recent_tracks(user: str, limit=30) -> list[LastFMRecentTrack]:
+    data = _lastfm(
+        "", params={"user": user, "method": "user.getRecentTracks", "limit": limit}
+    )
     tracks = data.get("recenttracks", {}).get("track", [])
 
     return [
@@ -62,8 +64,10 @@ def get_recent_tracks(user: str, limit=30) -> list[LastFMRecentTrack]:
     ]
 
 
-def get_top_tracks(user: str, limit=30) -> list[LastFMTopTrack]:
-    data = _lastfm("user.getTopTracks", params={"user": user, "limit": limit})
+def get_lastfm_top_tracks(user: str, limit=30) -> list[LastFMTopTrack]:
+    data = _lastfm(
+        "", params={"user": user, "method": "user.getTopTracks", "limit": limit}
+    )
     tracks = data.get("toptracks", {}).get("track", [])
 
     return [
@@ -78,12 +82,18 @@ def get_top_tracks(user: str, limit=30) -> list[LastFMTopTrack]:
     ]
 
 
-def get_similar_tracks(
-    user: str, artist: str, track: str, limit=10
+def get_lastfm_similar_tracks(
+    user: str, artist: str, track: str, limit=5
 ) -> list[LastFMSimilarTrack]:
     data = _lastfm(
-        "user.getTopTracks",
-        params={"user": user, "artist": artist, "track": track, "limit": limit},
+        "",
+        params={
+            "user": user,
+            "method": "track.getSimilar",
+            "artist": artist,
+            "track": track,
+            "limit": limit,
+        },
     )
     tracks = data.get("similartracks", {}).get("track", [])
 
@@ -97,4 +107,5 @@ def get_similar_tracks(
             similarity_score=track["match"],
         )
         for track in tracks
+        if "mbid" in track
     ]

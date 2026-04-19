@@ -2,7 +2,7 @@ from typing import Annotated
 
 from fastapi import APIRouter, Query
 
-from lib.track import find_track
+from lib.track import find_track, get_recommendations
 
 router = APIRouter()
 
@@ -37,8 +37,21 @@ router = APIRouter()
         }
     },
 )
-async def _find_track(
+def _find_track(
     artist_name: Annotated[str, Query(description="Artist name")],
     title: Annotated[str, Query(description="Track title")],
 ):
     return find_track(artist_name, title, album_name="", year="", duration=0)
+
+
+@router.get(
+    path="/recommendations",
+    summary="Get track recommendations",
+    description="Get track recommendations based on a given track.",
+)
+def _get_recommendations(
+    user: Annotated[str, Query(description="LastFM username")],
+):
+    result = get_recommendations(user=user)
+
+    return result

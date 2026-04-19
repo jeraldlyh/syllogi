@@ -58,20 +58,18 @@ def _resolve_songs(
             duration=song.duration,
         )
 
-        jellyfin_id = track.get("track", {}).get("id")
-
         resolved = ResolvedTrack(
             track=song,
-            jellyfin_id=jellyfin_id,
+            jellyfin_id=track.id,
             display_name=display_name,
         )
 
-        if resolved.jellyfin_id is not None:
-            logger.info(f"{display_name}: OK")
-            found.append(resolved)
-        else:
+        if track.is_not_found():
             logger.warning(f"{display_name}: MISSING")
             missing.append(resolved)
+        else:
+            logger.info(f"{display_name}: OK")
+            found.append(resolved)
 
     return found, missing
 

@@ -81,7 +81,7 @@ def get_jellyfin_user_by_name(username: str) -> JellyfinUser:
     return user
 
 
-def search_jellyfin_songs(
+def search_jellyfin_track(
     artist: str, title: str, album: str, year: str
 ) -> list[JellyfinTrack]:
     response = _jellyfin(

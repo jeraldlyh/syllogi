@@ -44,6 +44,9 @@ class JellyfinTrack:
         self.duration_ticks = duration_ticks
         self.year = year
 
+    def is_not_found(self) -> bool:
+        return not self.id or self.id == ""
+
     def to_dict(self) -> dict[str, str | int | list[str]]:
         return {
             "id": self.id,
