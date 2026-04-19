@@ -6,7 +6,6 @@ from fastapi import HTTPException, status
 from lib.common import (
     JellyfinTrack,
     LastFMRecentTrack,
-    LastFMSimilarTrack,
     LastFMTopTrack,
 )
 from lib.jellyfin import search_jellyfin_track

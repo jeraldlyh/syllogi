@@ -64,9 +64,15 @@ def get_lastfm_recent_tracks(user: str, limit=30) -> list[LastFMRecentTrack]:
     ]
 
 
-def get_lastfm_top_tracks(user: str, limit=30) -> list[LastFMTopTrack]:
+def get_lastfm_top_tracks(user: str, period="6month", limit=30) -> list[LastFMTopTrack]:
     data = _lastfm(
-        "", params={"user": user, "method": "user.getTopTracks", "limit": limit}
+        "",
+        params={
+            "user": user,
+            "method": "user.getTopTracks",
+            "period": period,
+            "limit": limit,
+        },
     )
     tracks = data.get("toptracks", {}).get("track", [])
 
