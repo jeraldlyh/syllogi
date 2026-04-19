@@ -139,8 +139,8 @@ def get_recommendations(user: str, num_recommendations: int = 50) -> Any:
         user=user, limit=round(num_recommendations * 0.3)
     )
     all_tracks = recent_tracks + top_tracks
-    missing_tracks: list[LastFMTopTrack | LastFMRecentTrack] = []
-    existing_tracks: list[LastFMTopTrack | LastFMRecentTrack] = []
+    missing_tracks: set[LastFMTopTrack | LastFMRecentTrack] = set()
+    existing_tracks: set[LastFMTopTrack | LastFMRecentTrack] = set()
 
     for track in all_tracks:
         similar_tracks = get_lastfm_similar_tracks(
@@ -157,9 +157,10 @@ def get_recommendations(user: str, num_recommendations: int = 50) -> Any:
             )
 
             if jellyfin_track.is_not_found():
-                missing_tracks.append(track)
+                missing_tracks.add(track)
             else:
-                existing_tracks.append(track)
+                existing_tracks.add(track)
+                break
     return {
         "existing_tracks": [track.to_dict() for track in existing_tracks],
         "missing_tracks": [track.to_dict() for track in missing_tracks],
