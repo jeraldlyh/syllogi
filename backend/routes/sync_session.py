@@ -67,7 +67,7 @@ def _get_sync_sessions(session: SessionDep):
             session=session, sync_session_id=sync_session_id
         )
         for track in session_tracks:
-            tracks_by_session[str(sync_session_id)][track.kind.value].append(track.name)
+            tracks_by_session[str(sync_session_id)][track.type.value].append(track.name)
 
     response = []
     for sync_session in sync_sessions:

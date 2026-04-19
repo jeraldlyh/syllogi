@@ -5,7 +5,12 @@ import time
 from fastapi import HTTPException, status
 
 from db.models.playlist import Playlist, PlaylistProvider
-from db.models.sync_session import SyncProvider, SyncSession, SyncStatus, TrackListKind
+from db.models.sync_session import (
+    SyncProvider,
+    SyncSession,
+    SyncStatus,
+    SyncSessionTrackType,
+)
 from db.playlist import get_playlist_by_id
 from db.session import SessionDep, get_isolated_session
 from db.sync_session import build_tracks, create_sync_session, update_sync_session
@@ -321,27 +326,27 @@ async def sync_playlist_task(
                 build_tracks(
                     sync_session_id=sync_session.id,
                     names=track_names,
-                    kind=TrackListKind.total,
+                    type=SyncSessionTrackType.total,
                 )
                 + build_tracks(
                     sync_session_id=sync_session.id,
                     names=missing_track_names,
-                    kind=TrackListKind.missing,
+                    type=SyncSessionTrackType.missing,
                 )
                 + build_tracks(
                     sync_session_id=sync_session.id,
                     names=added_track_names,
-                    kind=TrackListKind.new,
+                    type=SyncSessionTrackType.new,
                 )
                 + build_tracks(
                     sync_session_id=sync_session.id,
                     names=removed_track_names,
-                    kind=TrackListKind.outdated,
+                    type=SyncSessionTrackType.outdated,
                 )
                 + build_tracks(
                     sync_session_id=sync_session.id,
                     names=downloaded_track_names,
-                    kind=TrackListKind.downloaded,
+                    type=SyncSessionTrackType.downloaded,
                 )
             )
 

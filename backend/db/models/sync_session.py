@@ -16,7 +16,7 @@ class SyncProvider(enum.Enum):
     youtube = "youtube"
 
 
-class TrackListKind(enum.Enum):
+class SyncSessionTrackType(enum.Enum):
     total = "total"
     new = "new"
     outdated = "outdated"
@@ -43,8 +43,6 @@ class SyncSession(TimestampMixin, SerializerMixin, SQLModel, table=True):
     target_playlist_id: str = Field(max_length=128, nullable=False, index=True)
     target_playlist_name: str = Field(default="", max_length=512, nullable=False)
 
-    tracks: list["SyncSessionTrack"] = Relationship(back_populates="session")
-
     started_at: datetime = Field(
         default=get_now(),
         sa_type=cast(type[Any], sa.DateTime(timezone=True)),
@@ -58,7 +56,10 @@ class SyncSession(TimestampMixin, SerializerMixin, SQLModel, table=True):
         nullable=False,
     )
     duration_seconds: int = Field(default=0, nullable=False)
+
     status: SyncStatus = Field(nullable=False)
+    tracks: list["SyncSessionTrack"] = Relationship(back_populates="session")
+
     error_message: Optional[str] = Field(default=None, max_length=1024, nullable=True)
 
     def to_dict(self) -> dict:
@@ -87,7 +88,7 @@ class SyncSessionTrack(TimestampMixin, SerializerMixin, SQLModel, table=True):
     sync_session_id: uuid.UUID = Field(
         foreign_key="syncsession.id", index=True, nullable=False
     )
-    kind: TrackListKind = Field(nullable=False, index=True)
-    name: str = Field(max_length=512, nullable=False)
-
     session: SyncSession = Relationship(back_populates="tracks")
+
+    name: str = Field(max_length=512, nullable=False)
+    type: SyncSessionTrackType = Field(nullable=False, index=True)

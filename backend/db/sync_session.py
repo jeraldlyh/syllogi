@@ -2,7 +2,7 @@ from typing import Sequence
 import uuid
 
 from sqlmodel import desc, select
-from db.models.sync_session import SyncSession, SyncSessionTrack, TrackListKind
+from db.models.sync_session import SyncSession, SyncSessionTrack, SyncSessionTrackType
 from db.session import SessionDep
 
 
@@ -36,9 +36,9 @@ def get_sync_session_tracks(
 
 
 def build_tracks(
-    sync_session_id: uuid.UUID, names: list[str], kind: TrackListKind
+    sync_session_id: uuid.UUID, names: list[str], type: SyncSessionTrackType
 ) -> list[SyncSessionTrack]:
     return [
-        SyncSessionTrack(sync_session_id=sync_session_id, kind=kind, name=name)
+        SyncSessionTrack(sync_session_id=sync_session_id, type=type, name=name)
         for name in names
     ]
