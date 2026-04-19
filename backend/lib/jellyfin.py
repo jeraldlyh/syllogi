@@ -53,7 +53,7 @@ def get_jellyfin_users() -> list[JellyfinUser]:
             id=user["Id"],
             name=user["Name"],
         )
-        for user in data.get("Items", [])
+        for user in data
     ]
 
 
