@@ -189,6 +189,7 @@ class LastFMRecentTrack:
             "track_name": self.track_name,
             "album_name": self.album_name,
             "musicbrainz_id": self.musicbrainz_id,
+            "type": "recent",
         }
 
 
@@ -236,6 +237,7 @@ class LastFMTopTrack:
             "duration": self.duration,
             "musicbrainz_id": self.musicbrainz_id,
             "playcount": self.playcount,
+            "type": "top",
         }
 
 
@@ -267,4 +269,5 @@ class LastFMSimilarTrack:
             "musicbrainz_id": self.musicbrainz_id,
             "playcount": self.playcount,
             "similarity_score": self.similarity_score,
+            "type": "similar",
         }
