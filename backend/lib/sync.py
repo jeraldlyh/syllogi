@@ -13,7 +13,11 @@ from db.models.sync_session import (
 )
 from db.playlist import get_playlist_by_id
 from db.session import SessionDep, get_isolated_session
-from db.sync_session import build_tracks, create_sync_session, update_sync_session
+from db.sync_session import (
+    build_sync_session_tracks,
+    create_sync_session,
+    update_sync_session,
+)
 from lib.common import (
     ExternalPlaylist,
     JellyfinTrack,
@@ -323,27 +327,27 @@ async def sync_playlist_task(
             sync_session.duration_seconds = int(duration_taken)
             sync_session.status = SyncStatus.completed
             sync_session.tracks = (
-                build_tracks(
+                build_sync_session_tracks(
                     sync_session_id=sync_session.id,
                     names=track_names,
                     type=SyncSessionTrackType.total,
                 )
-                + build_tracks(
+                + build_sync_session_tracks(
                     sync_session_id=sync_session.id,
                     names=missing_track_names,
                     type=SyncSessionTrackType.missing,
                 )
-                + build_tracks(
+                + build_sync_session_tracks(
                     sync_session_id=sync_session.id,
                     names=added_track_names,
                     type=SyncSessionTrackType.new,
                 )
-                + build_tracks(
+                + build_sync_session_tracks(
                     sync_session_id=sync_session.id,
                     names=removed_track_names,
                     type=SyncSessionTrackType.outdated,
                 )
-                + build_tracks(
+                + build_sync_session_tracks(
                     sync_session_id=sync_session.id,
                     names=downloaded_track_names,
                     type=SyncSessionTrackType.downloaded,

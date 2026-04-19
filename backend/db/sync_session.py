@@ -35,7 +35,7 @@ def get_sync_session_tracks(
     ).all()
 
 
-def build_tracks(
+def build_sync_session_tracks(
     sync_session_id: uuid.UUID, names: list[str], type: SyncSessionTrackType
 ) -> list[SyncSessionTrack]:
     return [

@@ -2,7 +2,7 @@ from typing import Annotated
 
 from fastapi import APIRouter, Query
 
-from lib.recommendation import get_recommendations
+from lib.recommendation import get_recommendations_task
 
 router = APIRouter()
 
@@ -15,6 +15,6 @@ router = APIRouter()
 def _get_recommendations(
     user: Annotated[str, Query(description="LastFM username")],
 ):
-    result = get_recommendations(user=user)
+    result = get_recommendations_task(user=user)
 
     return result
