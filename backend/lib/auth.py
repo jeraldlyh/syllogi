@@ -4,7 +4,7 @@ from datetime import datetime, timedelta, timezone
 from typing import Annotated
 
 import jwt
-from fastapi import Cookie, HTTPException, status
+from fastapi import Cookie, HTTPException, Header, status
 from pwdlib import PasswordHash
 
 from db.models.user import User
@@ -34,9 +34,7 @@ def _verify_password(plain_password: str, hashed_password: str) -> bool:
     return HASH.verify(plain_password, hashed_password)
 
 
-def authenticate_user(
-    session: SessionDep, username: str, password: str
-) -> User | None:
+def authenticate_user(session: SessionDep, username: str, password: str) -> User | None:
     """Authenticate a user by username and password."""
     user = get_user_by_username(session=session, username=username)
 
@@ -69,6 +67,7 @@ def create_access_token(
 def get_current_user(
     session: SessionDep,
     access_token: Annotated[str | None, Cookie()] = None,
+    authorization: Annotated[str | None, Header()] = None,
 ) -> User | None:
     """Get the current user from a JWT token."""
     unauthorized_exception = HTTPException(
@@ -78,11 +77,22 @@ def get_current_user(
     )
 
     try:
-        if access_token is None:
+        if access_token is None and authorization is None:
             logger.warning("No access token provided")
             raise unauthorized_exception
 
-        payload = jwt.decode(access_token, SECRET_KEY, algorithms=[ALGORITHM])
+        token = access_token
+
+        if token is None and authorization is not None:
+            scheme, _, credentials = authorization.partition(" ")
+            if scheme.lower() == "bearer":
+                token = credentials
+
+        if token is None:
+            logger.warning("No access token found in cookies or headers")
+            raise unauthorized_exception
+
+        payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
         username = payload.get("sub")
 
         if username is None:
@@ -99,9 +109,7 @@ def get_current_user(
         raise unauthorized_exception
 
 
-def get_or_create_oauth_user(
-    session: SessionDep, oauth_id: str, username: str
-) -> User:
+def get_or_create_oauth_user(session: SessionDep, oauth_id: str, username: str) -> User:
     """Get an existing OAuth user or create a new one."""
 
     user = get_user_by_username(session=session, username=username)
