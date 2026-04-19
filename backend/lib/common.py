@@ -168,19 +168,14 @@ class LastFMRecentTrack:
 
     def __eq__(self, other) -> bool:
         return (
-            isinstance(other, LastFMRecentTrack)
-            and self.artist_name == other.artist_name
+            self.artist_name == other.artist_name
             and self.track_name == other.track_name
-            and self.album_name == other.album_name
             and self.musicbrainz_id == other.musicbrainz_id
         )
 
     def __hash__(self) -> int:
         return (
-            hash(self.artist_name)
-            + hash(self.track_name)
-            + hash(self.album_name)
-            + hash(self.musicbrainz_id)
+            hash(self.artist_name) + hash(self.track_name) + hash(self.musicbrainz_id)
         )
 
     def to_dict(self) -> dict[str, str | int]:
@@ -213,21 +208,14 @@ class LastFMTopTrack:
 
     def __eq__(self, other) -> bool:
         return (
-            isinstance(other, LastFMTopTrack)
-            and self.artist_name == other.artist_name
+            self.artist_name == other.artist_name
             and self.track_name == other.track_name
-            and self.duration == other.duration
             and self.musicbrainz_id == other.musicbrainz_id
-            and self.playcount == other.playcount
         )
 
     def __hash__(self) -> int:
         return (
-            hash(self.artist_name)
-            + hash(self.track_name)
-            + hash(self.duration)
-            + hash(self.musicbrainz_id)
-            + hash(self.playcount)
+            hash(self.artist_name) + hash(self.track_name) + hash(self.musicbrainz_id)
         )
 
     def to_dict(self) -> dict[str, str | int]:
