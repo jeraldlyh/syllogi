@@ -8,7 +8,7 @@ from db.playlist import get_playlist_by_id
 from db.session import get_isolated_session
 from db.sync_session import create_sync_session
 from lib.common import ExternalPlaylist, Track
-from lib.sync import _sync_playlist_task
+from lib.sync import sync_playlist_task
 from lib.spotify import (
     get_spotify_playlist,
     get_spotify_playlist_songs,
@@ -96,7 +96,7 @@ def sync_playlist(item: Playlist, background_tasks: BackgroundTasks) -> dict[str
     )
     create_sync_session(session=session, sync_session=sync_session)
     background_tasks.add_task(
-        _sync_playlist_task,
+        sync_playlist_task,
         internal_playlist=internal_playlist,
         external_playlist=external_playlist,
         songs=songs,

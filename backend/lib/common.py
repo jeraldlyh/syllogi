@@ -2,6 +2,75 @@ from dataclasses import dataclass, field
 
 
 @dataclass
+class JellyfinUser:
+    def __init__(
+        self,
+        id: str,
+        name: str,
+    ):
+        self.id = id
+        self.name = name
+
+    def to_dict(self) -> dict[str, str]:
+        return {
+            "id": self.id,
+            "name": self.name,
+        }
+
+
+@dataclass
+class JellyfinTrack:
+    def __init__(
+        self,
+        id: str,
+        track_name: str,
+        album_name: str,
+        album_id: str,
+        musicbrainz_id: str,
+        artists: list[str],
+        duration_ticks: int,
+        year: str,
+    ):
+        self.id = id
+        self.track_name = track_name
+        self.album_name = album_name
+        self.album_id = album_id
+        self.musicbrainz_id = musicbrainz_id
+        self.artists = artists
+        self.duration_ticks = duration_ticks
+        self.year = year
+
+    def to_dict(self) -> dict[str, str | int | list[str]]:
+        return {
+            "id": self.id,
+            "track_name": self.track_name,
+            "album_name": self.album_name,
+            "album_id": self.album_id,
+            "musicbrainz_id": self.musicbrainz_id,
+            "artists": self.artists,
+            "duration_ticks": self.duration_ticks,
+            "year": self.year,
+        }
+
+
+@dataclass
+class JellyfinPlaylist:
+    def __init__(
+        self,
+        id: str,
+        name: str,
+    ):
+        self.id = id
+        self.name = name
+
+    def to_dict(self) -> dict[str, str | int]:
+        return {
+            "id": self.id,
+            "name": self.name,
+        }
+
+
+@dataclass
 class Track:
     def __init__(
         self,
@@ -64,7 +133,7 @@ class PlaylistDiff:
     """Result of diffing resolved source tracks against an existing Jellyfin playlist."""
 
     added: list[ResolvedTrack] = field(default_factory=list)
-    removed: list[dict] = field(default_factory=list)
+    removed: list[JellyfinTrack] = field(default_factory=list)
     unchanged: list[ResolvedTrack] = field(default_factory=list)
 
 

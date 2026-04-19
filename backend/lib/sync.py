@@ -9,7 +9,13 @@ from db.models.sync_session import SyncProvider, SyncSession, SyncStatus, TrackL
 from db.playlist import get_playlist_by_id
 from db.session import SessionDep, get_isolated_session
 from db.sync_session import build_tracks, create_sync_session, update_sync_session
-from lib.common import ExternalPlaylist, PlaylistDiff, ResolvedTrack, Track
+from lib.common import (
+    ExternalPlaylist,
+    JellyfinTrack,
+    PlaylistDiff,
+    ResolvedTrack,
+    Track,
+)
 from lib.download import download_missing_tracks
 from lib.jellyfin import (
     add_songs_to_jellyfin_playlist,
@@ -23,7 +29,7 @@ from lib.jellyfin import (
 )
 from lib.notification import send_discord_notification
 from lib.spotify import get_spotify_playlist, get_spotify_playlist_songs
-from lib.track import _find_track
+from lib.track import find_track
 from lib.utils import convert_seconds_to_readable_time, get_now
 from lib.youtube import _get_youtube_playlist, _get_youtube_playlist_songs
 
@@ -44,7 +50,7 @@ def _resolve_songs(
 
     for song in songs:
         display_name = f"{song.artist_name} - {song.album_name}: {song.track_name}"
-        track = _find_track(
+        track = find_track(
             artist_name=song.artist_name,
             track_name=song.track_name,
             album_name=song.album_name,
@@ -72,7 +78,7 @@ def _resolve_songs(
 
 def _diff_tracks(
     resolved_tracks: list[ResolvedTrack],
-    existing_tracks: list[dict],
+    existing_tracks: list[JellyfinTrack],
 ) -> PlaylistDiff:
     """Compute the difference between the source playlist (resolved_tracks) and the existing Jellyfin playlist (existing_tracks).
 
@@ -80,7 +86,7 @@ def _diff_tracks(
     - removed:   tracks in the existing playlist that are NOT in the source
     - unchanged: tracks present in both
     """
-    existing_ids: set[str] = {track["Id"] for track in existing_tracks}
+    existing_ids: set[str] = {track.id for track in existing_tracks}
     source_ids: set[str] = {
         track.jellyfin_id for track in resolved_tracks if track.jellyfin_id is not None
     }
@@ -97,13 +103,13 @@ def _diff_tracks(
             diff.added.append(track)
 
     for track in existing_tracks:
-        if track["Id"] not in source_ids:
+        if track.id not in source_ids:
             diff.removed.append(track)
 
     return diff
 
 
-async def _sync_playlist_task(
+async def sync_playlist_task(
     internal_playlist: Playlist,
     external_playlist: ExternalPlaylist,
     songs: list[Track],
@@ -117,14 +123,14 @@ async def _sync_playlist_task(
         external_playlist_name = external_playlist.name
 
         try:
-            user = get_jellyfin_user_by_name(username=username)
-            if not user:
+            jellyfin_user = get_jellyfin_user_by_name(username=username)
+            if not jellyfin_user:
                 raise HTTPException(
                     status_code=status.HTTP_400_BAD_REQUEST,
                     detail=f"Unable to find username: {username}",
                 )
 
-            jellyfin_user_id = user.get("Id")
+            jellyfin_user_id = jellyfin_user.id
             if not jellyfin_user_id:
                 raise HTTPException(
                     status_code=status.HTTP_400_BAD_REQUEST,
@@ -150,12 +156,12 @@ async def _sync_playlist_task(
                 (
                     playlist
                     for playlist in jellyfin_playlists
-                    if internal_playlist_name == playlist.get("Name")
+                    if internal_playlist_name == playlist.name
                 ),
-                {},
+                None,
             )
 
-            existing_playlist_id = existing_playlist.get("Id")
+            existing_playlist_id = existing_playlist.id if existing_playlist else None
 
             if not existing_playlist_id:
                 new_playlist = create_jellyfin_playlist(
@@ -231,7 +237,7 @@ async def _sync_playlist_task(
                     f"Removing {num_of_removed_tracks} outdated songs from "
                     f"{internal_playlist.playlist_name} playlist"
                 )
-                removed_entry_ids = [track["Id"] for track in diff.removed]
+                removed_entry_ids = [track.id for track in diff.removed]
                 delete_songs_from_jellyfin_playlist(
                     playlist_id=existing_playlist_id, track_ids=removed_entry_ids
                 )
@@ -302,7 +308,7 @@ async def _sync_playlist_task(
 
             added_track_names = [track.display_name for track in diff.added]
             removed_track_names = [
-                jellyfin_track.get("Name", "") for jellyfin_track in diff.removed
+                jellyfin_track.track_name for jellyfin_track in diff.removed
             ]
             missing_track_names = [track.display_name for track in missing_tracks]
             downloaded_track_names = [
@@ -358,7 +364,7 @@ async def _sync_playlist_task(
             )
 
 
-async def _sync_playlist(playlist: Playlist, session: SessionDep) -> dict[str, str]:
+async def sync_playlist(playlist: Playlist, session: SessionDep) -> dict[str, str]:
     """Sync a playlist (Spotify/Youtube) to Jellyfin."""
     internal_playlist = get_playlist_by_id(session=session, playlist_id=playlist.id)
 
@@ -399,7 +405,7 @@ async def _sync_playlist(playlist: Playlist, session: SessionDep) -> dict[str, s
             songs = _get_youtube_playlist_songs(playlist_id=playlist_id)
             external_playlist = _get_youtube_playlist(playlist_id=playlist_id)
 
-    await _sync_playlist_task(
+    await sync_playlist_task(
         internal_playlist=internal_playlist,
         external_playlist=external_playlist,
         songs=songs,

@@ -14,7 +14,7 @@ from starlette.middleware.base import BaseHTTPMiddleware
 from db.playlist import get_playlists
 from db.session import get_isolated_session
 from lib.cron import create_job
-from lib.sync import _sync_playlist
+from lib.sync import sync_playlist
 from routes import OPENAPI_TAGS, register_routes
 
 load_dotenv()
@@ -149,7 +149,7 @@ def create_app() -> FastAPI:
                     f"Registering cron job for playlist {playlist.id} with cron expression: {playlist.cron_expression}"
                 )
                 create_job(
-                    func=_sync_playlist,
+                    func=sync_playlist,
                     kwargs={"playlist": playlist, "session": session},
                     cron_expression=playlist.cron_expression,
                 )

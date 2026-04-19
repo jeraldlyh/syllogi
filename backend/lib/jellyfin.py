@@ -5,6 +5,8 @@ from typing import Any
 import requests
 from fastapi import HTTPException, status
 
+from lib.common import JellyfinPlaylist, JellyfinTrack, JellyfinUser
+
 JELLYFIN_API_KEY = os.getenv("JELLYFIN_API_KEY")
 JELLYFIN_BASE_URL = os.getenv("JELLYFIN_BASE_URL")
 YOUTUBE_LIBRARY_NAME = os.getenv("YOUTUBE_LIBRARY_NAME", "Youtube")
@@ -43,33 +45,45 @@ def _jellyfin(
     return response.json()
 
 
-def get_jellyfin_artist(name: str) -> dict[str, Any]:
-    return _jellyfin(f"/Artists/{name}")
+def get_jellyfin_users() -> list[JellyfinUser]:
+    data = _jellyfin("/Users")
+
+    return [
+        JellyfinUser(
+            id=user["Id"],
+            name=user["Name"],
+        )
+        for user in data.get("Items", [])
+    ]
 
 
-def get_jellyfin_users() -> list[dict[str, Any]]:
-    return _jellyfin("/Users")
-
-
-def get_jellyfin_playlists(user_id: str) -> list[dict[str, Any]]:
+def get_jellyfin_playlists(user_id: str) -> list[JellyfinPlaylist]:
     response = _jellyfin(
         f"/Users/{user_id}/Items",
         params={"IncludeItemTypes": "Playlist", "Recursive": True},
     )
-    return response.get("Items")
+    data = response.get("Items")
+
+    return [
+        JellyfinPlaylist(
+            id=item["Id"],
+            name=item["Name"],
+        )
+        for item in data
+    ]
 
 
-def get_jellyfin_user_by_name(username: str) -> dict[str, Any]:
+def get_jellyfin_user_by_name(username: str) -> JellyfinUser:
     jellyfin_users = get_jellyfin_users()
 
-    user = next(user for user in jellyfin_users if user.get("Name") == username)
+    user = next(user for user in jellyfin_users if user.name == username)
 
     return user
 
 
 def search_jellyfin_songs(
     artist: str, title: str, album: str, year: str
-) -> list[dict[str, Any]]:
+) -> list[JellyfinTrack]:
     response = _jellyfin(
         "/Items",
         params={
@@ -85,7 +99,21 @@ def search_jellyfin_songs(
             "enableImages": "false",
         },
     )
-    return response.get("Items")
+    data = response.get("Items", [])
+
+    return [
+        JellyfinTrack(
+            id=item.get("Id", ""),
+            track_name=item.get("Name", ""),
+            album_name=item.get("Album", ""),
+            album_id=item.get("AlbumId", ""),
+            musicbrainz_id=item.get("ProviderIds", {}).get("MusicBrainzRecording", ""),
+            artists=item.get("Artists", []),
+            duration_ticks=item.get("CumulativeRunTimeTicks", 0),
+            year=str(item.get("ProductionYear", "")),
+        )
+        for item in data
+    ]
 
 
 def create_jellyfin_playlist(
@@ -135,11 +163,23 @@ def delete_songs_from_jellyfin_playlist(
     )
 
 
-def get_jellyfin_playlist_songs(
-    playlist_id: str, user_id: str
-) -> list[dict[str, Any]]:
+def get_jellyfin_playlist_songs(playlist_id: str, user_id: str) -> list[JellyfinTrack]:
     response = _jellyfin(f"/Playlists/{playlist_id}/Items", params={"userId": user_id})
-    return response.get("Items")
+    data = response.get("Items")
+
+    return [
+        JellyfinTrack(
+            id=item.get("Id", ""),
+            track_name=item.get("Name", ""),
+            album_name=item.get("Album", ""),
+            album_id=item.get("AlbumId", ""),
+            musicbrainz_id=item.get("ProviderIds", {}).get("MusicBrainzRecording", ""),
+            artists=item.get("Artists", []),
+            duration_ticks=item.get("CumulativeRunTimeTicks", 0),
+            year=str(item.get("ProductionYear", "")),
+        )
+        for item in data
+    ]
 
 
 def update_jellyfin_playlist_image(
