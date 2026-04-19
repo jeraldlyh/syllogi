@@ -14,7 +14,7 @@ from lib.common import (
     JellyfinTrack,
     PlaylistDiff,
     ResolvedTrack,
-    Track,
+    ExternalTrack,
 )
 from lib.download import download_missing_tracks
 from lib.jellyfin import (
@@ -39,7 +39,7 @@ DISCORD_WEBHOOK_URL = os.getenv("DISCORD_WEBHOOK_URL", "")
 
 
 def _resolve_songs(
-    songs: list[Track],
+    songs: list[ExternalTrack],
 ) -> tuple[list[ResolvedTrack], list[ResolvedTrack]]:
     """Verifies which tracks from the source playlist can be found in the Jellyfin library.
 
@@ -112,7 +112,7 @@ def _diff_tracks(
 async def sync_playlist_task(
     internal_playlist: Playlist,
     external_playlist: ExternalPlaylist,
-    songs: list[Track],
+    songs: list[ExternalTrack],
     sync_session: SyncSession,
 ) -> None:
     """Sync a playlist (Spotify/Youtube) to Jellyfin in a background task."""
@@ -180,7 +180,7 @@ async def sync_playlist_task(
                 session=session, sync_session=sync_session
             )
 
-            downloaded_tracks: list[Track] = []
+            downloaded_tracks: list[ExternalTrack] = []
 
             if missing_tracks and internal_playlist.enable_download:
                 missing_songs = [missing.track for missing in missing_tracks]
@@ -394,7 +394,7 @@ async def sync_playlist(playlist: Playlist, session: SessionDep) -> dict[str, st
     create_sync_session(session=session, sync_session=sync_session)
     session.expunge(sync_session)
 
-    songs: list[Track] = []
+    songs: list[ExternalTrack] = []
     external_playlist: ExternalPlaylist | None = None
 
     match internal_playlist.provider:

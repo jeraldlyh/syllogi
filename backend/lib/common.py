@@ -3,6 +3,8 @@ from dataclasses import dataclass, field
 
 @dataclass
 class JellyfinUser:
+    """A user in Jellyfin."""
+
     def __init__(
         self,
         id: str,
@@ -20,6 +22,8 @@ class JellyfinUser:
 
 @dataclass
 class JellyfinTrack:
+    """A track in Jellyfin."""
+
     def __init__(
         self,
         id: str,
@@ -55,6 +59,8 @@ class JellyfinTrack:
 
 @dataclass
 class JellyfinPlaylist:
+    """A playlist in Jellyfin."""
+
     def __init__(
         self,
         id: str,
@@ -71,7 +77,9 @@ class JellyfinPlaylist:
 
 
 @dataclass
-class Track:
+class ExternalTrack:
+    """A source track from an external service (Spotify/Youtube)."""
+
     def __init__(
         self,
         artist_name: str,
@@ -98,6 +106,8 @@ class Track:
 
 @dataclass
 class ExternalPlaylist:
+    """A source playlist from an external service (Spotify/Youtube)."""
+
     def __init__(
         self,
         id: str,
@@ -123,7 +133,7 @@ class ExternalPlaylist:
 class ResolvedTrack:
     """A source song that has been resolved against the Jellyfin library."""
 
-    track: Track
+    track: ExternalTrack
     jellyfin_id: str | None = None
     display_name: str = ""
 
@@ -139,6 +149,8 @@ class PlaylistDiff:
 
 @dataclass
 class LastFMRecentTrack:
+    """A recently played track from LastFM."""
+
     def __init__(
         self,
         artist_name: str,
@@ -162,6 +174,8 @@ class LastFMRecentTrack:
 
 @dataclass
 class LastFMTopTrack:
+    """A top track from LastFM."""
+
     def __init__(
         self,
         artist_name: str,
@@ -188,6 +202,8 @@ class LastFMTopTrack:
 
 @dataclass
 class LastFMSimilarTrack:
+    """A similar track from LastFM."""
+
     def __init__(
         self,
         artist_name: str,

@@ -7,7 +7,7 @@ from db.models.sync_session import SyncProvider, SyncSession, SyncStatus
 from db.playlist import get_playlist_by_id
 from db.session import get_isolated_session
 from db.sync_session import create_sync_session
-from lib.common import ExternalPlaylist, Track
+from lib.common import ExternalPlaylist, ExternalTrack
 from lib.sync import sync_playlist_task
 from lib.spotify import (
     get_spotify_playlist,
@@ -66,7 +66,7 @@ def sync_playlist(item: Playlist, background_tasks: BackgroundTasks) -> dict[str
             detail=f"Unable to find playlist: {item.playlist_id}",
         )
 
-    songs: list[Track] = []
+    songs: list[ExternalTrack] = []
     external_playlist: ExternalPlaylist | None = None
 
     match internal_playlist.provider:
