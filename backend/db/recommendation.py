@@ -1,11 +1,38 @@
 import uuid
+from sqlmodel import select
 from db.models.recommendation import (
     RecommendationSession,
     RecommendationSessionTrack,
+    RecommendationSetting,
     RecommendationTrackType,
 )
 from db.session import SessionDep
 from lib.common import LastFMRecentTrack, LastFMTopTrack
+
+
+def get_recommendation_setting_by_username(
+    session: SessionDep, username: str
+) -> RecommendationSetting | None:
+    return session.exec(
+        select(RecommendationSetting).where(RecommendationSetting.username == username)
+    ).first()
+
+
+def create_recommendation_setting(
+    session: SessionDep, recommendation_setting: RecommendationSetting
+) -> None:
+    session.add(recommendation_setting)
+    session.commit()
+    session.refresh(recommendation_setting)
+
+
+def update_recommendation_setting(
+    session: SessionDep, recommendation_setting: RecommendationSetting
+) -> RecommendationSetting:
+    recommendation_setting = session.merge(recommendation_setting)
+    session.commit()
+    session.refresh(recommendation_setting)
+    return recommendation_setting
 
 
 def create_recommendation_session(

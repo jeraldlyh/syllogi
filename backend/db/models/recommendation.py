@@ -33,8 +33,18 @@ class RecommendationStrategy(enum.Enum):
     recent_tracks = "recent_tracks"
 
 
+class RecommendationSetting(TimestampMixin, SerializerMixin, SQLModel, table=True):
+    id: uuid.UUID = Field(default_factory=uuid.uuid4, primary_key=True, nullable=False)
+
+    username: str = Field(max_length=128, nullable=False, unique=True, index=True)
+    strategy: RecommendationStrategy = Field(nullable=False)
+    lastfm_username: str = Field(max_length=128, nullable=False)
+    requested_count: int = Field(default=50, nullable=False)
+
+
 class RecommendationSession(TimestampMixin, SerializerMixin, SQLModel, table=True):
     id: uuid.UUID = Field(default_factory=uuid.uuid4, primary_key=True, nullable=False)
+
     username: str = Field(max_length=128, nullable=False, index=True)
     provider: RecommendationProvider = Field(nullable=False, index=True)
 
