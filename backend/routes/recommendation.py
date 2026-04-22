@@ -3,7 +3,7 @@ from fastapi import APIRouter, BackgroundTasks, HTTPException, status
 from db.models.recommendation import (
     RecommendationProvider,
     RecommendationSession,
-    RecommendationSetting,
+    Recommendation,
     RecommendationStatus,
     RecommendationStrategy,
 )
@@ -36,11 +36,11 @@ def _get_recommendation_sessions(session: SessionDep) -> list[dict]:
     description="Generate track recommendations for a user based on their listening history.",
 )
 async def generate_recommendations(
-    reccomendation_settings: RecommendationSetting,
+    recommendation: Recommendation,
     background_tasks: BackgroundTasks,
     session: SessionDep,
 ):
-    username = reccomendation_settings.username
+    username = recommendation.username
     jellyfin_users = get_jellyfin_users()
 
     if not any(jellyfin_user.name == username for jellyfin_user in jellyfin_users):

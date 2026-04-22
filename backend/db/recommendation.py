@@ -6,7 +6,7 @@ from sqlmodel import desc, select
 from db.models.recommendation import (
     RecommendationSession,
     RecommendationSessionTrack,
-    RecommendationSetting,
+    Recommendation,
     RecommendationTrackType,
 )
 from db.session import SessionDep
@@ -15,14 +15,14 @@ from lib.common import LastFMRecentTrack, LastFMTopTrack
 
 def get_recommendation_setting_by_username(
     session: SessionDep, username: str
-) -> RecommendationSetting | None:
+) -> Recommendation | None:
     return session.exec(
-        select(RecommendationSetting).where(RecommendationSetting.username == username)
+        select(Recommendation).where(Recommendation.username == username)
     ).first()
 
 
 def create_recommendation_setting(
-    session: SessionDep, recommendation_setting: RecommendationSetting
+    session: SessionDep, recommendation_setting: Recommendation
 ) -> None:
     session.add(recommendation_setting)
     session.commit()
@@ -30,8 +30,8 @@ def create_recommendation_setting(
 
 
 def update_recommendation_setting(
-    session: SessionDep, recommendation_setting: RecommendationSetting
-) -> RecommendationSetting:
+    session: SessionDep, recommendation_setting: Recommendation
+) -> Recommendation:
     recommendation_setting = session.merge(recommendation_setting)
     session.commit()
     session.refresh(recommendation_setting)
