@@ -47,7 +47,7 @@ router = APIRouter()
         }
     },
 )
-def _get_sync_sessions(session: SessionDep):
+def _get_sync_sessions(session: SessionDep) -> list[dict]:
     sync_sessions = get_sync_sessions(session)
 
     tracks_by_session: dict[str, dict[str, list[str]]] = {

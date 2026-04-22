@@ -1,5 +1,8 @@
 import uuid
-from sqlmodel import select
+from typing import Sequence
+
+from sqlmodel import desc, select
+
 from db.models.recommendation import (
     RecommendationSession,
     RecommendationSessionTrack,
@@ -33,6 +36,12 @@ def update_recommendation_setting(
     session.commit()
     session.refresh(recommendation_setting)
     return recommendation_setting
+
+
+def get_recommendation_sessions(session: SessionDep) -> Sequence[RecommendationSession]:
+    return session.exec(
+        select(RecommendationSession).order_by(desc(RecommendationSession.created_at))
+    ).all()
 
 
 def create_recommendation_session(

@@ -32,16 +32,16 @@ from lib.utils import get_now
 
 
 def _get_recommendations(
-    user: str, num_recommendations: int
+    username: str, num_recommendations: int
 ) -> tuple[
     list[LastFMTopTrack | LastFMRecentTrack], list[LastFMTopTrack | LastFMRecentTrack]
 ]:
     """Get track recommendations for a user based on their listening history."""
     recent_tracks = get_lastfm_recent_tracks(
-        user=user, limit=round(num_recommendations * 0.7)
+        user=username, limit=round(num_recommendations * 0.7)
     )
     top_tracks = get_lastfm_top_tracks(
-        user=user, limit=round(num_recommendations * 0.3)
+        user=username, limit=round(num_recommendations * 0.3)
     )
     all_tracks = recent_tracks + top_tracks
     missing: set[LastFMTopTrack | LastFMRecentTrack] = set()
@@ -49,7 +49,7 @@ def _get_recommendations(
 
     for track in all_tracks:
         similar_tracks = get_lastfm_similar_tracks(
-            user=user, artist=track.artist_name, track=track.track_name
+            user=username, artist=track.artist_name, track=track.track_name
         )
 
         for similar_track in similar_tracks:
@@ -70,7 +70,7 @@ def _get_recommendations(
 
 
 async def get_recommendations_task(
-    user: str, recommendation_session: RecommendationSession
+    username: str, recommendation_session: RecommendationSession
 ) -> Any:
     """Get track recommendations for a user based on their listening history in a background task."""
 
@@ -85,7 +85,8 @@ async def get_recommendations_task(
             )
 
             found_tracks, missing_tracks = _get_recommendations(
-                user=user, num_recommendations=recommendation_session.requested_count
+                username=username,
+                num_recommendations=recommendation_session.requested_count,
             )
             all_tracks = found_tracks + missing_tracks
 
@@ -139,11 +140,11 @@ async def get_recommendations(
     """Get track recommendations for a user based on their listening history."""
     jellyfin_users = get_jellyfin_users()
 
-    if not any(jellyfin_user.name == user for jellyfin_user in jellyfin_users):
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail=f"Unable to find Jellyfin user: {user}",
-        )
+    # if not any(jellyfin_user.name == user for jellyfin_user in jellyfin_users):
+    #     raise HTTPException(
+    #         status_code=status.HTTP_404_NOT_FOUND,
+    #         detail=f"Unable to find Jellyfin user: {user}",
+    #     )
 
     started_at = get_now()
     recommendation_session = RecommendationSession(
@@ -163,6 +164,6 @@ async def get_recommendations(
     session.expunge(recommendation_session)
 
     await get_recommendations_task(
-        user=user, recommendation_session=recommendation_session
+        username=user, recommendation_session=recommendation_session
     )
     return {"id": str(recommendation_session.id)}

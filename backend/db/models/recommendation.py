@@ -71,6 +71,22 @@ class RecommendationSession(TimestampMixin, SerializerMixin, SQLModel, table=Tru
 
     error_message: str | None = Field(default=None, max_length=1024, nullable=True)
 
+    def to_dict(self) -> dict:
+        return {
+            "id": str(self.id),
+            "username": self.username,
+            "provider": self.provider.value,
+            "strategy": self.strategy.value,
+            "requested_count": self.requested_count,
+            "generated_count": self.generated_count,
+            "started_at": self.started_at.isoformat(),
+            "finished_at": self.finished_at.isoformat(),
+            "duration_seconds": self.duration_seconds,
+            "status": self.status.value,
+            "error_message": self.error_message,
+            "tracks": [track.to_dict() for track in self.tracks],
+        }
+
 
 class RecommendationSessionTrack(TimestampMixin, SerializerMixin, SQLModel, table=True):
     id: uuid.UUID = Field(default_factory=uuid.uuid4, primary_key=True, nullable=False)
