@@ -19,8 +19,7 @@ from db.recommendation_session import (
 )
 from db.session import SessionDep, get_isolated_session
 from lib.common import (
-    LastFMRecentTrack,
-    LastFMTopTrack,
+    LastFMSimilarTrack,
 )
 from lib.lastfm import (
     get_lastfm_recent_tracks,
@@ -35,9 +34,7 @@ def _get_recommendations(
     lastfm_username: str,
     strategy: RecommendationStrategy,
     num_recommendations: int,
-) -> tuple[
-    list[LastFMTopTrack | LastFMRecentTrack], list[LastFMTopTrack | LastFMRecentTrack]
-]:
+) -> tuple[list[LastFMSimilarTrack], list[LastFMSimilarTrack]]:
     """Get track recommendations for a user based on their listening history."""
     match strategy:
         case RecommendationStrategy.top_tracks:
@@ -60,18 +57,20 @@ def _get_recommendations(
                 limit=round(num_recommendations * 0.3),
             )
             all_tracks = recent_tracks + top_tracks
-    missing: set[LastFMTopTrack | LastFMRecentTrack] = set()
-    found: set[LastFMTopTrack | LastFMRecentTrack] = set()
+    missing: set[LastFMSimilarTrack] = set()
+    found: set[LastFMSimilarTrack] = set()
 
     for track in all_tracks:
         similar_tracks = get_lastfm_similar_tracks(
             user=lastfm_username,
             artist=track.artist_name,
             track=track.track_name,
+            limit=10,
         )
 
         has_found = False
         for similar_track in similar_tracks:
+            print(similar_track.to_dict())
             if similar_track in found:
                 continue
 
@@ -82,13 +81,12 @@ def _get_recommendations(
                 year="",
                 duration=similar_track.duration,
             )
-            if not jellyfin_track.is_not_found():
-                found.add(track)
-                has_found = True
+            if jellyfin_track.is_not_found():
+                missing.add(similar_track)
+            else:
+                found.add(similar_track)
                 break
 
-        if not has_found:
-            missing.add(track)
     return list(found), list(missing)
 
 

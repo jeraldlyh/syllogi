@@ -9,7 +9,6 @@ from lib.jellyfin import search_jellyfin_track
 from lib.utils import get_clean_name
 
 
-
 def _normalize(text: str) -> str:
     """Normalize a name for comparison."""
 
@@ -82,7 +81,7 @@ def find_track(
     """Find the best matching track in Jellyfin based on the provided metadata."""
 
     jellyfin_tracks = search_jellyfin_track(
-        artist=artist_name, title=track_name, album=album_name, year=year
+        artist_name=artist_name, title=track_name, album=album_name, year=year
     )
     best_match, best_score = None, 0.0
 
