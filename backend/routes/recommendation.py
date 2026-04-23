@@ -10,12 +10,12 @@ from db.models.recommendation import (
 )
 from db.recommendation import (
     create_recommendation,
-    create_recommendation_session,
     delete_recommendation,
     get_recommendation_by_id,
     get_recommendations,
     update_recommendation,
 )
+from db.recommendation_session import create_recommendation_session
 from db.session import SessionDep
 from lib.recommendation import generate_recommendations_task
 from lib.utils import get_now
