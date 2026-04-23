@@ -14,7 +14,7 @@ pnpm dev &
 WEB_PID=$!
 
 export WATCHFILES_FORCE_POLLING=false
-export LOG_LEVEL=debug
+export LOG_LEVEL=info
 
 echo "Starting backend (dev)..."
 cd /app/backend
