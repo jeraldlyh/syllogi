@@ -70,7 +70,11 @@ def _get_recommendations(
             track=track.track_name,
         )
 
+        has_found = False
         for similar_track in similar_tracks:
+            if similar_track in found:
+                continue
+
             jellyfin_track = find_track(
                 artist_name=similar_track.artist_name,
                 track_name=similar_track.track_name,
@@ -78,12 +82,13 @@ def _get_recommendations(
                 year="",
                 duration=similar_track.duration,
             )
-
-            if jellyfin_track.is_not_found():
-                missing.add(track)
-            else:
+            if not jellyfin_track.is_not_found():
                 found.add(track)
+                has_found = True
                 break
+
+        if not has_found:
+            missing.add(track)
     return list(found), list(missing)
 
 

@@ -249,6 +249,11 @@ class LastFMSimilarTrack:
         self.playcount = playcount
         self.similarity_score = similarity_score
 
+    def __hash__(self) -> int:
+        return (
+            hash(self.artist_name) + hash(self.track_name) + hash(self.musicbrainz_id)
+        )
+
     def to_dict(self) -> dict[str, str | int | float]:
         return {
             "artist_name": self.artist_name,
