@@ -18,7 +18,7 @@ from db.recommendation import (
 )
 from db.session import SessionDep
 from lib.jellyfin import get_jellyfin_users
-from lib.recommendation import get_recommendations_task
+from lib.recommendation import generate_recommendations_task
 from lib.utils import get_now
 
 router = APIRouter()
@@ -214,7 +214,7 @@ def _delete_recommendation(
         },
     },
 )
-async def generate_recommendations(
+def generate_recommendations(
     recommendation: Recommendation,
     background_tasks: BackgroundTasks,
     session: SessionDep,
@@ -246,8 +246,7 @@ async def generate_recommendations(
     )
 
     background_tasks.add_task(
-        get_recommendations_task,
-        username=username,
+        generate_recommendations_task,
         lastfm_username=recommendation.lastfm_username,
         recommendation_session=recommendation_session,
     )

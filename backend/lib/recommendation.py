@@ -87,8 +87,7 @@ def _get_recommendations(
     return list(found), list(missing)
 
 
-def get_recommendations_task(
-    username: str,
+def generate_recommendations_task(
     lastfm_username: str,
     recommendation_session: RecommendationSession,
 ) -> Any:
@@ -140,6 +139,7 @@ def get_recommendations_task(
                 session=session, recommendation_session=recommendation_session
             )
         except Exception as e:
+            raise e
             finished_at = get_now()
             recommendation_session.status = RecommendationStatus.failed
             recommendation_session.finished_at = finished_at
@@ -153,7 +153,7 @@ def get_recommendations_task(
             )
 
 
-def get_recommendations(
+def generate_recommendations(
     username: str,
     session: SessionDep,
     num_recommendations: int = 50,
@@ -184,8 +184,7 @@ def get_recommendations(
     )
     session.expunge(recommendation_session)
 
-    get_recommendations_task(
-        username=username,
+    generate_recommendations_task(
         lastfm_username=username,
         recommendation_session=recommendation_session,
     )

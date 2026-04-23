@@ -354,9 +354,7 @@ async def sync_playlist_task(
                 )
             )
 
-            sync_session = update_sync_session(
-                session=session, sync_session=sync_session
-            )
+            update_sync_session(session=session, sync_session=sync_session)
         except Exception as e:
             finished_at = get_now()
             sync_session.status = SyncStatus.failed
