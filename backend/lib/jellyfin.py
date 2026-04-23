@@ -82,14 +82,18 @@ def get_jellyfin_user_by_name(username: str) -> JellyfinUser:
 
 
 def search_jellyfin_track(
-    artist: str, title: str, album: str, year: str
+    artist_name: str, title: str, album: str, year: str
 ) -> list[JellyfinTrack]:
+    logger.info(
+        f"Searching for track with artist='{artist_name}', title='{title}', album='{album}', year='{year}'"
+    )
+
     response = _jellyfin(
         "/Items",
         params={
             "includeItemTypes": "Audio",
             "recursive": "true",
-            # "artists": artist,
+            "artists": artist_name,
             "searchTerm": title,
             # "album": album,
             "fields": "Path,Album,Artists,CumulativeRunTimeTicks",
