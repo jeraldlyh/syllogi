@@ -32,7 +32,7 @@ import { capitaliseFirstLetter, cn, formatDateTime } from "@/lib/utils";
 import { Text } from "@/components/common/text";
 import { Button } from "./ui/button";
 
-export const SyncTable = () => {
+export const SyncSessionTable = () => {
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("all");
   const [selectedSession, setSelectedSession] = useState<SyncSession | null>(
