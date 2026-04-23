@@ -31,6 +31,7 @@ class RecommendationProvider(enum.Enum):
 class RecommendationStrategy(enum.Enum):
     top_tracks = "top_tracks"
     recent_tracks = "recent_tracks"
+    mixed = "mixed"
 
 
 class Recommendation(TimestampMixin, SerializerMixin, SQLModel, table=True):

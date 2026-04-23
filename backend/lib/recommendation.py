@@ -32,24 +32,42 @@ from lib.utils import get_now
 
 
 def _get_recommendations(
-    username: str, num_recommendations: int
+    lastfm_username: str,
+    strategy: RecommendationStrategy,
+    num_recommendations: int,
 ) -> tuple[
     list[LastFMTopTrack | LastFMRecentTrack], list[LastFMTopTrack | LastFMRecentTrack]
 ]:
     """Get track recommendations for a user based on their listening history."""
-    recent_tracks = get_lastfm_recent_tracks(
-        user=username, limit=round(num_recommendations * 0.7)
-    )
-    top_tracks = get_lastfm_top_tracks(
-        user=username, limit=round(num_recommendations * 0.3)
-    )
-    all_tracks = recent_tracks + top_tracks
+    match strategy:
+        case RecommendationStrategy.top_tracks:
+            all_tracks = get_lastfm_top_tracks(
+                user=lastfm_username,
+                limit=num_recommendations,
+            )
+        case RecommendationStrategy.recent_tracks:
+            all_tracks = get_lastfm_recent_tracks(
+                user=lastfm_username,
+                limit=num_recommendations,
+            )
+        case RecommendationStrategy.mixed:
+            recent_tracks = get_lastfm_recent_tracks(
+                user=lastfm_username,
+                limit=round(num_recommendations * 0.7),
+            )
+            top_tracks = get_lastfm_top_tracks(
+                user=lastfm_username,
+                limit=round(num_recommendations * 0.3),
+            )
+            all_tracks = recent_tracks + top_tracks
     missing: set[LastFMTopTrack | LastFMRecentTrack] = set()
     found: set[LastFMTopTrack | LastFMRecentTrack] = set()
 
     for track in all_tracks:
         similar_tracks = get_lastfm_similar_tracks(
-            user=username, artist=track.artist_name, track=track.track_name
+            user=lastfm_username,
+            artist=track.artist_name,
+            track=track.track_name,
         )
 
         for similar_track in similar_tracks:
@@ -70,7 +88,9 @@ def _get_recommendations(
 
 
 async def get_recommendations_task(
-    username: str, recommendation_session: RecommendationSession
+    username: str,
+    lastfm_username: str,
+    recommendation_session: RecommendationSession,
 ) -> Any:
     """Get track recommendations for a user based on their listening history in a background task."""
 
@@ -85,7 +105,8 @@ async def get_recommendations_task(
             )
 
             found_tracks, missing_tracks = _get_recommendations(
-                username=username,
+                lastfm_username=lastfm_username,
+                strategy=recommendation_session.strategy,
                 num_recommendations=recommendation_session.requested_count,
             )
             all_tracks = found_tracks + missing_tracks
@@ -133,7 +154,7 @@ async def get_recommendations_task(
 
 
 async def get_recommendations(
-    user: str,
+    username: str,
     session: SessionDep,
     num_recommendations: int = 50,
 ) -> dict[str, str]:
@@ -148,7 +169,7 @@ async def get_recommendations(
 
     started_at = get_now()
     recommendation_session = RecommendationSession(
-        username=user,
+        username=username,
         provider=RecommendationProvider.lastfm,
         strategy=RecommendationStrategy.recent_tracks,
         requested_count=num_recommendations,
@@ -164,6 +185,8 @@ async def get_recommendations(
     session.expunge(recommendation_session)
 
     await get_recommendations_task(
-        username=user, recommendation_session=recommendation_session
+        username=username,
+        lastfm_username=username,
+        recommendation_session=recommendation_session,
     )
     return {"id": str(recommendation_session.id)}
