@@ -85,7 +85,6 @@ class RecommendationSession(TimestampMixin, SerializerMixin, SQLModel, table=Tru
             "duration_seconds": self.duration_seconds,
             "status": self.status.value,
             "error_message": self.error_message,
-            "tracks": [track.to_dict() for track in self.tracks],
         }
 
 

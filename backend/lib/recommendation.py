@@ -68,7 +68,6 @@ def _get_recommendations(
             limit=10,
         )
 
-        has_found = False
         for similar_track in similar_tracks:
             print(similar_track.to_dict())
             if similar_track in found:
@@ -161,7 +160,6 @@ def generate_recommendations_task(
             update_recommendation_session(
                 session=session, recommendation_session=recommendation_session
             )
-            raise
 
 
 def generate_recommendations(
