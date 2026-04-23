@@ -72,6 +72,12 @@ def get_recommendation_session_tracks(
     ).all()
 
 
+def get_recommendation_session_by_id(
+    session: SessionDep, recommendation_session_id: str | uuid.UUID
+) -> RecommendationSession | None:
+    return session.get(RecommendationSession, recommendation_session_id)
+
+
 def create_recommendation_session(
     session: SessionDep, recommendation_session: RecommendationSession
 ) -> None:

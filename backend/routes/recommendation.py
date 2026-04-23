@@ -248,7 +248,7 @@ def generate_recommendations(
     background_tasks.add_task(
         generate_recommendations_task,
         lastfm_username=recommendation.lastfm_username,
-        recommendation_session=recommendation_session,
+        recommendation_session_id=recommendation_session.id,
     )
 
     return {"id": str(recommendation_session.id)}

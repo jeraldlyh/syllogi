@@ -1,3 +1,4 @@
+import uuid
 from typing import Any
 
 from fastapi import HTTPException, status
@@ -14,6 +15,7 @@ from db.recommendation import (
     build_recommendation_session_tracks,
     create_recommendation_session,
     format_recommendation_session_track_names,
+    get_recommendation_session_by_id,
     update_recommendation_session,
 )
 from db.session import SessionDep, get_isolated_session
@@ -89,13 +91,21 @@ def _get_recommendations(
 
 def generate_recommendations_task(
     lastfm_username: str,
-    recommendation_session: RecommendationSession,
+    recommendation_session_id: uuid.UUID,
 ) -> Any:
     """Get track recommendations for a user based on their listening history in a background task."""
 
     with get_isolated_session() as session:
+        recommendation_session = get_recommendation_session_by_id(
+            session=session, recommendation_session_id=recommendation_session_id
+        )
+        if not recommendation_session:
+            raise HTTPException(
+                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                detail=f"Unable to find recommendation session: {recommendation_session_id}",
+            )
+
         started_at = recommendation_session.started_at
-        recommendation_session_id = recommendation_session.id
 
         try:
             recommendation_session.status = RecommendationStatus.pending
@@ -139,7 +149,6 @@ def generate_recommendations_task(
                 session=session, recommendation_session=recommendation_session
             )
         except Exception as e:
-            raise e
             finished_at = get_now()
             recommendation_session.status = RecommendationStatus.failed
             recommendation_session.finished_at = finished_at
@@ -151,6 +160,7 @@ def generate_recommendations_task(
             update_recommendation_session(
                 session=session, recommendation_session=recommendation_session
             )
+            raise
 
 
 def generate_recommendations(
@@ -182,10 +192,9 @@ def generate_recommendations(
     create_recommendation_session(
         session=session, recommendation_session=recommendation_session
     )
-    session.expunge(recommendation_session)
 
     generate_recommendations_task(
         lastfm_username=username,
-        recommendation_session=recommendation_session,
+        recommendation_session_id=recommendation_session.id,
     )
     return {"id": str(recommendation_session.id)}
