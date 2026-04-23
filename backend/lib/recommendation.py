@@ -87,7 +87,7 @@ def _get_recommendations(
     return list(found), list(missing)
 
 
-async def get_recommendations_task(
+def get_recommendations_task(
     username: str,
     lastfm_username: str,
     recommendation_session: RecommendationSession,
@@ -153,7 +153,7 @@ async def get_recommendations_task(
             )
 
 
-async def get_recommendations(
+def get_recommendations(
     username: str,
     session: SessionDep,
     num_recommendations: int = 50,
@@ -184,7 +184,7 @@ async def get_recommendations(
     )
     session.expunge(recommendation_session)
 
-    await get_recommendations_task(
+    get_recommendations_task(
         username=username,
         lastfm_username=username,
         recommendation_session=recommendation_session,

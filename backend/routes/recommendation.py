@@ -35,8 +35,26 @@ class CreateOrUpdateRecommendationRequest(BaseModel):
     path="",
     summary="Get recommendation settings",
     description="Retrieve a list of all recommendation settings.",
+    responses={
+        200: {
+            "description": "List of recommendation settings retrieved successfully",
+            "content": {
+                "application/json": {
+                    "example": [
+                        {
+                            "id": "2baf7b6b-87de-4289-bdd8-42f138f8c9e1",
+                            "username": "johndoe",
+                            "strategy": "mixed",
+                            "lastfm_username": "john_lastfm",
+                            "requested_count": 50,
+                        }
+                    ]
+                }
+            },
+        },
+    },
 )
-def _get_recommendation_settings(session: SessionDep) -> list[dict]:
+def _get_recommendation(session: SessionDep) -> list[dict]:
     recommendations = get_recommendations(session=session)
 
     return [recommendation.to_dict() for recommendation in recommendations]
@@ -46,8 +64,18 @@ def _get_recommendation_settings(session: SessionDep) -> list[dict]:
     path="",
     summary="Create recommendation",
     description="Create recommendation for a Jellyfin user.",
+    responses={
+        200: {
+            "description": "Recommendation created successfully",
+            "content": {
+                "application/json": {
+                    "example": {"id": "2baf7b6b-87de-4289-bdd8-42f138f8c9e1"}
+                }
+            },
+        },
+    },
 )
-def _create_recommendation_setting(
+def _create_recommendation(
     item: CreateOrUpdateRecommendationRequest,
     session: SessionDep,
 ) -> dict[str, str]:
@@ -66,8 +94,28 @@ def _create_recommendation_setting(
     path="/{recommendation_id}",
     summary="Update recommendation",
     description="Update recommendation by ID.",
+    responses={
+        200: {
+            "description": "Recommendation updated successfully",
+            "content": {
+                "application/json": {
+                    "example": {"message": "Recommendation updated successfully"}
+                }
+            },
+        },
+        400: {
+            "description": "Recommendation not found",
+            "content": {
+                "application/json": {
+                    "example": {
+                        "detail": "Unable to find recommendation : <recommendation_id>"
+                    }
+                }
+            },
+        },
+    },
 )
-def _update_recommendation_setting(
+def _update_recommendation(
     recommendation_id: str,
     item: CreateOrUpdateRecommendationRequest,
     session: SessionDep,
@@ -99,6 +147,26 @@ def _update_recommendation_setting(
     path="/{recommendation_id}",
     summary="Delete recommendation",
     description="Delete recommendation by ID.",
+    responses={
+        200: {
+            "description": "Recommendation deleted successfully",
+            "content": {
+                "application/json": {
+                    "example": {"message": "Recommendation deleted successfully"}
+                }
+            },
+        },
+        400: {
+            "description": "Recommendation not found",
+            "content": {
+                "application/json": {
+                    "example": {
+                        "detail": "Unable to find recommendation setting: <recommendation_id>"
+                    }
+                }
+            },
+        },
+    },
 )
 def _delete_recommendation(
     recommendation_id: str,
@@ -123,6 +191,28 @@ def _delete_recommendation(
     path="/generate",
     summary="Generate track recommendations",
     description="Generate track recommendations for a user based on their listening history.",
+    responses={
+        200: {
+            "description": "Recommendation session created",
+            "content": {
+                "application/json": {
+                    "example": {
+                        "id": "2baf7b6b-87de-4289-bdd8-42f138f8c9e1",
+                    }
+                }
+            },
+        },
+        404: {
+            "description": "Jellyfin user not found",
+            "content": {
+                "application/json": {
+                    "example": {
+                        "detail": "Unable to find Jellyfin user: <username>",
+                    }
+                }
+            },
+        },
+    },
 )
 async def generate_recommendations(
     recommendation: Recommendation,
@@ -132,11 +222,11 @@ async def generate_recommendations(
     username = recommendation.username
     jellyfin_users = get_jellyfin_users()
 
-    if not any(jellyfin_user.name == username for jellyfin_user in jellyfin_users):
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail=f"Unable to find Jellyfin user: {username}",
-        )
+    # if not any(jellyfin_user.name == username for jellyfin_user in jellyfin_users):
+    #     raise HTTPException(
+    #         status_code=status.HTTP_404_NOT_FOUND,
+    #         detail=f"Unable to find Jellyfin user: {username}",
+    #     )
 
     started_at = get_now()
     recommendation_session = RecommendationSession(
