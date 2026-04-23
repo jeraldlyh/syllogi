@@ -11,7 +11,8 @@ export interface ApiConfig {
     | "playlist"
     | "sync"
     | "settings"
-    | "auth";
+    | "auth"
+    | "recommendation";
   path?: string;
   query?: Record<string, any>;
   cache?: RequestCache;

@@ -3,6 +3,7 @@
 import { Text } from "@/components/common/text";
 import { DashboardHeader } from "@/components/dashboard-header";
 import { Playlists } from "@/components/playlist";
+import { RecommendationTable } from "@/components/recommendation-table";
 import { SyncSummary } from "@/components/sync-summary";
 import { SyncTable } from "@/components/sync-table";
 import { api } from "@/lib/api";
@@ -105,6 +106,7 @@ export default function Page() {
             <SyncSummary />
             <Playlists />
             <SyncTable />
+            <Recommendations />
           </main>
         </div>
       )}
