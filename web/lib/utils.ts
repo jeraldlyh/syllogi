@@ -20,3 +20,10 @@ export const formatDateTime = (dateTime: string): string => {
 export const capitaliseFirstLetter = (value: string): string => {
   return value.charAt(0).toUpperCase() + value.slice(1);
 };
+
+export const convertSnakeCaseToTitleCase = (value: string): string => {
+  return value
+    .split("_")
+    .map((word) => capitaliseFirstLetter(word))
+    .join(" ");
+};

@@ -1,11 +1,22 @@
 "use client";
 
+import { Pencil, Play, Plus, Trash2 } from "lucide-react";
 import React, { useState } from "react";
-import { Plus, Pencil, Trash2, Play, RefreshCw } from "lucide-react";
 import { toast } from "sonner";
 import useSWRMutation from "swr/mutation";
 
 import { Text } from "@/components/common/text";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
@@ -32,18 +43,6 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Badge } from "@/components/ui/badge";
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from "@/components/ui/alert-dialog";
-import { useJellyfinUsers } from "@/hooks/useUsers";
 import {
   createRecommendationMutation,
   deleteRecommendationMutation,
@@ -53,7 +52,8 @@ import {
   updateRecommendationMutation,
   useRecommendations,
 } from "@/hooks/useRecommendation";
-import { capitaliseFirstLetter, cn } from "@/lib/utils";
+import { useJellyfinUsers } from "@/hooks/useUsers";
+import { cn, convertSnakeCaseToTitleCase } from "@/lib/utils";
 
 interface FormState {
   username: string;
@@ -256,9 +256,7 @@ export const Recommendations = () => {
                         recommendation.strategy === "top_tracks",
                     })}
                   >
-                    {capitaliseFirstLetter(
-                      recommendation.strategy.replace("_", " "),
-                    )}
+                    {convertSnakeCaseToTitleCase(recommendation.strategy)}
                   </Badge>
                 </TableCell>
                 <TableCell className="hidden md:table-cell">
