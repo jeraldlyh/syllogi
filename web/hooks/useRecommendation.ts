@@ -12,41 +12,10 @@ export interface Recommendation {
   requested_count: number;
 }
 
-export interface RecommendationSession {
-  id: string;
-  username: string;
-  provider: "lastfm";
-  strategy: RecommendationStrategy;
-  requested_count: number;
-  generated_count: number;
-  total_tracks: string[];
-  matched_tracks: string[];
-  missing_tracks: string[];
-  downloaded_tracks: string[];
-  started_at: string;
-  finished_at: string;
-  duration_seconds: number;
-  status: "pending" | "completed" | "failed";
-  error_message: string | null;
-}
-
 export const useRecommendations = () => {
   const { data, error, isLoading, mutate } = useSWR<
     ApiResponse<Recommendation[]>
   >("/recommendation", fetcher);
-
-  return {
-    data: data?.data,
-    isLoading,
-    isError: error,
-    mutate,
-  };
-};
-
-export const useRecommendationSessions = () => {
-  const { data, error, isLoading, mutate } = useSWR<
-    ApiResponse<RecommendationSession[]>
-  >("/recommendation/session", fetcher);
 
   return {
     data: data?.data,

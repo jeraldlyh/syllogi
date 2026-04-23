@@ -3,6 +3,7 @@
 import { Text } from "@/components/common/text";
 import { DashboardHeader } from "@/components/dashboard-header";
 import { Playlists } from "@/components/playlist";
+import { Recommendations } from "@/components/recommendation";
 import { RecommendationTable } from "@/components/recommendation-table";
 import { SyncSummary } from "@/components/sync-summary";
 import { SyncSessionTable } from "@/components/sync-table";
@@ -107,6 +108,7 @@ export default function Page() {
             <Playlists />
             <SyncSessionTable />
             <Recommendations />
+            <RecommendationTable />
           </main>
         </div>
       )}
