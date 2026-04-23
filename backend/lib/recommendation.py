@@ -99,7 +99,7 @@ def generate_recommendations_task(
         )
         if not recommendation_session:
             raise HTTPException(
-                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                status_code=status.HTTP_404_NOT_FOUND,
                 detail=f"Unable to find recommendation session: {recommendation_session_id}",
             )
 

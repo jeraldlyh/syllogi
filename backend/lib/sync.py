@@ -1,6 +1,7 @@
 import logging
 import os
 import time
+import uuid
 
 from fastapi import HTTPException, status
 
@@ -16,6 +17,7 @@ from db.session import SessionDep, get_isolated_session
 from db.sync_session import (
     build_sync_session_tracks,
     create_sync_session,
+    get_sync_session_by_id,
     update_sync_session,
 )
 from lib.common import (
@@ -120,10 +122,21 @@ async def sync_playlist_task(
     internal_playlist: Playlist,
     external_playlist: ExternalPlaylist,
     songs: list[ExternalTrack],
-    sync_session: SyncSession,
+    sync_session_id: uuid.UUID,
 ) -> None:
     """Sync a playlist (Spotify/Youtube) to Jellyfin in a background task."""
+
     with get_isolated_session() as session:
+        sync_session = get_sync_session_by_id(
+            session=session, sync_session_id=sync_session_id
+        )
+
+        if not sync_session:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail=f"Unable to find sync session with ID: {sync_session_id}",
+            )
+
         playlist_id = internal_playlist.playlist_id
         username = internal_playlist.username
         started_at = sync_session.started_at

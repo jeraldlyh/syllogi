@@ -9,15 +9,14 @@ from db.models.recommendation import (
     RecommendationStrategy,
 )
 from db.recommendation import (
-    create_recommendation_session,
     create_recommendation,
+    create_recommendation_session,
     delete_recommendation,
     get_recommendation_by_id,
     get_recommendations,
     update_recommendation,
 )
 from db.session import SessionDep
-from lib.jellyfin import get_jellyfin_users
 from lib.recommendation import generate_recommendations_task
 from lib.utils import get_now
 

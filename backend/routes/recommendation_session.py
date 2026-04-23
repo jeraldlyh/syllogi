@@ -1,4 +1,3 @@
-from fastapi import APIRouter, BackgroundTasks, HTTPException, status
 from fastapi import APIRouter
 
 from db.recommendation import (

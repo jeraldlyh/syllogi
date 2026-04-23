@@ -19,6 +19,12 @@ def update_sync_session(session: SessionDep, sync_session: SyncSession) -> SyncS
     return sync_session
 
 
+def get_sync_session_by_id(
+    session: SessionDep, sync_session_id: str | uuid.UUID
+) -> SyncSession | None:
+    return session.get(SyncSession, sync_session_id)
+
+
 def get_sync_sessions(session: SessionDep) -> Sequence[SyncSession]:
     return session.exec(
         select(SyncSession).order_by(desc(SyncSession.created_at))
