@@ -1,6 +1,6 @@
 from fastapi import APIRouter
 
-from db.recommendation import (
+from db.recommendation_session import (
     get_recommendation_session_tracks,
     get_recommendation_sessions,
 )

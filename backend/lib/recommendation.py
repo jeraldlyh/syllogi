@@ -10,7 +10,7 @@ from db.models.recommendation import (
     RecommendationStrategy,
     RecommendationTrackType,
 )
-from db.recommendation import (
+from db.recommendation_session import (
     build_recommendation_session_tracks,
     create_recommendation_session,
     format_recommendation_session_track_names,
