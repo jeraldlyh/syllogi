@@ -202,16 +202,6 @@ def _delete_recommendation(
                 }
             },
         },
-        404: {
-            "description": "Jellyfin user not found",
-            "content": {
-                "application/json": {
-                    "example": {
-                        "detail": "Unable to find Jellyfin user: <username>",
-                    }
-                }
-            },
-        },
     },
 )
 def generate_recommendations(
@@ -220,15 +210,8 @@ def generate_recommendations(
     session: SessionDep,
 ) -> dict[str, str]:
     username = recommendation.username
-    jellyfin_users = get_jellyfin_users()
-
-    # if not any(jellyfin_user.name == username for jellyfin_user in jellyfin_users):
-    #     raise HTTPException(
-    #         status_code=status.HTTP_404_NOT_FOUND,
-    #         detail=f"Unable to find Jellyfin user: {username}",
-    #     )
-
     started_at = get_now()
+
     recommendation_session = RecommendationSession(
         username=username,
         provider=RecommendationProvider.lastfm,

@@ -3,7 +3,6 @@ from typing import Any
 
 from fastapi import HTTPException, status
 
-
 from db.models.recommendation import (
     RecommendationProvider,
     RecommendationSession,
@@ -23,7 +22,6 @@ from lib.common import (
     LastFMRecentTrack,
     LastFMTopTrack,
 )
-from lib.jellyfin import get_jellyfin_users
 from lib.lastfm import (
     get_lastfm_recent_tracks,
     get_lastfm_similar_tracks,
@@ -169,14 +167,6 @@ def generate_recommendations(
     num_recommendations: int = 50,
 ) -> dict[str, str]:
     """Get track recommendations for a user based on their listening history."""
-    jellyfin_users = get_jellyfin_users()
-
-    # if not any(jellyfin_user.name == user for jellyfin_user in jellyfin_users):
-    #     raise HTTPException(
-    #         status_code=status.HTTP_404_NOT_FOUND,
-    #         detail=f"Unable to find Jellyfin user: {user}",
-    #     )
-
     started_at = get_now()
     recommendation_session = RecommendationSession(
         username=username,
