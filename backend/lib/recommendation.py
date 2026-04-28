@@ -1,3 +1,4 @@
+import logging
 import uuid
 from typing import Any
 
@@ -29,8 +30,10 @@ from lib.lastfm import (
 from lib.track import find_track
 from lib.utils import get_now
 
+logger = logging.getLogger(__name__)
 
-def _get_recommendations(
+
+def get_recommendations(
     lastfm_username: str,
     strategy: RecommendationStrategy,
     num_recommendations: int,
@@ -68,8 +71,8 @@ def _get_recommendations(
             limit=10,
         )
 
+        has_missing = False
         for similar_track in similar_tracks:
-            print(similar_track.to_dict())
             if similar_track in found:
                 continue
 
@@ -80,8 +83,9 @@ def _get_recommendations(
                 year="",
                 duration=similar_track.duration,
             )
-            if jellyfin_track.is_not_found():
+            if not has_missing and jellyfin_track.is_not_found():
                 missing.add(similar_track)
+                has_missing = True
             else:
                 found.add(similar_track)
                 break
@@ -113,7 +117,7 @@ def generate_recommendations_task(
                 session=session, recommendation_session=recommendation_session
             )
 
-            found_tracks, missing_tracks = _get_recommendations(
+            found_tracks, missing_tracks = get_recommendations(
                 lastfm_username=lastfm_username,
                 strategy=recommendation_session.strategy,
                 num_recommendations=recommendation_session.requested_count,
