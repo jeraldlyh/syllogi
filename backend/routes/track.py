@@ -41,4 +41,6 @@ def _find_track(
     artist_name: Annotated[str, Query(description="Artist name")],
     title: Annotated[str, Query(description="Track title")],
 ):
-    return find_track(artist_name, title, album_name="", year="", duration=0)
+    track = find_track(artist_name, title, album_name="", year="", duration=0)
+
+    return track.to_dict()

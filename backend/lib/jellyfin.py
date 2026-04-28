@@ -50,8 +50,8 @@ def get_jellyfin_users() -> list[JellyfinUser]:
 
     return [
         JellyfinUser(
-            id=user["Id"],
-            name=user["Name"],
+            id=user.get("Id", ""),
+            name=user.get("Name", ""),
         )
         for user in data
     ]
@@ -62,7 +62,7 @@ def get_jellyfin_playlists(user_id: str) -> list[JellyfinPlaylist]:
         f"/Users/{user_id}/Items",
         params={"IncludeItemTypes": "Playlist", "Recursive": True},
     )
-    data = response.get("Items")
+    data = response.get("Items", [])
 
     return [
         JellyfinPlaylist(
@@ -169,7 +169,7 @@ def delete_songs_from_jellyfin_playlist(
 
 def get_jellyfin_playlist_songs(playlist_id: str, user_id: str) -> list[JellyfinTrack]:
     response = _jellyfin(f"/Playlists/{playlist_id}/Items", params={"userId": user_id})
-    data = response.get("Items")
+    data = response.get("Items", [])
 
     return [
         JellyfinTrack(

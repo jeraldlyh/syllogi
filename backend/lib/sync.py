@@ -427,6 +427,6 @@ async def sync_playlist(playlist: Playlist, session: SessionDep) -> dict[str, st
         internal_playlist=internal_playlist,
         external_playlist=external_playlist,
         songs=songs,
-        sync_session=sync_session,
+        sync_session_id=sync_session.id,
     )
     return {"id": str(sync_session.id)}
