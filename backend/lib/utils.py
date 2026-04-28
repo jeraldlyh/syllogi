@@ -11,7 +11,7 @@ import pytz
 DEBUG_DIRECTORY = "debug"
 
 
-def _get_clean_name(name: str) -> str:
+def get_clean_name(name: str) -> str:
     """Clean a name by removing accents, special characters, and normalizing case."""
 
     normalized = unicodedata.normalize("NFKD", name)
@@ -23,7 +23,7 @@ def _get_clean_name(name: str) -> str:
     return cleaned
 
 
-def _dump_results(file_name: str, data: dict) -> None:
+def dump_results(file_name: str, data: dict) -> None:
     """Dump results to a JSON file for debugging purposes."""
 
     if not os.path.exists(DEBUG_DIRECTORY):
@@ -35,25 +35,25 @@ def _dump_results(file_name: str, data: dict) -> None:
         json.dump(data, file, indent=4)
 
 
-def _convert_seconds_to_readable_time(seconds: float | int) -> str:
+def convert_seconds_to_readable_time(seconds: float | int) -> str:
     """Convert seconds to a human-readable format (HH:MM:SS)."""
 
     return strftime("%H:%M:%S", gmtime(seconds))
 
 
-def _get_now() -> datetime:
+def get_now() -> datetime:
     """Get the current time in the specified timezone."""
 
     return datetime.now(pytz.timezone(os.getenv("TZ", "Asia/Singapore")))
 
 
-def _format_time_with_locale(date: datetime) -> datetime:
+def format_time_with_locale(date: datetime) -> datetime:
     """Format a datetime object to the specified timezone."""
 
     return date.astimezone(pytz.timezone(os.getenv("TZ", "Asia/Singapore")))
 
 
-def _parse_cron_expression(cron_expression: str) -> dict:
+def parse_cron_expression(cron_expression: str) -> dict:
     """Parse a cron expression into its components."""
 
     parts = cron_expression.split()

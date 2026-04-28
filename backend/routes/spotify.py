@@ -5,8 +5,8 @@ from fastapi import APIRouter, Path
 from pydantic import BaseModel
 
 from lib.spotify import (
-    _get_spotify_playlist,
-    _get_spotify_playlist_songs,
+    get_spotify_playlist,
+    get_spotify_playlist_songs,
 )
 
 router = APIRouter()
@@ -41,10 +41,10 @@ class ImportPlaylist(BaseModel):
         }
     },
 )
-def get_spotify_playlist(
+def _get_spotify_playlist(
     id: Annotated[str, Path(min_length=1, description="Spotify Playlist ID")],
 ) -> Mapping[str, Any]:
-    playlist = _get_spotify_playlist(id)
+    playlist = get_spotify_playlist(id)
 
     return playlist.to_dict()
 
@@ -75,9 +75,9 @@ def get_spotify_playlist(
         }
     },
 )
-def get_spotify_playlist_songs(
+def _get_spotify_playlist_songs(
     id: Annotated[str, Path(min_length=1, description="Spotify Playlist ID")],
 ) -> list[dict[str, Any]]:
-    songs = _get_spotify_playlist_songs(playlist_id=id)
+    songs = get_spotify_playlist_songs(playlist_id=id)
 
     return [song.to_dict() for song in songs]

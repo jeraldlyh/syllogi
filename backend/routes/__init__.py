@@ -1,6 +1,6 @@
 from fastapi import APIRouter, Depends, FastAPI
 
-from lib.auth import _get_current_user
+from lib.auth import get_current_user
 from routes.auth import router as auth_router
 from routes.oauth import router as oauth_router
 from routes.cron import router as cron_router
@@ -14,6 +14,8 @@ from routes.sync_session import router as sync_session_router
 from routes.track import router as track_router
 from routes.youtube import router as youtube_router
 from routes.settings import router as settings_router
+from routes.recommendation import router as recommendation_router
+from routes.recommendation_session import router as recommendation_session_router
 
 OPENAPI_TAGS = [
     {"name": "Auth", "description": "Authentication and current-user endpoints."},
@@ -32,6 +34,11 @@ OPENAPI_TAGS = [
     {"name": "Cron", "description": "Scheduler and cron job endpoints."},
     {"name": "YouTube", "description": "YouTube playlist and download endpoints."},
     {"name": "Settings", "description": "User settings endpoints."},
+    {"name": "Recommendation", "description": "Track recommendation endpoints."},
+    {
+        "name": "Recommendation Session",
+        "description": "Track recommendation session history and results.",
+    },
 ]
 
 
@@ -43,60 +50,72 @@ def register_routes(app: FastAPI) -> None:
     api.include_router(
         router=track_router,
         prefix="/track",
-        dependencies=[Depends(_get_current_user)],
+        dependencies=[Depends(get_current_user)],
         tags=["Track"],
     )
     api.include_router(
         router=jellyfin_router,
         prefix="/jellyfin",
-        dependencies=[Depends(_get_current_user)],
+        dependencies=[Depends(get_current_user)],
         tags=["Jellyfin"],
     )
     api.include_router(
         router=notification_router,
         prefix="/notification",
-        dependencies=[Depends(_get_current_user)],
+        dependencies=[Depends(get_current_user)],
         tags=["Notification"],
     )
     api.include_router(
         router=sync_router,
         prefix="/sync",
-        dependencies=[Depends(_get_current_user)],
+        dependencies=[Depends(get_current_user)],
         tags=["Sync"],
     )
     api.include_router(
         router=sync_session_router,
         prefix="/sync_session",
-        dependencies=[Depends(_get_current_user)],
+        dependencies=[Depends(get_current_user)],
         tags=["Sync Session"],
     )
     api.include_router(
         router=spotify_router,
         prefix="/spotify",
-        dependencies=[Depends(_get_current_user)],
+        dependencies=[Depends(get_current_user)],
         tags=["Spotify"],
     )
     api.include_router(
         router=playlist_router,
         prefix="/playlist",
-        dependencies=[Depends(_get_current_user)],
+        dependencies=[Depends(get_current_user)],
         tags=["Playlist"],
     )
     api.include_router(
         router=cron_router,
         prefix="/cron",
-        dependencies=[Depends(_get_current_user)],
+        dependencies=[Depends(get_current_user)],
         tags=["Cron"],
     )
     api.include_router(
         router=youtube_router,
         prefix="/youtube",
-        dependencies=[Depends(_get_current_user)],
+        dependencies=[Depends(get_current_user)],
         tags=["YouTube"],
     )
     api.include_router(
         router=settings_router,
         prefix="/settings",
         tags=["Settings"],
+    )
+    api.include_router(
+        router=recommendation_router,
+        prefix="/recommendation",
+        dependencies=[Depends(get_current_user)],
+        tags=["Recommendation"],
+    )
+    api.include_router(
+        router=recommendation_session_router,
+        prefix="/recommendation_session",
+        dependencies=[Depends(get_current_user)],
+        tags=["Recommendation Session"],
     )
     app.include_router(api)

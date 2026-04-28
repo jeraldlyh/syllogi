@@ -3,7 +3,7 @@ import uuid
 
 from sqlmodel import Field, SQLModel
 
-from lib.utils import _format_time_with_locale
+from lib.utils import format_time_with_locale
 from lib.mixin.metadata import TimestampMixin
 from lib.mixin.serializer import SerializerMixin
 
@@ -31,6 +31,6 @@ class Notification(
             "channel": self.channel.value,
             "webhook_url": self.webhook_url,
             "enabled": self.enabled,
-            "created_at": _format_time_with_locale(self.created_at),
-            "updated_at": _format_time_with_locale(self.updated_at),
+            "created_at": format_time_with_locale(self.created_at),
+            "updated_at": format_time_with_locale(self.updated_at),
         }

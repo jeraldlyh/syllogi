@@ -3,8 +3,10 @@
 import { Text } from "@/components/common/text";
 import { DashboardHeader } from "@/components/dashboard-header";
 import { Playlists } from "@/components/playlist";
+import { Recommendations } from "@/components/recommendation";
+import { RecommendationTable } from "@/components/recommendation-table";
 import { SyncSummary } from "@/components/sync-summary";
-import { SyncTable } from "@/components/sync-table";
+import { SyncSessionTable } from "@/components/sync-table";
 import { api } from "@/lib/api";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
@@ -104,7 +106,9 @@ export default function Page() {
           <main className="mt-14 flex flex-col gap-6">
             <SyncSummary />
             <Playlists />
-            <SyncTable />
+            <SyncSessionTable />
+            <Recommendations />
+            <RecommendationTable />
           </main>
         </div>
       )}

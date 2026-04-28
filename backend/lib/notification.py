@@ -22,7 +22,7 @@ def _to_color_hex(c: int | str) -> int:
     return int(c.lstrip("#"), 16)
 
 
-def _send_discord_notification(
+def send_discord_notification(
     webhook_url: str | None,
     *,
     content: str | None = None,

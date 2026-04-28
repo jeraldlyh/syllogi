@@ -6,7 +6,7 @@ from typing import Any, Optional, cast
 
 from sqlmodel import Field, Relationship, SQLModel
 
-from lib.utils import _get_now, _format_time_with_locale
+from lib.utils import get_now, format_time_with_locale
 from lib.mixin.serializer import SerializerMixin
 from lib.mixin.metadata import TimestampMixin
 
@@ -16,7 +16,7 @@ class SyncProvider(enum.Enum):
     youtube = "youtube"
 
 
-class TrackListKind(enum.Enum):
+class SyncSessionTrackType(enum.Enum):
     total = "total"
     new = "new"
     outdated = "outdated"
@@ -43,22 +43,23 @@ class SyncSession(TimestampMixin, SerializerMixin, SQLModel, table=True):
     target_playlist_id: str = Field(max_length=128, nullable=False, index=True)
     target_playlist_name: str = Field(default="", max_length=512, nullable=False)
 
-    tracks: list["SyncSessionTrack"] = Relationship(back_populates="session")
-
     started_at: datetime = Field(
-        default=_get_now(),
+        default=get_now(),
         sa_type=cast(type[Any], sa.DateTime(timezone=True)),
         sa_column_kwargs={"server_default": sa.func.now()},
         nullable=False,
     )
     finished_at: datetime = Field(
-        default=_get_now(),
+        default=get_now(),
         sa_type=cast(type[Any], sa.DateTime(timezone=True)),
         sa_column_kwargs={"server_default": sa.func.now()},
         nullable=False,
     )
     duration_seconds: int = Field(default=0, nullable=False)
+
     status: SyncStatus = Field(nullable=False)
+    tracks: list["SyncSessionTrack"] = Relationship(back_populates="session")
+
     error_message: Optional[str] = Field(default=None, max_length=1024, nullable=True)
 
     def to_dict(self) -> dict:
@@ -71,13 +72,13 @@ class SyncSession(TimestampMixin, SerializerMixin, SQLModel, table=True):
             "target_username": self.target_username,
             "target_playlist_id": self.target_playlist_id,
             "target_playlist_name": self.target_playlist_name,
-            "started_at": _format_time_with_locale(self.started_at),
-            "finished_at": _format_time_with_locale(self.finished_at),
+            "started_at": format_time_with_locale(self.started_at),
+            "finished_at": format_time_with_locale(self.finished_at),
             "duration_seconds": self.duration_seconds,
             "status": self.status,
             "error_message": self.error_message,
-            "created_at": _format_time_with_locale(self.created_at),
-            "updated_at": _format_time_with_locale(self.updated_at),
+            "created_at": format_time_with_locale(self.created_at),
+            "updated_at": format_time_with_locale(self.updated_at),
         }
 
 
@@ -87,7 +88,7 @@ class SyncSessionTrack(TimestampMixin, SerializerMixin, SQLModel, table=True):
     sync_session_id: uuid.UUID = Field(
         foreign_key="syncsession.id", index=True, nullable=False
     )
-    kind: TrackListKind = Field(nullable=False, index=True)
-    name: str = Field(max_length=512, nullable=False)
-
     session: SyncSession = Relationship(back_populates="tracks")
+
+    name: str = Field(max_length=512, nullable=False)
+    type: SyncSessionTrackType = Field(nullable=False, index=True)

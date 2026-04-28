@@ -3,15 +3,15 @@ from pydantic import BaseModel
 
 from db.models.playlist import Playlist, PlaylistProvider
 from db.playlist import (
-    _create_playlist,
-    _delete_playlist,
-    _get_playlist_by_id,
-    _get_playlists,
-    _update_playlist,
+    create_playlist,
+    delete_playlist,
+    get_playlist_by_id,
+    get_playlists,
+    update_playlist,
 )
 from db.session import SessionDep
-from lib.sync import _sync_playlist
-from lib.cron import _delete_job, _update_job, _create_job
+from lib.sync import sync_playlist
+from lib.cron import delete_job, update_job, create_job
 
 router = APIRouter()
 
@@ -55,8 +55,8 @@ class CreateOrUpdatePlaylistRequest(BaseModel):
         }
     },
 )
-def get_playlists(session: SessionDep):
-    playlists = _get_playlists(session=session)
+def _get_playlists(session: SessionDep):
+    playlists = get_playlists(session=session)
 
     return [playlist.to_dict() for playlist in playlists]
 
@@ -79,7 +79,7 @@ def get_playlists(session: SessionDep):
         }
     },
 )
-def create_playlist(item: CreateOrUpdatePlaylistRequest, session: SessionDep):
+def _create_playlist(item: CreateOrUpdatePlaylistRequest, session: SessionDep):
     playlist = Playlist(
         provider=item.provider,
         playlist_id=item.playlist_id,
@@ -89,11 +89,11 @@ def create_playlist(item: CreateOrUpdatePlaylistRequest, session: SessionDep):
         enable_download=item.enable_download,
         cron_expression=item.cron_expression,
     )
-    _create_playlist(session=session, playlist=playlist)
+    create_playlist(session=session, playlist=playlist)
 
     if playlist.enable_sync:
-        _create_job(
-            func=_sync_playlist,
+        create_job(
+            func=sync_playlist,
             kwargs={"playlist": playlist, "session": session},
             cron_expression=playlist.cron_expression,
         )
@@ -134,10 +134,10 @@ def create_playlist(item: CreateOrUpdatePlaylistRequest, session: SessionDep):
         },
     },
 )
-def update_playlist(
+def _update_playlist(
     playlist_id: str, item: CreateOrUpdatePlaylistRequest, session: SessionDep
 ):
-    playlist = _get_playlist_by_id(session=session, playlist_id=playlist_id)
+    playlist = get_playlist_by_id(session=session, playlist_id=playlist_id)
 
     if not playlist:
         raise HTTPException(
@@ -153,13 +153,13 @@ def update_playlist(
     playlist.enable_download = item.enable_download
     playlist.cron_expression = item.cron_expression
 
-    _update_playlist(session=session, playlist=playlist)
+    update_playlist(session=session, playlist=playlist)
 
     if not playlist.enable_sync:
-        _delete_job(playlist_id=playlist_id)
+        delete_job(playlist_id=playlist_id)
     else:
-        _update_job(
-            func=_sync_playlist,
+        update_job(
+            func=sync_playlist,
             kwargs={"playlist": playlist, "session": session},
             cron_expression=playlist.cron_expression,
         )
@@ -200,8 +200,8 @@ def update_playlist(
         },
     },
 )
-def delete_playlist(playlist_id: str, session: SessionDep):
-    playlist = _get_playlist_by_id(session=session, playlist_id=playlist_id)
+def _delete_playlist(playlist_id: str, session: SessionDep):
+    playlist = get_playlist_by_id(session=session, playlist_id=playlist_id)
 
     if not playlist:
         raise HTTPException(
@@ -209,7 +209,7 @@ def delete_playlist(playlist_id: str, session: SessionDep):
             detail=f"Unable to find playlist: {playlist_id}",
         )
 
-    _delete_playlist(session=session, playlist=playlist)
-    _delete_job(playlist_id=playlist_id)
+    delete_playlist(session=session, playlist=playlist)
+    delete_job(playlist_id=playlist_id)
 
     return {"message": "Playlist deleted successfully"}

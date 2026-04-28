@@ -2,30 +2,36 @@ from typing import Sequence
 import uuid
 
 from sqlmodel import desc, select
-from db.models.sync_session import SyncSession, SyncSessionTrack, TrackListKind
+from db.models.sync_session import SyncSession, SyncSessionTrack, SyncSessionTrackType
 from db.session import SessionDep
 
 
-def _create_sync_session(session: SessionDep, sync_session: SyncSession) -> None:
+def create_sync_session(session: SessionDep, sync_session: SyncSession) -> None:
     session.add(sync_session)
     session.commit()
     session.refresh(sync_session)
 
 
-def _update_sync_session(session: SessionDep, sync_session: SyncSession) -> SyncSession:
+def update_sync_session(session: SessionDep, sync_session: SyncSession) -> SyncSession:
     sync_session = session.merge(sync_session)
     session.commit()
     session.refresh(sync_session)
     return sync_session
 
 
-def _get_sync_sessions(session: SessionDep) -> Sequence[SyncSession]:
+def get_sync_session_by_id(
+    session: SessionDep, sync_session_id: str | uuid.UUID
+) -> SyncSession | None:
+    return session.get(SyncSession, sync_session_id)
+
+
+def get_sync_sessions(session: SessionDep) -> Sequence[SyncSession]:
     return session.exec(
         select(SyncSession).order_by(desc(SyncSession.created_at))
     ).all()
 
 
-def _get_sync_session_tracks(
+def get_sync_session_tracks(
     session: SessionDep, sync_session_id: uuid.UUID
 ) -> Sequence[SyncSessionTrack]:
     return session.exec(
@@ -35,10 +41,10 @@ def _get_sync_session_tracks(
     ).all()
 
 
-def _build_tracks(
-    sync_session_id: uuid.UUID, names: list[str], kind: TrackListKind
+def build_sync_session_tracks(
+    sync_session_id: uuid.UUID, names: list[str], type: SyncSessionTrackType
 ) -> list[SyncSessionTrack]:
     return [
-        SyncSessionTrack(sync_session_id=sync_session_id, kind=kind, name=name)
+        SyncSessionTrack(sync_session_id=sync_session_id, type=type, name=name)
         for name in names
     ]

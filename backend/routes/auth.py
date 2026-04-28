@@ -6,11 +6,11 @@ from pydantic import BaseModel
 
 from db.models.user import User
 from db.session import SessionDep
-from db.user import _create_user
+from db.user import create_user
 from lib.auth import (
-    _authenticate_user,
-    _create_access_token,
-    _get_current_user,
+    authenticate_user,
+    create_access_token,
+    get_current_user,
     _get_password_hash,
 )
 
@@ -45,7 +45,7 @@ class RegisterUserRequest(BaseModel):
         }
     },
 )
-async def read_me(user: Annotated[User, Depends(_get_current_user)]) -> User:
+async def read_me(user: Annotated[User, Depends(get_current_user)]) -> User:
     del user.password
     return user
 
@@ -91,7 +91,7 @@ async def login(
     session: SessionDep,
     form_data: Annotated[OAuth2PasswordRequestForm, Depends()],
 ):
-    user = _authenticate_user(
+    user = authenticate_user(
         session=session, username=form_data.username, password=form_data.password
     )
 
@@ -101,7 +101,7 @@ async def login(
             detail="Incorrect username or password",
             headers={"WWW-Authenticate": "Bearer"},
         )
-    access_token = _create_access_token(data={"sub": user.username})
+    access_token = create_access_token(data={"sub": user.username})
     response.set_cookie(
         key="access_token", value=access_token, httponly=True, samesite="lax"
     )
@@ -146,7 +146,7 @@ async def login(
     },
 )
 async def register(response: Response, session: SessionDep, item: RegisterUserRequest):
-    existing_user = _authenticate_user(
+    existing_user = authenticate_user(
         session=session, username=item.username, password=item.password
     )
 
@@ -162,8 +162,8 @@ async def register(response: Response, session: SessionDep, item: RegisterUserRe
         oauth_id=None,
     )
 
-    _create_user(session=session, user=new_user)
-    access_token = _create_access_token(data={"sub": new_user.username})
+    create_user(session=session, user=new_user)
+    access_token = create_access_token(data={"sub": new_user.username})
     response.set_cookie(key="access_token", value=access_token, httponly=True)
 
     return Token(access_token=access_token, token_type="bearer")

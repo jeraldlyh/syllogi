@@ -1,6 +1,6 @@
 from fastapi import APIRouter
 
-from db.sync_session import _get_sync_sessions, _get_sync_session_tracks
+from db.sync_session import get_sync_sessions, get_sync_session_tracks
 from db.session import SessionDep
 
 router = APIRouter()
@@ -47,8 +47,8 @@ router = APIRouter()
         }
     },
 )
-def get_sync_sessions(session: SessionDep):
-    sync_sessions = _get_sync_sessions(session)
+def _get_sync_sessions(session: SessionDep) -> list[dict]:
+    sync_sessions = get_sync_sessions(session)
 
     tracks_by_session: dict[str, dict[str, list[str]]] = {
         str(sync_session.id): {
@@ -63,11 +63,11 @@ def get_sync_sessions(session: SessionDep):
 
     for sync_session in sync_sessions:
         sync_session_id = sync_session.id
-        session_tracks = _get_sync_session_tracks(
+        session_tracks = get_sync_session_tracks(
             session=session, sync_session_id=sync_session_id
         )
         for track in session_tracks:
-            tracks_by_session[str(sync_session_id)][track.kind.value].append(track.name)
+            tracks_by_session[str(sync_session_id)][track.type.value].append(track.name)
 
     response = []
     for sync_session in sync_sessions:

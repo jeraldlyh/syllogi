@@ -11,10 +11,10 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse, Response
 from starlette.middleware.base import BaseHTTPMiddleware
 
-from db.playlist import _get_playlists
+from db.playlist import get_playlists
 from db.session import get_isolated_session
-from lib.cron import _create_job
-from lib.sync import _sync_playlist
+from lib.cron import create_job
+from lib.sync import sync_playlist
 from routes import OPENAPI_TAGS, register_routes
 
 load_dotenv()
@@ -141,15 +141,15 @@ def create_app() -> FastAPI:
         logger.info("Starting up application and initializing cron jobs")
         session = get_isolated_session()
 
-        playlists = _get_playlists(session=session)
+        playlists = get_playlists(session=session)
 
         for playlist in playlists:
             if playlist.cron_expression:
                 logger.info(
                     f"Registering cron job for playlist {playlist.id} with cron expression: {playlist.cron_expression}"
                 )
-                _create_job(
-                    func=_sync_playlist,
+                create_job(
+                    func=sync_playlist,
                     kwargs={"playlist": playlist, "session": session},
                     cron_expression=playlist.cron_expression,
                 )

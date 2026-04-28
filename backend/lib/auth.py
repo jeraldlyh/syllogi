@@ -4,16 +4,16 @@ from datetime import datetime, timedelta, timezone
 from typing import Annotated
 
 import jwt
-from fastapi import Cookie, HTTPException, status
+from fastapi import Cookie, HTTPException, Header, status
 from pwdlib import PasswordHash
 
 from db.models.user import User
 from db.session import SessionDep
 from db.user import (
-    _get_user_by_username,
-    _get_user_by_oauth_id,
-    _create_user,
-    _update_user,
+    get_user_by_username,
+    get_user_by_oauth_id,
+    create_user,
+    update_user,
 )
 
 logger = logging.getLogger(__name__)
@@ -34,11 +34,9 @@ def _verify_password(plain_password: str, hashed_password: str) -> bool:
     return HASH.verify(plain_password, hashed_password)
 
 
-def _authenticate_user(
-    session: SessionDep, username: str, password: str
-) -> User | None:
+def authenticate_user(session: SessionDep, username: str, password: str) -> User | None:
     """Authenticate a user by username and password."""
-    user = _get_user_by_username(session=session, username=username)
+    user = get_user_by_username(session=session, username=username)
 
     if not user:
         return None
@@ -48,7 +46,7 @@ def _authenticate_user(
     return user
 
 
-def _create_access_token(
+def create_access_token(
     data: dict,
     expires_delta: timedelta = timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES),
 ) -> str:
@@ -66,9 +64,10 @@ def _create_access_token(
     return encoded_jwt
 
 
-def _get_current_user(
+def get_current_user(
     session: SessionDep,
     access_token: Annotated[str | None, Cookie()] = None,
+    authorization: Annotated[str | None, Header()] = None,
 ) -> User | None:
     """Get the current user from a JWT token."""
     unauthorized_exception = HTTPException(
@@ -78,18 +77,29 @@ def _get_current_user(
     )
 
     try:
-        if access_token is None:
+        if access_token is None and authorization is None:
             logger.warning("No access token provided")
             raise unauthorized_exception
 
-        payload = jwt.decode(access_token, SECRET_KEY, algorithms=[ALGORITHM])
+        token = access_token
+
+        if token is None and authorization is not None:
+            scheme, _, credentials = authorization.partition(" ")
+            if scheme.lower() == "bearer":
+                token = credentials
+
+        if token is None:
+            logger.warning("No access token found in cookies or headers")
+            raise unauthorized_exception
+
+        payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
         username = payload.get("sub")
 
         if username is None:
             logger.warning("Access token missing 'sub' claim")
             raise unauthorized_exception
 
-        user = _get_user_by_username(session=session, username=username)
+        user = get_user_by_username(session=session, username=username)
 
         if user is None:
             logger.warning(f"User not found for username: {username}")
@@ -99,23 +109,21 @@ def _get_current_user(
         raise unauthorized_exception
 
 
-def _get_or_create_oauth_user(
-    session: SessionDep, oauth_id: str, username: str
-) -> User:
+def get_or_create_oauth_user(session: SessionDep, oauth_id: str, username: str) -> User:
     """Get an existing OAuth user or create a new one."""
 
-    user = _get_user_by_username(session=session, username=username)
+    user = get_user_by_username(session=session, username=username)
 
     if user:
         user.oauth_id = oauth_id
-        _update_user(session=session, user=user)
+        update_user(session=session, user=user)
         return user
 
-    user = _get_user_by_oauth_id(session=session, oauth_id=oauth_id)
+    user = get_user_by_oauth_id(session=session, oauth_id=oauth_id)
 
     if user:
         return user
 
     new_user = User(username=username, password="", oauth_id=oauth_id)
-    _create_user(session=session, user=new_user)
+    create_user(session=session, user=new_user)
     return new_user

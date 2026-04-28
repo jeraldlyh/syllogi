@@ -4,7 +4,7 @@ import sys
 from pathlib import Path
 
 
-from lib.common import ExternalPlaylist, Track
+from lib.common import ExternalPlaylist, ExternalTrack
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 SPOTAPI_DIR = BASE_DIR / "SpotAPI"
@@ -23,7 +23,7 @@ logger = logging.getLogger(__name__)
 DISCORD_WEBHOOK_URL = os.getenv("DISCORD_WEBHOOK_URL", "")
 
 
-def _get_spotify_playlist(playlist_id: str) -> ExternalPlaylist:
+def get_spotify_playlist(playlist_id: str) -> ExternalPlaylist:
     playlist = PublicPlaylist(playlist_id)
     playlist_info = playlist.get_playlist_info()
 
@@ -42,10 +42,10 @@ def _get_spotify_playlist(playlist_id: str) -> ExternalPlaylist:
     )
 
 
-def _get_spotify_playlist_songs(playlist_id: str) -> list[Track]:
+def get_spotify_playlist_songs(playlist_id: str) -> list[ExternalTrack]:
     offset = 0
     limit = 50
-    songs: list[Track] = []
+    songs: list[ExternalTrack] = []
 
     playlist = PublicPlaylist(playlist_id)
     playlist_info = playlist.get_playlist_info(limit=limit)
@@ -55,7 +55,7 @@ def _get_spotify_playlist_songs(playlist_id: str) -> list[Track]:
             album_metadata = item["itemV3"]["data"]["identityTrait"][
                 "contentHierarchyParent"
             ]
-            song = Track(
+            song = ExternalTrack(
                 artist_name=item["itemV2"]["data"]["albumOfTrack"]["artists"]["items"][
                     0
                 ]["profile"]["name"],

@@ -2,7 +2,7 @@ from typing import Annotated
 
 from fastapi import APIRouter, Query
 
-from lib.track import _find_track
+from lib.track import find_track
 
 router = APIRouter()
 
@@ -37,8 +37,10 @@ router = APIRouter()
         }
     },
 )
-async def find_track(
+def _find_track(
     artist_name: Annotated[str, Query(description="Artist name")],
     title: Annotated[str, Query(description="Track title")],
 ):
-    return _find_track(artist_name, title, album_name="", year="", duration=0)
+    track = find_track(artist_name, title, album_name="", year="", duration=0)
+
+    return track.to_dict()
