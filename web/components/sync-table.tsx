@@ -72,9 +72,14 @@ export const SyncSessionTable = () => {
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             className="pl-9"
+            disabled={isLoading || isError}
           />
         </div>
-        <Select value={statusFilter} onValueChange={setStatusFilter}>
+        <Select
+          value={statusFilter}
+          onValueChange={setStatusFilter}
+          disabled={isLoading || isError}
+        >
           <SelectTrigger className="w-full sm:w-[160px]">
             <SelectValue placeholder="Status" />
           </SelectTrigger>
@@ -159,6 +164,25 @@ export const SyncSessionTable = () => {
     );
   };
   const renderTable = (): React.JSX.Element => {
+    if (isLoading) {
+      return (
+        <div className="flex items-center justify-center py-6">
+          <Text className="text-muted-foreground italic" value="Loading..." />
+        </div>
+      );
+    }
+
+    if (isError) {
+      return (
+        <div className="flex items-center justify-center py-6">
+          <Text
+            className="text-muted-foreground italic text-red-400"
+            value="Failed to load sync sessions"
+          />
+        </div>
+      );
+    }
+
     if (getFilteredSessions().length === 0) {
       return (
         <div className="flex items-center justify-center py-6">

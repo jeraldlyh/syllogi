@@ -74,9 +74,14 @@ export const RecommendationTable = () => {
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             className="pl-9"
+            disabled={isLoading || isError}
           />
         </div>
-        <Select value={statusFilter} onValueChange={setStatusFilter}>
+        <Select
+          value={statusFilter}
+          onValueChange={setStatusFilter}
+          disabled={isLoading || isError}
+        >
           <SelectTrigger className="w-full sm:w-[160px]">
             <SelectValue placeholder="Status" />
           </SelectTrigger>
@@ -138,7 +143,7 @@ export const RecommendationTable = () => {
           <DialogItem
             label="Strategy"
             value={capitaliseFirstLetter(
-              selectedSession.strategy.replace("_", " "),
+              selectedSession.strategy.replaceAll("_", " "),
             )}
           />
           <DialogItem
@@ -176,6 +181,25 @@ export const RecommendationTable = () => {
   };
 
   const renderTable = (): React.JSX.Element => {
+    if (isLoading) {
+      return (
+        <div className="flex items-center justify-center py-6">
+          <Text className="text-muted-foreground italic" value="Loading..." />
+        </div>
+      );
+    }
+
+    if (isError) {
+      return (
+        <div className="flex items-center justify-center py-6">
+          <Text
+            className="text-muted-foreground italic text-red-400"
+            value="Failed to load recommendation sessions"
+          />
+        </div>
+      );
+    }
+
     if (getFilteredSessions().length === 0) {
       return (
         <div className="flex items-center justify-center py-6">
