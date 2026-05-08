@@ -97,7 +97,7 @@ def sync_playlist(item: Playlist, background_tasks: BackgroundTasks) -> dict[str
     create_sync_session(session=session, sync_session=sync_session)
     background_tasks.add_task(
         sync_playlist_task,
-        internal_playlist=internal_playlist,
+        internal_playlist_id=internal_playlist.id,
         external_playlist=external_playlist,
         songs=songs,
         sync_session_id=sync_session.id,

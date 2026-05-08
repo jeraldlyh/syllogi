@@ -118,7 +118,7 @@ def _diff_tracks(
 
 
 async def sync_playlist_task(
-    internal_playlist: Playlist,
+    internal_playlist_id: str | uuid.UUID,
     external_playlist: ExternalPlaylist,
     songs: list[ExternalTrack],
     sync_session_id: uuid.UUID,
@@ -126,6 +126,16 @@ async def sync_playlist_task(
     """Sync a playlist (Spotify/Youtube) to Jellyfin in a background task."""
 
     with get_isolated_session() as session:
+        internal_playlist = get_playlist_by_id(
+            session=session, playlist_id=internal_playlist_id
+        )
+
+        if not internal_playlist:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail=f"Unable to find playlist with ID: {internal_playlist_id}",
+            )
+
         sync_session = get_sync_session_by_id(
             session=session, sync_session_id=sync_session_id
         )
@@ -424,7 +434,7 @@ async def sync_playlist(playlist: Playlist, session: SessionDep) -> dict[str, st
             external_playlist = _get_youtube_playlist(playlist_id=playlist_id)
 
     await sync_playlist_task(
-        internal_playlist=internal_playlist,
+        internal_playlist_id=internal_playlist.id,
         external_playlist=external_playlist,
         songs=songs,
         sync_session_id=sync_session.id,
