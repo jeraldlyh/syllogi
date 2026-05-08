@@ -1,15 +1,12 @@
 import logging
-import os
 from typing import Any
 
 import requests
 from fastapi import HTTPException, status
 
 from lib.common import JellyfinPlaylist, JellyfinTrack, JellyfinUser
+from lib.env import get_environment_variable
 
-JELLYFIN_API_KEY = os.getenv("JELLYFIN_API_KEY")
-JELLYFIN_BASE_URL = os.getenv("JELLYFIN_BASE_URL")
-DOWNLOAD_LIBRARY_NAME = os.getenv("DOWNLOAD_LIBRARY_NAME", "Downloads")
 
 logger = logging.getLogger(__name__)
 
@@ -24,14 +21,17 @@ def _jellyfin(
     data: dict[str, Any] | str | bytes | None = None,
     timeout: float = 30.0,
 ) -> Any:
+    api_key = get_environment_variable("JELLYFIN_API_KEY", ignore_error=False)
+    api_url = get_environment_variable("JELLYFIN_URL", ignore_error=False)
+
     base_headers = {
-        "X-Emby-Token": JELLYFIN_API_KEY,
+        "X-Emby-Token": api_key,
         "Content-Type": "application/json",
     }
 
     response = requests.request(
         method=method.upper(),
-        url=f"{JELLYFIN_BASE_URL}{path}",
+        url=f"{api_url}{path}",
         headers={**base_headers, **(headers or {})},
         params=params,
         json=json,
@@ -218,18 +218,19 @@ def update_jellyfin_playlist_image(
 def rescan_jellyfin_library() -> None:
     media_folders_response = _jellyfin("/Library/MediaFolders")
 
+    download_library_name = get_environment_variable("DOWNLOAD_LIBRARY_NAME")
     download_folder = next(
         (
             folder
             for folder in media_folders_response.get("Items", [])
-            if folder.get("Name") == DOWNLOAD_LIBRARY_NAME
+            if folder.get("Name") == download_library_name
         ),
         None,
     )
 
     if download_folder is None:
         logger.warning(
-            f"Could not find media folder with name '{DOWNLOAD_LIBRARY_NAME}' to rescan"
+            f"Could not find media folder with name '{download_library_name}' to rescan"
         )
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
@@ -255,7 +256,7 @@ def is_jellyfin_scanning_library() -> bool:
 
     for folder in response:
         if (
-            folder.get("Name") == DOWNLOAD_LIBRARY_NAME
+            folder.get("Name") == get_environment_variable("DOWNLOAD_LIBRARY_NAME")
             and folder.get("RefreshStatus", "") == "Active"
         ):
             return True

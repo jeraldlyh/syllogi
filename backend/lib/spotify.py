@@ -1,5 +1,4 @@
 import logging
-import os
 import sys
 from pathlib import Path
 
@@ -19,8 +18,6 @@ else:
 from spotapi.playlist import PublicPlaylist  # noqa: E402
 
 logger = logging.getLogger(__name__)
-
-DISCORD_WEBHOOK_URL = os.getenv("DISCORD_WEBHOOK_URL", "")
 
 
 def get_spotify_playlist(playlist_id: str) -> ExternalPlaylist:

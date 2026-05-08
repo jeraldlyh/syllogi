@@ -1,0 +1,33 @@
+import os
+
+
+def get_environment_variables() -> dict[str, str | bool]:
+    return {
+        "JELLYFIN_URL": os.getenv("JELLYFIN_URL", ""),
+        "JELLYFIN_API_KEY": os.getenv("JELLYFIN_API_KEY", ""),
+        "LASTFM_API_KEY": os.getenv("LASTFM_API_KEY", ""),
+        "LASTFM_BASE_URL": os.getenv(
+            "LASTFM_BASE_URL", "https://ws.audioscrobbler.com/2.0/"
+        ),
+        "DOWNLOAD_LIBRARY_NAME": os.getenv("DOWNLOAD_LIBRARY_NAME", "Downloads"),
+        "DOWNLOAD_DIR": os.getenv("DOWNLOAD_DIR", "/downloads"),
+        "SECRET_KEY": os.getenv("SECRET_KEY", "default_secret_key"),
+        "NEXT_PUBLIC_URL": os.getenv("NEXT_PUBLIC_URL", "http://localhost:3000"),
+        "DISCORD_WEBHOOK_URL": os.getenv("DISCORD_WEBHOOK_URL", ""),
+        "DATABASE_USERNAME": os.getenv("DATABASE_USERNAME", "syllogi"),
+        "DATABASE_PASSWORD": os.getenv("DATABASE_PASSWORD", "syllogi"),
+        "DATABASE_URL": os.getenv("DATABASE_URL", "localhost:5432"),
+        "DATABASE_NAME": os.getenv("DATABASE_NAME", "syllogi"),
+        "AUTHENTIK_CLIENT_ID": os.getenv("AUTHENTIK_CLIENT_ID", ""),
+        "AUTHENTIK_SECRET": os.getenv("AUTHENTIK_SECRET", ""),
+        "AUTHENTIK_ISSUER": os.getenv("AUTHENTIK_ISSUER", "").rstrip("/"),
+        "IS_DEVELOPMENT": os.getenv("ENVIRONMENT", "production") == "development",
+    }
+
+
+def get_environment_variable(name: str, ignore_error=True) -> str:
+    variable = os.getenv(name, "")
+
+    if not variable and not ignore_error:
+        raise ValueError(f"Environment variable '{name}' is required but not set.")
+    return variable

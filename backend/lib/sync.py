@@ -1,5 +1,4 @@
 import logging
-import os
 import time
 import uuid
 
@@ -28,6 +27,7 @@ from lib.common import (
     ExternalTrack,
 )
 from lib.download import download_missing_tracks
+from lib.env import get_environment_variable
 from lib.jellyfin import (
     add_songs_to_jellyfin_playlist,
     create_jellyfin_playlist,
@@ -46,8 +46,6 @@ from lib.utils import convert_seconds_to_readable_time, get_now
 from lib.youtube import _get_youtube_playlist, _get_youtube_playlist_songs
 
 logger = logging.getLogger(__name__)
-
-DISCORD_WEBHOOK_URL = os.getenv("DISCORD_WEBHOOK_URL", "")
 
 
 def _resolve_songs(
@@ -289,9 +287,11 @@ async def sync_playlist_task(
             finished_at = get_now()
             duration_taken = finished_at.timestamp() - started_at.timestamp()
 
-            if len(DISCORD_WEBHOOK_URL) > 0:
+            discord_webhook_url = get_environment_variable("DISCORD_WEBHOOK_URL")
+
+            if len(discord_webhook_url) > 0:
                 send_discord_notification(
-                    DISCORD_WEBHOOK_URL,
+                    webhook_url=discord_webhook_url,
                     title="Import Summary",
                     fields=[
                         {"name": "Username", "value": username, "inline": True},

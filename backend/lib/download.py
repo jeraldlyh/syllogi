@@ -5,15 +5,13 @@ import unicodedata
 import string
 import glob
 import logging
-import os
 from pathlib import Path
 
 from lib.common import ExternalTrack
+from lib.env import get_environment_variable
 from lib.youtube import _run_ytdlp
 
 logger = logging.getLogger(__name__)
-
-YOUTUBE_DOWNLOAD_DIR = os.getenv("YOUTUBE_DOWNLOAD_DIR", "/downloads")
 
 
 def _sanitize_filename(name: str) -> str:
@@ -33,10 +31,14 @@ def _get_download_path(artist_name: str, track_name: str, album_name: str = "") 
     sanitized_artist_name = _sanitize_filename(artist_name)
     sanitized_track_name = _sanitize_filename(track_name)
 
+    download_dir = get_environment_variable("DOWNLOAD_DIR")
+
     if album_name:
         sanitized_album_name = _sanitize_filename(album_name)
-        return f"{Path(YOUTUBE_DOWNLOAD_DIR)}/{sanitized_artist_name}/{sanitized_album_name}/{sanitized_track_name}"
-    return f"{Path(YOUTUBE_DOWNLOAD_DIR)}/{sanitized_artist_name}/Singles/{sanitized_track_name}"
+        return f"{Path(download_dir)}/{sanitized_artist_name}/{sanitized_album_name}/{sanitized_track_name}"
+    return (
+        f"{Path(download_dir)}/{sanitized_artist_name}/Singles/{sanitized_track_name}"
+    )
 
 
 def _score_video(entry):
@@ -173,27 +175,6 @@ async def download_track(
                 download=True,
             ),
         )
-        # _run_ytdlp(
-        #     url=f"ytsearch:{best_entry_url}",
-        #     opts={
-        #         "format": "bestaudio/best",
-        #         "postprocessors": [
-        #             {
-        #                 "key": "FFmpegExtractAudio",
-        #                 "preferredcodec": "opus",
-        #                 "preferredquality": "0",
-        #             }
-        #         ],
-        #         "outtmpl": output_template,
-        #         "quiet": True,
-        #         "no_warnings": True,
-        #         "noplaylist": True,
-        #         "sleep_interval": 10,
-        #         "max_sleep_interval": 30,
-        #         "sleep_interval_requests": 10,
-        #     },
-        #     download=True,
-        # )
 
         downloaded_file_path = glob.glob(f"{glob.escape(output_path)}.*")
 

@@ -1,13 +1,13 @@
 from __future__ import annotations
 
 import logging
-import os
 import re
 from typing import TYPE_CHECKING, Any
 
 import yt_dlp
 
 from lib.common import ExternalPlaylist, ExternalTrack
+from lib.env import get_environment_variable
 from lib.utils import dump_results
 
 if TYPE_CHECKING:
@@ -15,8 +15,7 @@ if TYPE_CHECKING:
 
 logger = logging.getLogger(__name__)
 
-DISCORD_WEBHOOK_URL = os.getenv("DISCORD_WEBHOOK_URL", "")
-IS_DEVELOPMENT = os.getenv("ENVIRONMENT", "production") == "development"
+IS_DEVELOPMENT = get_environment_variable("IS_DEVELOPMENT")
 
 
 def _run_ytdlp(url: str, opts: _Params | None = None, *, download: bool = False) -> Any:

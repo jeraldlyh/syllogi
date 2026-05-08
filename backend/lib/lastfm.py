@@ -1,13 +1,11 @@
 import logging
-import os
 from typing import Any
 
 import requests
 
 from lib.common import LastFMRecentTrack, LastFMSimilarTrack, LastFMTopTrack
+from lib.env import get_environment_variable
 
-LASTFM_API_KEY = os.getenv("LASTFM_API_KEY")
-LASTFM_BASE_URL = os.getenv("LASTFM_BASE_URL", "https://ws.audioscrobbler.com/2.0/")
 
 logger = logging.getLogger(__name__)
 
@@ -24,15 +22,18 @@ def _lastfm(
     base_headers = {
         "Content-Type": "application/json",
     }
+    api_key = get_environment_variable("LASTFM_API_KEY", ignore_error=False)
+    api_url = get_environment_variable("LASTFM_BASE_URL", ignore_error=False)
+
     default_params = {
-        "api_key": LASTFM_API_KEY,
+        "api_key": api_key,
         "format": "json",
     }
     default_params.update(params or {})
 
     response = requests.request(
         method=method.upper(),
-        url=f"{LASTFM_BASE_URL}{path}",
+        url=f"{api_url}{path}",
         headers={**base_headers, **(headers or {})},
         params={**default_params},
         json=json,

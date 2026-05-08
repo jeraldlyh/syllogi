@@ -70,7 +70,7 @@ All configuration is supplied through environment variables on the `syllogi` con
 | Name                | Description                                                                                       |
 | ------------------- | ------------------------------------------------------------------------------------------------- |
 | `JELLYFIN_API_KEY`  | Jellyfin API key for the target user with permission to create and manage playlists.              |
-| `JELLYFIN_BASE_URL` | Base URL of your Jellyfin server, e.g. `https://jellyfin.example.com` or `http://localhost:8096`. |
+| `JELLYFIN_URL`      | Base URL of your Jellyfin server, e.g. `https://jellyfin.example.com` or `http://localhost:8096`. |
 | `DATABASE_URL`      | PostgreSQL host and port, e.g. `syllogi-postgres:5432`.                                           |
 | `DATABASE_USERNAME` | PostgreSQL username.                                                                              |
 | `DATABASE_PASSWORD` | PostgreSQL password.                                                                              |

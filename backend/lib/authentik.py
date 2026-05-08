@@ -1,23 +1,24 @@
-import os
 import requests
 
 from typing import Any
 
 from fastapi import HTTPException, status
 
+from lib.env import get_environment_variable
+
 
 def _get_authentik_config() -> dict:
     """Validate that Authentik env vars are set and return them."""
 
-    AUTHENTIK_CLIENT_ID = os.getenv("AUTHENTIK_CLIENT_ID", "")
-    AUTHENTIK_SECRET = os.getenv("AUTHENTIK_SECRET", "")
-    AUTHENTIK_ISSUER = os.getenv("AUTHENTIK_ISSUER", "").rstrip("/")
+    authentik_client_id = get_environment_variable("AUTHENTIK_CLIENT_ID")
+    authentik_secret = get_environment_variable("AUTHENTIK_SECRET")
+    authentik_issuer = get_environment_variable("AUTHENTIK_ISSUER")
 
-    auth_url = AUTHENTIK_ISSUER.split("application")[0].rstrip("/")
+    auth_url = authentik_issuer.split("application")[0].rstrip("/")
     return {
-        "client_id": AUTHENTIK_CLIENT_ID,
-        "client_secret": AUTHENTIK_SECRET,
-        "issuer": AUTHENTIK_ISSUER,
+        "client_id": authentik_client_id,
+        "client_secret": authentik_secret,
+        "issuer": authentik_issuer,
         "authorize_url": f"{auth_url}/application/o/authorize/",
         "token_url": f"{auth_url}/application/o/token/",
         "userinfo_url": f"{auth_url}/application/o/userinfo/",

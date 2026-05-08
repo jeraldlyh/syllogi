@@ -1,5 +1,4 @@
 import logging
-import os
 from datetime import datetime, timedelta, timezone
 from typing import Annotated
 
@@ -15,10 +14,11 @@ from db.user import (
     create_user,
     update_user,
 )
+from lib.env import get_environment_variable
 
 logger = logging.getLogger(__name__)
 
-SECRET_KEY = os.getenv("SECRET_KEY", "default_secret_key")
+SECRET_KEY = get_environment_variable("SECRET_KEY")
 ALGORITHM = "HS256"
 ACCESS_TOKEN_EXPIRE_MINUTES = 30
 HASH = PasswordHash.recommended()
