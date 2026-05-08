@@ -46,7 +46,7 @@ const updatePlaylist = async (playlist: Playlist): Promise<string> => {
   const response = await api<{ id: string }>({
     method: "PUT",
     service: "playlist",
-    path: `/${playlist.id}`,
+    path: playlist.id,
     body: playlist,
   });
 
@@ -60,7 +60,7 @@ const deletePlaylist = async (playlistId: string): Promise<void> => {
   const response = await api({
     method: "DELETE",
     service: "playlist",
-    path: `/${playlistId}`,
+    path: playlistId,
   });
 
   if (response.statusCode !== 200 || !response.data) {
