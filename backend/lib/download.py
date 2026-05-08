@@ -2,7 +2,6 @@ import asyncio
 import functools
 import re
 import unicodedata
-import string
 import glob
 import logging
 from pathlib import Path
@@ -17,12 +16,11 @@ logger = logging.getLogger(__name__)
 def _sanitize_filename(name: str) -> str:
     """Sanitize a filename by removing or replacing characters that are not allowed in file names."""
 
-    valid_filename_chars = "-_.() %s%s" % (string.ascii_letters, string.digits)
-    cleaned_filename = (
-        unicodedata.normalize("NFKD", name).encode("ASCII", "ignore").decode()
-    )
+    illegal_chars = '\\/:*?"<>|'
     return "".join(
-        char for char in cleaned_filename if char in valid_filename_chars
+        char
+        for char in unicodedata.normalize("NFKD", name)
+        if char not in illegal_chars
     ).strip()
 
 
@@ -130,6 +128,7 @@ async def download_track(
     search_query += f" {track_name}"
 
     output_path = _get_download_path(artist_name, track_name, album_name)
+    logger.info(f"output_path: {output_path}")
     output_template = output_path + ".%(ext)s"
 
     try:
