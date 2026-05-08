@@ -9,7 +9,7 @@ from lib.common import JellyfinPlaylist, JellyfinTrack, JellyfinUser
 
 JELLYFIN_API_KEY = os.getenv("JELLYFIN_API_KEY")
 JELLYFIN_BASE_URL = os.getenv("JELLYFIN_BASE_URL")
-YOUTUBE_LIBRARY_NAME = os.getenv("YOUTUBE_LIBRARY_NAME", "Youtube")
+DOWNLOAD_LIBRARY_NAME = os.getenv("DOWNLOAD_LIBRARY_NAME", "Downloads")
 
 logger = logging.getLogger(__name__)
 
@@ -222,14 +222,14 @@ def rescan_jellyfin_library() -> None:
         (
             folder
             for folder in media_folders_response.get("Items", [])
-            if folder.get("Name") == YOUTUBE_LIBRARY_NAME
+            if folder.get("Name") == DOWNLOAD_LIBRARY_NAME
         ),
         None,
     )
 
     if download_folder is None:
         logger.warning(
-            f"Could not find media folder with name '{YOUTUBE_LIBRARY_NAME}' to rescan"
+            f"Could not find media folder with name '{DOWNLOAD_LIBRARY_NAME}' to rescan"
         )
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,

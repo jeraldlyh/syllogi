@@ -17,7 +17,8 @@ services:
       - DATABASE_PASSWORD=syllogi
       - DATABASE_NAME=syllogi
       - DATABASE_URL=syllogi-postgres:5432
-      - YOUTUBE_DOWNLOAD_DIR=/downloads
+      - DOWNLOAD_DIR=/downloads
+      - DOWNLOAD_LIBRARY_NAME=Downloads
       - NEXT_PUBLIC_URL=http://localhost:8000
       - ENVIRONMENT=development
     env_file:
