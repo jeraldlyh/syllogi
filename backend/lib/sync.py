@@ -35,6 +35,7 @@ from lib.jellyfin import (
     get_jellyfin_playlist_songs,
     get_jellyfin_playlists,
     get_jellyfin_user_by_name,
+    is_jellyfin_scanning_library,
     rescan_jellyfin_library,
     update_jellyfin_playlist_image,
 )
@@ -218,12 +219,11 @@ async def sync_playlist_task(
                     rescan_jellyfin_library()
 
                     # NOTE: This requires a full library scan which takes a long time depending on the size of library.
-                    # while is_jellyfin_scanning_library():
-                    #     logger.info(
-                    #         "Waiting for Jellyfin to finish scanning library..."
-                    #     )
-                    #     time.sleep(15)
-                    time.sleep(15)
+                    while is_jellyfin_scanning_library():
+                        logger.info(
+                            "Waiting for Jellyfin to finish scanning library..."
+                        )
+                        time.sleep(15)
 
                     newly_found_tracks, still_missing_tracks_after_download = (
                         _resolve_songs(downloaded_tracks)

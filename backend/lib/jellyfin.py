@@ -251,9 +251,12 @@ def rescan_jellyfin_library() -> None:
 
 
 def is_jellyfin_scanning_library() -> bool:
-    response = _jellyfin("/ScheduledTasks")
+    response = _jellyfin("/Library/VirtualFolders")
 
-    for task in response:
-        if task.get("Name") == "Scan Media Library" and task.get("State") != "Idle":
+    for folder in response:
+        if (
+            folder.get("Name") == DOWNLOAD_LIBRARY_NAME
+            and folder.get("RefreshStatus", "") == "Active"
+        ):
             return True
     return False
