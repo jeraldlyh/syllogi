@@ -90,7 +90,7 @@ class SlskdSearchFile:
 
         return (
             normalize(track_name) in normalized_filename
-            and normalize(artist_name) in normalized_filename
+            or normalize(artist_name) in normalized_filename
         )
 
     def to_dict(self) -> dict[str, str | int | bool | None]:
