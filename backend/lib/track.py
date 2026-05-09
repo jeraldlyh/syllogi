@@ -9,7 +9,7 @@ from lib.jellyfin import search_jellyfin_track
 from lib.utils import get_clean_name
 
 
-def _normalize(text: str) -> str:
+def normalize(text: str) -> str:
     """Normalize a name for comparison."""
 
     # text = re.compile(
@@ -23,7 +23,7 @@ def _normalize(text: str) -> str:
 def _similarity_score(a: str, b: str) -> float:
     """Compare two strings using both raw and normalized forms."""
 
-    norm_a, norm_b = _normalize(a), _normalize(b)
+    norm_a, norm_b = normalize(a), normalize(b)
 
     if norm_a == norm_b:
         return 1.0
