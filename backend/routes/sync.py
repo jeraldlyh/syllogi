@@ -14,8 +14,8 @@ from lib.spotify import (
     get_spotify_playlist_songs,
 )
 from lib.youtube import (
-    _get_youtube_playlist,
-    _get_youtube_playlist_songs,
+    get_youtube_playlist,
+    get_youtube_playlist_songs,
 )
 from lib.utils import get_now
 
@@ -74,8 +74,8 @@ def sync_playlist(item: Playlist, background_tasks: BackgroundTasks) -> dict[str
             songs = get_spotify_playlist_songs(playlist_id=item.playlist_id)
             external_playlist = get_spotify_playlist(playlist_id=item.playlist_id)
         case PlaylistProvider.youtube:
-            songs = _get_youtube_playlist_songs(playlist_id=item.playlist_id)
-            external_playlist = _get_youtube_playlist(playlist_id=item.playlist_id)
+            songs = get_youtube_playlist_songs(playlist_id=item.playlist_id)
+            external_playlist = get_youtube_playlist(playlist_id=item.playlist_id)
 
     playlist_id = internal_playlist.playlist_id
     username = item.username

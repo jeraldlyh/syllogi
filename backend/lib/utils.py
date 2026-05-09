@@ -1,5 +1,8 @@
+import glob
 import json
+import logging
 import os
+from pathlib import Path
 import re
 import unicodedata
 from datetime import datetime
@@ -7,8 +10,11 @@ from time import gmtime, strftime
 
 import pytz
 
-# DEBUG_DIRECTORY = Path(__file__).resolve().parent.parent / "debug"
+from lib.env import get_environment_variable
+
 DEBUG_DIRECTORY = "debug"
+
+logger = logging.getLogger(__name__)
 
 
 def get_clean_name(name: str) -> str:
@@ -68,3 +74,36 @@ def parse_cron_expression(cron_expression: str) -> dict:
         "month": parts[3],
         "day_of_week": parts[4],
     }
+
+
+def sanitize_filename(name: str) -> str:
+    """Sanitize a filename by removing or replacing characters that are not allowed in file names."""
+
+    illegal_chars = '\\/:*?"<>|'
+    return "".join(
+        char
+        for char in unicodedata.normalize("NFKD", name)
+        if char not in illegal_chars
+    ).strip()
+
+
+def get_download_path(artist_name: str, track_name: str, album_name: str = "") -> str:
+    """Get the directory path where a song should be downloaded based on artist and album."""
+    sanitized_artist_name = sanitize_filename(artist_name)
+    sanitized_track_name = sanitize_filename(track_name)
+
+    download_dir = get_environment_variable("DOWNLOAD_DIR")
+
+    if album_name:
+        sanitized_album_name = sanitize_filename(album_name)
+        return f"{Path(download_dir)}/{sanitized_artist_name}/{sanitized_album_name}/{sanitized_track_name}"
+    return (
+        f"{Path(download_dir)}/{sanitized_artist_name}/Singles/{sanitized_track_name}"
+    )
+
+
+def is_track_exists(artist_name: str, track_name: str, album_name: str = "") -> bool:
+    download_path = get_download_path(artist_name, track_name, album_name)
+    existing_paths = glob.glob(f"{glob.escape(download_path)}.*")
+
+    return bool(existing_paths)

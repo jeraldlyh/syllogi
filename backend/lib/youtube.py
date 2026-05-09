@@ -4,16 +4,14 @@ import asyncio
 import functools
 import glob
 import logging
-from pathlib import Path
 import re
 from typing import TYPE_CHECKING, Any
-import unicodedata
 
 import yt_dlp
 
 from lib.models.common import ExternalPlaylist, ExternalTrack
 from lib.env import get_environment_variable
-from lib.utils import dump_results
+from lib.utils import dump_results, get_download_path
 
 if TYPE_CHECKING:
     from yt_dlp import _Params
@@ -23,7 +21,7 @@ logger = logging.getLogger(__name__)
 IS_DEVELOPMENT = get_environment_variable("IS_DEVELOPMENT")
 
 
-def _run_ytdlp(url: str, opts: _Params | None = None, *, download: bool = False) -> Any:
+def _ytdlp(url: str, opts: _Params | None = None, *, download: bool = False) -> Any:
     """Run yt-dlp with the given URL and options."""
 
     default_opts: _Params = {
@@ -49,11 +47,11 @@ def _run_ytdlp(url: str, opts: _Params | None = None, *, download: bool = False)
         return result
 
 
-def _get_youtube_playlist(playlist_id: str) -> ExternalPlaylist:
+def get_youtube_playlist(playlist_id: str) -> ExternalPlaylist:
     """Fetch YouTube playlist metadata."""
 
     url = f"https://www.youtube.com/playlist?list={playlist_id}"
-    playlist = _run_ytdlp(
+    playlist = _ytdlp(
         url,
         {
             "extract_flat": True,
@@ -73,10 +71,10 @@ def _get_youtube_playlist(playlist_id: str) -> ExternalPlaylist:
     )
 
 
-def _get_youtube_playlist_songs(playlist_id: str) -> list[ExternalTrack]:
+def get_youtube_playlist_songs(playlist_id: str) -> list[ExternalTrack]:
     """Fetch full metadata for every track in a YouTube playlist."""
     url = f"https://www.youtube.com/playlist?list={playlist_id}"
-    playlist = _run_ytdlp(
+    playlist = _ytdlp(
         url,
         {
             "extract_flat": True,
@@ -112,32 +110,6 @@ def _get_youtube_playlist_songs(playlist_id: str) -> list[ExternalTrack]:
         songs.append(song)
     logger.info(f"Total songs fetched from YouTube playlist: {len(songs)}")
     return songs
-
-
-def _sanitize_filename(name: str) -> str:
-    """Sanitize a filename by removing or replacing characters that are not allowed in file names."""
-
-    illegal_chars = '\\/:*?"<>|'
-    return "".join(
-        char
-        for char in unicodedata.normalize("NFKD", name)
-        if char not in illegal_chars
-    ).strip()
-
-
-def _get_download_path(artist_name: str, track_name: str, album_name: str = "") -> str:
-    """Get the directory path where a song should be downloaded based on artist and album."""
-    sanitized_artist_name = _sanitize_filename(artist_name)
-    sanitized_track_name = _sanitize_filename(track_name)
-
-    download_dir = get_environment_variable("DOWNLOAD_DIR")
-
-    if album_name:
-        sanitized_album_name = _sanitize_filename(album_name)
-        return f"{Path(download_dir)}/{sanitized_artist_name}/{sanitized_album_name}/{sanitized_track_name}"
-    return (
-        f"{Path(download_dir)}/{sanitized_artist_name}/Singles/{sanitized_track_name}"
-    )
 
 
 def _score_entry(entry: dict) -> float:
@@ -213,27 +185,17 @@ async def download_track_youtube(
     Returns True if the download succeeded, False otherwise.
     """
 
-    download_path = _get_download_path(artist_name, track_name, album_name)
-    existing_paths = glob.glob(f"{glob.escape(download_path)}.*")
-
-    if existing_paths:
-        logger.info(
-            f"Skipping download for '{artist_name} - {album_name}: {track_name}' as it already exists."
-        )
-        logger.info(f"Existing file(s) found: {', '.join(existing_paths)}")
-        return True
-
     search_query = f"{artist_name}"
     if album_name:
         search_query += f" {album_name}"
     search_query += f" {track_name}"
 
-    output_path = _get_download_path(artist_name, track_name, album_name)
+    output_path = get_download_path(artist_name, track_name, album_name)
     logger.info(f"output_path: {output_path}")
     output_template = output_path + ".%(ext)s"
 
     try:
-        search_results = _run_ytdlp(
+        search_results = _ytdlp(
             url=f"ytsearch5:{search_query}",
             opts={
                 "quiet": True,
@@ -253,7 +215,7 @@ async def download_track_youtube(
         await loop.run_in_executor(
             None,
             functools.partial(
-                _run_ytdlp,
+                _ytdlp,
                 url=best_entry_url,
                 opts={
                     "format": "bestaudio/best",

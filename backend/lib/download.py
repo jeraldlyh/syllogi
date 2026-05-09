@@ -3,6 +3,7 @@ import logging
 from lib.models.common import ExternalTrack
 from lib.env import get_environment_variable
 from lib.slskd import download_track_slskd
+from lib.utils import is_track_exists
 from lib.youtube import download_track_youtube
 
 logger = logging.getLogger(__name__)
@@ -33,6 +34,12 @@ async def download_missing_tracks(
         album_name = song.album_name
         duration = song.duration
         formatted_name = f"{artist_name} - {album_name}: {track_name}"
+
+        if is_track_exists(
+            artist_name=artist_name, track_name=track_name, album_name=album_name
+        ):
+            logger.info(f"{formatted_name}: ALREADY EXISTS")
+            continue
 
         is_download_success = False
 

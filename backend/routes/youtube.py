@@ -5,8 +5,8 @@ from fastapi import APIRouter, Path
 from pydantic import BaseModel
 
 from lib.youtube import (
-    _get_youtube_playlist,
-    _get_youtube_playlist_songs,
+    get_youtube_playlist,
+    get_youtube_playlist_songs,
     download_track_youtube,
 )
 
@@ -45,7 +45,7 @@ class DownloadYouTubeTrackRequest(BaseModel):
 def get_youtube_playlist(
     id: Annotated[str, Path(min_length=1, description="YouTube Playlist ID")],
 ) -> dict[str, Any]:
-    playlist = _get_youtube_playlist(id)
+    playlist = get_youtube_playlist(id)
 
     return playlist.to_dict()
 
@@ -79,7 +79,7 @@ def get_youtube_playlist(
 def get_youtube_playlist_songs(
     id: Annotated[str, Path(min_length=1, description="YouTube Playlist ID")],
 ) -> list[dict[str, Any]]:
-    songs = _get_youtube_playlist_songs(playlist_id=id)
+    songs = get_youtube_playlist_songs(playlist_id=id)
 
     return [song.to_dict() for song in songs]
 

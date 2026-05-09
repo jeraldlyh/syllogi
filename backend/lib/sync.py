@@ -43,7 +43,7 @@ from lib.notification import send_discord_notification
 from lib.spotify import get_spotify_playlist, get_spotify_playlist_songs
 from lib.track import find_track
 from lib.utils import convert_seconds_to_readable_time, get_now
-from lib.youtube import _get_youtube_playlist, _get_youtube_playlist_songs
+from lib.youtube import get_youtube_playlist, get_youtube_playlist_songs
 
 logger = logging.getLogger(__name__)
 
@@ -430,8 +430,8 @@ async def sync_playlist(playlist: Playlist, session: SessionDep) -> dict[str, st
             songs = get_spotify_playlist_songs(playlist_id=playlist_id)
             external_playlist = get_spotify_playlist(playlist_id=playlist_id)
         case PlaylistProvider.youtube:
-            songs = _get_youtube_playlist_songs(playlist_id=playlist_id)
-            external_playlist = _get_youtube_playlist(playlist_id=playlist_id)
+            songs = get_youtube_playlist_songs(playlist_id=playlist_id)
+            external_playlist = get_youtube_playlist(playlist_id=playlist_id)
 
     if not external_playlist:
         raise HTTPException(
