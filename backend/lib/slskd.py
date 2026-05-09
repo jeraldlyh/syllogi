@@ -23,7 +23,13 @@ SEARCH_MAX_RETRIES = 18
 DOWNLOAD_POLL_INTERVAL = 15
 DOWNLOAD_MAX_RETRIES = 40
 
-TERMINAL_STATES = {"Completed", "Cancelled", "TimedOut", "Errored", "Rejected"}
+TERMINAL_STATES = {
+    "Completed, Succeeded",
+    "Completed, Cancelled",
+    "Completed, TimedOut",
+    "Completed, Errored",
+    "Completed, Rejected",
+}
 
 
 def _slskd(
@@ -38,7 +44,9 @@ def _slskd(
 
     headers = {"X-API-Key": api_key}
 
-    response = requests.request(method, url, headers=headers, json=json, timeout=30)
+    response = requests.request(
+        method, url, headers=headers, json=json, timeout=30, verify=False
+    )
     response.raise_for_status()
 
     if response.content:
@@ -184,6 +192,14 @@ def _get_downloads() -> list[SlskdDownloadResult]:
                 directories=slskd_directories,
             )
         )
+    for download in downloads:
+        print(f"Download for user {download.username}:")
+        for directory in download.directories:
+            print(f"  Directory: {directory.directory}")
+            for file in directory.files:
+                print(
+                    f"    File: {file.filename}, State: {file.state}, Size: {file.size}"
+                )
     return downloads
 
 
@@ -198,7 +214,7 @@ def _is_download_completed(username: str, filename: str) -> bool:
             downloaded_file = _get_downloaded_file(username, filename)
 
             if downloaded_file:
-                if downloaded_file.state == "Completed":
+                if downloaded_file.is_downloaded():
                     return True
 
                 if downloaded_file.state in TERMINAL_STATES:
@@ -294,20 +310,17 @@ async def download_track_slskd(
     search_id: str | None = None
     downloaded_file: SlskdDownloadFile | None = None
 
-    search_text = f"{artist_name} - {track_name}"
-    track_label = (
-        f"{artist_name} - {album_name}: {track_name}"
-        if album_name
-        else f"{artist_name} - {track_name}"
+    search_query = (
+        f"{album_name} {track_name}" if album_name else f"{artist_name} {track_name}"
     )
 
     try:
-        search_id = _search_track(search_text)
+        search_id = _search_track(search_text=search_query)
 
         if not _is_search_completed(search_id=search_id):
             return False
 
-        results = _get_search_results(search_id)
+        results = _get_search_results(search_id=search_id)
         best_entry = _get_best_entry(
             entries=results,
             artist_name=artist_name,
@@ -316,7 +329,7 @@ async def download_track_slskd(
         )
 
         if not best_entry:
-            logger.warning(f"No suitable file found for: {track_label}")
+            logger.warning(f"No suitable file found for: {search_query}")
             return False
 
         if not _queue_download(
@@ -338,7 +351,7 @@ async def download_track_slskd(
 
         return is_download_completed
     except Exception as e:
-        logger.error(f"Failed to download '{track_label}': {e}")
+        logger.error(f"Failed to download '{search_query}': {e}")
         return False
     finally:
         if search_id:

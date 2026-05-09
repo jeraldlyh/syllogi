@@ -207,6 +207,9 @@ class SlskdDownloadFile:
         self.percent_complete = percent_complete
         self.remaining_time = remaining_time
 
+    def is_downloaded(self) -> bool:
+        return self.state == "Completed, Succeeded" or self.percent_complete == 100
+
     def to_dict(self) -> dict[str, str | int | float]:
         return {
             "id": self.id,
