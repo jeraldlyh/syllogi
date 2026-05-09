@@ -195,29 +195,39 @@ def _is_download_completed(username: str, filename: str) -> bool:
 
     for _ in range(1, DOWNLOAD_MAX_RETRIES + 1):
         try:
-            downloads = _get_downloads()
+            downloaded_file = _get_downloaded_file(username, filename)
 
-            for download in downloads:
-                if download.username != username:
-                    continue
+            if downloaded_file:
+                if downloaded_file.state == "Completed":
+                    return True
 
-                for directory in download.directories:
-                    for file in directory.files:
-                        if file.filename != filename:
-                            continue
-
-                        state = file.state
-
-                        if state == "Completed":
-                            return True
-
-                        if state in TERMINAL_STATES:
-                            return False
+                if downloaded_file.state in TERMINAL_STATES:
+                    return False
         except Exception as e:
             logger.warning(f"Error polling download status: {e}")
 
         time.sleep(DOWNLOAD_POLL_INTERVAL)
     return False
+
+
+def _get_downloaded_file(username: str, filename: str) -> SlskdDownloadFile | None:
+    """Fetch the downloaded file info from slskd after completion."""
+
+    try:
+        downloads = _get_downloads()
+
+        for download in downloads:
+            if download.username != username:
+                continue
+
+            for directory in download.directories:
+                for file in directory.files:
+                    if file.filename == filename:
+                        return file
+    except Exception as e:
+        logger.warning(f"Error fetching downloaded file info: {e}")
+
+    return None
 
 
 def _get_best_entry(
@@ -257,6 +267,19 @@ def _delete_search(search_id: str) -> None:
         logger.debug(f"Failed to delete search {search_id}: {e}")
 
 
+def _delete_download(user_id: str, file_id: str) -> None:
+    """Delete completed/failed downloads from slskd."""
+    try:
+        _slskd(
+            f"/api/v0/transfers/downloads/{user_id}/{file_id}?remove=true",
+            method="DELETE",
+        )
+    except Exception as e:
+        logger.debug(
+            f"Failed to delete download for user {user_id} and file {file_id}: {e}"
+        )
+
+
 async def download_track_slskd(
     artist_name: str,
     track_name: str,
@@ -269,6 +292,8 @@ async def download_track_slskd(
     """
 
     search_id: str | None = None
+    downloaded_file: SlskdDownloadFile | None = None
+
     search_text = f"{artist_name} - {track_name}"
     track_label = (
         f"{artist_name} - {album_name}: {track_name}"
@@ -302,10 +327,22 @@ async def download_track_slskd(
             return False
 
         # TODO: move file after download completes instead of relying on slskd's download directory
-        return _is_download_completed(best_entry.username, best_entry.file.filename)
+        is_download_completed = _is_download_completed(
+            best_entry.username, best_entry.file.filename
+        )
+
+        if is_download_completed:
+            downloaded_file = _get_downloaded_file(
+                best_entry.username, best_entry.file.filename
+            )
+
+        return is_download_completed
     except Exception as e:
         logger.error(f"Failed to download '{track_label}': {e}")
         return False
     finally:
         if search_id:
             _delete_search(search_id)
+
+        if downloaded_file:
+            _delete_download(downloaded_file.username, downloaded_file.id)
