@@ -22,6 +22,8 @@ def get_environment_variables() -> dict[str, str | bool]:
         "AUTHENTIK_SECRET": os.getenv("AUTHENTIK_SECRET", ""),
         "AUTHENTIK_ISSUER": os.getenv("AUTHENTIK_ISSUER", "").rstrip("/"),
         "IS_DEVELOPMENT": os.getenv("ENVIRONMENT", "production") == "development",
+        "SLSKD_URL": os.getenv("SLSKD_URL", ""),
+        "SLSKD_API_KEY": os.getenv("SLSKD_API_KEY", ""),
     }
 
 
