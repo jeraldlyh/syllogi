@@ -2,7 +2,7 @@ from difflib import SequenceMatcher
 
 from fastapi import HTTPException, status
 
-from lib.common import (
+from lib.models.common import (
     JellyfinTrack,
 )
 from lib.jellyfin import search_jellyfin_track

@@ -19,7 +19,7 @@ from db.recommendation_session import (
     update_recommendation_session,
 )
 from db.session import SessionDep, get_isolated_session
-from lib.common import (
+from lib.models.lastfm import (
     LastFMSimilarTrack,
 )
 from lib.lastfm import (

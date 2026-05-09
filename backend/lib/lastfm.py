@@ -3,7 +3,7 @@ from typing import Any
 
 import requests
 
-from lib.common import LastFMRecentTrack, LastFMSimilarTrack, LastFMTopTrack
+from lib.models.lastfm import LastFMRecentTrack, LastFMSimilarTrack, LastFMTopTrack
 from lib.env import get_environment_variable
 
 

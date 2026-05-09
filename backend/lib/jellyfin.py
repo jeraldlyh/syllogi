@@ -4,7 +4,7 @@ from typing import Any
 import requests
 from fastapi import HTTPException, status
 
-from lib.common import JellyfinPlaylist, JellyfinTrack, JellyfinUser
+from lib.models.jellyfin import JellyfinPlaylist, JellyfinTrack, JellyfinUser
 from lib.env import get_environment_variable
 
 

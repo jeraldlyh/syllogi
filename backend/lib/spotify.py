@@ -3,7 +3,7 @@ import sys
 from pathlib import Path
 
 
-from lib.common import ExternalPlaylist, ExternalTrack
+from lib.models.common import ExternalPlaylist, ExternalTrack
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 SPOTAPI_DIR = BASE_DIR / "SpotAPI"

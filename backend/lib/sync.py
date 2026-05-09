@@ -19,13 +19,13 @@ from db.sync_session import (
     get_sync_session_by_id,
     update_sync_session,
 )
-from lib.common import (
+from lib.models.common import (
     ExternalPlaylist,
-    JellyfinTrack,
     PlaylistDiff,
     ResolvedTrack,
     ExternalTrack,
 )
+from lib.models.jellyfin import JellyfinTrack
 from lib.download import download_missing_tracks
 from lib.env import get_environment_variable
 from lib.jellyfin import (
@@ -432,6 +432,12 @@ async def sync_playlist(playlist: Playlist, session: SessionDep) -> dict[str, st
         case PlaylistProvider.youtube:
             songs = _get_youtube_playlist_songs(playlist_id=playlist_id)
             external_playlist = _get_youtube_playlist(playlist_id=playlist_id)
+
+    if not external_playlist:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Unable to find external playlist with ID: {playlist_id}",
+        )
 
     await sync_playlist_task(
         internal_playlist_id=internal_playlist.id,

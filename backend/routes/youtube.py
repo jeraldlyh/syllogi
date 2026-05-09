@@ -4,8 +4,11 @@ from typing import Annotated, Any
 from fastapi import APIRouter, Path
 from pydantic import BaseModel
 
-from lib.download import download_track
-from lib.youtube import _get_youtube_playlist, _get_youtube_playlist_songs
+from lib.youtube import (
+    _get_youtube_playlist,
+    _get_youtube_playlist_songs,
+    download_track_youtube,
+)
 
 router = APIRouter()
 logger = logging.getLogger(__name__)
@@ -97,7 +100,7 @@ def get_youtube_playlist_songs(
     },
 )
 async def _download_track(item: DownloadYouTubeTrackRequest) -> dict[str, bool]:
-    is_downloaded = await download_track(
+    is_downloaded = await download_track_youtube(
         artist_name=item.artist_name,
         track_name=item.track_name,
     )

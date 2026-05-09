@@ -11,7 +11,7 @@ import unicodedata
 
 import yt_dlp
 
-from lib.common import ExternalPlaylist, ExternalTrack
+from lib.models.common import ExternalPlaylist, ExternalTrack
 from lib.env import get_environment_variable
 from lib.utils import dump_results
 

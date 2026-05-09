@@ -1,6 +1,6 @@
 import logging
 
-from lib.common import ExternalTrack
+from lib.models.common import ExternalTrack
 from lib.env import get_environment_variable
 from lib.slskd import download_track_slskd
 from lib.youtube import download_track_youtube
