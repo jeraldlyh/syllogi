@@ -1,5 +1,5 @@
+import asyncio
 import logging
-import time
 import uuid
 
 from fastapi import HTTPException, status
@@ -230,7 +230,7 @@ async def sync_playlist_task(
                         logger.info(
                             "Waiting for Jellyfin to finish scanning library..."
                         )
-                        time.sleep(15)
+                        await asyncio.sleep(15)
 
                     newly_found_tracks, still_missing_tracks_after_download = (
                         _resolve_songs(downloaded_tracks)
@@ -431,12 +431,6 @@ async def sync_playlist(playlist: Playlist, session: SessionDep) -> dict[str, st
         case PlaylistProvider.youtube:
             songs = get_youtube_playlist_songs(playlist_id=playlist_id)
             external_playlist = get_youtube_playlist(playlist_id=playlist_id)
-
-    if not external_playlist:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail=f"Unable to find external playlist with ID: {playlist_id}",
-        )
 
     await sync_playlist_task(
         internal_playlist_id=internal_playlist.id,
