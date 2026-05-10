@@ -24,6 +24,11 @@ def get_environment_variables() -> dict[str, str | bool]:
         "IS_DEVELOPMENT": os.getenv("ENVIRONMENT", "production") == "development",
         "SLSKD_URL": os.getenv("SLSKD_URL", ""),
         "SLSKD_API_KEY": os.getenv("SLSKD_API_KEY", ""),
+        "MUSICBRAINZ_URL": os.getenv("MUSICBRAINZ_URL", "https://musicbrainz.org/ws/2"),
+        "MUSICBRAINZ_USER_AGENT": os.getenv(
+            "MUSICBRAINZ_USER_AGENT",
+            "syllogi/0.1.0 (https://github.com/jeraldlyh/syllogi)",
+        ),
     }
 
 

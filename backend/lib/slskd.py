@@ -14,14 +14,16 @@ from lib.models.slskd import (
     SlskdTrackCandidate,
 )
 from lib.env import get_environment_variable
+from lib.musicbrainz import get_artist_alias
 
 logger = logging.getLogger(__name__)
 
 SEARCH_POLL_INTERVAL = 10
 SEARCH_MAX_RETRIES = 18
 
-DOWNLOAD_POLL_INTERVAL = 15
-DOWNLOAD_MAX_RETRIES = 40
+DOWNLOAD_RETRY_INTERVAL = 15
+QUEUE_DOWNLOAD_MAX_RETRIES = 3
+CHECK_DOWNLOAD_MAX_RETRIES = 40
 
 TERMINAL_STATES = {
     "Completed, Cancelled",
@@ -38,6 +40,7 @@ async def _slskd(
     json: Any = None,
 ) -> Any:
     """Make a request to the slskd API."""
+
     url = get_environment_variable("SLSKD_URL").rstrip("/") + path
     api_key = get_environment_variable("SLSKD_API_KEY")
 
@@ -54,6 +57,7 @@ async def _slskd(
 
 async def _search_track(search_text: str) -> str:
     """Initiate a search on slskd. Returns the search ID."""
+
     result = await _slskd(
         "/api/v0/searches", method="POST", json={"searchText": search_text}
     )
@@ -63,6 +67,7 @@ async def _search_track(search_text: str) -> str:
 
 async def _search_track_status(search_id: str) -> SlskdSearchStatus:
     """Fetch the status of a search on slskd."""
+
     result = await _slskd(f"/api/v0/searches/{search_id}")
 
     return SlskdSearchStatus(
@@ -82,12 +87,15 @@ async def _search_track_status(search_id: str) -> SlskdSearchStatus:
 async def _is_search_completed(search_id: str) -> bool:
     """Poll until search is complete. Returns True if available files were found."""
 
-    for _ in range(1, SEARCH_MAX_RETRIES + 1):
+    for attempt in range(1, SEARCH_MAX_RETRIES + 1):
         search_status = await _search_track_status(search_id)
 
         if search_status.is_complete:
-            return search_status.has_available_files()
+            return True
 
+        logger.warning(
+            f"[{attempt}/{SEARCH_MAX_RETRIES}] Search {search_id} not complete yet. State: {search_status.state}. "
+        )
         await asyncio.sleep(SEARCH_POLL_INTERVAL)
     return False
 
@@ -127,18 +135,25 @@ async def _queue_download(username: str, filename: str, size: int) -> bool:
     Returns True if the download was successfully queued, False otherwise.
     """
 
-    try:
-        logger.info(f"Queueing download for {filename} from user {username}")
+    for attempt in range(1, QUEUE_DOWNLOAD_MAX_RETRIES + 1):
+        try:
+            logger.info(
+                f"[{attempt}/{QUEUE_DOWNLOAD_MAX_RETRIES}] Queueing download for {filename} from user {username}"
+            )
 
-        await _slskd(
-            f"/api/v0/transfers/downloads/{username}",
-            method="POST",
-            json=[{"filename": filename, "size": size}],
-        )
-        return True
-    except Exception as e:
-        logger.warning(f"Failed to queue download for {filename!r}: {e}")
-        return False
+            await _slskd(
+                f"/api/v0/transfers/downloads/{username}",
+                method="POST",
+                json=[{"filename": filename, "size": size}],
+            )
+            return True
+        except Exception as e:
+            logger.error(
+                f"[{attempt}/{QUEUE_DOWNLOAD_MAX_RETRIES}] Failed to queue download for {filename}: {e}"
+            )
+
+        await asyncio.sleep(DOWNLOAD_RETRY_INTERVAL)
+    return False
 
 
 async def _get_downloads() -> list[SlskdDownloadResult]:
@@ -201,7 +216,7 @@ async def _is_download_completed(username: str, filename: str) -> bool:
     Returns True if the download completed successfully, False otherwise.
     """
 
-    for _ in range(1, DOWNLOAD_MAX_RETRIES + 1):
+    for attempt in range(1, CHECK_DOWNLOAD_MAX_RETRIES + 1):
         try:
             downloaded_file = await _get_downloaded_file(username, filename)
 
@@ -211,10 +226,13 @@ async def _is_download_completed(username: str, filename: str) -> bool:
 
                 if downloaded_file.state in TERMINAL_STATES:
                     return False
+            logger.warning(
+                f"[{attempt}/{SEARCH_MAX_RETRIES}] Download for {filename} from user {username} not completed yet. State: {downloaded_file.state if downloaded_file else 'N/A'}."
+            )
         except Exception as e:
-            logger.warning(f"Error polling download status: {e}")
+            logger.error(f"Failed to poll download status: {e}")
 
-        await asyncio.sleep(DOWNLOAD_POLL_INTERVAL)
+        await asyncio.sleep(DOWNLOAD_RETRY_INTERVAL)
     return False
 
 
@@ -271,6 +289,7 @@ def _get_best_entry(
 
 async def _delete_search(search_id: str) -> None:
     """Delete a completed/failed search from slskd."""
+
     try:
         await _slskd(f"/api/v0/searches/{search_id}", method="DELETE")
     except Exception as e:
@@ -279,13 +298,14 @@ async def _delete_search(search_id: str) -> None:
 
 async def _delete_download(user_id: str, file_id: str) -> None:
     """Delete completed/failed downloads from slskd."""
+
     try:
         await _slskd(
             f"/api/v0/transfers/downloads/{user_id}/{file_id}?remove=true",
             method="DELETE",
         )
     except Exception as e:
-        logger.debug(
+        logger.error(
             f"Failed to delete download for user {user_id} and file {file_id}: {e}"
         )
 
@@ -304,9 +324,7 @@ async def download_track_slskd(
     search_id: str | None = None
     downloaded_file: SlskdDownloadFile | None = None
 
-    search_query = (
-        f"{album_name} {track_name}" if album_name else f"{artist_name} {track_name}"
-    )
+    search_query = f"{artist_name} {track_name}"
 
     try:
         search_id = await _search_track(search_text=search_query)
@@ -315,6 +333,30 @@ async def download_track_slskd(
             return False
 
         results = await _get_search_results(search_id)
+        print(results)
+
+        if not results:
+            await _delete_search(search_id)
+
+            artist_alias = await get_artist_alias(artist_name)
+
+            if not artist_alias:
+                logger.warning(f"No artist alias found for {artist_name}")
+                return False
+
+            search_query = f"{artist_alias} {track_name}"
+
+            logger.info(
+                f"Retrying search with artist alias {artist_alias} for artist {artist_name!r}"
+            )
+
+            search_id = await _search_track(search_text=search_query)
+
+            if not await _is_search_completed(search_id=search_id):
+                return False
+
+            results = await _get_search_results(search_id)
+
         best_entry = _get_best_entry(
             entries=results,
             artist_name=artist_name,
@@ -344,6 +386,7 @@ async def download_track_slskd(
         return is_download_completed
     except Exception as e:
         logger.error(f"Failed to download '{search_query}': {e}")
+
         return False
     finally:
         if search_id:
