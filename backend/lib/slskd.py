@@ -333,14 +333,13 @@ async def download_track_slskd(
             return False
 
         results = await _get_search_results(search_id)
-        print(results)
 
         if not results:
             await _delete_search(search_id)
 
             artist_alias = await get_artist_alias(artist_name)
 
-            if not artist_alias:
+            if not artist_alias or artist_alias.lower() == artist_name.lower():
                 logger.warning(f"No artist alias found for {artist_name}")
                 return False
 
