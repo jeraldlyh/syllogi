@@ -220,11 +220,10 @@ async def sync_playlist_task(
                 downloaded_tracks = newly_downloaded_tracks
 
                 if len(downloaded_tracks) > 0:
-                    logger.info(
-                        f"Downloaded {len(downloaded_tracks)} missing songs via yt-dlp"
-                    )
+                    logger.info(f"Downloaded {len(downloaded_tracks)} missing songs")
 
                     rescan_jellyfin_library()
+                    await asyncio.sleep(3)
 
                     while is_jellyfin_scanning_library():
                         logger.info(
@@ -298,7 +297,10 @@ async def sync_playlist_task(
 
             discord_webhook_url = get_environment_variable("DISCORD_WEBHOOK_URL")
 
-            if len(discord_webhook_url) > 0:
+            if (
+                isinstance(discord_webhook_url, str)
+                and discord_webhook_url.strip() != ""
+            ):
                 send_discord_notification(
                     webhook_url=discord_webhook_url,
                     title="Import Summary",

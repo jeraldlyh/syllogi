@@ -243,7 +243,7 @@ def rescan_jellyfin_library() -> None:
         params={
             "Recursive": "true",
             "ImageRefreshMode": "Default",
-            "MetadataRefreshMode": "Default",
+            "MetadataRefreshMode": "FullRefresh",
             "ReplaceAllImages": "false",
             "RegenerateTrickplay": "false",
             "ReplaceAllMetadata": "false",

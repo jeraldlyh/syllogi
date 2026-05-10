@@ -32,8 +32,9 @@ def get_environment_variables() -> dict[str, str | bool]:
     }
 
 
-def get_environment_variable(name: str, ignore_error=True) -> str:
-    variable = os.getenv(name, "")
+def get_environment_variable(name: str, ignore_error=True) -> str | bool:
+    variables = get_environment_variables()
+    variable = variables.get(name, "")
 
     if not variable and not ignore_error:
         raise ValueError(f"Environment variable '{name}' is required but not set.")
