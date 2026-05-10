@@ -1,8 +1,8 @@
+import asyncio
 import logging
-import time
 from typing import Any
 
-import requests
+import httpx
 
 from lib.models.slskd import (
     SlskdDownloadDirectory,
@@ -24,7 +24,6 @@ DOWNLOAD_POLL_INTERVAL = 15
 DOWNLOAD_MAX_RETRIES = 40
 
 TERMINAL_STATES = {
-    "Completed, Succeeded",
     "Completed, Cancelled",
     "Completed, TimedOut",
     "Completed, Errored",
@@ -32,7 +31,7 @@ TERMINAL_STATES = {
 }
 
 
-def _slskd(
+async def _slskd(
     path: str,
     *,
     method: str = "GET",
@@ -44,26 +43,27 @@ def _slskd(
 
     headers = {"X-API-Key": api_key}
 
-    response = requests.request(
-        method, url, headers=headers, json=json, timeout=30, verify=False
-    )
-    response.raise_for_status()
+    async with httpx.AsyncClient(verify=False, timeout=30) as client:
+        response = await client.request(method, url, headers=headers, json=json)
+        response.raise_for_status()
 
-    if response.content:
-        return response.json()
-    return None
+        if response.content:
+            return response.json()
+        return None
 
 
-def _search_track(search_text: str) -> str:
+async def _search_track(search_text: str) -> str:
     """Initiate a search on slskd. Returns the search ID."""
-    result = _slskd("/api/v0/searches", method="POST", json={"searchText": search_text})
+    result = await _slskd(
+        "/api/v0/searches", method="POST", json={"searchText": search_text}
+    )
 
     return result["id"]
 
 
-def _search_track_status(search_id: str) -> SlskdSearchStatus:
-    """Initiate a search on slskd. Returns the search ID."""
-    result = _slskd(f"/api/v0/searches/{search_id}")
+async def _search_track_status(search_id: str) -> SlskdSearchStatus:
+    """Fetch the status of a search on slskd."""
+    result = await _slskd(f"/api/v0/searches/{search_id}")
 
     return SlskdSearchStatus(
         id=result["id"],
@@ -79,23 +79,23 @@ def _search_track_status(search_id: str) -> SlskdSearchStatus:
     )
 
 
-def _is_search_completed(search_id: str) -> bool:
+async def _is_search_completed(search_id: str) -> bool:
     """Poll until search is complete. Returns True if available files were found."""
 
     for _ in range(1, SEARCH_MAX_RETRIES + 1):
-        search_status = _search_track_status(search_id)
+        search_status = await _search_track_status(search_id)
 
         if search_status.is_complete:
             return search_status.has_available_files()
 
-        time.sleep(SEARCH_POLL_INTERVAL)
+        await asyncio.sleep(SEARCH_POLL_INTERVAL)
     return False
 
 
-def _get_search_results(search_id: str) -> list[SlskdSearchResult]:
+async def _get_search_results(search_id: str) -> list[SlskdSearchResult]:
     """Fetch slskd search results for a completed search."""
 
-    result = _slskd(f"/api/v0/searches/{search_id}/responses")
+    result = await _slskd(f"/api/v0/searches/{search_id}/responses")
 
     return [
         SlskdSearchResult(
@@ -121,7 +121,7 @@ def _get_search_results(search_id: str) -> list[SlskdSearchResult]:
     ]
 
 
-def _queue_download(username: str, filename: str, size: int) -> bool:
+async def _queue_download(username: str, filename: str, size: int) -> bool:
     """Queue a download on slskd.
 
     Returns True if the download was successfully queued, False otherwise.
@@ -130,7 +130,7 @@ def _queue_download(username: str, filename: str, size: int) -> bool:
     try:
         logger.info(f"Queueing download for {filename} from user {username}")
 
-        _slskd(
+        await _slskd(
             f"/api/v0/transfers/downloads/{username}",
             method="POST",
             json=[{"filename": filename, "size": size}],
@@ -141,10 +141,10 @@ def _queue_download(username: str, filename: str, size: int) -> bool:
         return False
 
 
-def _get_downloads() -> list[SlskdDownloadResult]:
+async def _get_downloads() -> list[SlskdDownloadResult]:
     """Fetch current downloads from slskd."""
 
-    result = _slskd("/api/v0/transfers/downloads")
+    result = await _slskd("/api/v0/transfers/downloads")
 
     downloads: list[SlskdDownloadResult] = []
 
@@ -192,18 +192,10 @@ def _get_downloads() -> list[SlskdDownloadResult]:
                 directories=slskd_directories,
             )
         )
-    for download in downloads:
-        print(f"Download for user {download.username}:")
-        for directory in download.directories:
-            print(f"  Directory: {directory.directory}")
-            for file in directory.files:
-                print(
-                    f"    File: {file.filename}, State: {file.state}, Size: {file.size}"
-                )
     return downloads
 
 
-def _is_download_completed(username: str, filename: str) -> bool:
+async def _is_download_completed(username: str, filename: str) -> bool:
     """Poll until the download completes or fails.
 
     Returns True if the download completed successfully, False otherwise.
@@ -211,7 +203,7 @@ def _is_download_completed(username: str, filename: str) -> bool:
 
     for _ in range(1, DOWNLOAD_MAX_RETRIES + 1):
         try:
-            downloaded_file = _get_downloaded_file(username, filename)
+            downloaded_file = await _get_downloaded_file(username, filename)
 
             if downloaded_file:
                 if downloaded_file.is_downloaded():
@@ -222,15 +214,17 @@ def _is_download_completed(username: str, filename: str) -> bool:
         except Exception as e:
             logger.warning(f"Error polling download status: {e}")
 
-        time.sleep(DOWNLOAD_POLL_INTERVAL)
+        await asyncio.sleep(DOWNLOAD_POLL_INTERVAL)
     return False
 
 
-def _get_downloaded_file(username: str, filename: str) -> SlskdDownloadFile | None:
+async def _get_downloaded_file(
+    username: str, filename: str
+) -> SlskdDownloadFile | None:
     """Fetch the downloaded file info from slskd after completion."""
 
     try:
-        downloads = _get_downloads()
+        downloads = await _get_downloads()
 
         for download in downloads:
             if download.username != username:
@@ -275,18 +269,18 @@ def _get_best_entry(
     return None
 
 
-def _delete_search(search_id: str) -> None:
+async def _delete_search(search_id: str) -> None:
     """Delete a completed/failed search from slskd."""
     try:
-        _slskd(f"/api/v0/searches/{search_id}", method="DELETE")
+        await _slskd(f"/api/v0/searches/{search_id}", method="DELETE")
     except Exception as e:
         logger.debug(f"Failed to delete search {search_id}: {e}")
 
 
-def _delete_download(user_id: str, file_id: str) -> None:
+async def _delete_download(user_id: str, file_id: str) -> None:
     """Delete completed/failed downloads from slskd."""
     try:
-        _slskd(
+        await _slskd(
             f"/api/v0/transfers/downloads/{user_id}/{file_id}?remove=true",
             method="DELETE",
         )
@@ -315,12 +309,12 @@ async def download_track_slskd(
     )
 
     try:
-        search_id = _search_track(search_text=search_query)
+        search_id = await _search_track(search_text=search_query)
 
-        if not _is_search_completed(search_id=search_id):
+        if not await _is_search_completed(search_id=search_id):
             return False
 
-        results = _get_search_results(search_id=search_id)
+        results = await _get_search_results(search_id)
         best_entry = _get_best_entry(
             entries=results,
             artist_name=artist_name,
@@ -332,22 +326,20 @@ async def download_track_slskd(
             logger.warning(f"No suitable file found for: {search_query}")
             return False
 
-        if not _queue_download(
+        if not await _queue_download(
             username=best_entry.username,
             filename=best_entry.file.filename,
             size=best_entry.file.size,
         ):
             return False
 
-        # TODO: move file after download completes instead of relying on slskd's download directory
-        is_download_completed = _is_download_completed(
+        is_download_completed = await _is_download_completed(
             best_entry.username, best_entry.file.filename
         )
 
-        if is_download_completed:
-            downloaded_file = _get_downloaded_file(
-                best_entry.username, best_entry.file.filename
-            )
+        downloaded_file = await _get_downloaded_file(
+            best_entry.username, best_entry.file.filename
+        )
 
         return is_download_completed
     except Exception as e:
@@ -355,7 +347,7 @@ async def download_track_slskd(
         return False
     finally:
         if search_id:
-            _delete_search(search_id)
+            await _delete_search(search_id)
 
         if downloaded_file:
-            _delete_download(downloaded_file.username, downloaded_file.id)
+            await _delete_download(downloaded_file.username, downloaded_file.id)

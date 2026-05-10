@@ -226,7 +226,6 @@ async def sync_playlist_task(
 
                     rescan_jellyfin_library()
 
-                    # NOTE: This requires a full library scan which takes a long time depending on the size of library.
                     while is_jellyfin_scanning_library():
                         logger.info(
                             "Waiting for Jellyfin to finish scanning library..."
