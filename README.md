@@ -80,19 +80,23 @@ All configuration is supplied through environment variables on the `syllogi` con
 
 #### Optional
 
-| Name                     | Default                                                | Description                                                                                                                    |
-| ------------------------ | ------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------ |
-| `DOWNLOAD_LIBRARY_NAME`  | `Downloads`                                            | Name of the Jellyfin media folder that contains the yt-dlp downloads.                                                          |
-| `DOWNLOAD_DIR`           | `/downloads`                                           | Filesystem path inside the container where downloaded tracks are written. This path should also match Jellyfin's library path. |
-| `DISCORD_WEBHOOK_URL`    | _(unset)_                                              | Discord webhook URL for sync summary notifications. Leave unset to disable.                                                    |
-| `LOG_LEVEL`              | `INFO`                                                 | Python logging level (`DEBUG`, `INFO`, `WARNING`, `ERROR`).                                                                    |
-| `AUTHENTIK_CLIENT_ID`    | _(unset)_                                              | Authentik OAuth application client ID. Required only if you want SSO via Authentik.                                            |
-| `AUTHENTIK_SECRET`       | _(unset)_                                              | Authentik OAuth application client secret.                                                                                     |
-| `AUTHENTIK_ISSUER`       | _(unset)_                                              | Authentik OIDC issuer URL, e.g. `https://auth.example.com/application/o/syllogi/`.                                             |
-| `TZ`                     | _(unset)_                                              | Container timezone, e.g. `Asia/Singapore`. Affects cron scheduling.                                                            |
-| `ENVIRONMENT`            | `production`                                           | Set to `production` to use the built Next.js output.                                                                           |
-| `MUSICBRAINZ_URL`        | `https://musicbrainz.org/ws/2`                         | Base URL for MusicBrainz API. Can be set to a local instance if you run one.                                                   |
-| `MUSICBRAINZ_USER_AGENT` | `syllogi/0.1.0 (https://github.com/jeraldlyh/syllogi)` | User agent string for MusicBrainz API requests.                                                                                |
+| Name                     | Default                                                | Description                                                                                                                       |
+| ------------------------ | ------------------------------------------------------ | --------------------------------------------------------------------------------------------------------------------------------- |
+| `DOWNLOAD_LIBRARY_NAME`  | `Downloads`                                            | Name of the Jellyfin media folder that contains the yt-dlp downloads.                                                             |
+| `DOWNLOAD_DIR`           | `/downloads`                                           | Filesystem path inside the container where downloaded tracks are written. This path should also match Jellyfin's library path.    |
+| `DISCORD_WEBHOOK_URL`    | _(unset)_                                              | Discord webhook URL for sync summary notifications. Leave unset to disable.                                                       |
+| `LOG_LEVEL`              | `INFO`                                                 | Python logging level (`DEBUG`, `INFO`, `WARNING`, `ERROR`).                                                                       |
+| `AUTHENTIK_CLIENT_ID`    | _(unset)_                                              | Authentik OAuth application client ID. Required only if you want SSO via Authentik.                                               |
+| `AUTHENTIK_SECRET`       | _(unset)_                                              | Authentik OAuth application client secret.                                                                                        |
+| `AUTHENTIK_ISSUER`       | _(unset)_                                              | Authentik OIDC issuer URL, e.g. `https://auth.example.com/application/o/syllogi/`.                                                |
+| `TZ`                     | _(unset)_                                              | Container timezone, e.g. `Asia/Singapore`. Affects cron scheduling.                                                               |
+| `ENVIRONMENT`            | `production`                                           | Set to `production` to use the built Next.js output.                                                                              |
+| `MUSICBRAINZ_URL`        | `https://musicbrainz.org/ws/2`                         | Base URL for MusicBrainz API.                                                                                                     |
+| `MUSICBRAINZ_USER_AGENT` | `syllogi/0.1.0 (https://github.com/jeraldlyh/syllogi)` | User agent string for MusicBrainz API requests.                                                                                   |
+| `LASTFM_API_KEY`         | _(unset)_                                              | Last.fm API key for generating recommendations based on your scrobbles. See [Last.fm API documentation](https://www.last.fm/api). |
+| `LASTFM_URL`             | `https://ws.audioscrobbler.com/2.0`                    | Base URL for Last.fm API.                                                                                                         |
+| `SLSKD_URL`              | _(unset)_                                              | Base URL for SLSKD API.                                                                                                           |
+| `SLSKD_API_KEY`          | _(unset)_                                              | API key for SLSKD for downloading audio when trakcs are missing from library.                                                     |
 
 </details>
 

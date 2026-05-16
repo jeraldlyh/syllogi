@@ -41,13 +41,15 @@ async def _slskd(
 ) -> Any:
     """Make a request to the slskd API."""
 
-    url = get_environment_variable("SLSKD_URL").rstrip("/") + path
-    api_key = get_environment_variable("SLSKD_API_KEY")
+    url = get_environment_variable("SLSKD_URL", ignore_error=False)
+    api_key = get_environment_variable("SLSKD_API_KEY", ignore_error=False)
 
-    headers = {"X-API-Key": api_key}
+    headers = {"X-API-Key": str(api_key)}
 
     async with httpx.AsyncClient(verify=False, timeout=30) as client:
-        response = await client.request(method, url, headers=headers, json=json)
+        response = await client.request(
+            method=method, url=str(url).rstrip("/") + path, headers=headers, json=json
+        )
         response.raise_for_status()
 
         if response.content:
@@ -227,7 +229,7 @@ async def _is_download_completed(username: str, filename: str) -> bool:
                 if downloaded_file.state in TERMINAL_STATES:
                     return False
             logger.warning(
-                f"[{attempt}/{SEARCH_MAX_RETRIES}] Download for {filename} from user {username} not completed yet. State: {downloaded_file.state if downloaded_file else 'N/A'}."
+                f"[{attempt}/{CHECK_DOWNLOAD_MAX_RETRIES}] Download for {filename} from user {username} not completed yet. State: {downloaded_file.state if downloaded_file else 'N/A'}."
             )
         except Exception as e:
             logger.error(f"Failed to poll download status: {e}")

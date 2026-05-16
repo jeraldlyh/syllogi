@@ -6,9 +6,7 @@ def get_environment_variables() -> dict[str, str | bool | None]:
         "JELLYFIN_URL": os.getenv("JELLYFIN_URL", ""),
         "JELLYFIN_API_KEY": os.getenv("JELLYFIN_API_KEY", ""),
         "LASTFM_API_KEY": os.getenv("LASTFM_API_KEY", ""),
-        "LASTFM_BASE_URL": os.getenv(
-            "LASTFM_BASE_URL", "https://ws.audioscrobbler.com/2.0/"
-        ),
+        "LASTFM_URL": os.getenv("LASTFM_URL", "https://ws.audioscrobbler.com/2.0/"),
         "DOWNLOAD_LIBRARY_NAME": os.getenv("DOWNLOAD_LIBRARY_NAME", "Downloads"),
         "DOWNLOAD_DIR": os.getenv("DOWNLOAD_DIR", "/downloads"),
         "AUTH_SECRET_KEY": os.getenv("AUTH_SECRET_KEY"),
