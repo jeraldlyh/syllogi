@@ -77,3 +77,31 @@ class JellyfinPlaylist:
             "id": self.id,
             "name": self.name,
         }
+
+
+@dataclass
+class JellyfinLibrary:
+    """A virtual folder (library) in Jellyfin."""
+
+    def __init__(
+        self,
+        name: str,
+        locations: list[str],
+        collection_type: str,
+        item_id: str,
+        refresh_status: str,
+    ):
+        self.name = name
+        self.locations = locations
+        self.collection_type = collection_type
+        self.item_id = item_id
+        self.refresh_status = refresh_status
+
+    def to_dict(self) -> dict[str, str | list[str]]:
+        return {
+            "name": self.name,
+            "locations": self.locations,
+            "collection_type": self.collection_type,
+            "item_id": self.item_id,
+            "refresh_status": self.refresh_status,
+        }
