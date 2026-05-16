@@ -274,7 +274,7 @@ export const SyncSessionTable = () => {
       <Card>
         <CardHeader className="flex flex-row items-center justify-between">
           <CardTitle className="text-base font-medium text-foreground">
-            Recent Sync Sessions
+            Recent Sessions
           </CardTitle>
           <Button size="sm" onClick={() => fetchSyncSessions()}>
             <RefreshCw className="w-4 h-4" />

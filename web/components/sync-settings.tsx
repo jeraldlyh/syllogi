@@ -89,7 +89,7 @@ const DEFAULT_FORM: FormState = {
   cron_mode: "simple",
 };
 
-export const Playlists = () => {
+export const SyncSettings = () => {
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [form, setForm] = useState<FormState>(DEFAULT_FORM);
@@ -319,7 +319,7 @@ export const Playlists = () => {
       <Card>
         <CardHeader className="flex flex-row items-center justify-between">
           <CardTitle className="text-base font-medium text-foreground">
-            Playlist
+            Settings
           </CardTitle>
           <Button size="sm" onClick={handleAddPlaylist}>
             <Plus className="h-4 w-4" />
