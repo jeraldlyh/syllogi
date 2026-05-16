@@ -34,6 +34,8 @@ def get_environment_variable(name: str, ignore_error=True) -> str | bool:
     variables = get_environment_variables()
     variable = variables.get(name, "")
 
-    if variable is None and not ignore_error:
+    if not ignore_error and (
+        variable is None or (isinstance(variable, str) and variable.strip() == "")
+    ):
         raise ValueError(f"Environment variable '{name}' is required but not set.")
     return variable if variable is not None else ""
