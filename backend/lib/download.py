@@ -25,8 +25,8 @@ async def download_missing_tracks(
 
     logger.info(f"Attempting to download {len(missing_tracks)} missing tracks...")
 
-    downloaded_tracks: list[ExternalTrack] = []
-    still_missing_tracks: list[ExternalTrack] = []
+    found_tracks_after_download: list[ExternalTrack] = []
+    missing_tracks_after_download: list[ExternalTrack] = []
 
     for song in missing_tracks:
         artist_name = song.artist_name
@@ -64,10 +64,10 @@ async def download_missing_tracks(
             )
 
         if is_download_success:
-            downloaded_tracks.append(song)
+            found_tracks_after_download.append(song)
             logger.info(f"{formatted_name}: DOWNLOADED")
         else:
-            still_missing_tracks.append(song)
+            missing_tracks_after_download.append(song)
             logger.warning(f"{formatted_name}: STILL MISSING")
 
-    return downloaded_tracks, still_missing_tracks
+    return found_tracks_after_download, missing_tracks_after_download

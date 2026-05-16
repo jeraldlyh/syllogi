@@ -30,7 +30,7 @@ from lib.lastfm import (
     get_lastfm_similar_tracks,
     get_lastfm_top_tracks,
 )
-from lib.sync import resolve_songs
+from lib.sync import reconcile_after_download, resolve_songs
 from lib.track import find_track
 from lib.utils import get_now
 
@@ -147,45 +147,18 @@ async def generate_recommendations_task(
                         )
                         await asyncio.sleep(15)
 
-                    newly_found_tracks, still_missing_tracks_after_download = (
-                        resolve_songs(downloaded_tracks)
+                    found_tracks_after_download, missing_tracks_after_scan = (
+                        resolve_songs(songs=downloaded_tracks)
                     )
 
-                    missing_tracks_map = {
-                        (track.artist_name, track.track_name): track
-                        for track in missing_tracks
-                    }
-
-                    for resolved_track in newly_found_tracks:
-                        key = (
-                            resolved_track.track.artist_name,
-                            resolved_track.track.track_name,
-                        )
-                        original = missing_tracks_map.get(key)
-
-                        if original:
-                            found_tracks.append(original)
-
-                    updated_missing: list[LastFMSimilarTrack] = []
-
-                    for track in still_missing_tracks:
-                        key = (track.artist_name, track.track_name)
-                        original = missing_tracks_map.get(key)
-
-                        if original:
-                            updated_missing.append(original)
-
-                    for resolved_track in still_missing_tracks_after_download:
-                        key = (
-                            resolved_track.track.artist_name,
-                            resolved_track.track.track_name,
-                        )
-                        original = missing_tracks_map.get(key)
-
-                        if original:
-                            updated_missing.append(original)
-
-                    missing_tracks = updated_missing
+                    found_tracks, missing_tracks = reconcile_after_download(
+                        found_tracks=found_tracks,
+                        found_tracks_after_download=found_tracks_after_download,
+                        missing_tracks=missing_tracks,
+                        missing_tracks_after_download=still_missing_tracks,
+                        missing_tracks_after_scan=missing_tracks_after_scan,
+                        get_key=lambda t: (t.artist_name, t.track_name),
+                    )
 
             finished_at = get_now()
             recommendation_session.status = RecommendationStatus.completed
