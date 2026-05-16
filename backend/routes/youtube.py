@@ -42,7 +42,7 @@ class DownloadYouTubeTrackRequest(BaseModel):
         }
     },
 )
-def get_youtube_playlist(
+def _get_youtube_playlist(
     id: Annotated[str, Path(min_length=1, description="YouTube Playlist ID")],
 ) -> dict[str, Any]:
     playlist = get_youtube_playlist(id)
@@ -76,7 +76,7 @@ def get_youtube_playlist(
         }
     },
 )
-def get_youtube_playlist_songs(
+def _get_youtube_playlist_songs(
     id: Annotated[str, Path(min_length=1, description="YouTube Playlist ID")],
 ) -> list[dict[str, Any]]:
     songs = get_youtube_playlist_songs(playlist_id=id)

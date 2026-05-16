@@ -25,7 +25,7 @@ async def _musicbrainz(
 ) -> Any:
     """Make a request to the MusicBrainz API."""
 
-    url = get_environment_variable("MUSICBRAINZ_URL") + path
+    url = str(get_environment_variable("MUSICBRAINZ_URL")) + path
 
     query_params = {"fmt": "json", **(params or {})}
 

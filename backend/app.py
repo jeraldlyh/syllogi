@@ -139,11 +139,10 @@ def create_app() -> FastAPI:
 
     @app.on_event("startup")
     def startup_event():
-        logger.info("Starting up application and initializing cron jobs")
-        session = get_isolated_session()
-
         ensure_download_library_exists()
 
+        logger.info("Starting up application and initializing cron jobs")
+        session = get_isolated_session()
         playlists = get_playlists(session=session)
 
         for playlist in playlists:
