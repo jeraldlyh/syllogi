@@ -26,11 +26,14 @@ async def _musicbrainz(
     """Make a request to the MusicBrainz API."""
 
     url = str(get_environment_variable("MUSICBRAINZ_URL")) + path
+    headers = {
+        "User-Agent": str(get_environment_variable("MUSICBRAINZ_USER_AGENT")),
+    }
 
     query_params = {"fmt": "json", **(params or {})}
 
     async with httpx.AsyncClient(timeout=10) as client:
-        response = await client.get(url, params=query_params)
+        response = await client.get(url, params=query_params, headers=headers)
         response.raise_for_status()
 
         if response.content:

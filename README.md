@@ -76,21 +76,23 @@ All configuration is supplied through environment variables on the `syllogi` con
 | `DATABASE_PASSWORD` | PostgreSQL password.                                                                              |
 | `DATABASE_NAME`     | PostgreSQL database name.                                                                         |
 | `NEXT_PUBLIC_URL`   | Public URL of the syllogi web UI, e.g. `http://localhost:8000`. Used for OAuth redirect URIs.     |
+| `AUTH_SECRET_KEY`   | Secret used to sign JWT session tokens. Set to a long random string in production.                |
 
 #### Optional
 
-| Name                    | Default         | Description                                                                                                                    |
-| ----------------------- | --------------- | ------------------------------------------------------------------------------------------------------------------------------ |
-| `DOWNLOAD_LIBRARY_NAME` | `Downloads`     | Name of the Jellyfin media folder that contains the yt-dlp downloads.                                                          |
-| `DOWNLOAD_DIR`          | `/downloads`    | Filesystem path inside the container where downloaded tracks are written. This path should also match Jellyfin's library path. |
-| `DISCORD_WEBHOOK_URL`   | _(unset)_       | Discord webhook URL for sync summary notifications. Leave unset to disable.                                                    |
-| `AUTH_SECRET_KEY`       | _(default key)_ | Secret used to sign JWT session tokens. Set to a long random string in production.                                             |
-| `LOG_LEVEL`             | `INFO`          | Python logging level (`DEBUG`, `INFO`, `WARNING`, `ERROR`).                                                                    |
-| `AUTHENTIK_CLIENT_ID`   | _(unset)_       | Authentik OAuth application client ID. Required only if you want SSO via Authentik.                                            |
-| `AUTHENTIK_SECRET`      | _(unset)_       | Authentik OAuth application client secret.                                                                                     |
-| `AUTHENTIK_ISSUER`      | _(unset)_       | Authentik OIDC issuer URL, e.g. `https://auth.example.com/application/o/syllogi/`.                                             |
-| `TZ`                    | _(unset)_       | Container timezone, e.g. `Asia/Singapore`. Affects cron scheduling.                                                            |
-| `ENVIRONMENT`           | `production`    | Set to `production` to use the built Next.js output.                                                                           |
+| Name                     | Default                                                | Description                                                                                                                    |
+| ------------------------ | ------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------ |
+| `DOWNLOAD_LIBRARY_NAME`  | `Downloads`                                            | Name of the Jellyfin media folder that contains the yt-dlp downloads.                                                          |
+| `DOWNLOAD_DIR`           | `/downloads`                                           | Filesystem path inside the container where downloaded tracks are written. This path should also match Jellyfin's library path. |
+| `DISCORD_WEBHOOK_URL`    | _(unset)_                                              | Discord webhook URL for sync summary notifications. Leave unset to disable.                                                    |
+| `LOG_LEVEL`              | `INFO`                                                 | Python logging level (`DEBUG`, `INFO`, `WARNING`, `ERROR`).                                                                    |
+| `AUTHENTIK_CLIENT_ID`    | _(unset)_                                              | Authentik OAuth application client ID. Required only if you want SSO via Authentik.                                            |
+| `AUTHENTIK_SECRET`       | _(unset)_                                              | Authentik OAuth application client secret.                                                                                     |
+| `AUTHENTIK_ISSUER`       | _(unset)_                                              | Authentik OIDC issuer URL, e.g. `https://auth.example.com/application/o/syllogi/`.                                             |
+| `TZ`                     | _(unset)_                                              | Container timezone, e.g. `Asia/Singapore`. Affects cron scheduling.                                                            |
+| `ENVIRONMENT`            | `production`                                           | Set to `production` to use the built Next.js output.                                                                           |
+| `MUSICBRAINZ_URL`        | `https://musicbrainz.org/ws/2`                         | Base URL for MusicBrainz API. Can be set to a local instance if you run one.                                                   |
+| `MUSICBRAINZ_USER_AGENT` | `syllogi/0.1.0 (https://github.com/jeraldlyh/syllogi)` | User agent string for MusicBrainz API requests.                                                                                |
 
 </details>
 
