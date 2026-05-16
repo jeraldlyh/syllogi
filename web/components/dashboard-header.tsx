@@ -1,19 +1,10 @@
 "use client";
 
-import { RefreshCw } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { toast } from "sonner";
 import Image from "next/image";
 import { useSyncSessions } from "@/hooks/useSyncSessions";
 
 export function DashboardHeader() {
   const { data, isError, isLoading } = useSyncSessions();
-
-  const handleOnClick = (): void => {
-    toast.success("Sync started", {
-      description: "Running sync for all enabled playlists...",
-    });
-  };
 
   const formatLastSyncedTime = (date: Date): string => {
     const diff = (new Date().getTime() - date.getTime()) / 1000;
@@ -55,10 +46,6 @@ export function DashboardHeader() {
           </p>
         </div>
       </div>
-      {/* <Button onClick={handleOnClick} className="gap-2"> */}
-      {/*   <RefreshCw className="h-4 w-4" /> */}
-      {/*   Run sync */}
-      {/* </Button> */}
     </header>
   );
 }
