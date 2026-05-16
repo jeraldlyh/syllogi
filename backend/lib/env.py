@@ -1,7 +1,7 @@
 import os
 
 
-def get_environment_variables() -> dict[str, str | bool]:
+def get_environment_variables() -> dict[str, str | bool | None]:
     return {
         "JELLYFIN_URL": os.getenv("JELLYFIN_URL", ""),
         "JELLYFIN_API_KEY": os.getenv("JELLYFIN_API_KEY", ""),
@@ -11,7 +11,7 @@ def get_environment_variables() -> dict[str, str | bool]:
         ),
         "DOWNLOAD_LIBRARY_NAME": os.getenv("DOWNLOAD_LIBRARY_NAME", "Downloads"),
         "DOWNLOAD_DIR": os.getenv("DOWNLOAD_DIR", "/downloads"),
-        "SECRET_KEY": os.getenv("SECRET_KEY", "default_secret_key"),
+        "AUTH_SECRET_KEY": os.getenv("AUTH_SECRET_KEY"),
         "NEXT_PUBLIC_URL": os.getenv("NEXT_PUBLIC_URL", "http://localhost:3000"),
         "DISCORD_WEBHOOK_URL": os.getenv("DISCORD_WEBHOOK_URL", ""),
         "DATABASE_USERNAME": os.getenv("DATABASE_USERNAME", "syllogi"),
@@ -36,6 +36,6 @@ def get_environment_variable(name: str, ignore_error=True) -> str | bool:
     variables = get_environment_variables()
     variable = variables.get(name, "")
 
-    if not variable and not ignore_error:
+    if variable is None and not ignore_error:
         raise ValueError(f"Environment variable '{name}' is required but not set.")
-    return variable
+    return variable if variable is not None else ""

@@ -14,7 +14,8 @@ services:
       - DATABASE_PASSWORD=syllogi
       - DATABASE_NAME=syllogi
       - DATABASE_URL=syllogi-postgres:5432
-      - YOUTUBE_DOWNLOAD_DIR=/downloads
+      - DOWNLOAD_LIBRARY_NAME=Downloads
+      - DOWNLOAD_DIR=/downloads
       - DISCORD_WEBHOOK_URL=
       - JELLYFIN_API_KEY=
       - JELLYFIN_BASE_URL=
@@ -23,6 +24,9 @@ services:
       - AUTHENTIK_SECRET=
       - AUTHENTIK_ISSUER=
       - ENVIRONMENT=production
+      - MUSICBRAINZ_URL=
+      - LASTFM_API_KEY=
+      - AUTH_SECRET_KEY=
     ports:
       - 8000:80
     volumes:

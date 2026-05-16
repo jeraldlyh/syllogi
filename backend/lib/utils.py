@@ -92,7 +92,7 @@ def get_download_path(artist_name: str, track_name: str, album_name: str = "") -
     sanitized_artist_name = sanitize_filename(artist_name)
     sanitized_track_name = sanitize_filename(track_name)
 
-    download_dir = get_environment_variable("DOWNLOAD_DIR")
+    download_dir = str(get_environment_variable("DOWNLOAD_DIR"))
 
     if album_name:
         sanitized_album_name = sanitize_filename(album_name)

@@ -79,18 +79,18 @@ All configuration is supplied through environment variables on the `syllogi` con
 
 #### Optional
 
-| Name                    | Default         | Description                                                                         |
-| ----------------------- | --------------- | ----------------------------------------------------------------------------------- |
-| `DOWNLOAD_LIBRARY_NAME` | `Downloads`     | Name of the Jellyfin media folder that contains the yt-dlp downloads.               |
-| `DOWNLOAD_DIR`          | `/downloads`    | Filesystem path inside the container where downloaded tracks are written.           |
-| `DISCORD_WEBHOOK_URL`   | _(unset)_       | Discord webhook URL for sync summary notifications. Leave unset to disable.         |
-| `SECRET_KEY`            | _(default key)_ | Secret used to sign JWT session tokens. Set to a long random string in production.  |
-| `LOG_LEVEL`             | `INFO`          | Python logging level (`DEBUG`, `INFO`, `WARNING`, `ERROR`).                         |
-| `AUTHENTIK_CLIENT_ID`   | _(unset)_       | Authentik OAuth application client ID. Required only if you want SSO via Authentik. |
-| `AUTHENTIK_SECRET`      | _(unset)_       | Authentik OAuth application client secret.                                          |
-| `AUTHENTIK_ISSUER`      | _(unset)_       | Authentik OIDC issuer URL, e.g. `https://auth.example.com/application/o/syllogi/`.  |
-| `TZ`                    | _(unset)_       | Container timezone, e.g. `Asia/Singapore`. Affects cron scheduling.                 |
-| `ENVIRONMENT`           | `production`    | Set to `production` to use the built Next.js output.                                |
+| Name                    | Default         | Description                                                                                                                    |
+| ----------------------- | --------------- | ------------------------------------------------------------------------------------------------------------------------------ |
+| `DOWNLOAD_LIBRARY_NAME` | `Downloads`     | Name of the Jellyfin media folder that contains the yt-dlp downloads.                                                          |
+| `DOWNLOAD_DIR`          | `/downloads`    | Filesystem path inside the container where downloaded tracks are written. This path should also match Jellyfin's library path. |
+| `DISCORD_WEBHOOK_URL`   | _(unset)_       | Discord webhook URL for sync summary notifications. Leave unset to disable.                                                    |
+| `AUTH_SECRET_KEY`       | _(default key)_ | Secret used to sign JWT session tokens. Set to a long random string in production.                                             |
+| `LOG_LEVEL`             | `INFO`          | Python logging level (`DEBUG`, `INFO`, `WARNING`, `ERROR`).                                                                    |
+| `AUTHENTIK_CLIENT_ID`   | _(unset)_       | Authentik OAuth application client ID. Required only if you want SSO via Authentik.                                            |
+| `AUTHENTIK_SECRET`      | _(unset)_       | Authentik OAuth application client secret.                                                                                     |
+| `AUTHENTIK_ISSUER`      | _(unset)_       | Authentik OIDC issuer URL, e.g. `https://auth.example.com/application/o/syllogi/`.                                             |
+| `TZ`                    | _(unset)_       | Container timezone, e.g. `Asia/Singapore`. Affects cron scheduling.                                                            |
+| `ENVIRONMENT`           | `production`    | Set to `production` to use the built Next.js output.                                                                           |
 
 </details>
 
