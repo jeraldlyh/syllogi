@@ -1,7 +1,6 @@
 import asyncio
 import logging
 import uuid
-from typing import Callable, TypeVar
 
 from fastapi import HTTPException, status
 
@@ -9,8 +8,8 @@ from db.models.playlist import Playlist, PlaylistProvider
 from db.models.sync_session import (
     SyncProvider,
     SyncSession,
-    SyncStatus,
     SyncSessionTrackType,
+    SyncStatus,
 )
 from db.playlist import get_playlist_by_id
 from db.session import SessionDep, get_isolated_session
@@ -20,13 +19,6 @@ from db.sync_session import (
     get_sync_session_by_id,
     update_sync_session,
 )
-from lib.models.common import (
-    ExternalPlaylist,
-    PlaylistDiff,
-    ResolvedTrack,
-    ExternalTrack,
-)
-from lib.models.jellyfin import JellyfinTrack
 from lib.download import download_missing_tracks
 from lib.env import get_environment_variable
 from lib.jellyfin import (
@@ -40,101 +32,20 @@ from lib.jellyfin import (
     rescan_jellyfin_library,
     update_jellyfin_playlist_image,
 )
+from lib.models.common import (
+    ExternalPlaylist,
+    ExternalTrack,
+    PlaylistDiff,
+    ResolvedTrack,
+)
+from lib.models.jellyfin import JellyfinTrack
 from lib.notification import send_discord_notification
 from lib.spotify import get_spotify_playlist, get_spotify_playlist_songs
-from lib.track import find_track
+from lib.track import reconcile_after_download, resolve_tracks
 from lib.utils import convert_seconds_to_readable_time, get_now
 from lib.youtube import get_youtube_playlist, get_youtube_playlist_songs
 
 logger = logging.getLogger(__name__)
-T = TypeVar("T")
-
-
-def resolve_songs(
-    songs: list[ExternalTrack],
-) -> tuple[list[ResolvedTrack], list[ResolvedTrack]]:
-    """Verifies which tracks from the source playlist can be found in the Jellyfin library.
-
-    Returns (found_tracks, missing_tracks).
-    """
-    found: list[ResolvedTrack] = []
-    missing: list[ResolvedTrack] = []
-
-    for song in songs:
-        display_name = f"{song.artist_name} - {song.album_name}: {song.track_name}"
-        track = find_track(
-            artist_name=song.artist_name,
-            track_name=song.track_name,
-            album_name=song.album_name,
-            year=song.year,
-            duration=song.duration,
-        )
-
-        resolved = ResolvedTrack(
-            track=song,
-            jellyfin_id=track.id,
-            display_name=display_name,
-        )
-
-        if track.is_not_found():
-            logger.warning(f"{display_name}: MISSING")
-            missing.append(resolved)
-        else:
-            logger.info(f"{display_name}: OK")
-            found.append(resolved)
-
-    return found, missing
-
-
-def reconcile_after_download(
-    found_tracks: list[T],
-    found_tracks_after_download: list[ResolvedTrack],
-    missing_tracks: list[T],
-    missing_tracks_after_download: list[ExternalTrack],
-    missing_tracks_after_scan: list[ResolvedTrack],
-    get_key: Callable[[T], tuple[str, str]],
-) -> tuple[list[T], list[T]]:
-    """Update found/missing track lists after a download and rescan attempt.
-
-    Builds a reverse lookup from the original missing tracks keyed by
-    (artist_name, track_name), then:
-    - Moves newly resolved tracks into found_tracks.
-    - Rebuilds missing_tracks from tracks that still could not be found.
-
-    Works generically over any track type T (e.g. ResolvedTrack, LastFMSimilarTrack)
-    via the get_key callable, which extracts the (artist_name, track_name) pair from T.
-    """
-
-    initial_missing_map: dict[tuple[str, str], T] = {
-        get_key(track): track for track in missing_tracks
-    }
-
-    updated_found: list[T] = list(found_tracks)
-
-    for missing_track in found_tracks_after_download:
-        key = (missing_track.track.artist_name, missing_track.track.track_name)
-        original = initial_missing_map.get(key)
-
-        if original:
-            updated_found.append(original)
-
-    updated_missing: list[T] = []
-
-    for missing_track in missing_tracks_after_download:
-        key = (missing_track.artist_name, missing_track.track_name)
-        original = initial_missing_map.get(key)
-
-        if original:
-            updated_missing.append(original)
-
-    for missing_track in missing_tracks_after_scan:
-        key = (missing_track.track.artist_name, missing_track.track.track_name)
-        original = initial_missing_map.get(key)
-
-        if original:
-            updated_missing.append(original)
-
-    return updated_found, updated_missing
 
 
 def _diff_tracks(
@@ -219,7 +130,7 @@ async def sync_playlist_task(
                     detail=f"Unable to find user ID from {username}",
                 )
 
-            found_tracks, missing_tracks = resolve_songs(songs)
+            found_tracks, missing_tracks = resolve_tracks(songs)
 
             track_names = [
                 f"{song.artist_name} - {song.album_name}: {song.track_name}"
@@ -285,7 +196,7 @@ async def sync_playlist_task(
                         await asyncio.sleep(15)
 
                     newly_found_tracks, still_missing_tracks_after_download = (
-                        resolve_songs(downloaded_tracks)
+                        resolve_tracks(tracks=downloaded_tracks)
                     )
                     found_tracks, missing_tracks = reconcile_after_download(
                         found_tracks=found_tracks,

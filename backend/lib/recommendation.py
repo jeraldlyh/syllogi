@@ -30,7 +30,7 @@ from lib.lastfm import (
     get_lastfm_similar_tracks,
     get_lastfm_top_tracks,
 )
-from lib.sync import reconcile_after_download, resolve_songs
+from lib.sync import reconcile_after_download, resolve_tracks
 from lib.track import find_track
 from lib.utils import get_now
 
@@ -148,7 +148,7 @@ async def generate_recommendations_task(
                         await asyncio.sleep(15)
 
                     found_tracks_after_download, missing_tracks_after_scan = (
-                        resolve_songs(songs=downloaded_tracks)
+                        resolve_tracks(tracks=downloaded_tracks)
                     )
 
                     found_tracks, missing_tracks = reconcile_after_download(
