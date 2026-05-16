@@ -48,7 +48,7 @@ from lib.youtube import get_youtube_playlist, get_youtube_playlist_songs
 logger = logging.getLogger(__name__)
 
 
-def _resolve_songs(
+def resolve_songs(
     songs: list[ExternalTrack],
 ) -> tuple[list[ResolvedTrack], list[ResolvedTrack]]:
     """Verifies which tracks from the source playlist can be found in the Jellyfin library.
@@ -166,7 +166,7 @@ async def sync_playlist_task(
                     detail=f"Unable to find user ID from {username}",
                 )
 
-            found_tracks, missing_tracks = _resolve_songs(songs)
+            found_tracks, missing_tracks = resolve_songs(songs)
 
             track_names = [
                 f"{song.artist_name} - {song.album_name}: {song.track_name}"
@@ -232,7 +232,7 @@ async def sync_playlist_task(
                         await asyncio.sleep(15)
 
                     newly_found_tracks, still_missing_tracks_after_download = (
-                        _resolve_songs(downloaded_tracks)
+                        resolve_songs(downloaded_tracks)
                     )
                     found_tracks.extend(newly_found_tracks)
 

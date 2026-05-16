@@ -1,3 +1,4 @@
+import asyncio
 import logging
 import uuid
 from typing import Any
@@ -19,6 +20,8 @@ from db.recommendation_session import (
     update_recommendation_session,
 )
 from db.session import SessionDep, get_isolated_session
+from lib.download import download_missing_tracks
+from lib.jellyfin import is_jellyfin_scanning_library, rescan_jellyfin_library
 from lib.models.lastfm import (
     LastFMSimilarTrack,
 )
@@ -27,6 +30,7 @@ from lib.lastfm import (
     get_lastfm_similar_tracks,
     get_lastfm_top_tracks,
 )
+from lib.sync import resolve_songs
 from lib.track import find_track
 from lib.utils import get_now
 
@@ -93,7 +97,7 @@ def get_recommendations(
     return list(found), list(missing)
 
 
-def generate_recommendations_task(
+async def generate_recommendations_task(
     lastfm_username: str,
     recommendation_session_id: uuid.UUID,
 ) -> Any:
@@ -123,6 +127,65 @@ def generate_recommendations_task(
                 num_recommendations=recommendation_session.requested_count,
             )
             all_tracks = found_tracks + missing_tracks
+
+            if missing_tracks:
+                downloaded_tracks, still_missing_tracks = await download_missing_tracks(
+                    missing_tracks=[
+                        track.to_external_track() for track in missing_tracks
+                    ]
+                )
+
+                if downloaded_tracks:
+                    logger.info(f"Downloaded {len(downloaded_tracks)} missing songs")
+
+                    rescan_jellyfin_library()
+                    await asyncio.sleep(3)
+
+                    while is_jellyfin_scanning_library():
+                        logger.info(
+                            "Waiting for Jellyfin to finish scanning library..."
+                        )
+                        await asyncio.sleep(15)
+
+                    newly_found_tracks, still_missing_tracks_after_download = (
+                        resolve_songs(downloaded_tracks)
+                    )
+
+                    missing_tracks_map = {
+                        (track.artist_name, track.track_name): track
+                        for track in missing_tracks
+                    }
+
+                    for resolved_track in newly_found_tracks:
+                        key = (
+                            resolved_track.track.artist_name,
+                            resolved_track.track.track_name,
+                        )
+                        original = missing_tracks_map.get(key)
+
+                        if original:
+                            found_tracks.append(original)
+
+                    updated_missing: list[LastFMSimilarTrack] = []
+
+                    for track in still_missing_tracks:
+                        key = (track.artist_name, track.track_name)
+                        original = missing_tracks_map.get(key)
+
+                        if original:
+                            updated_missing.append(original)
+
+                    for resolved_track in still_missing_tracks_after_download:
+                        key = (
+                            resolved_track.track.artist_name,
+                            resolved_track.track.track_name,
+                        )
+                        original = missing_tracks_map.get(key)
+
+                        if original:
+                            updated_missing.append(original)
+
+                    missing_tracks = updated_missing
 
             finished_at = get_now()
             recommendation_session.status = RecommendationStatus.completed
@@ -166,7 +229,7 @@ def generate_recommendations_task(
             )
 
 
-def generate_recommendations(
+async def generate_recommendations(
     username: str,
     session: SessionDep,
     num_recommendations: int = 50,
@@ -188,7 +251,7 @@ def generate_recommendations(
         session=session, recommendation_session=recommendation_session
     )
 
-    generate_recommendations_task(
+    await generate_recommendations_task(
         lastfm_username=username,
         recommendation_session_id=recommendation_session.id,
     )

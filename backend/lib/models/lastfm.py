@@ -1,5 +1,7 @@
 from dataclasses import dataclass
 
+from lib.models.common import ExternalTrack
+
 
 @dataclass
 class LastFMRecentTrack:
@@ -122,3 +124,12 @@ class LastFMSimilarTrack:
             "similarity_score": self.similarity_score,
             "type": "similar",
         }
+
+    def to_external_track(self) -> ExternalTrack:
+        return ExternalTrack(
+            artist_name=self.artist_name,
+            track_name=self.track_name,
+            album_name="",
+            year="",
+            duration=self.duration,
+        )
