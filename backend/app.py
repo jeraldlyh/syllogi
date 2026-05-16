@@ -14,6 +14,7 @@ from starlette.middleware.base import BaseHTTPMiddleware
 from db.playlist import get_playlists
 from db.session import get_isolated_session
 from lib.cron import create_job
+from lib.jellyfin import ensure_download_library_exists
 from lib.sync import sync_playlist
 from routes import OPENAPI_TAGS, register_routes
 
@@ -138,9 +139,10 @@ def create_app() -> FastAPI:
 
     @app.on_event("startup")
     def startup_event():
+        ensure_download_library_exists()
+
         logger.info("Starting up application and initializing cron jobs")
         session = get_isolated_session()
-
         playlists = get_playlists(session=session)
 
         for playlist in playlists:

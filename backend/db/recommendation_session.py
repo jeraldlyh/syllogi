@@ -9,7 +9,7 @@ from db.models.recommendation import (
     RecommendationTrackType,
 )
 from db.session import SessionDep
-from lib.common import LastFMSimilarTrack
+from lib.models.lastfm import LastFMSimilarTrack
 
 
 def get_recommendation_sessions(session: SessionDep) -> Sequence[RecommendationSession]:

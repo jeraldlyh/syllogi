@@ -1,15 +1,17 @@
 import logging
-import os
 from typing import Any
 
 import requests
 from fastapi import HTTPException, status
 
-from lib.common import JellyfinPlaylist, JellyfinTrack, JellyfinUser
+from lib.models.jellyfin import (
+    JellyfinLibrary,
+    JellyfinPlaylist,
+    JellyfinTrack,
+    JellyfinUser,
+)
+from lib.env import get_environment_variable
 
-JELLYFIN_API_KEY = os.getenv("JELLYFIN_API_KEY")
-JELLYFIN_BASE_URL = os.getenv("JELLYFIN_BASE_URL")
-YOUTUBE_LIBRARY_NAME = os.getenv("YOUTUBE_LIBRARY_NAME", "Youtube")
 
 logger = logging.getLogger(__name__)
 
@@ -24,14 +26,19 @@ def _jellyfin(
     data: dict[str, Any] | str | bytes | None = None,
     timeout: float = 30.0,
 ) -> Any:
+    """HTTP helper for the Jellyfin API."""
+
+    api_key = get_environment_variable("JELLYFIN_API_KEY", ignore_error=False)
+    api_url = get_environment_variable("JELLYFIN_URL", ignore_error=False)
+
     base_headers = {
-        "X-Emby-Token": JELLYFIN_API_KEY,
+        "X-Emby-Token": api_key,
         "Content-Type": "application/json",
     }
 
     response = requests.request(
         method=method.upper(),
-        url=f"{JELLYFIN_BASE_URL}{path}",
+        url=f"{api_url}{path}",
         headers={**base_headers, **(headers or {})},
         params=params,
         json=json,
@@ -46,6 +53,8 @@ def _jellyfin(
 
 
 def get_jellyfin_users() -> list[JellyfinUser]:
+    """Return all users registered in Jellyfin."""
+
     data = _jellyfin("/Users")
 
     return [
@@ -58,6 +67,8 @@ def get_jellyfin_users() -> list[JellyfinUser]:
 
 
 def get_jellyfin_playlists(user_id: str) -> list[JellyfinPlaylist]:
+    """Return all playlists visible to the given Jellyfin user."""
+
     response = _jellyfin(
         f"/Users/{user_id}/Items",
         params={"IncludeItemTypes": "Playlist", "Recursive": True},
@@ -74,6 +85,8 @@ def get_jellyfin_playlists(user_id: str) -> list[JellyfinPlaylist]:
 
 
 def get_jellyfin_user_by_name(username: str) -> JellyfinUser:
+    """Return the Jellyfin user whose name matches username."""
+
     jellyfin_users = get_jellyfin_users()
 
     user = next(user for user in jellyfin_users if user.name == username)
@@ -84,6 +97,14 @@ def get_jellyfin_user_by_name(username: str) -> JellyfinUser:
 def search_jellyfin_track(
     artist_name: str, title: str, album: str, year: str
 ) -> list[JellyfinTrack]:
+    """Search for audio tracks in Jellyfin matching the given metadata.
+
+    Queries by artist and search term (title). Album and year filtering is
+    currently disabled.
+
+    Returns up to 10 results.
+    """
+
     logger.info(
         f"Searching for track with artist='{artist_name}', title='{title}', album='{album}', year='{year}'"
     )
@@ -124,6 +145,8 @@ def create_jellyfin_playlist(
     playlist_name: str,
     user_id: str,
 ) -> dict[str, Any]:
+    """Create a new public audio playlist in Jellyfin owned by user."""
+
     return _jellyfin(
         "/Playlists",
         method="POST",
@@ -143,6 +166,8 @@ def add_songs_to_jellyfin_playlist(
     user_id: str,
     track_ids: list[str],
 ) -> dict[str, Any]:
+    """Append tracks to an existing Jellyfin playlist."""
+
     return _jellyfin(
         f"/Playlists/{playlist_id}/Items",
         method="POST",
@@ -158,6 +183,8 @@ def delete_songs_from_jellyfin_playlist(
     playlist_id: str,
     track_ids: list[str],
 ) -> dict[str, Any]:
+    """Remove tracks from a Jellyfin playlist by their playlist entry IDs."""
+
     return _jellyfin(
         f"/Playlists/{playlist_id}/Items",
         method="DELETE",
@@ -168,6 +195,8 @@ def delete_songs_from_jellyfin_playlist(
 
 
 def get_jellyfin_playlist_songs(playlist_id: str, user_id: str) -> list[JellyfinTrack]:
+    """Return all tracks in a Jellyfin playlist."""
+
     response = _jellyfin(f"/Playlists/{playlist_id}/Items", params={"userId": user_id})
     data = response.get("Items", [])
 
@@ -189,6 +218,12 @@ def get_jellyfin_playlist_songs(playlist_id: str, user_id: str) -> list[Jellyfin
 def update_jellyfin_playlist_image(
     playlist_id: str, image_url: str | None
 ) -> dict[str, Any] | None:
+    """Set the primary cover image for a Jellyfin playlist from a remote URL.
+
+    First attempts a remote-image download via Jellyfin's own endpoint.
+    If that fails, the image bytes are then fetched directly and
+    uploaded to Jellyfin.
+    """
     if not image_url:
         return
 
@@ -216,20 +251,23 @@ def update_jellyfin_playlist_image(
 
 
 def rescan_jellyfin_library() -> None:
+    """Trigger a full metadata refresh on the configured download library."""
+
     media_folders_response = _jellyfin("/Library/MediaFolders")
 
+    download_library_name = get_environment_variable("DOWNLOAD_LIBRARY_NAME")
     download_folder = next(
         (
             folder
             for folder in media_folders_response.get("Items", [])
-            if folder.get("Name") == YOUTUBE_LIBRARY_NAME
+            if folder.get("Name") == download_library_name
         ),
         None,
     )
 
     if download_folder is None:
         logger.warning(
-            f"Could not find media folder with name '{YOUTUBE_LIBRARY_NAME}' to rescan"
+            f"Could not find media folder with name '{download_library_name}' to rescan"
         )
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
@@ -242,7 +280,7 @@ def rescan_jellyfin_library() -> None:
         params={
             "Recursive": "true",
             "ImageRefreshMode": "Default",
-            "MetadataRefreshMode": "Default",
+            "MetadataRefreshMode": "FullRefresh",
             "ReplaceAllImages": "false",
             "RegenerateTrickplay": "false",
             "ReplaceAllMetadata": "false",
@@ -251,9 +289,72 @@ def rescan_jellyfin_library() -> None:
 
 
 def is_jellyfin_scanning_library() -> bool:
-    response = _jellyfin("/ScheduledTasks")
+    """Return True if the configured download library is currently being scanned."""
 
-    for task in response:
-        if task.get("Name") == "Scan Media Library" and task.get("State") != "Idle":
+    download_library_name = get_environment_variable("DOWNLOAD_LIBRARY_NAME")
+
+    for library in get_jellyfin_libraries():
+        if library.name == download_library_name and library.refresh_status == "Active":
             return True
     return False
+
+
+def get_jellyfin_libraries() -> list[JellyfinLibrary]:
+    """Return all virtual folders (libraries) configured in Jellyfin."""
+
+    response = _jellyfin("/Library/VirtualFolders")
+    return [
+        JellyfinLibrary(
+            name=folder.get("Name", ""),
+            locations=folder.get("Locations", []),
+            collection_type=folder.get("CollectionType", ""),
+            item_id=folder.get("ItemId", ""),
+            refresh_status=folder.get("RefreshStatus", ""),
+        )
+        for folder in response
+    ]
+
+
+def create_jellyfin_download_library() -> None:
+    """Create the download library in Jellyfin using DOWNLOAD_LIBRARY_NAME and DOWNLOAD_DIR."""
+
+    library_name = get_environment_variable("DOWNLOAD_LIBRARY_NAME")
+    download_dir = get_environment_variable("DOWNLOAD_DIR")
+
+    _jellyfin(
+        "/Library/VirtualFolders",
+        method="POST",
+        params={
+            "name": library_name,
+            "path": download_dir,
+            "collectionType": "music",
+            "refreshLibrary": "true",
+        },
+        json={
+            "LibraryOptions": {
+                "Enabled": True,
+                "EnableRealtimeMonitor": True,
+                "EnableLUFSScan": False,
+            }
+        },
+    )
+    logger.info(f"Created Jellyfin library '{library_name}' at path '{download_dir}'")
+
+
+def ensure_download_library_exists() -> None:
+    """Check whether the download library exists in Jellyfin and create it if not."""
+
+    library_name = get_environment_variable("DOWNLOAD_LIBRARY_NAME")
+
+    try:
+        logger.info(f"Checking if Jellyfin library '{library_name}' exists")
+        existing_names = {library.name for library in get_jellyfin_libraries()}
+
+        if library_name in existing_names:
+            logger.info(f"Jellyfin library '{library_name}' already exists")
+            return
+
+        logger.info(f"Jellyfin library '{library_name}' not found, creating it")
+        create_jellyfin_download_library()
+    except Exception as e:
+        logger.warning(f"Failed to ensure Jellyfin download library exists: {e}")

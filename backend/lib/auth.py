@@ -1,5 +1,4 @@
 import logging
-import os
 from datetime import datetime, timedelta, timezone
 from typing import Annotated
 
@@ -15,10 +14,11 @@ from db.user import (
     create_user,
     update_user,
 )
+from lib.env import get_environment_variable
 
 logger = logging.getLogger(__name__)
 
-SECRET_KEY = os.getenv("SECRET_KEY", "default_secret_key")
+AUTH_SECRET_KEY = get_environment_variable("AUTH_SECRET_KEY", ignore_error=False)
 ALGORITHM = "HS256"
 ACCESS_TOKEN_EXPIRE_MINUTES = 30
 HASH = PasswordHash.recommended()
@@ -59,7 +59,7 @@ def create_access_token(
         expire = datetime.now(timezone.utc) + timedelta(minutes=15)
 
     to_encode.update({"exp": expire})
-    encoded_jwt = jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
+    encoded_jwt = jwt.encode(to_encode, AUTH_SECRET_KEY, algorithm=ALGORITHM)
 
     return encoded_jwt
 
@@ -92,7 +92,7 @@ def get_current_user(
             logger.warning("No access token found in cookies or headers")
             raise unauthorized_exception
 
-        payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
+        payload = jwt.decode(token, AUTH_SECRET_KEY, algorithms=[ALGORITHM])
         username = payload.get("sub")
 
         if username is None:

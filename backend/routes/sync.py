@@ -7,15 +7,15 @@ from db.models.sync_session import SyncProvider, SyncSession, SyncStatus
 from db.playlist import get_playlist_by_id
 from db.session import get_isolated_session
 from db.sync_session import create_sync_session
-from lib.common import ExternalPlaylist, ExternalTrack
+from lib.models.common import ExternalPlaylist, ExternalTrack
 from lib.sync import sync_playlist_task
 from lib.spotify import (
     get_spotify_playlist,
     get_spotify_playlist_songs,
 )
 from lib.youtube import (
-    _get_youtube_playlist,
-    _get_youtube_playlist_songs,
+    get_youtube_playlist,
+    get_youtube_playlist_songs,
 )
 from lib.utils import get_now
 
@@ -74,8 +74,8 @@ def sync_playlist(item: Playlist, background_tasks: BackgroundTasks) -> dict[str
             songs = get_spotify_playlist_songs(playlist_id=item.playlist_id)
             external_playlist = get_spotify_playlist(playlist_id=item.playlist_id)
         case PlaylistProvider.youtube:
-            songs = _get_youtube_playlist_songs(playlist_id=item.playlist_id)
-            external_playlist = _get_youtube_playlist(playlist_id=item.playlist_id)
+            songs = get_youtube_playlist_songs(playlist_id=item.playlist_id)
+            external_playlist = get_youtube_playlist(playlist_id=item.playlist_id)
 
     playlist_id = internal_playlist.playlist_id
     username = item.username
@@ -97,7 +97,7 @@ def sync_playlist(item: Playlist, background_tasks: BackgroundTasks) -> dict[str
     create_sync_session(session=session, sync_session=sync_session)
     background_tasks.add_task(
         sync_playlist_task,
-        internal_playlist=internal_playlist,
+        internal_playlist_id=internal_playlist.id,
         external_playlist=external_playlist,
         songs=songs,
         sync_session_id=sync_session.id,

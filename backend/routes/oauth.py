@@ -1,4 +1,3 @@
-import os
 import secrets
 from urllib.parse import urlencode
 
@@ -15,10 +14,10 @@ from lib.authentik import (
     get_authentik_token,
     get_authentik_userinfo,
 )
+from lib.env import get_environment_variable
 
 router = APIRouter()
 
-NEXT_PUBLIC_URL = os.getenv("NEXT_PUBLIC_URL", "http://localhost:3000")
 
 # NOTE: Might consider shifting to Redis if required
 _oauth_states: dict[str, str] = {}
@@ -32,7 +31,9 @@ _oauth_states: dict[str, str] = {}
 def oauth_authorize():
     config = _get_authentik_config()
 
-    redirect_uri = f"{NEXT_PUBLIC_URL.rstrip('/')}/oauth/callback"
+    redirect_uri = (
+        f"{get_environment_variable('NEXT_PUBLIC_URL').rstrip('/')}/oauth/callback"
+    )
 
     state = secrets.token_urlsafe(32)
     _oauth_states[state] = redirect_uri
@@ -99,7 +100,9 @@ def oauth_callback(
     )
     access_token = create_access_token(data={"sub": user.username})
 
-    redirect_response = RedirectResponse(url=NEXT_PUBLIC_URL, status_code=302)
+    redirect_response = RedirectResponse(
+        url=get_environment_variable("NEXT_PUBLIC_URL"), status_code=302
+    )
     redirect_response.set_cookie(
         key="access_token", value=access_token, httponly=True, samesite="lax"
     )
