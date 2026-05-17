@@ -84,12 +84,16 @@ def get_jellyfin_playlists(user_id: str) -> list[JellyfinPlaylist]:
     ]
 
 
-def get_jellyfin_user_by_name(username: str) -> JellyfinUser:
-    """Return the Jellyfin user whose name matches username."""
+def get_jellyfin_user_by_name(username: str) -> JellyfinUser | None:
+    """Find a Jellyfin user by their username.
+
+    Returns:
+        JellyfinUser | None: The user object if found, otherwise None
+    """
 
     jellyfin_users = get_jellyfin_users()
 
-    user = next(user for user in jellyfin_users if user.name == username)
+    user = next((user for user in jellyfin_users if user.name == username), None)
 
     return user
 
@@ -177,6 +181,49 @@ def add_songs_to_jellyfin_playlist(
             "ids": ",".join(track_ids),
         },
     )
+
+
+def get_or_create_jellyfin_playlist(
+    playlist_name: str,
+    username: str,
+) -> tuple[str, str]:
+    """Get an existing Jellyfin playlist by name or create a new one.
+
+    Returns:
+        tuple[str, str]: (playlist_id, user_id)
+
+    Raises:
+        HTTPException: If user is not found or playlist creation fails
+    """
+
+    jellyfin_user = get_jellyfin_user_by_name(username=username)
+    if not jellyfin_user:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"Unable to find username: {username}",
+        )
+
+    jellyfin_playlists = get_jellyfin_playlists(user_id=jellyfin_user.id)
+
+    existing_playlist = next(
+        (playlist for playlist in jellyfin_playlists if playlist_name == playlist.name),
+        None,
+    )
+    existing_playlist_id = existing_playlist.id if existing_playlist else None
+
+    if not existing_playlist_id:
+        new_playlist = create_jellyfin_playlist(
+            playlist_name=playlist_name, user_id=jellyfin_user.id
+        )
+        existing_playlist_id = new_playlist.get("Id")
+
+        if not existing_playlist_id:
+            raise HTTPException(
+                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                detail="Unable to create new playlist in Jellyfin",
+            )
+
+    return existing_playlist_id, jellyfin_user.id
 
 
 def delete_songs_from_jellyfin_playlist(

@@ -23,11 +23,9 @@ from lib.download import download_missing_tracks
 from lib.env import get_environment_variable
 from lib.jellyfin import (
     add_songs_to_jellyfin_playlist,
-    create_jellyfin_playlist,
     delete_songs_from_jellyfin_playlist,
+    get_or_create_jellyfin_playlist,
     get_jellyfin_playlist_songs,
-    get_jellyfin_playlists,
-    get_jellyfin_user_by_name,
     is_jellyfin_scanning_library,
     rescan_jellyfin_library,
     update_jellyfin_playlist_image,
@@ -116,20 +114,6 @@ async def sync_playlist_task(
         external_playlist_name = external_playlist.name
 
         try:
-            jellyfin_user = get_jellyfin_user_by_name(username=username)
-            if not jellyfin_user:
-                raise HTTPException(
-                    status_code=status.HTTP_400_BAD_REQUEST,
-                    detail=f"Unable to find username: {username}",
-                )
-
-            jellyfin_user_id = jellyfin_user.id
-            if not jellyfin_user_id:
-                raise HTTPException(
-                    status_code=status.HTTP_400_BAD_REQUEST,
-                    detail=f"Unable to find user ID from {username}",
-                )
-
             found_tracks, missing_tracks = resolve_tracks(songs)
 
             track_names = [
@@ -137,36 +121,14 @@ async def sync_playlist_task(
                 for song in songs
             ]
 
+            internal_playlist_name = internal_playlist.playlist_name
+            existing_playlist_id, jellyfin_user_id = get_or_create_jellyfin_playlist(
+                playlist_name=internal_playlist_name,
+                username=username,
+            )
+
             sync_session.provider_playlist_name = external_playlist_name
             sync_session.target_user_id = jellyfin_user_id
-            sync_session = update_sync_session(
-                session=session, sync_session=sync_session
-            )
-
-            internal_playlist_name = internal_playlist.playlist_name
-            jellyfin_playlists = get_jellyfin_playlists(user_id=jellyfin_user_id)
-            existing_playlist = next(
-                (
-                    playlist
-                    for playlist in jellyfin_playlists
-                    if internal_playlist_name == playlist.name
-                ),
-                None,
-            )
-
-            existing_playlist_id = existing_playlist.id if existing_playlist else None
-
-            if not existing_playlist_id:
-                new_playlist = create_jellyfin_playlist(
-                    playlist_name=internal_playlist_name, user_id=jellyfin_user_id
-                )
-                existing_playlist_id = new_playlist.get("Id")
-                if not existing_playlist_id:
-                    raise HTTPException(
-                        status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-                        detail="Unable to create new playlist in Jellyfin",
-                    )
-
             sync_session.target_playlist_id = existing_playlist_id
             sync_session.target_playlist_name = internal_playlist.playlist_name
             sync_session = update_sync_session(
