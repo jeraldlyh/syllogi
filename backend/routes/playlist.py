@@ -96,6 +96,7 @@ def _create_playlist(item: CreateOrUpdatePlaylistRequest, session: SessionDep):
             func=sync_playlist,
             kwargs={"playlist": playlist, "session": session},
             cron_expression=playlist.cron_expression,
+            job_id=str(playlist.id),
         )
 
     return {"id": str(playlist.id)}
@@ -156,12 +157,13 @@ def _update_playlist(
     update_playlist(session=session, playlist=playlist)
 
     if not playlist.enable_sync:
-        delete_job(playlist_id=playlist_id)
+        delete_job(job_id=playlist_id)
     else:
         update_job(
             func=sync_playlist,
             kwargs={"playlist": playlist, "session": session},
             cron_expression=playlist.cron_expression,
+            job_id=str(playlist.id),
         )
 
     return {"message": "Playlist updated successfully"}
@@ -210,6 +212,6 @@ def _delete_playlist(playlist_id: str, session: SessionDep):
         )
 
     delete_playlist(session=session, playlist=playlist)
-    delete_job(playlist_id=playlist_id)
+    delete_job(job_id=playlist_id)
 
     return {"message": "Playlist deleted successfully"}

@@ -273,7 +273,7 @@ async def generate_recommendations_task(
 async def generate_recommendations(
     username: str,
     session: SessionDep,
-    num_recommendations: int = 50,
+    requested_count: int = 50,
 ) -> dict[str, str]:
     """Get track recommendations for a user based on their listening history."""
     started_at = get_now()
@@ -281,7 +281,7 @@ async def generate_recommendations(
         username=username,
         provider=RecommendationProvider.lastfm,
         strategy=RecommendationStrategy.recent_tracks,
-        requested_count=num_recommendations,
+        requested_count=requested_count,
         generated_count=0,
         started_at=started_at,
         finished_at=started_at,

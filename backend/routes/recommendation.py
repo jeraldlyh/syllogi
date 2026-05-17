@@ -17,7 +17,11 @@ from db.recommendation import (
 )
 from db.recommendation_session import create_recommendation_session
 from db.session import SessionDep
-from lib.recommendation import generate_recommendations_task
+from lib.cron import create_job, delete_job, update_job
+from lib.recommendation import (
+    generate_recommendations,
+    generate_recommendations_task,
+)
 from lib.utils import get_now
 
 router = APIRouter()
@@ -28,6 +32,7 @@ class CreateOrUpdateRecommendationRequest(BaseModel):
     strategy: RecommendationStrategy
     lastfm_username: str
     requested_count: int = Field(default=50, ge=1, le=50)
+    cron_expression: str = ""
 
 
 @router.get(
@@ -46,6 +51,7 @@ class CreateOrUpdateRecommendationRequest(BaseModel):
                             "strategy": "mixed",
                             "lastfm_username": "john_lastfm",
                             "requested_count": 50,
+                            "cron_expression": "0 0 * * *",
                         }
                     ]
                 }
@@ -83,8 +89,20 @@ def _create_recommendation(
         strategy=item.strategy,
         lastfm_username=item.lastfm_username,
         requested_count=item.requested_count,
+        cron_expression=item.cron_expression,
     )
+
     create_recommendation(session=session, recommendation_setting=recommendation)
+    create_job(
+        func=generate_recommendations,
+        kwargs={
+            "username": recommendation.username,
+            "session": session,
+            "requested_count": recommendation.requested_count,
+        },
+        cron_expression=item.cron_expression,
+        job_id=str(recommendation.id),
+    )
 
     return {"id": str(recommendation.id)}
 
@@ -133,10 +151,21 @@ def _update_recommendation(
     recommendation.strategy = item.strategy
     recommendation.lastfm_username = item.lastfm_username
     recommendation.requested_count = item.requested_count
+    recommendation.cron_expression = item.cron_expression
 
     update_recommendation(
         session=session,
         recommendation_setting=recommendation,
+    )
+    update_job(
+        func=generate_recommendations,
+        kwargs={
+            "username": recommendation.username,
+            "session": session,
+            "requested_count": recommendation.requested_count,
+        },
+        cron_expression=item.cron_expression,
+        job_id=str(recommendation_id),
     )
 
     return {"message": "Recommendation updated successfully"}
@@ -182,6 +211,7 @@ def _delete_recommendation(
         )
 
     delete_recommendation(session=session, recommendation_setting=recommendation)
+    delete_job(job_id=str(recommendation_id))
 
     return {"message": "Recommendation deleted successfully"}
 
@@ -203,7 +233,7 @@ def _delete_recommendation(
         },
     },
 )
-def generate_recommendations(
+def _generate_recommendations(
     recommendation: Recommendation,
     background_tasks: BackgroundTasks,
     session: SessionDep,
