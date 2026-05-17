@@ -133,11 +133,11 @@ export const SyncSettings = () => {
   };
 
   const handleEditPlaylist = (playlist: Playlist) => {
-    setEditingId(playlist.id);
     const isPreset = CRON_PRESETS.some(
       (p) => p.value === playlist.cron_expression,
     );
 
+    setEditingId(playlist.id);
     setForm({
       ...playlist,
       cron_mode: isPreset ? "simple" : "custom",
@@ -167,13 +167,13 @@ export const SyncSettings = () => {
   const handleSavePlaylist = async (): Promise<void> => {
     if (!isFormError()) return;
 
-    const { cron_mode, ...mappingData } = form;
+    const { cron_mode, ...formData } = form;
 
     if (editingId) {
-      await updatePlaylist({ id: editingId, ...mappingData });
+      await updatePlaylist({ id: editingId, ...formData });
       toast.success("Playlist updated");
     } else {
-      await createPlaylist(mappingData);
+      await createPlaylist(formData);
 
       toast.success("Playlist created");
     }
@@ -444,7 +444,7 @@ export const SyncSettings = () => {
             <div className="flex flex-col gap-2">
               <Label className="flex justify-between items-center">
                 <Text
-                  value="Sync Schedule"
+                  value="Schedule"
                   className="text-xs text-muted-foreground"
                 />
                 {renderErrorMessage(errors.cron_expression)}

@@ -10,6 +10,7 @@ export interface Recommendation {
   strategy: RecommendationStrategy;
   lastfm_username: string;
   requested_count: number;
+  cron_expression: string;
 }
 
 export const useRecommendations = () => {
