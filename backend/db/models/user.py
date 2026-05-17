@@ -9,3 +9,4 @@ class User(TimestampMixin, SerializerMixin, SQLModel, table=True):
     oauth_id: str | None = Field(max_length=256, nullable=True, unique=True, index=True)
     username: str = Field(max_length=128, nullable=False, unique=True, index=True)
     password: str = Field(max_length=256, nullable=False)
+    is_admin: bool = Field(default=False, nullable=False)
