@@ -21,7 +21,12 @@ from db.recommendation_session import (
 )
 from db.session import SessionDep, get_isolated_session
 from lib.download import download_missing_tracks
-from lib.jellyfin import is_jellyfin_scanning_library, rescan_jellyfin_library
+from lib.jellyfin import (
+    add_songs_to_jellyfin_playlist,
+    get_or_create_jellyfin_playlist,
+    is_jellyfin_scanning_library,
+    rescan_jellyfin_library,
+)
 from lib.models.lastfm import (
     LastFMSimilarTrack,
 )
@@ -95,6 +100,30 @@ def get_recommendations(
                 break
 
     return list(found), list(missing)
+
+
+def _resolve_lastfm_tracks_to_jellyfin_ids(
+    tracks: list[LastFMSimilarTrack],
+) -> list[str]:
+    """Convert a list of LastFM tracks to Jellyfin track IDs.
+
+    Returns only tracks that were successfully found in Jellyfin.
+    """
+    jellyfin_ids: list[str] = []
+
+    for track in tracks:
+        jellyfin_track = find_track(
+            artist_name=track.artist_name,
+            track_name=track.track_name,
+            album_name="",
+            year="",
+            duration=track.duration,
+        )
+
+        if not jellyfin_track.is_not_found():
+            jellyfin_ids.append(jellyfin_track.id)
+
+    return jellyfin_ids
 
 
 async def generate_recommendations_task(
@@ -188,6 +217,29 @@ async def generate_recommendations_task(
             update_recommendation_session(
                 session=session, recommendation_session=recommendation_session
             )
+
+            if found_tracks:
+                track_ids = _resolve_lastfm_tracks_to_jellyfin_ids(found_tracks)
+
+                if track_ids:
+                    logger.info(
+                        f"Creating Jellyfin playlist with {len(track_ids)} tracks"
+                    )
+
+                    playlist_name = (
+                        f"Recommendations - {started_at.strftime('%Y-%m-%d %H:%M:%S')}"
+                    )
+                    playlist_id, jellyfin_user_id = get_or_create_jellyfin_playlist(
+                        playlist_name=playlist_name,
+                        username=recommendation_session.username,
+                    )
+
+                    add_songs_to_jellyfin_playlist(
+                        playlist_id=playlist_id,
+                        user_id=jellyfin_user_id,
+                        track_ids=track_ids,
+                    )
+
         except Exception as e:
             finished_at = get_now()
             recommendation_session.status = RecommendationStatus.failed
