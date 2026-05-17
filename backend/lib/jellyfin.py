@@ -79,6 +79,7 @@ def get_jellyfin_playlists(user_id: str) -> list[JellyfinPlaylist]:
         JellyfinPlaylist(
             id=item["Id"],
             name=item["Name"],
+            owner_id=item.get("UserId"),
         )
         for item in data
     ]
@@ -149,7 +150,15 @@ def create_jellyfin_playlist(
     playlist_name: str,
     user_id: str,
 ) -> dict[str, Any]:
-    """Create a new public audio playlist in Jellyfin owned by user."""
+    """Create a new private audio playlist in Jellyfin owned by user.
+
+    Args:
+        playlist_name: The name of the playlist to create
+        user_id: The ID of the Jellyfin user who will own the playlist
+
+    Returns:
+        The created playlist data from Jellyfin
+    """
 
     return _jellyfin(
         "/Playlists",
@@ -160,7 +169,7 @@ def create_jellyfin_playlist(
             "UserId": user_id,
             "Users": [{"UserId": user_id, "CanEdit": True}],
             "MediaType": "Audio",
-            "IsPublic": True,
+            "IsPublic": False,
         },
     )
 
@@ -206,7 +215,12 @@ def get_or_create_jellyfin_playlist(
     jellyfin_playlists = get_jellyfin_playlists(user_id=jellyfin_user.id)
 
     existing_playlist = next(
-        (playlist for playlist in jellyfin_playlists if playlist_name == playlist.name),
+        (
+            playlist
+            for playlist in jellyfin_playlists
+            if playlist.name == playlist_name
+            and (playlist.owner_id is None or playlist.owner_id == jellyfin_user.id)
+        ),
         None,
     )
     existing_playlist_id = existing_playlist.id if existing_playlist else None
