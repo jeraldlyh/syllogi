@@ -23,7 +23,7 @@ def _lastfm(
         "Content-Type": "application/json",
     }
     api_key = get_environment_variable("LASTFM_API_KEY", ignore_error=False)
-    api_url = get_environment_variable("LASTFM_BASE_URL", ignore_error=False)
+    api_url = get_environment_variable("LASTFM_URL", ignore_error=False)
 
     default_params = {
         "api_key": api_key,
