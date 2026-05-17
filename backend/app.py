@@ -12,9 +12,11 @@ from fastapi.responses import JSONResponse, Response
 from starlette.middleware.base import BaseHTTPMiddleware
 
 from db.playlist import get_playlists
+from db.recommendation import get_recommendations
 from db.session import get_isolated_session
 from lib.cron import create_job
 from lib.jellyfin import ensure_download_library_exists
+from lib.recommendation import generate_recommendations
 from lib.sync import sync_playlist
 from routes import OPENAPI_TAGS, register_routes
 
@@ -154,6 +156,24 @@ def create_app() -> FastAPI:
                     func=sync_playlist,
                     kwargs={"playlist": playlist, "session": session},
                     cron_expression=playlist.cron_expression,
+                    job_id=str(playlist.id),
+                )
+
+        recommendations = get_recommendations(session=session)
+        for recommendation in recommendations:
+            if recommendation.cron_expression:
+                logger.info(
+                    f"Registering cron job for recommendation {recommendation.id} with cron expression: {recommendation.cron_expression}"
+                )
+                create_job(
+                    func=generate_recommendations,
+                    kwargs={
+                        "username": recommendation.username,
+                        "session": session,
+                        "requested_count": recommendation.requested_count,
+                    },
+                    cron_expression=recommendation.cron_expression,
+                    job_id=str(recommendation.id),
                 )
 
     return app
