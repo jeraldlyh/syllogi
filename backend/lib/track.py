@@ -114,7 +114,7 @@ def find_track(
             best_match = jellyfin_track
 
     if best_match:
-        return jellyfin_track
+        return best_match
     return JellyfinTrack(
         id="",
         track_name=track_name,
