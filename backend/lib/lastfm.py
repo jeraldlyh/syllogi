@@ -1,5 +1,6 @@
 import logging
-from typing import Any
+from collections.abc import Callable, Hashable
+from typing import Any, TypeVar
 
 import requests
 
@@ -8,6 +9,7 @@ from lib.env import get_environment_variable
 
 
 logger = logging.getLogger(__name__)
+T = TypeVar("T", bound=Hashable)
 
 
 def _lastfm(
@@ -47,45 +49,72 @@ def _lastfm(
     return response.json()
 
 
-def get_lastfm_recent_tracks(user: str, limit: int = 30) -> list[LastFMRecentTrack]:
+def _get_nested_value(data: Any, path: str) -> Any:
+    value: Any = data
+
+    for key in path.split("."):
+        if not isinstance(value, dict):
+            return None
+        value = value.get(key)
+    return value
+
+
+def _get_lastfm_tracks_paginated(
+    *,
+    params: dict[str, Any],
+    limit: int,
+    response_path: str,
+    track_factory: Callable[[dict[str, Any]], T],
+    track_filter: Callable[[dict[str, Any]], bool] | None = None,
+) -> list[T]:
+    """Helper for fetching paginated track data from LastFM.
+
+    Args:
+        params: Base query parameters for the LastFM API request (excluding pagination).
+        limit: Maximum number of tracks to return.
+        response_path: Dot-separated path to the list of tracks in the API response (e.g. "recenttracks.track").
+        track_factory: Callable that converts a raw track dict from the API response into an instance of T.
+        raw_track_filter: Optional callable that filters raw track dicts from the API response before conversion. If provided, only tracks for which this returns True will be included.
+
+    Returns:
+        A list of tracks of type T, up to the specified limit.
+    """
     page = 1
     total_pages: int | None = None
-    tracks: list[LastFMRecentTrack] = []
-    seen: set[LastFMRecentTrack] = set()
+    tracks: list[T] = []
+    seen: set[T] = set()
+    response_root_key, _, response_tracks_key = response_path.rpartition(".")
 
     while len(tracks) < limit:
         data = _lastfm(
             params={
-                "user": user,
-                "method": "user.getRecentTracks",
+                **params,
                 "limit": limit,
                 "page": page,
             },
         )
-        recent_tracks = data.get("recenttracks", {})
-        raw_tracks = recent_tracks.get("track", [])
+        response_data = _get_nested_value(data, response_root_key) or {}
+        raw_tracks = response_data.get(response_tracks_key, [])
 
         if not raw_tracks:
             break
 
-        for track in raw_tracks:
-            recent_track = LastFMRecentTrack(
-                artist_name=track["artist"]["#text"],
-                track_name=track["name"],
-                album_name=track["album"]["#text"],
-                musicbrainz_id=track["mbid"],
-            )
-            if recent_track in seen:
+        for raw_track in raw_tracks:
+            if track_filter is not None and not track_filter(raw_track):
                 continue
 
-            seen.add(recent_track)
-            tracks.append(recent_track)
+            track = track_factory(raw_track)
+            if track in seen:
+                continue
+
+            seen.add(track)
+            tracks.append(track)
 
             if len(tracks) >= limit:
                 break
 
         if total_pages is None:
-            metadata = recent_tracks.get("@attr", {}) or {}
+            metadata = response_data.get("@attr", {})
             total_pages_raw = metadata.get("totalPages")
 
             if total_pages_raw:
@@ -96,56 +125,69 @@ def get_lastfm_recent_tracks(user: str, limit: int = 30) -> list[LastFMRecentTra
 
         if len(raw_tracks) < limit:
             break
+
         page += 1
     return tracks
 
 
-def get_lastfm_top_tracks(user: str, period="6month", limit=30) -> list[LastFMTopTrack]:
-    data = _lastfm(
+def get_lastfm_recent_tracks(user: str, limit: int = 30) -> list[LastFMRecentTrack]:
+    return _get_lastfm_tracks_paginated(
+        params={
+            "user": user,
+            "method": "user.getRecentTracks",
+        },
+        limit=limit,
+        response_path="recenttracks.track",
+        track_filter=lambda track: track.get("mbid", "") != "",
+        track_factory=lambda track: LastFMRecentTrack(
+            artist_name=track["artist"]["#text"],
+            track_name=track["name"],
+            album_name=track["album"]["#text"],
+            musicbrainz_id=track["mbid"],
+        ),
+    )
+
+
+def get_lastfm_top_tracks(
+    user: str, period: str = "6month", limit: int = 30
+) -> list[LastFMTopTrack]:
+    return _get_lastfm_tracks_paginated(
         params={
             "user": user,
             "method": "user.getTopTracks",
             "period": period,
-            "limit": limit,
         },
-    )
-    tracks = data.get("toptracks", {}).get("track", [])
-
-    return [
-        LastFMTopTrack(
+        limit=limit,
+        response_path="toptracks.track",
+        track_factory=lambda track: LastFMTopTrack(
             artist_name=track["artist"]["name"],
             track_name=track["name"],
             duration=track["duration"],
             musicbrainz_id=track["mbid"],
             playcount=track["playcount"],
-        )
-        for track in tracks
-    ]
+        ),
+    )
 
 
 def get_lastfm_similar_tracks(
-    user: str, artist: str, track: str, limit=5
+    user: str, artist: str, track: str, limit: int = 5
 ) -> list[LastFMSimilarTrack]:
-    data = _lastfm(
+    return _get_lastfm_tracks_paginated(
         params={
             "user": user,
             "method": "track.getSimilar",
             "artist": artist,
             "track": track,
-            "limit": limit,
         },
-    )
-    tracks = data.get("similartracks", {}).get("track", [])
-
-    return [
-        LastFMSimilarTrack(
+        limit=limit,
+        response_path="similartracks.track",
+        track_filter=lambda track: "mbid" in track,
+        track_factory=lambda track: LastFMSimilarTrack(
             artist_name=track["artist"]["name"],
             track_name=track["name"],
             duration=track["duration"],
             musicbrainz_id=track["mbid"],
             playcount=track["playcount"],
             similarity_score=track["match"],
-        )
-        for track in tracks
-        if "mbid" in track
-    ]
+        ),
+    )
