@@ -9,9 +9,10 @@ from pwdlib import PasswordHash
 from db.models.user import User
 from db.session import SessionDep
 from db.user import (
-    get_user_by_username,
-    get_user_by_oauth_id,
+    count_users,
     create_user,
+    get_user_by_oauth_id,
+    get_user_by_username,
     update_user,
 )
 from lib.env import get_environment_variable
@@ -124,6 +125,12 @@ def get_or_create_oauth_user(session: SessionDep, oauth_id: str, username: str) 
     if user:
         return user
 
-    new_user = User(username=username, password="", oauth_id=oauth_id)
+    is_first_user = count_users(session=session) == 0
+    new_user = User(
+        username=username,
+        password="",
+        oauth_id=oauth_id,
+        is_admin=is_first_user,
+    )
     create_user(session=session, user=new_user)
     return new_user

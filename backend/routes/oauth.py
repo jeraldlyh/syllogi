@@ -32,7 +32,7 @@ def oauth_authorize():
     config = _get_authentik_config()
 
     redirect_uri = (
-        f"{get_environment_variable('NEXT_PUBLIC_URL').rstrip('/')}/oauth/callback"
+        f"{str(get_environment_variable('NEXT_PUBLIC_URL')).rstrip('/')}/oauth/callback"
     )
 
     state = secrets.token_urlsafe(32)
@@ -101,7 +101,7 @@ def oauth_callback(
     access_token = create_access_token(data={"sub": user.username})
 
     redirect_response = RedirectResponse(
-        url=get_environment_variable("NEXT_PUBLIC_URL"), status_code=302
+        url=str(get_environment_variable("NEXT_PUBLIC_URL")), status_code=302
     )
     redirect_response.set_cookie(
         key="access_token", value=access_token, httponly=True, samesite="lax"
