@@ -168,9 +168,8 @@ def create_app() -> FastAPI:
                 create_job(
                     func=generate_recommendations,
                     kwargs={
-                        "username": recommendation.username,
+                        "recommendation": recommendation,
                         "session": session,
-                        "requested_count": recommendation.requested_count,
                     },
                     cron_expression=recommendation.cron_expression,
                     job_id=str(recommendation.id),

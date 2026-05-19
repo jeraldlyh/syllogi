@@ -6,12 +6,14 @@ from typing import Any
 from fastapi import HTTPException, status
 
 from db.models.recommendation import (
+    Recommendation,
     RecommendationProvider,
     RecommendationSession,
     RecommendationStatus,
     RecommendationStrategy,
     RecommendationTrackType,
 )
+from db.recommendation import get_recommendation_by_id
 from db.recommendation_session import (
     build_recommendation_session_tracks,
     create_recommendation_session,
@@ -271,17 +273,26 @@ async def generate_recommendations_task(
 
 
 async def generate_recommendations(
-    username: str,
+    recommendation: Recommendation,
     session: SessionDep,
-    requested_count: int = 50,
 ) -> dict[str, str]:
     """Get track recommendations for a user based on their listening history."""
+    internal_recommendation = get_recommendation_by_id(
+        session=session, recommendation_id=recommendation.id
+    )
+
+    if not internal_recommendation:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"Unable to find recommendation setting: {recommendation.id}",
+        )
+
     started_at = get_now()
     recommendation_session = RecommendationSession(
-        username=username,
+        username=internal_recommendation.username,
         provider=RecommendationProvider.lastfm,
         strategy=RecommendationStrategy.recent_tracks,
-        requested_count=requested_count,
+        requested_count=internal_recommendation.requested_count,
         generated_count=0,
         started_at=started_at,
         finished_at=started_at,
@@ -293,7 +304,7 @@ async def generate_recommendations(
     )
 
     await generate_recommendations_task(
-        lastfm_username=username,
+        lastfm_username=internal_recommendation.lastfm_username,
         recommendation_session_id=recommendation_session.id,
     )
     return {"id": str(recommendation_session.id)}

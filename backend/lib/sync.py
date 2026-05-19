@@ -325,7 +325,7 @@ async def sync_playlist(playlist: Playlist, session: SessionDep) -> dict[str, st
     if not internal_playlist:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
-            detail=f"Unable to find playlist: {playlist.playlist_id}",
+            detail=f"Unable to find playlist setting: {playlist.playlist_id}",
         )
 
     playlist_id = playlist.playlist_id
