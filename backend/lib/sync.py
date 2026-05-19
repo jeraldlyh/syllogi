@@ -12,7 +12,7 @@ from db.models.sync_session import (
     SyncStatus,
 )
 from db.playlist import get_playlist_by_id
-from db.session import SessionDep, get_isolated_session
+from db.session import get_isolated_session
 from db.sync_session import (
     build_sync_session_tracks,
     create_sync_session,
@@ -318,35 +318,35 @@ async def sync_playlist_task(
             )
 
 
-async def sync_playlist(playlist: Playlist, session: SessionDep) -> dict[str, str]:
+async def sync_playlist(playlist: Playlist) -> dict[str, str]:
     """Sync a playlist (Spotify/Youtube) to Jellyfin."""
-    internal_playlist = get_playlist_by_id(session=session, playlist_id=playlist.id)
+    with get_isolated_session() as session:
+        internal_playlist = get_playlist_by_id(session=session, playlist_id=playlist.id)
 
-    if not internal_playlist:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail=f"Unable to find playlist setting: {playlist.playlist_id}",
+        if not internal_playlist:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail=f"Unable to find playlist setting: {playlist.playlist_id}",
+            )
+
+        playlist_id = playlist.playlist_id
+        username = playlist.username
+        started_at = get_now()
+
+        sync_session = SyncSession(
+            provider=SyncProvider(internal_playlist.provider.value),
+            provider_playlist_id=playlist_id,
+            provider_playlist_name="",
+            target_user_id="",
+            target_username=username,
+            target_playlist_id="",
+            target_playlist_name="",
+            started_at=started_at,
+            finished_at=started_at,
+            duration_seconds=0,
+            status=SyncStatus.pending,
         )
-
-    playlist_id = playlist.playlist_id
-    username = playlist.username
-    started_at = get_now()
-
-    sync_session = SyncSession(
-        provider=SyncProvider(internal_playlist.provider.value),
-        provider_playlist_id=playlist_id,
-        provider_playlist_name="",
-        target_user_id="",
-        target_username=username,
-        target_playlist_id="",
-        target_playlist_name="",
-        started_at=started_at,
-        finished_at=started_at,
-        duration_seconds=0,
-        status=SyncStatus.pending,
-    )
-    create_sync_session(session=session, sync_session=sync_session)
-    session.expunge(sync_session)
+        create_sync_session(session=session, sync_session=sync_session)
 
     songs: list[ExternalTrack] = []
     external_playlist: ExternalPlaylist | None = None

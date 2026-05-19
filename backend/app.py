@@ -144,8 +144,9 @@ def create_app() -> FastAPI:
         ensure_download_library_exists()
 
         logger.info("Starting up application and initializing cron jobs")
-        session = get_isolated_session()
-        playlists = get_playlists(session=session)
+        with get_isolated_session() as session:
+            playlists = get_playlists(session=session)
+            recommendations = get_recommendations(session=session)
 
         for playlist in playlists:
             if playlist.cron_expression:
@@ -154,12 +155,11 @@ def create_app() -> FastAPI:
                 )
                 create_job(
                     func=sync_playlist,
-                    kwargs={"playlist": playlist, "session": session},
+                    kwargs={"playlist": playlist},
                     cron_expression=playlist.cron_expression,
                     job_id=str(playlist.id),
                 )
 
-        recommendations = get_recommendations(session=session)
         for recommendation in recommendations:
             if recommendation.cron_expression:
                 logger.info(
@@ -167,10 +167,7 @@ def create_app() -> FastAPI:
                 )
                 create_job(
                     func=generate_recommendations,
-                    kwargs={
-                        "recommendation": recommendation,
-                        "session": session,
-                    },
+                    kwargs={"recommendation": recommendation},
                     cron_expression=recommendation.cron_expression,
                     job_id=str(recommendation.id),
                 )

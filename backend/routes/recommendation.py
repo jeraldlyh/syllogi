@@ -95,10 +95,7 @@ def _create_recommendation(
     create_recommendation(session=session, recommendation_setting=recommendation)
     create_job(
         func=generate_recommendations,
-        kwargs={
-            "recommendation": recommendation,
-            "session": session,
-        },
+        kwargs={"recommendation": recommendation},
         cron_expression=item.cron_expression,
         job_id=str(recommendation.id),
     )
@@ -158,10 +155,7 @@ def _update_recommendation(
     )
     update_job(
         func=generate_recommendations,
-        kwargs={
-            "recommendation": recommendation,
-            "session": session,
-        },
+        kwargs={"recommendation": recommendation},
         cron_expression=item.cron_expression,
         job_id=str(recommendation_id),
     )

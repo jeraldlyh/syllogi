@@ -94,7 +94,7 @@ def _create_playlist(item: CreateOrUpdatePlaylistRequest, session: SessionDep):
     if playlist.enable_sync:
         create_job(
             func=sync_playlist,
-            kwargs={"playlist": playlist, "session": session},
+            kwargs={"playlist": playlist},
             cron_expression=playlist.cron_expression,
             job_id=str(playlist.id),
         )
@@ -161,7 +161,7 @@ def _update_playlist(
     else:
         update_job(
             func=sync_playlist,
-            kwargs={"playlist": playlist, "session": session},
+            kwargs={"playlist": playlist},
             cron_expression=playlist.cron_expression,
             job_id=str(playlist.id),
         )

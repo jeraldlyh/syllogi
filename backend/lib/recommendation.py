@@ -21,7 +21,7 @@ from db.recommendation_session import (
     get_recommendation_session_by_id,
     update_recommendation_session,
 )
-from db.session import SessionDep, get_isolated_session
+from db.session import get_isolated_session
 from lib.download import download_missing_tracks
 from lib.jellyfin import (
     add_songs_to_jellyfin_playlist,
@@ -274,34 +274,34 @@ async def generate_recommendations_task(
 
 async def generate_recommendations(
     recommendation: Recommendation,
-    session: SessionDep,
 ) -> dict[str, str]:
     """Get track recommendations for a user based on their listening history."""
-    internal_recommendation = get_recommendation_by_id(
-        session=session, recommendation_id=recommendation.id
-    )
-
-    if not internal_recommendation:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail=f"Unable to find recommendation setting: {recommendation.id}",
+    with get_isolated_session() as session:
+        internal_recommendation = get_recommendation_by_id(
+            session=session, recommendation_id=recommendation.id
         )
 
-    started_at = get_now()
-    recommendation_session = RecommendationSession(
-        username=internal_recommendation.username,
-        provider=RecommendationProvider.lastfm,
-        strategy=RecommendationStrategy.recent_tracks,
-        requested_count=internal_recommendation.requested_count,
-        generated_count=0,
-        started_at=started_at,
-        finished_at=started_at,
-        duration_seconds=0,
-        status=RecommendationStatus.pending,
-    )
-    create_recommendation_session(
-        session=session, recommendation_session=recommendation_session
-    )
+        if not internal_recommendation:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail=f"Unable to find recommendation setting: {recommendation.id}",
+            )
+
+        started_at = get_now()
+        recommendation_session = RecommendationSession(
+            username=internal_recommendation.username,
+            provider=RecommendationProvider.lastfm,
+            strategy=RecommendationStrategy.recent_tracks,
+            requested_count=internal_recommendation.requested_count,
+            generated_count=0,
+            started_at=started_at,
+            finished_at=started_at,
+            duration_seconds=0,
+            status=RecommendationStatus.pending,
+        )
+        create_recommendation_session(
+            session=session, recommendation_session=recommendation_session
+        )
 
     await generate_recommendations_task(
         lastfm_username=internal_recommendation.lastfm_username,
