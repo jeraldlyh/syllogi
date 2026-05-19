@@ -160,7 +160,7 @@ def _update_recommendation(
     update_job(
         func=generate_recommendations,
         kwargs={
-            "username": recommendation.username,
+            "username": recommendation.lastfm_username,
             "session": session,
             "requested_count": recommendation.requested_count,
         },
