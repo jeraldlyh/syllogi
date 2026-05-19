@@ -74,7 +74,7 @@ def _get_lastfm_tracks_paginated(
         limit: Maximum number of tracks to return.
         response_path: Dot-separated path to the list of tracks in the API response (e.g. "recenttracks.track").
         track_factory: Callable that converts a raw track dict from the API response into an instance of T.
-        raw_track_filter: Optional callable that filters raw track dicts from the API response before conversion. If provided, only tracks for which this returns True will be included.
+        track_filter: Optional callable that filters raw track dicts from the API response before conversion. If provided, only tracks for which this returns True will be included.
 
     Returns:
         A list of tracks of type T, up to the specified limit.
@@ -100,7 +100,7 @@ def _get_lastfm_tracks_paginated(
             break
 
         for raw_track in raw_tracks:
-            if track_filter is not None and not track_filter(raw_track):
+            if track_filter is not None and track_filter(raw_track):
                 continue
 
             track = track_factory(raw_track)
@@ -140,10 +140,10 @@ def get_lastfm_recent_tracks(user: str, limit: int = 30) -> list[LastFMRecentTra
         response_path="recenttracks.track",
         track_filter=lambda track: track.get("mbid", "") != "",
         track_factory=lambda track: LastFMRecentTrack(
-            artist_name=track["artist"]["#text"],
-            track_name=track["name"],
-            album_name=track["album"]["#text"],
-            musicbrainz_id=track["mbid"],
+            artist_name=track.get("artist", {}).get("#text", ""),
+            track_name=track.get("name", ""),
+            album_name=track.get("album", {}).get("#text", ""),
+            musicbrainz_id=track.get("mbid", ""),
         ),
     )
 
@@ -159,12 +159,13 @@ def get_lastfm_top_tracks(
         },
         limit=limit,
         response_path="toptracks.track",
+        track_filter=lambda track: track.get("mbid", "") != "",
         track_factory=lambda track: LastFMTopTrack(
-            artist_name=track["artist"]["name"],
-            track_name=track["name"],
-            duration=track["duration"],
-            musicbrainz_id=track["mbid"],
-            playcount=track["playcount"],
+            artist_name=track.get("artist", {}).get("name", ""),
+            track_name=track.get("name", ""),
+            duration=track.get("duration", 0),
+            musicbrainz_id=track.get("mbid", ""),
+            playcount=track.get("playcount", 0),
         ),
     )
 
@@ -181,13 +182,13 @@ def get_lastfm_similar_tracks(
         },
         limit=limit,
         response_path="similartracks.track",
-        track_filter=lambda track: "mbid" in track,
+        track_filter=lambda track: track.get("mbid", "") != "",
         track_factory=lambda track: LastFMSimilarTrack(
-            artist_name=track["artist"]["name"],
-            track_name=track["name"],
-            duration=track["duration"],
-            musicbrainz_id=track["mbid"],
-            playcount=track["playcount"],
-            similarity_score=track["match"],
+            artist_name=track.get("artist", {}).get("name", ""),
+            track_name=track.get("name", ""),
+            duration=track.get("duration", 0),
+            musicbrainz_id=track.get("mbid", ""),
+            playcount=track.get("playcount", 0),
+            similarity_score=track.get("match", 0.0),
         ),
     )
