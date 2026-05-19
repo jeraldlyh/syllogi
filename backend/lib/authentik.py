@@ -1,4 +1,4 @@
-import requests
+import httpx
 
 from typing import Any
 
@@ -25,7 +25,7 @@ def _get_authentik_config() -> dict:
     }
 
 
-def _authentik(
+async def _authentik(
     url: str,
     *,
     method: str = "GET",
@@ -34,25 +34,26 @@ def _authentik(
     json: dict[str, Any] | list[Any] | None = None,
     data: dict[str, Any] | str | bytes | None = None,
     timeout: float = 30.0,
-) -> requests.Response:
+) -> httpx.Response:
     base_headers = {
         "Content-Type": "application/x-www-form-urlencoded",
     }
-    return requests.request(
-        method=method.upper(),
-        url=url,
-        headers={**base_headers, **(headers or {})},
-        params=params,
-        json=json,
-        data=data,
-        timeout=timeout,
-    )
+    async with httpx.AsyncClient() as client:
+        return await client.request(
+            method=method.upper(),
+            url=url,
+            headers={**base_headers, **(headers or {})},
+            params=params,
+            json=json,
+            data=data,
+            timeout=timeout,
+        )
 
 
-def get_authentik_token(oauth_url: str, oauth_code: str) -> str:
+async def get_authentik_token(oauth_url: str, oauth_code: str) -> str:
     """Get an access token from Authentik using client credentials."""
     authentik = _get_authentik_config()
-    response = _authentik(
+    response = await _authentik(
         url=authentik["token_url"],
         method="POST",
         data={
@@ -73,10 +74,10 @@ def get_authentik_token(oauth_url: str, oauth_code: str) -> str:
     return data.get("access_token")
 
 
-def get_authentik_userinfo(access_token: str) -> dict[str, Any]:
+async def get_authentik_userinfo(access_token: str) -> dict[str, Any]:
     """Get user info from Authentik using an access token."""
     authentik = _get_authentik_config()
-    response = _authentik(
+    response = await _authentik(
         url=authentik["userinfo_url"],
         method="GET",
         headers={"Authorization": f"Bearer {access_token}"},

@@ -1,7 +1,7 @@
 from datetime import datetime, timezone
 from typing import Iterable, TypedDict, Any
 
-import requests
+import httpx
 
 
 class EmbedField(TypedDict):
@@ -22,7 +22,7 @@ def _to_color_hex(c: int | str) -> int:
     return int(c.lstrip("#"), 16)
 
 
-def send_discord_notification(
+async def send_discord_notification(
     webhook_url: str | None,
     *,
     content: str | None = None,
@@ -42,7 +42,7 @@ def send_discord_notification(
     username: str | None = None,
     avatar_url: str | None = None,
     timeout: float = 15.0,
-) -> None:
+) -> dict | None:
     if not webhook_url:
         return
 
@@ -97,7 +97,8 @@ def send_discord_notification(
     if avatar_url:
         payload["avatar_url"] = avatar_url
 
-    response = requests.post(webhook_url, json=payload, timeout=timeout)
+    async with httpx.AsyncClient() as client:
+        response = await client.post(webhook_url, json=payload, timeout=timeout)
     response.raise_for_status()
     if response.status_code == 204 or not response.content:
         return None

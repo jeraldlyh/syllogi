@@ -1,7 +1,7 @@
 import logging
 from typing import Any
 
-import requests
+import httpx
 from fastapi import HTTPException, status
 
 from lib.models.jellyfin import (
@@ -16,7 +16,7 @@ from lib.env import get_environment_variable
 logger = logging.getLogger(__name__)
 
 
-def _jellyfin(
+async def _jellyfin(
     path: str,
     *,
     method: str = "GET",
@@ -36,15 +36,16 @@ def _jellyfin(
         "Content-Type": "application/json",
     }
 
-    response = requests.request(
-        method=method.upper(),
-        url=f"{api_url}{path}",
-        headers={**base_headers, **(headers or {})},
-        params=params,
-        json=json,
-        data=data,
-        timeout=timeout,
-    )
+    async with httpx.AsyncClient() as client:
+        response = await client.request(
+            method=method.upper(),
+            url=f"{api_url}{path}",
+            headers={**base_headers, **(headers or {})},
+            params=params,
+            json=json,
+            data=data,
+            timeout=timeout,
+        )
     response.raise_for_status()
 
     if response.status_code == 204 or not response.content:
@@ -52,10 +53,10 @@ def _jellyfin(
     return response.json()
 
 
-def get_jellyfin_users() -> list[JellyfinUser]:
+async def get_jellyfin_users() -> list[JellyfinUser]:
     """Return all users registered in Jellyfin."""
 
-    data = _jellyfin("/Users")
+    data = await _jellyfin("/Users")
 
     return [
         JellyfinUser(
@@ -66,10 +67,10 @@ def get_jellyfin_users() -> list[JellyfinUser]:
     ]
 
 
-def get_jellyfin_playlists(user_id: str) -> list[JellyfinPlaylist]:
+async def get_jellyfin_playlists(user_id: str) -> list[JellyfinPlaylist]:
     """Return all playlists visible to the given Jellyfin user."""
 
-    response = _jellyfin(
+    response = await _jellyfin(
         f"/Users/{user_id}/Items",
         params={"IncludeItemTypes": "Playlist", "Recursive": True},
     )
@@ -85,21 +86,21 @@ def get_jellyfin_playlists(user_id: str) -> list[JellyfinPlaylist]:
     ]
 
 
-def get_jellyfin_user_by_name(username: str) -> JellyfinUser | None:
+async def get_jellyfin_user_by_name(username: str) -> JellyfinUser | None:
     """Find a Jellyfin user by their username.
 
     Returns:
         JellyfinUser | None: The user object if found, otherwise None
     """
 
-    jellyfin_users = get_jellyfin_users()
+    jellyfin_users = await get_jellyfin_users()
 
     user = next((user for user in jellyfin_users if user.name == username), None)
 
     return user
 
 
-def search_jellyfin_track(
+async def search_jellyfin_track(
     artist_name: str, title: str, album: str, year: str
 ) -> list[JellyfinTrack]:
     """Search for audio tracks in Jellyfin matching the given metadata.
@@ -114,7 +115,7 @@ def search_jellyfin_track(
         f"Searching for track with artist='{artist_name}', title='{title}', album='{album}', year='{year}'"
     )
 
-    response = _jellyfin(
+    response = await _jellyfin(
         "/Items",
         params={
             "includeItemTypes": "Audio",
@@ -146,7 +147,7 @@ def search_jellyfin_track(
     ]
 
 
-def create_jellyfin_playlist(
+async def create_jellyfin_playlist(
     playlist_name: str,
     user_id: str,
 ) -> dict[str, Any]:
@@ -160,7 +161,7 @@ def create_jellyfin_playlist(
         The created playlist data from Jellyfin
     """
 
-    return _jellyfin(
+    return await _jellyfin(
         "/Playlists",
         method="POST",
         json={
@@ -174,14 +175,14 @@ def create_jellyfin_playlist(
     )
 
 
-def add_songs_to_jellyfin_playlist(
+async def add_songs_to_jellyfin_playlist(
     playlist_id: str,
     user_id: str,
     track_ids: list[str],
 ) -> dict[str, Any]:
     """Append tracks to an existing Jellyfin playlist."""
 
-    return _jellyfin(
+    return await _jellyfin(
         f"/Playlists/{playlist_id}/Items",
         method="POST",
         params={
@@ -192,7 +193,7 @@ def add_songs_to_jellyfin_playlist(
     )
 
 
-def get_or_create_jellyfin_playlist(
+async def get_or_create_jellyfin_playlist(
     playlist_name: str,
     username: str,
 ) -> tuple[str, str]:
@@ -205,14 +206,14 @@ def get_or_create_jellyfin_playlist(
         HTTPException: If user is not found or playlist creation fails
     """
 
-    jellyfin_user = get_jellyfin_user_by_name(username=username)
+    jellyfin_user = await get_jellyfin_user_by_name(username=username)
     if not jellyfin_user:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail=f"Unable to find username: {username}",
         )
 
-    jellyfin_playlists = get_jellyfin_playlists(user_id=jellyfin_user.id)
+    jellyfin_playlists = await get_jellyfin_playlists(user_id=jellyfin_user.id)
 
     existing_playlist = next(
         (
@@ -226,7 +227,7 @@ def get_or_create_jellyfin_playlist(
     existing_playlist_id = existing_playlist.id if existing_playlist else None
 
     if not existing_playlist_id:
-        new_playlist = create_jellyfin_playlist(
+        new_playlist = await create_jellyfin_playlist(
             playlist_name=playlist_name, user_id=jellyfin_user.id
         )
         existing_playlist_id = new_playlist.get("Id")
@@ -240,13 +241,13 @@ def get_or_create_jellyfin_playlist(
     return existing_playlist_id, jellyfin_user.id
 
 
-def delete_songs_from_jellyfin_playlist(
+async def delete_songs_from_jellyfin_playlist(
     playlist_id: str,
     track_ids: list[str],
 ) -> dict[str, Any]:
     """Remove tracks from a Jellyfin playlist by their playlist entry IDs."""
 
-    return _jellyfin(
+    return await _jellyfin(
         f"/Playlists/{playlist_id}/Items",
         method="DELETE",
         params={
@@ -255,10 +256,14 @@ def delete_songs_from_jellyfin_playlist(
     )
 
 
-def get_jellyfin_playlist_songs(playlist_id: str, user_id: str) -> list[JellyfinTrack]:
+async def get_jellyfin_playlist_songs(
+    playlist_id: str, user_id: str
+) -> list[JellyfinTrack]:
     """Return all tracks in a Jellyfin playlist."""
 
-    response = _jellyfin(f"/Playlists/{playlist_id}/Items", params={"userId": user_id})
+    response = await _jellyfin(
+        f"/Playlists/{playlist_id}/Items", params={"userId": user_id}
+    )
     data = response.get("Items", [])
 
     return [
@@ -276,7 +281,7 @@ def get_jellyfin_playlist_songs(playlist_id: str, user_id: str) -> list[Jellyfin
     ]
 
 
-def update_jellyfin_playlist_image(
+async def update_jellyfin_playlist_image(
     playlist_id: str, image_url: str | None
 ) -> dict[str, Any] | None:
     """Set the primary cover image for a Jellyfin playlist from a remote URL.
@@ -289,21 +294,25 @@ def update_jellyfin_playlist_image(
         return
 
     try:
-        _jellyfin(
+        await _jellyfin(
             f"/Items/{playlist_id}/RemoteImages/Download",
             method="POST",
             params={"type": "Primary", "imageUrl": image_url},
         )
-    except requests.HTTPError as e:
+        return
+    except httpx.HTTPStatusError as e:
         if not (e.response is not None and e.response.status_code == 400):
             logger.error("Failed to update playlist image with remote image")
+    except httpx.RequestError as e:
+        logger.error(f"Network error when setting remote playlist image: {e}")
 
-    thumbnail_response = requests.get(image_url)
+    async with httpx.AsyncClient(follow_redirects=True) as client:
+        thumbnail_response = await client.get(image_url)
     thumbnail_response.raise_for_status()
     mime = thumbnail_response.headers.get("Content-Type") or (
         "image/png" if image_url.lower().endswith(".png") else "image/jpeg"
     )
-    return _jellyfin(
+    return await _jellyfin(
         f"/Items/{playlist_id}/Images/Primary",
         method="POST",
         headers={"Content-Type": mime},
@@ -311,10 +320,10 @@ def update_jellyfin_playlist_image(
     )
 
 
-def rescan_jellyfin_library() -> None:
+async def rescan_jellyfin_library() -> None:
     """Trigger a full metadata refresh on the configured download library."""
 
-    media_folders_response = _jellyfin("/Library/MediaFolders")
+    media_folders_response = await _jellyfin("/Library/MediaFolders")
 
     download_library_name = get_environment_variable("DOWNLOAD_LIBRARY_NAME")
     download_folder = next(
@@ -335,7 +344,7 @@ def rescan_jellyfin_library() -> None:
             detail="Media folder not found",
         )
 
-    _jellyfin(
+    await _jellyfin(
         f"/Items/{download_folder.get('Id')}/Refresh",
         method="POST",
         params={
@@ -349,21 +358,21 @@ def rescan_jellyfin_library() -> None:
     )
 
 
-def is_jellyfin_scanning_library() -> bool:
+async def is_jellyfin_scanning_library() -> bool:
     """Return True if the configured download library is currently being scanned."""
 
     download_library_name = get_environment_variable("DOWNLOAD_LIBRARY_NAME")
 
-    for library in get_jellyfin_libraries():
+    for library in await get_jellyfin_libraries():
         if library.name == download_library_name and library.refresh_status == "Active":
             return True
     return False
 
 
-def get_jellyfin_libraries() -> list[JellyfinLibrary]:
+async def get_jellyfin_libraries() -> list[JellyfinLibrary]:
     """Return all virtual folders (libraries) configured in Jellyfin."""
 
-    response = _jellyfin("/Library/VirtualFolders")
+    response = await _jellyfin("/Library/VirtualFolders")
     return [
         JellyfinLibrary(
             name=folder.get("Name", ""),
@@ -376,13 +385,13 @@ def get_jellyfin_libraries() -> list[JellyfinLibrary]:
     ]
 
 
-def create_jellyfin_download_library() -> None:
+async def create_jellyfin_download_library() -> None:
     """Create the download library in Jellyfin using DOWNLOAD_LIBRARY_NAME and DOWNLOAD_DIR."""
 
     library_name = get_environment_variable("DOWNLOAD_LIBRARY_NAME")
     download_dir = get_environment_variable("DOWNLOAD_DIR")
 
-    _jellyfin(
+    await _jellyfin(
         "/Library/VirtualFolders",
         method="POST",
         params={
@@ -402,20 +411,20 @@ def create_jellyfin_download_library() -> None:
     logger.info(f"Created Jellyfin library '{library_name}' at path '{download_dir}'")
 
 
-def ensure_download_library_exists() -> None:
+async def ensure_download_library_exists() -> None:
     """Check whether the download library exists in Jellyfin and create it if not."""
 
     library_name = get_environment_variable("DOWNLOAD_LIBRARY_NAME")
 
     try:
         logger.info(f"Checking if Jellyfin library '{library_name}' exists")
-        existing_names = {library.name for library in get_jellyfin_libraries()}
+        existing_names = {library.name for library in await get_jellyfin_libraries()}
 
         if library_name in existing_names:
             logger.info(f"Jellyfin library '{library_name}' already exists")
             return
 
         logger.info(f"Jellyfin library '{library_name}' not found, creating it")
-        create_jellyfin_download_library()
+        await create_jellyfin_download_library()
     except Exception as e:
         logger.warning(f"Failed to ensure Jellyfin download library exists: {e}")

@@ -26,6 +26,6 @@ router = APIRouter()
     },
 )
 async def _get_jellyfin_users():
-    users = get_jellyfin_users()
+    users = await get_jellyfin_users()
 
     return [user.to_dict() for user in users]

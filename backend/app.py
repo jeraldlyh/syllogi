@@ -140,8 +140,8 @@ def create_app() -> FastAPI:
         return JSONResponse(status_code=500, content=payload)
 
     @app.on_event("startup")
-    def startup_event():
-        ensure_download_library_exists()
+    async def startup_event():
+        await ensure_download_library_exists()
 
         logger.info("Starting up application and initializing cron jobs")
         with get_isolated_session() as session:

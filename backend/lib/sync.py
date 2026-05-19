@@ -114,7 +114,7 @@ async def sync_playlist_task(
         external_playlist_name = external_playlist.name
 
         try:
-            found_tracks, missing_tracks = resolve_tracks(songs)
+            found_tracks, missing_tracks = await resolve_tracks(songs)
 
             track_names = [
                 f"{song.artist_name} - {song.album_name}: {song.track_name}"
@@ -122,7 +122,7 @@ async def sync_playlist_task(
             ]
 
             internal_playlist_name = internal_playlist.playlist_name
-            existing_playlist_id, jellyfin_user_id = get_or_create_jellyfin_playlist(
+            existing_playlist_id, jellyfin_user_id = await get_or_create_jellyfin_playlist(
                 playlist_name=internal_playlist_name,
                 username=username,
             )
@@ -148,17 +148,17 @@ async def sync_playlist_task(
                 if len(downloaded_tracks) > 0:
                     logger.info(f"Downloaded {len(downloaded_tracks)} missing songs")
 
-                    rescan_jellyfin_library()
+                    await rescan_jellyfin_library()
                     await asyncio.sleep(3)
 
-                    while is_jellyfin_scanning_library():
+                    while await is_jellyfin_scanning_library():
                         logger.info(
                             "Waiting for Jellyfin to finish scanning library..."
                         )
                         await asyncio.sleep(15)
 
                     newly_found_tracks, still_missing_tracks_after_download = (
-                        resolve_tracks(tracks=downloaded_tracks)
+                        await resolve_tracks(tracks=downloaded_tracks)
                     )
                     found_tracks, missing_tracks = reconcile_after_download(
                         found_tracks=found_tracks,
@@ -169,7 +169,7 @@ async def sync_playlist_task(
                         get_key=lambda t: (t.track.artist_name, t.track.track_name),
                     )
 
-            existing_jellyfin_tracks = get_jellyfin_playlist_songs(
+            existing_jellyfin_tracks = await get_jellyfin_playlist_songs(
                 playlist_id=existing_playlist_id, user_id=jellyfin_user_id
             )
 
@@ -189,7 +189,7 @@ async def sync_playlist_task(
                     f"{internal_playlist.playlist_name} playlist"
                 )
                 removed_entry_ids = [track.id for track in diff.removed]
-                delete_songs_from_jellyfin_playlist(
+                await delete_songs_from_jellyfin_playlist(
                     playlist_id=existing_playlist_id, track_ids=removed_entry_ids
                 )
 
@@ -203,15 +203,15 @@ async def sync_playlist_task(
                     for track in diff.added
                     if track.jellyfin_id is not None
                 ]
-                add_songs_to_jellyfin_playlist(
+                await add_songs_to_jellyfin_playlist(
                     playlist_id=existing_playlist_id,
                     user_id=jellyfin_user_id,
                     track_ids=added_track_ids,
                 )
 
             spotify_playlist_thumbnail_url = external_playlist.thumbnail_url
-            update_jellyfin_playlist_image(
-                playlist_id=playlist_id,
+            await update_jellyfin_playlist_image(
+                playlist_id=existing_playlist_id,
                 image_url=spotify_playlist_thumbnail_url
                 if spotify_playlist_thumbnail_url.endswith((".png", "jpg", "jpeg"))
                 else None,
@@ -226,7 +226,7 @@ async def sync_playlist_task(
                 isinstance(discord_webhook_url, str)
                 and discord_webhook_url.strip() != ""
             ):
-                send_discord_notification(
+                await send_discord_notification(
                     webhook_url=discord_webhook_url,
                     title="Import Summary",
                     fields=[
@@ -303,7 +303,7 @@ async def sync_playlist_task(
                 )
             )
 
-            update_sync_session(session=session, sync_session=sync_session)
+            sync_session = update_sync_session(session=session, sync_session=sync_session)
         except Exception as e:
             finished_at = get_now()
             sync_session.status = SyncStatus.failed
@@ -353,11 +353,19 @@ async def sync_playlist(playlist: Playlist) -> dict[str, str]:
 
         match internal_playlist.provider:
             case PlaylistProvider.spotify:
-                songs = get_spotify_playlist_songs(playlist_id=playlist_id)
-                external_playlist = get_spotify_playlist(playlist_id=playlist_id)
+                songs = await asyncio.to_thread(
+                    get_spotify_playlist_songs, playlist_id=playlist_id
+                )
+                external_playlist = await asyncio.to_thread(
+                    get_spotify_playlist, playlist_id=playlist_id
+                )
             case PlaylistProvider.youtube:
-                songs = get_youtube_playlist_songs(playlist_id=playlist_id)
-                external_playlist = get_youtube_playlist(playlist_id=playlist_id)
+                songs = await asyncio.to_thread(
+                    get_youtube_playlist_songs, playlist_id=playlist_id
+                )
+                external_playlist = await asyncio.to_thread(
+                    get_youtube_playlist, playlist_id=playlist_id
+                )
 
         await sync_playlist_task(
             internal_playlist_id=internal_playlist.id,

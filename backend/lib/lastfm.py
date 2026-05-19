@@ -2,7 +2,7 @@ import logging
 from collections.abc import Callable, Hashable
 from typing import Any, TypeVar
 
-import requests
+import httpx
 
 from lib.models.lastfm import LastFMRecentTrack, LastFMSimilarTrack, LastFMTopTrack
 from lib.env import get_environment_variable
@@ -12,7 +12,7 @@ logger = logging.getLogger(__name__)
 T = TypeVar("T", bound=Hashable)
 
 
-def _lastfm(
+async def _lastfm(
     path: str = "",
     method: str = "GET",
     params: dict[str, Any] | None = None,
@@ -33,15 +33,16 @@ def _lastfm(
     }
     default_params.update(params or {})
 
-    response = requests.request(
-        method=method.upper(),
-        url=f"{api_url}{path}",
-        headers={**base_headers, **(headers or {})},
-        params={**default_params},
-        json=json,
-        data=data,
-        timeout=timeout,
-    )
+    async with httpx.AsyncClient() as client:
+        response = await client.request(
+            method=method.upper(),
+            url=f"{api_url}{path}",
+            headers={**base_headers, **(headers or {})},
+            params={**default_params},
+            json=json,
+            data=data,
+            timeout=timeout,
+        )
     response.raise_for_status()
 
     if response.status_code == 204 or not response.content:
@@ -59,7 +60,7 @@ def _get_nested_value(data: Any, path: str) -> Any:
     return value
 
 
-def _get_lastfm_tracks_paginated(
+async def _get_lastfm_tracks_paginated(
     *,
     params: dict[str, Any],
     limit: int,
@@ -67,18 +68,6 @@ def _get_lastfm_tracks_paginated(
     track_factory: Callable[[dict[str, Any]], T],
     track_filter: Callable[[dict[str, Any]], bool] | None = None,
 ) -> list[T]:
-    """Helper for fetching paginated track data from LastFM.
-
-    Args:
-        params: Base query parameters for the LastFM API request (excluding pagination).
-        limit: Maximum number of tracks to return.
-        response_path: Dot-separated path to the list of tracks in the API response (e.g. "recenttracks.track").
-        track_factory: Callable that converts a raw track dict from the API response into an instance of T.
-        track_filter: Optional callable that filters raw track dicts from the API response before conversion. If provided, only tracks for which this returns True will be included.
-
-    Returns:
-        A list of tracks of type T, up to the specified limit.
-    """
     page = 1
     total_pages: int | None = None
     tracks: list[T] = []
@@ -86,7 +75,8 @@ def _get_lastfm_tracks_paginated(
     response_root_key, _, response_tracks_key = response_path.rpartition(".")
 
     while len(tracks) < limit:
-        data = _lastfm(
+        logger.debug(f"Fetching LastFM tracks: page {page}, limit {limit}")
+        data = await _lastfm(
             params={
                 **params,
                 "limit": limit,
@@ -130,8 +120,10 @@ def _get_lastfm_tracks_paginated(
     return tracks
 
 
-def get_lastfm_recent_tracks(user: str, limit: int = 30) -> list[LastFMRecentTrack]:
-    return _get_lastfm_tracks_paginated(
+async def get_lastfm_recent_tracks(
+    user: str, limit: int = 30
+) -> list[LastFMRecentTrack]:
+    return await _get_lastfm_tracks_paginated(
         params={
             "user": user,
             "method": "user.getRecentTracks",
@@ -148,10 +140,10 @@ def get_lastfm_recent_tracks(user: str, limit: int = 30) -> list[LastFMRecentTra
     )
 
 
-def get_lastfm_top_tracks(
+async def get_lastfm_top_tracks(
     user: str, period: str = "6month", limit: int = 30
 ) -> list[LastFMTopTrack]:
-    return _get_lastfm_tracks_paginated(
+    return await _get_lastfm_tracks_paginated(
         params={
             "user": user,
             "method": "user.getTopTracks",
@@ -170,10 +162,10 @@ def get_lastfm_top_tracks(
     )
 
 
-def get_lastfm_similar_tracks(
+async def get_lastfm_similar_tracks(
     user: str, artist: str, track: str, limit: int = 5
 ) -> list[LastFMSimilarTrack]:
-    return _get_lastfm_tracks_paginated(
+    return await _get_lastfm_tracks_paginated(
         params={
             "user": user,
             "method": "track.getSimilar",

@@ -82,12 +82,12 @@ def _score_track(
     )
 
 
-def find_track(
+async def find_track(
     artist_name: str, track_name: str, album_name: str, year: str, duration: int
 ) -> JellyfinTrack:
     """Find the best matching track in Jellyfin based on the provided metadata."""
 
-    jellyfin_tracks = search_jellyfin_track(
+    jellyfin_tracks = await search_jellyfin_track(
         artist_name=artist_name, title=track_name, album=album_name, year=year
     )
     best_match, best_score = None, 0.0
@@ -127,7 +127,7 @@ def find_track(
     )
 
 
-def resolve_tracks(
+async def resolve_tracks(
     tracks: list[ExternalTrack],
 ) -> tuple[list[ResolvedTrack], list[ResolvedTrack]]:
     """Verifies which tracks from the source playlist can be found in the Jellyfin library.
@@ -139,7 +139,7 @@ def resolve_tracks(
 
     for song in tracks:
         display_name = f"{song.artist_name} - {song.album_name}: {song.track_name}"
-        track = find_track(
+        track = await find_track(
             artist_name=song.artist_name,
             track_name=song.track_name,
             album_name=song.album_name,
