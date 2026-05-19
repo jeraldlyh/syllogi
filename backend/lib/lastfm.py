@@ -90,7 +90,7 @@ async def _get_lastfm_tracks_paginated(
             break
 
         for raw_track in raw_tracks:
-            if track_filter is not None and track_filter(raw_track):
+            if track_filter is not None and not track_filter(raw_track):
                 continue
 
             track = track_factory(raw_track)
