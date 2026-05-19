@@ -303,8 +303,8 @@ async def generate_recommendations(
             session=session, recommendation_session=recommendation_session
         )
 
-    await generate_recommendations_task(
-        lastfm_username=internal_recommendation.lastfm_username,
-        recommendation_session_id=recommendation_session.id,
-    )
-    return {"id": str(recommendation_session.id)}
+        await generate_recommendations_task(
+            lastfm_username=internal_recommendation.lastfm_username,
+            recommendation_session_id=recommendation_session.id,
+        )
+        return {"id": str(recommendation_session.id)}

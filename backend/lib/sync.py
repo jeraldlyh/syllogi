@@ -348,21 +348,21 @@ async def sync_playlist(playlist: Playlist) -> dict[str, str]:
         )
         create_sync_session(session=session, sync_session=sync_session)
 
-    songs: list[ExternalTrack] = []
-    external_playlist: ExternalPlaylist | None = None
+        songs: list[ExternalTrack] = []
+        external_playlist: ExternalPlaylist | None = None
 
-    match internal_playlist.provider:
-        case PlaylistProvider.spotify:
-            songs = get_spotify_playlist_songs(playlist_id=playlist_id)
-            external_playlist = get_spotify_playlist(playlist_id=playlist_id)
-        case PlaylistProvider.youtube:
-            songs = get_youtube_playlist_songs(playlist_id=playlist_id)
-            external_playlist = get_youtube_playlist(playlist_id=playlist_id)
+        match internal_playlist.provider:
+            case PlaylistProvider.spotify:
+                songs = get_spotify_playlist_songs(playlist_id=playlist_id)
+                external_playlist = get_spotify_playlist(playlist_id=playlist_id)
+            case PlaylistProvider.youtube:
+                songs = get_youtube_playlist_songs(playlist_id=playlist_id)
+                external_playlist = get_youtube_playlist(playlist_id=playlist_id)
 
-    await sync_playlist_task(
-        internal_playlist_id=internal_playlist.id,
-        external_playlist=external_playlist,
-        songs=songs,
-        sync_session_id=sync_session.id,
-    )
-    return {"id": str(sync_session.id)}
+        await sync_playlist_task(
+            internal_playlist_id=internal_playlist.id,
+            external_playlist=external_playlist,
+            songs=songs,
+            sync_session_id=sync_session.id,
+        )
+        return {"id": str(sync_session.id)}
