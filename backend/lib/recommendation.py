@@ -80,7 +80,6 @@ async def get_recommendations(
             user=lastfm_username,
             artist=track.artist_name,
             track=track.track_name,
-            limit=10,
         )
 
         has_missing = False
@@ -185,9 +184,10 @@ async def generate_recommendations_task(
                         )
                         await asyncio.sleep(15)
 
-                    found_tracks_after_download, missing_tracks_after_scan = (
-                        await resolve_tracks(tracks=downloaded_tracks)
-                    )
+                    (
+                        found_tracks_after_download,
+                        missing_tracks_after_scan,
+                    ) = await resolve_tracks(tracks=downloaded_tracks)
 
                     found_tracks, missing_tracks = reconcile_after_download(
                         found_tracks=found_tracks,

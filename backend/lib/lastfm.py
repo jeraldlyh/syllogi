@@ -18,7 +18,7 @@ async def _lastfm(
     params: dict[str, Any] | None = None,
     headers: dict[str, Any] | None = None,
     json: dict[str, Any] | list[Any] | None = None,
-    data: dict[str, Any] | str | bytes | None = None,
+    data: dict[str, Any] | None = None,
     timeout: float = 30.0,
 ) -> Any:
     base_headers = {
@@ -68,6 +68,16 @@ async def _get_lastfm_tracks_paginated(
     track_factory: Callable[[dict[str, Any]], T],
     track_filter: Callable[[dict[str, Any]], bool] | None = None,
 ) -> list[T]:
+    """Helper for fetching paginated track data from LastFM.
+
+    Args:
+        params: Base query parameters for the LastFM API request (excluding pagination).
+        limit: Maximum number of tracks to return.
+        response_path: Dot-separated path to the list of tracks in the API response (e.g. "recenttracks.track").
+        track_factory: Callable that converts a raw track dict from the API response into an instance of T.
+        track_filter: Optional callable that filters raw track dicts from the API response before conversion. If provided, only tracks for which this returns True will be included.
+    """
+
     page = 1
     total_pages: int | None = None
     tracks: list[T] = []
@@ -75,7 +85,6 @@ async def _get_lastfm_tracks_paginated(
     response_root_key, _, response_tracks_key = response_path.rpartition(".")
 
     while len(tracks) < limit:
-        logger.debug(f"Fetching LastFM tracks: page {page}, limit {limit}")
         data = await _lastfm(
             params={
                 **params,
@@ -163,24 +172,31 @@ async def get_lastfm_top_tracks(
 
 
 async def get_lastfm_similar_tracks(
-    user: str, artist: str, track: str, limit: int = 5
+    user: str, artist: str, track: str
 ) -> list[LastFMSimilarTrack]:
-    return await _get_lastfm_tracks_paginated(
+    data = await _lastfm(
         params={
             "user": user,
             "method": "track.getSimilar",
             "artist": artist,
             "track": track,
         },
-        limit=limit,
-        response_path="similartracks.track",
-        track_filter=lambda track: track.get("mbid", "") != "",
-        track_factory=lambda track: LastFMSimilarTrack(
-            artist_name=track.get("artist", {}).get("name", ""),
-            track_name=track.get("name", ""),
-            duration=track.get("duration", 0),
-            musicbrainz_id=track.get("mbid", ""),
-            playcount=track.get("playcount", 0),
-            similarity_score=track.get("match", 0.0),
-        ),
     )
+    raw_tracks = _get_nested_value(data, "similartracks.track") or []
+    tracks: list[LastFMSimilarTrack] = []
+
+    for raw_track in raw_tracks:
+        if raw_track.get("mbid", "") == "":
+            continue
+
+        tracks.append(
+            LastFMSimilarTrack(
+                artist_name=raw_track.get("artist", {}).get("name", ""),
+                track_name=raw_track.get("name", ""),
+                duration=raw_track.get("duration", 0),
+                musicbrainz_id=raw_track.get("mbid", ""),
+                playcount=raw_track.get("playcount", 0),
+                similarity_score=raw_track.get("match", 0.0),
+            )
+        )
+    return tracks

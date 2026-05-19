@@ -28,7 +28,7 @@ def create_job(
         func: The function to execute.
         kwargs: The keyword arguments to pass to the function when executed.
         cron_expression: The cron expression defining the schedule for the job.
-        job_id: Optional unique identifier for the job.
+        job_id: Unique identifier for the job.
     """
     job = get_job(job_id=job_id)
 

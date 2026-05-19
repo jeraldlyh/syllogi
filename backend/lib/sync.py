@@ -108,7 +108,6 @@ async def sync_playlist_task(
                 detail=f"Unable to find sync session with ID: {sync_session_id}",
             )
 
-        playlist_id = internal_playlist.playlist_id
         username = internal_playlist.username
         started_at = sync_session.started_at
         external_playlist_name = external_playlist.name
@@ -122,7 +121,10 @@ async def sync_playlist_task(
             ]
 
             internal_playlist_name = internal_playlist.playlist_name
-            existing_playlist_id, jellyfin_user_id = await get_or_create_jellyfin_playlist(
+            (
+                existing_playlist_id,
+                jellyfin_user_id,
+            ) = await get_or_create_jellyfin_playlist(
                 playlist_name=internal_playlist_name,
                 username=username,
             )
@@ -157,9 +159,10 @@ async def sync_playlist_task(
                         )
                         await asyncio.sleep(15)
 
-                    newly_found_tracks, still_missing_tracks_after_download = (
-                        await resolve_tracks(tracks=downloaded_tracks)
-                    )
+                    (
+                        newly_found_tracks,
+                        still_missing_tracks_after_download,
+                    ) = await resolve_tracks(tracks=downloaded_tracks)
                     found_tracks, missing_tracks = reconcile_after_download(
                         found_tracks=found_tracks,
                         missing_tracks=missing_tracks,
@@ -303,7 +306,9 @@ async def sync_playlist_task(
                 )
             )
 
-            sync_session = update_sync_session(session=session, sync_session=sync_session)
+            sync_session = update_sync_session(
+                session=session, sync_session=sync_session
+            )
         except Exception as e:
             finished_at = get_now()
             sync_session.status = SyncStatus.failed
