@@ -1,3 +1,4 @@
+from contextlib import contextmanager
 from typing import Annotated
 
 from fastapi import Depends
@@ -22,8 +23,16 @@ def get_session():
         yield session
 
 
+@contextmanager
 def get_isolated_session():
-    return Session(engine)
+    session = Session(engine)
+    try:
+        yield session
+    except Exception:
+        session.rollback()
+        raise
+    finally:
+        session.close()
 
 
 SessionDep = Annotated[Session, Depends(get_session)]
