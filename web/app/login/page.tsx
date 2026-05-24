@@ -60,8 +60,7 @@ export default function LoginPage() {
   };
 
   const handleOAuthLogin = (): void => {
-    const backendUrl = process.env.NEXT_PUBLIC_URL || "http://localhost:8000";
-    window.location.href = `${backendUrl}/api/oauth/authorize`;
+    window.location.href = `${window.location.origin}/api/oauth/authorize`;
   };
 
   const renderAuthentikButton = (): React.JSX.Element | undefined => {
