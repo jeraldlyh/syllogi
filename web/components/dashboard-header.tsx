@@ -66,9 +66,9 @@ export function DashboardHeader() {
       toast.error("Logout failed", {
         description: "Unable to reach the server right now.",
       });
+    } finally {
+      setIsLoggingOut(false);
     }
-
-    setIsLoggingOut(false);
   };
 
   if (isError || isLoading) {

@@ -334,8 +334,8 @@ async def sync_playlist(playlist: Playlist) -> dict[str, str]:
                 detail=f"Unable to find playlist setting: {playlist.playlist_id}",
             )
 
-        playlist_id = playlist.playlist_id
-        username = playlist.username
+        playlist_id = internal_playlist.playlist_id
+        username = internal_playlist.username
         started_at = get_now()
 
         sync_session = SyncSession(

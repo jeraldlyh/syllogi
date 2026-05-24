@@ -73,4 +73,4 @@ def delete_job(job_id: str | uuid.UUID):
 
     if job:
         logger.info(f"Deleting cron job for {job_id}")
-        scheduler.remove_job(job_id=str(job_id))
+        scheduler.remove_job(job_id=job_id)
