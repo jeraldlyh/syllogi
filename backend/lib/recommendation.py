@@ -295,8 +295,8 @@ async def generate_recommendations(
         started_at = get_now()
         recommendation_session = RecommendationSession(
             username=internal_recommendation.username,
-            provider=RecommendationProvider.lastfm,
-            strategy=RecommendationStrategy.recent_tracks,
+            provider=RecommendationProvider.lastfm,  # TODO: Support multiple providers
+            strategy=internal_recommendation.strategy,
             requested_count=internal_recommendation.requested_count,
             generated_count=0,
             started_at=started_at,
