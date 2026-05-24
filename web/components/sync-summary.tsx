@@ -16,7 +16,7 @@ export const SyncSummary = () => {
     <Card>
       <CardHeader className="flex flex-row items-center justify-between pb-3">
         <CardTitle className="text-base font-medium text-foreground">
-          Latest Sync Summary
+          Latest Summary
         </CardTitle>
         <StatusBadge status={latestRun.status} />
       </CardHeader>

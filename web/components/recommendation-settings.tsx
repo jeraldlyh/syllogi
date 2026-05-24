@@ -1,6 +1,6 @@
 "use client";
 
-import { Pencil, Play, Plus, Trash2 } from "lucide-react";
+import { Clock, Pencil, Play, Plus, Trash2 } from "lucide-react";
 import React, { useState } from "react";
 import { toast } from "sonner";
 import useSWRMutation from "swr/mutation";
@@ -53,6 +53,7 @@ import {
   useRecommendations,
 } from "@/hooks/useRecommendation";
 import { useJellyfinUsers } from "@/hooks/useUsers";
+import { CRON_PRESETS } from "@/lib/types";
 import { cn, convertSnakeCaseToTitleCase } from "@/lib/utils";
 
 interface FormState {
@@ -60,6 +61,8 @@ interface FormState {
   strategy: RecommendationStrategy;
   lastfm_username: string;
   requested_count: number;
+  cron_expression: string;
+  cron_mode: "simple" | "custom";
 }
 
 interface FormErrors {
@@ -67,6 +70,7 @@ interface FormErrors {
   strategy?: string;
   lastfm_username?: string;
   requested_count?: string;
+  cron_expression?: string;
 }
 
 const DEFAULT_FORM: FormState = {
@@ -74,6 +78,8 @@ const DEFAULT_FORM: FormState = {
   strategy: "recent_tracks",
   lastfm_username: "",
   requested_count: 50,
+  cron_expression: "0 * * * *",
+  cron_mode: "simple",
 };
 
 const STRATEGIES: { label: string; value: RecommendationStrategy }[] = [
@@ -115,12 +121,19 @@ export const Recommendations = () => {
   };
 
   const handleEditRecommendation = (recommendation: Recommendation) => {
+    const isPreset = CRON_PRESETS.some(
+      (p) => p.value === recommendation.cron_expression,
+    );
+
     setEditingId(recommendation.id);
     setForm({
       username: recommendation.username,
       strategy: recommendation.strategy,
       lastfm_username: recommendation.lastfm_username,
       requested_count: recommendation.requested_count,
+      cron_expression: recommendation.cron_expression,
+      cron_mode:
+        isPreset || !recommendation.cron_expression ? "simple" : "custom",
     });
     setErrors({});
     setDialogOpen(true);
@@ -145,6 +158,14 @@ export const Recommendations = () => {
       newErrors.requested_count = "Must be less than or equal to 50";
     }
 
+    if (form.cron_expression.trim()) {
+      const parts = form.cron_expression.trim().split(/\s+/);
+      if (parts.length !== 5) {
+        newErrors.cron_expression =
+          "Must have exactly 5 fields (min hour dom mon dow)";
+      }
+    }
+
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
@@ -152,11 +173,13 @@ export const Recommendations = () => {
   const handleSaveRecommendation = async (): Promise<void> => {
     if (!isFormError()) return;
 
+    const { cron_mode, ...formData } = form;
     const payload = {
-      username: form.username,
-      strategy: form.strategy,
-      lastfm_username: form.lastfm_username,
-      requested_count: form.requested_count,
+      username: formData.username,
+      strategy: formData.strategy,
+      lastfm_username: formData.lastfm_username,
+      requested_count: formData.requested_count,
+      cron_expression: formData.cron_expression,
     };
 
     if (editingId) {
@@ -231,6 +254,7 @@ export const Recommendations = () => {
               </TableHead>
               <TableHead>Strategy</TableHead>
               <TableHead className="hidden md:table-cell">Requested</TableHead>
+              <TableHead className="hidden md:table-cell">Schedule</TableHead>
               <TableHead>Actions</TableHead>
             </TableRow>
           </TableHeader>
@@ -264,6 +288,23 @@ export const Recommendations = () => {
                     value={String(recommendation.requested_count)}
                     className="text-muted-foreground"
                   />
+                </TableCell>
+                <TableCell className="hidden md:table-cell">
+                  {recommendation.cron_expression ? (
+                    <div className="flex items-center gap-1.5 text-muted-foreground">
+                      <Clock className="h-4 w-4" />
+                      <Text
+                        value={
+                          CRON_PRESETS.find(
+                            (cron) =>
+                              cron.value === recommendation.cron_expression,
+                          )?.label ?? recommendation.cron_expression
+                        }
+                      />
+                    </div>
+                  ) : (
+                    <Text value="Manual" className="text-muted-foreground" />
+                  )}
                 </TableCell>
                 <TableCell>
                   <div className="flex items-center gap-1">
@@ -309,7 +350,7 @@ export const Recommendations = () => {
       <Card>
         <CardHeader className="flex flex-row items-center justify-between">
           <CardTitle className="text-base font-medium text-foreground">
-            Recommendations
+            Settings
           </CardTitle>
           <Button size="sm" onClick={handleAddRecommendation}>
             <Plus className="h-4 w-4" />
@@ -429,6 +470,98 @@ export const Recommendations = () => {
                 }
                 placeholder="e.g. 50"
               />
+            </div>
+            <div className="flex flex-col gap-2">
+              <Label className="flex justify-between items-center">
+                <Text
+                  value="Schedule"
+                  className="text-xs text-muted-foreground"
+                />
+                {renderErrorMessage(errors.cron_expression)}
+              </Label>
+              <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={() =>
+                    setForm((prev) => ({
+                      ...prev,
+                      cron_mode: "simple",
+                      cron_expression: CRON_PRESETS[0].value,
+                    }))
+                  }
+                  className={cn(
+                    "rounded-md px-3 py-1.5 text-xs font-medium transition-colors",
+                    {
+                      "bg-primary text-primary-foreground":
+                        form.cron_mode === "simple",
+                      "bg-secondary text-secondary-foreground hover:bg-secondary/80":
+                        form.cron_mode !== "simple",
+                    },
+                  )}
+                >
+                  Simple
+                </button>
+                <button
+                  type="button"
+                  onClick={() =>
+                    setForm((prev) => ({
+                      ...prev,
+                      cron_mode: "custom",
+                    }))
+                  }
+                  className={cn(
+                    "rounded-md px-3 py-1.5 text-xs font-medium transition-colors",
+                    {
+                      "bg-primary text-primary-foreground":
+                        form.cron_mode === "custom",
+                      "bg-secondary text-secondary-foreground hover:bg-secondary/80":
+                        form.cron_mode !== "custom",
+                    },
+                  )}
+                >
+                  Custom
+                </button>
+              </div>
+              {form.cron_mode === "simple" ? (
+                <Select
+                  value={form.cron_expression}
+                  onValueChange={(value) =>
+                    setForm((prev) => ({ ...prev, cron_expression: value }))
+                  }
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select schedule" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {CRON_PRESETS.map((preset) => (
+                      <SelectItem key={preset.value} value={preset.value}>
+                        <span className="font-mono">{preset.label}</span>
+                        <span className="ml-2 text-sm font-mono text-muted-foreground">
+                          {preset.value}
+                        </span>
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              ) : (
+                <div>
+                  <Input
+                    value={form.cron_expression}
+                    onChange={(e) =>
+                      setForm((prev) => ({
+                        ...prev,
+                        cron_expression: e.target.value,
+                      }))
+                    }
+                    placeholder="*/15 * * * *"
+                    className="font-mono text-sm"
+                  />
+                  <Text
+                    value="Use standard cron format. For example, '0 0 * * *' to generate daily."
+                    className="mt-1 text-xs text-muted-foreground"
+                  />
+                </div>
+              )}
             </div>
           </div>
           <DialogFooter>

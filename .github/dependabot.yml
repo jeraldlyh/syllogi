@@ -44,6 +44,7 @@ updates:
       - "dependencies"
       - "backend"
     ignore:
+      - dependency-name: "spotapi"
       - dependency-name: "*"
         update-types: ["version-update:semver-major"]
     groups:

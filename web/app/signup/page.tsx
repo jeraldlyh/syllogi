@@ -4,21 +4,21 @@ import { Text } from "@/components/common/text";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Separator } from "@/components/ui/separator";
-import { useSettings } from "@/hooks/useSettings";
 import { api } from "@/lib/api";
-import { Layers } from "lucide-react";
+import { cn } from "@/lib/utils";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import React, { useEffect, useState } from "react";
 import { toast } from "sonner";
 
-export default function LoginPage() {
-  const { data } = useSettings();
+export default function SignupPage() {
   const router = useRouter();
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
+  const [confirmError, setConfirmError] = useState("");
 
   useEffect(() => {
     const redirect = async (): Promise<void> => {
@@ -36,55 +36,67 @@ export default function LoginPage() {
     redirect();
   }, [router]);
 
-  const handlePasswordLogin = async (e: React.FormEvent): Promise<void> => {
+  const handleConfirmPasswordChange = (
+    e: React.ChangeEvent<HTMLInputElement>,
+  ): void => {
+    const value = e.target.value;
+
+    setConfirmPassword(value);
+    if (value && value !== password) {
+      setConfirmError("Passwords do not match");
+    } else {
+      setConfirmError("");
+    }
+  };
+
+  const handlePasswordChange = (
+    e: React.ChangeEvent<HTMLInputElement>,
+  ): void => {
+    const value = e.target.value;
+    setPassword(value);
+    if (confirmPassword && confirmPassword !== value) {
+      setConfirmError("Passwords do not match");
+    } else {
+      setConfirmError("");
+    }
+  };
+
+  const handleRegister = async (e: React.FormEvent): Promise<void> => {
     e.preventDefault();
 
-    const formData = new FormData();
-    formData.append("username", username);
-    formData.append("password", password);
+    if (!username.trim()) {
+      toast.error("Username is required");
+      return;
+    }
+
+    if (!password) {
+      toast.error("Password is required");
+      return;
+    }
+
+    if (password !== confirmPassword) {
+      setConfirmError("Passwords do not match");
+      return;
+    }
+
+    setIsLoading(true);
 
     const response = await api({
-      service: "auth",
       method: "POST",
-      path: "login",
-      formData,
+      service: "auth",
+      path: "register",
+      body: { username: username.trim(), password },
     });
+
+    setIsLoading(false);
 
     if (response.statusCode === 200) {
       router.push("/");
     } else {
-      toast.error("Login failed", {
+      toast.error("Registration failed", {
         description: response.error?.message || "An unknown error occurred",
       });
     }
-  };
-
-  const handleOAuthLogin = (): void => {
-    const backendUrl = process.env.NEXT_PUBLIC_URL || "http://localhost:8000";
-    window.location.href = `${backendUrl}/api/oauth/authorize`;
-  };
-
-  const renderAuthentikButton = (): React.JSX.Element | undefined => {
-    if (!data || !data.isOAuthEnabled) return;
-
-    return (
-      <>
-        <div className="my-6 flex items-center gap-3">
-          <Separator className="flex-1" />
-          <span className="text-xs text-muted-foreground">OR</span>
-          <Separator className="flex-1" />
-        </div>
-        <Button
-          type="button"
-          variant="outline"
-          onClick={handleOAuthLogin}
-          className="w-full h-10 gap-2"
-        >
-          <Layers />
-          Sign in with Authentik
-        </Button>
-      </>
-    );
   };
 
   return (
@@ -100,16 +112,17 @@ export default function LoginPage() {
           />
           <div className="text-center">
             <h1 className="text-2xl font-semibold tracking-tight text-foreground">
-              syllogi
+              Create your account
             </h1>
             <Text
               className="text-muted-foreground"
-              value="Unify your playlists with Jellyfin"
+              value="Start syncing your playlists with Jellyfin"
             />
           </div>
         </div>
+
         <div className="rounded-lg border border-border bg-card p-6 shadow-sm">
-          <form onSubmit={handlePasswordLogin} className="space-y-4">
+          <form onSubmit={handleRegister} className="space-y-4">
             <div className="space-y-2">
               <Label
                 htmlFor="username"
@@ -122,10 +135,13 @@ export default function LoginPage() {
                 type="text"
                 value={username}
                 onChange={(e) => setUsername(e.target.value)}
-                placeholder="Enter your username"
+                placeholder="Choose a username"
                 className="h-10"
+                autoComplete="username"
+                autoFocus
               />
             </div>
+
             <div className="space-y-2">
               <Label
                 htmlFor="password"
@@ -137,25 +153,54 @@ export default function LoginPage() {
                 id="password"
                 type="password"
                 value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                placeholder="Enter your password"
+                onChange={handlePasswordChange}
+                placeholder="Choose a password"
                 className="h-10"
               />
             </div>
-            <Button type="submit" className="w-full h-10">
-              Sign in
+
+            <div className="space-y-2">
+              <Label
+                htmlFor="confirm-password"
+                className="flex items-center justify-between text-sm"
+              >
+                <span className="text-muted-foreground">Confirm password</span>
+                {confirmError && (
+                  <span className="text-xs text-destructive">
+                    {confirmError}
+                  </span>
+                )}
+              </Label>
+              <Input
+                id="confirm-password"
+                type="password"
+                value={confirmPassword}
+                onChange={handleConfirmPasswordChange}
+                placeholder="Confirm your password"
+                className={cn("h-10", {
+                  "border-destructive focus-visible:ring-destructive":
+                    confirmError,
+                })}
+              />
+            </div>
+
+            <Button
+              type="submit"
+              className="w-full h-10"
+              disabled={isLoading || !!confirmError}
+            >
+              {isLoading ? "Creating account..." : "Create account"}
             </Button>
-            {renderAuthentikButton()}
           </form>
         </div>
 
         <p className="mt-4 text-center text-sm text-muted-foreground">
-          Don&apos;t have an account?&nbsp;
+          Already have an account?&nbsp;
           <Link
-            href="/signup"
+            href="/login"
             className="font-medium text-foreground underline-offset-4 hover:underline hover:text-primary transition-colors"
           >
-            Sign up
+            Sign in
           </Link>
         </p>
       </div>

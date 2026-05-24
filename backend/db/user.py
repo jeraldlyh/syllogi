@@ -1,5 +1,8 @@
 import uuid
+
+from sqlalchemy import func
 from sqlmodel import select
+
 from db.models.user import User
 from db.session import SessionDep
 
@@ -18,6 +21,10 @@ def get_user_by_username(session: SessionDep, username: str) -> User | None:
 
 def get_user_by_oauth_id(session: SessionDep, oauth_id: str) -> User | None:
     return session.exec(select(User).where(User.oauth_id == oauth_id)).first()
+
+
+def count_users(session: SessionDep) -> int:
+    return session.exec(select(func.count()).select_from(User)).one()
 
 
 def create_user(session: SessionDep, user: User) -> None:

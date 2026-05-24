@@ -6,7 +6,7 @@ from pydantic import BaseModel
 
 from db.models.user import User
 from db.session import SessionDep
-from db.user import create_user
+from db.user import count_users, create_user, get_user_by_username
 from lib.auth import (
     authenticate_user,
     create_access_token,
@@ -38,7 +38,7 @@ class RegisterUserRequest(BaseModel):
                 "application/json": {
                     "example": {
                         "success": True,
-                        "data": {"id": "1", "username": "jerald"},
+                        "data": {"id": "1", "username": "jerald", "is_admin": True},
                     }
                 }
             },
@@ -146,9 +146,7 @@ async def login(
     },
 )
 async def register(response: Response, session: SessionDep, item: RegisterUserRequest):
-    existing_user = authenticate_user(
-        session=session, username=item.username, password=item.password
-    )
+    existing_user = get_user_by_username(session=session, username=item.username)
 
     if existing_user:
         raise HTTPException(
@@ -156,10 +154,13 @@ async def register(response: Response, session: SessionDep, item: RegisterUserRe
             detail="Username already exists",
         )
 
+    is_first_user = count_users(session=session) == 0
+
     new_user = User(
         username=item.username,
         password=_get_password_hash(item.password),
         oauth_id=None,
+        is_admin=is_first_user,
     )
 
     create_user(session=session, user=new_user)

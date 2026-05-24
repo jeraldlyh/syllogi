@@ -288,7 +288,7 @@ export const RecommendationTable = () => {
       <Card>
         <CardHeader className="flex flex-row items-center justify-between">
           <CardTitle className="text-base font-medium text-foreground">
-            Recent Recommendation Sessions
+            Recent Sessions
           </CardTitle>
           <Button size="sm" onClick={() => fetchRecommendationSessions()}>
             <RefreshCw className="w-4 h-4" />

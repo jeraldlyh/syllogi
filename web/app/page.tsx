@@ -2,11 +2,12 @@
 
 import { Text } from "@/components/common/text";
 import { DashboardHeader } from "@/components/dashboard-header";
-import { Playlists } from "@/components/playlist";
-import { Recommendations } from "@/components/recommendation";
+import { SyncSettings } from "@/components/sync-settings";
+import { Recommendations } from "@/components/recommendation-settings";
 import { RecommendationTable } from "@/components/recommendation-table";
 import { SyncSummary } from "@/components/sync-summary";
 import { SyncSessionTable } from "@/components/sync-table";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { api } from "@/lib/api";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
@@ -103,12 +104,28 @@ export default function Page() {
       ) : (
         <div className="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
           <DashboardHeader />
-          <main className="mt-14 flex flex-col gap-6">
-            <SyncSummary />
-            <Playlists />
-            <SyncSessionTable />
-            <Recommendations />
-            <RecommendationTable />
+          <main className="mt-10">
+            <Tabs defaultValue="sync" className="w-full">
+              <TabsList>
+                <TabsTrigger value="sync">Sync</TabsTrigger>
+                <TabsTrigger value="recommendations">
+                  Recommendations
+                </TabsTrigger>
+              </TabsList>
+              <TabsContent value="sync">
+                <div className="flex flex-col gap-6 pt-6">
+                  <SyncSummary />
+                  <SyncSettings />
+                  <SyncSessionTable />
+                </div>
+              </TabsContent>
+              <TabsContent value="recommendations">
+                <div className="flex flex-col gap-6 pt-6">
+                  <Recommendations />
+                  <RecommendationTable />
+                </div>
+              </TabsContent>
+            </Tabs>
           </main>
         </div>
       )}

@@ -32,7 +32,7 @@ def oauth_authorize():
     config = _get_authentik_config()
 
     redirect_uri = (
-        f"{get_environment_variable('NEXT_PUBLIC_URL').rstrip('/')}/oauth/callback"
+        f"{str(get_environment_variable('NEXT_PUBLIC_URL')).rstrip('/')}/oauth/callback"
     )
 
     state = secrets.token_urlsafe(32)
@@ -58,7 +58,7 @@ def oauth_authorize():
         "create or retrieve the local user, issue a session cookie, and redirect to the app."
     ),
 )
-def oauth_callback(
+async def oauth_callback(
     _: Response,
     session: SessionDep,
     code: str,
@@ -71,7 +71,7 @@ def oauth_callback(
         )
     redirect_uri = _oauth_states.pop(state)
 
-    access_token = get_authentik_token(oauth_url=redirect_uri, oauth_code=code)
+    access_token = await get_authentik_token(oauth_url=redirect_uri, oauth_code=code)
 
     if not access_token:
         raise HTTPException(
@@ -79,7 +79,7 @@ def oauth_callback(
             detail="Failed to obtain access token from Authentik",
         )
 
-    userinfo = get_authentik_userinfo(access_token=access_token)
+    userinfo = await get_authentik_userinfo(access_token=access_token)
     oauth_id = userinfo.get("sub")
     username = userinfo.get("preferred_username") or userinfo.get("name") or oauth_id
 
@@ -101,7 +101,7 @@ def oauth_callback(
     access_token = create_access_token(data={"sub": user.username})
 
     redirect_response = RedirectResponse(
-        url=get_environment_variable("NEXT_PUBLIC_URL"), status_code=302
+        url=str(get_environment_variable("NEXT_PUBLIC_URL")), status_code=302
     )
     redirect_response.set_cookie(
         key="access_token", value=access_token, httponly=True, samesite="lax"

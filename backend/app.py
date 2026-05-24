@@ -12,9 +12,11 @@ from fastapi.responses import JSONResponse, Response
 from starlette.middleware.base import BaseHTTPMiddleware
 
 from db.playlist import get_playlists
+from db.recommendation import get_recommendations
 from db.session import get_isolated_session
 from lib.cron import create_job
 from lib.jellyfin import ensure_download_library_exists
+from lib.recommendation import generate_recommendations
 from lib.sync import sync_playlist
 from routes import OPENAPI_TAGS, register_routes
 
@@ -138,12 +140,13 @@ def create_app() -> FastAPI:
         return JSONResponse(status_code=500, content=payload)
 
     @app.on_event("startup")
-    def startup_event():
-        ensure_download_library_exists()
+    async def startup_event():
+        await ensure_download_library_exists()
 
         logger.info("Starting up application and initializing cron jobs")
-        session = get_isolated_session()
-        playlists = get_playlists(session=session)
+        with get_isolated_session() as session:
+            playlists = get_playlists(session=session)
+            recommendations = get_recommendations(session=session)
 
         for playlist in playlists:
             if playlist.cron_expression:
@@ -152,8 +155,21 @@ def create_app() -> FastAPI:
                 )
                 create_job(
                     func=sync_playlist,
-                    kwargs={"playlist": playlist, "session": session},
+                    kwargs={"playlist": playlist},
                     cron_expression=playlist.cron_expression,
+                    job_id=str(playlist.id),
+                )
+
+        for recommendation in recommendations:
+            if recommendation.cron_expression:
+                logger.info(
+                    f"Registering cron job for recommendation {recommendation.id} with cron expression: {recommendation.cron_expression}"
+                )
+                create_job(
+                    func=generate_recommendations,
+                    kwargs={"recommendation": recommendation},
+                    cron_expression=recommendation.cron_expression,
+                    job_id=str(recommendation.id),
                 )
 
     return app

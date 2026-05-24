@@ -64,18 +64,16 @@ class JellyfinTrack:
 class JellyfinPlaylist:
     """A playlist in Jellyfin."""
 
-    def __init__(
-        self,
-        id: str,
-        name: str,
-    ):
+    def __init__(self, id: str, name: str, owner_id: str):
         self.id = id
         self.name = name
+        self.owner_id = owner_id
 
-    def to_dict(self) -> dict[str, str | int]:
+    def to_dict(self) -> dict[str, str | int | None]:
         return {
             "id": self.id,
             "name": self.name,
+            "owner_id": self.owner_id,
         }
 
 

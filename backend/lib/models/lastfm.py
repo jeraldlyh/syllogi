@@ -27,9 +27,7 @@ class LastFMRecentTrack:
         )
 
     def __hash__(self) -> int:
-        return (
-            hash(self.artist_name) + hash(self.track_name) + hash(self.musicbrainz_id)
-        )
+        return hash((self.artist_name, self.track_name, self.musicbrainz_id))
 
     def to_dict(self) -> dict[str, str | int]:
         return {
@@ -67,9 +65,7 @@ class LastFMTopTrack:
         )
 
     def __hash__(self) -> int:
-        return (
-            hash(self.artist_name) + hash(self.track_name) + hash(self.musicbrainz_id)
-        )
+        return hash((self.artist_name, self.track_name, self.musicbrainz_id))
 
     def to_dict(self) -> dict[str, str | int]:
         return {
@@ -110,9 +106,7 @@ class LastFMSimilarTrack:
         )
 
     def __hash__(self) -> int:
-        return (
-            hash(self.artist_name) + hash(self.track_name) + hash(self.musicbrainz_id)
-        )
+        return hash((self.artist_name, self.track_name, self.musicbrainz_id))
 
     def to_dict(self) -> dict[str, str | int | float]:
         return {

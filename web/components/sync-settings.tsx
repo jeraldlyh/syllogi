@@ -89,7 +89,7 @@ const DEFAULT_FORM: FormState = {
   cron_mode: "simple",
 };
 
-export const Playlists = () => {
+export const SyncSettings = () => {
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [form, setForm] = useState<FormState>(DEFAULT_FORM);
@@ -133,11 +133,11 @@ export const Playlists = () => {
   };
 
   const handleEditPlaylist = (playlist: Playlist) => {
-    setEditingId(playlist.id);
     const isPreset = CRON_PRESETS.some(
       (p) => p.value === playlist.cron_expression,
     );
 
+    setEditingId(playlist.id);
     setForm({
       ...playlist,
       cron_mode: isPreset ? "simple" : "custom",
@@ -167,13 +167,13 @@ export const Playlists = () => {
   const handleSavePlaylist = async (): Promise<void> => {
     if (!isFormError()) return;
 
-    const { cron_mode, ...mappingData } = form;
+    const { cron_mode, ...formData } = form;
 
     if (editingId) {
-      await updatePlaylist({ id: editingId, ...mappingData });
+      await updatePlaylist({ id: editingId, ...formData });
       toast.success("Playlist updated");
     } else {
-      await createPlaylist(mappingData);
+      await createPlaylist(formData);
 
       toast.success("Playlist created");
     }
@@ -319,7 +319,7 @@ export const Playlists = () => {
       <Card>
         <CardHeader className="flex flex-row items-center justify-between">
           <CardTitle className="text-base font-medium text-foreground">
-            Playlist
+            Settings
           </CardTitle>
           <Button size="sm" onClick={handleAddPlaylist}>
             <Plus className="h-4 w-4" />
@@ -444,7 +444,7 @@ export const Playlists = () => {
             <div className="flex flex-col gap-2">
               <Label className="flex justify-between items-center">
                 <Text
-                  value="Sync Schedule"
+                  value="Schedule"
                   className="text-xs text-muted-foreground"
                 />
                 {renderErrorMessage(errors.cron_expression)}
