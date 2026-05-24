@@ -31,6 +31,7 @@ from lib.jellyfin import (
     is_jellyfin_scanning_library,
     rescan_jellyfin_library,
 )
+from lib.models.jellyfin import JellyfinTrack
 from lib.models.lastfm import (
     LastFMSimilarTrack,
 )
@@ -49,7 +50,7 @@ async def get_recommendations(
     lastfm_username: str,
     strategy: RecommendationStrategy,
     num_recommendations: int,
-) -> tuple[list[LastFMSimilarTrack], list[LastFMSimilarTrack]]:
+) -> tuple[list[LastFMSimilarTrack], list[LastFMSimilarTrack], list[JellyfinTrack]]:
     """Get track recommendations for a user based on their listening history."""
     match strategy:
         case RecommendationStrategy.top_tracks:
@@ -74,6 +75,7 @@ async def get_recommendations(
             all_tracks = recent_tracks + top_tracks
     missing: set[LastFMSimilarTrack] = set()
     found: set[LastFMSimilarTrack] = set()
+    jellyfin_tracks = []
 
     for track in all_tracks:
         similar_tracks = await get_lastfm_similar_tracks(
@@ -99,33 +101,10 @@ async def get_recommendations(
                 has_missing = True
             else:
                 found.add(similar_track)
+                jellyfin_tracks.append(jellyfin_track)
                 break
 
-    return list(found), list(missing)
-
-
-async def _resolve_lastfm_tracks_to_jellyfin_ids(
-    tracks: list[LastFMSimilarTrack],
-) -> list[str]:
-    """Convert a list of LastFM tracks to Jellyfin track IDs.
-
-    Returns only tracks that were successfully found in Jellyfin.
-    """
-    jellyfin_ids: list[str] = []
-
-    for track in tracks:
-        jellyfin_track = await find_track(
-            artist_name=track.artist_name,
-            track_name=track.track_name,
-            album_name="",
-            year="",
-            duration=track.duration,
-        )
-
-        if not jellyfin_track.is_not_found():
-            jellyfin_ids.append(jellyfin_track.id)
-
-    return jellyfin_ids
+    return list(found), list(missing), jellyfin_tracks
 
 
 async def generate_recommendations_task(
@@ -155,7 +134,7 @@ async def generate_recommendations_task(
                 session=session, recommendation_session=recommendation_session
             )
 
-            found_tracks, missing_tracks = await get_recommendations(
+            found_tracks, missing_tracks, jellyfin_tracks = await get_recommendations(
                 lastfm_username=lastfm_username,
                 strategy=recommendation_session.strategy,
                 num_recommendations=recommendation_session.requested_count,
@@ -231,15 +210,17 @@ async def generate_recommendations_task(
                 logger.info("No tracks found in Jellyfin for recommendations")
                 return
 
-            track_ids = await _resolve_lastfm_tracks_to_jellyfin_ids(found_tracks)
+            jellyfin_track_ids = [track.id for track in jellyfin_tracks]
 
-            if not track_ids:
+            if not jellyfin_track_ids:
                 logger.info(
                     "No tracks from recommendations could be resolved to Jellyfin IDs"
                 )
                 return
 
-            logger.info(f"Creating Jellyfin playlist with {len(track_ids)} tracks")
+            logger.info(
+                f"Creating Jellyfin playlist with {len(jellyfin_track_ids)} tracks"
+            )
 
             playlist_id, jellyfin_user_id = await get_or_create_jellyfin_playlist(
                 playlist_name="Daily Recommendations",
@@ -260,7 +241,7 @@ async def generate_recommendations_task(
             await add_songs_to_jellyfin_playlist(
                 playlist_id=playlist_id,
                 user_id=jellyfin_user_id,
-                track_ids=track_ids,
+                track_ids=jellyfin_track_ids,
             )
 
         except Exception as e:
