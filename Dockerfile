@@ -14,7 +14,8 @@ WORKDIR /web
 COPY --from=web-deps /web/node_modules ./node_modules
 COPY web/ .
 
-ENV NEXT_PUBLIC_URL=${NEXT_PUBLIC_URL:-http://localhost:8000}
+ARG NEXT_PUBLIC_URL=http://localhost:8000
+ENV NEXT_PUBLIC_URL=${NEXT_PUBLIC_URL}
 ENV NEXT_TELEMETRY_DISABLED=1
 
 RUN npm install -g pnpm@9 && pnpm build
