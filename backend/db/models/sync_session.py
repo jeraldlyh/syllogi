@@ -11,12 +11,12 @@ from lib.mixin.serializer import SerializerMixin
 from lib.mixin.metadata import TimestampMixin
 
 
-class SyncProvider(enum.Enum):
+class SyncProvider(str, enum.Enum):
     spotify = "spotify"
     youtube = "youtube"
 
 
-class SyncSessionTrackType(enum.Enum):
+class SyncSessionTrackType(str, enum.Enum):
     total = "total"
     new = "new"
     outdated = "outdated"
@@ -24,7 +24,7 @@ class SyncSessionTrackType(enum.Enum):
     downloaded = "downloaded"
 
 
-class SyncStatus(enum.Enum):
+class SyncStatus(str, enum.Enum):
     pending = "pending"
     in_progress = "in_progress"
     completed = "completed"
