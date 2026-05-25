@@ -8,7 +8,7 @@ from lib.mixin.metadata import TimestampMixin
 from lib.mixin.serializer import SerializerMixin
 
 
-class PlaylistProvider(enum.Enum):
+class PlaylistProvider(str, enum.Enum):
     spotify = "spotify"
     youtube = "youtube"
 
