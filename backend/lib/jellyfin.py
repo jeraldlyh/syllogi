@@ -348,12 +348,12 @@ async def rescan_jellyfin_library() -> None:
         f"/Items/{download_folder.get('Id')}/Refresh",
         method="POST",
         params={
-            "Recursive": "true",
-            "ImageRefreshMode": "Default",
-            "MetadataRefreshMode": "FullRefresh",
-            "ReplaceAllImages": "false",
-            "RegenerateTrickplay": "false",
-            "ReplaceAllMetadata": "false",
+            "recursive": "true",
+            "imageRefreshMode": "None",
+            "metadataRefreshMode": "FullRefresh",
+            "replaceAllImages": "false",
+            "regenerateTrickplay": "false",
+            "replaceAllMetadata": "false",
         },
     )
 
