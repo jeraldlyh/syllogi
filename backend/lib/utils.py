@@ -20,7 +20,7 @@ logger = logging.getLogger(__name__)
 def get_clean_name(name: str) -> str:
     """Clean a name by removing accents, special characters, and normalizing case."""
 
-    normalized = unicodedata.normalize("NFKD", name)
+    normalized = unicodedata.normalize("NFKC", name)
     stripped = "".join(ch for ch in normalized if not unicodedata.combining(ch))
     lower = stripped.casefold()
     cleaned = re.compile(r"[^\w]+").sub("", lower)
@@ -82,7 +82,7 @@ def sanitize_filename(name: str) -> str:
     illegal_chars = '\\/:*?"<>|'
     return "".join(
         char
-        for char in unicodedata.normalize("NFKD", name)
+        for char in unicodedata.normalize("NFKC", name)
         if char not in illegal_chars
     ).strip()
 
@@ -107,3 +107,9 @@ def is_track_exists(artist_name: str, track_name: str, album_name: str = "") -> 
     existing_paths = glob.glob(f"{glob.escape(download_path)}.*")
 
     return bool(existing_paths)
+
+
+def normalize(text: str) -> str:
+    """Normalize text for Unicode-aware, case-insensitive comparison."""
+
+    return unicodedata.normalize("NFKC", text).casefold().strip()
