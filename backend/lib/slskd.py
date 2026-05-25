@@ -272,6 +272,21 @@ async def _get_downloaded_file(
     return None
 
 
+def _cleanup_empty_dirs(src: Path, dest: Path) -> None:
+    """Remove empty directories walking up from start, stopping at (not including) stop_at."""
+
+    current = src.resolve()
+    dest = dest.resolve()
+
+    while current != dest and current != current.parent:
+        try:
+            current.rmdir()
+            logger.debug(f"Removed empty directory: {current}")
+            current = current.parent
+        except OSError:
+            break
+
+
 async def _rename_slskd_download(
     downloaded_file: SlskdDownloadFile,
     artist_name: str,
@@ -280,9 +295,7 @@ async def _rename_slskd_download(
 ) -> bool:
     """Move a completed slskd download to the standard download path.
 
-    Searches for the downloaded file by its basename within DOWNLOAD_DIR and
-    moves it to the path produced by get_download_path(), mirroring the format
-    used by the YouTube downloader:
+    Mirrors the format used by the YouTube downloader:
       {DOWNLOAD_DIR}/{artist}/{album}/{track}.{ext}
     or
       {DOWNLOAD_DIR}/{artist}/Singles/{track}.{ext}
@@ -305,6 +318,7 @@ async def _rename_slskd_download(
         )
         return False
 
+    old_dir = Path(local_path).parent
     ext = Path(local_path).suffix
     target_path = get_download_path(artist_name, track_name, album_name) + ext
 
@@ -333,6 +347,9 @@ async def _rename_slskd_download(
 
     set_media_permissions(target_path)
     logger.info(f"Renamed slskd download: {local_path} -> {target_path}")
+
+    download_dir = Path(str(get_environment_variable("DOWNLOAD_DIR")))
+    _cleanup_empty_dirs(src=old_dir, dest=download_dir)
 
     return is_track_exists(artist_name, track_name, album_name)
 
