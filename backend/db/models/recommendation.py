@@ -11,24 +11,24 @@ from lib.mixin.serializer import SerializerMixin
 from lib.utils import get_now
 
 
-class RecommendationStatus(enum.Enum):
+class RecommendationStatus(str, enum.Enum):
     pending = "pending"
     completed = "completed"
     failed = "failed"
 
 
-class RecommendationTrackType(enum.Enum):
+class RecommendationTrackType(str, enum.Enum):
     total = "total"
     matched = "matched"
     missing = "missing"
     downloaded = "downloaded"
 
 
-class RecommendationProvider(enum.Enum):
+class RecommendationProvider(str, enum.Enum):
     lastfm = "lastfm"
 
 
-class RecommendationStrategy(enum.Enum):
+class RecommendationStrategy(str, enum.Enum):
     top_tracks = "top_tracks"
     recent_tracks = "recent_tracks"
     mixed = "mixed"
