@@ -1,5 +1,9 @@
 import asyncio
+import glob
 import logging
+import os
+import shutil
+from pathlib import Path
 from typing import Any
 
 import httpx
@@ -15,6 +19,7 @@ from lib.models.slskd import (
 )
 from lib.env import get_environment_variable
 from lib.musicbrainz import get_artist_alias
+from lib.utils import find_downloaded_file, get_download_path, is_track_exists
 
 logger = logging.getLogger(__name__)
 
@@ -260,6 +265,47 @@ async def _get_downloaded_file(
     return None
 
 
+def _rename_slskd_download(
+    remote_filename: str,
+    artist_name: str,
+    track_name: str,
+    album_name: str,
+) -> bool:
+    """Move a completed slskd download to the standard download path.
+
+    Searches for the downloaded file by its basename within DOWNLOAD_DIR and
+    moves it to the path produced by get_download_path(), mirroring the format
+    used by the YouTube downloader:
+      {DOWNLOAD_DIR}/{artist}/{album}/{track}.{ext}
+    or
+      {DOWNLOAD_DIR}/{artist}/Singles/{track}.{ext}
+
+    Returns True if the file exists at the correct location after the operation.
+    """
+    if is_track_exists(
+        artist_name=artist_name, track_name=track_name, album_name=album_name
+    ):
+        logger.info(
+            f"slskd file already at correct location for: {artist_name} - {track_name}"
+        )
+        return True
+
+    local_path = find_downloaded_file(remote_filename)
+
+    if not local_path:
+        logger.warning(f"Could not locate downloaded slskd file: {remote_filename}")
+        return False
+
+    ext = Path(local_path).suffix
+    target_path = get_download_path(artist_name, track_name, album_name) + ext
+
+    os.makedirs(os.path.dirname(target_path), exist_ok=True)
+    shutil.move(local_path, target_path)
+    logger.info(f"Renamed slskd download: {local_path} -> {target_path}")
+
+    return is_track_exists(artist_name, track_name, album_name)
+
+
 def _get_best_entry(
     entries: list[SlskdSearchResult],
     artist_name: str,
@@ -383,6 +429,20 @@ async def download_track_slskd(
         downloaded_file = await _get_downloaded_file(
             best_entry.username, best_entry.file.filename
         )
+
+        if is_download_completed:
+            rename_success = _rename_slskd_download(
+                remote_filename=best_entry.file.filename,
+                artist_name=artist_name,
+                track_name=track_name,
+                album_name=album_name,
+            )
+
+            if not rename_success:
+                logger.error(
+                    f"Download succeeded but failed to move file to standard path for: {search_query}"
+                )
+                return False
 
         return is_download_completed
     except Exception as e:
