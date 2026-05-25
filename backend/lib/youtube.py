@@ -11,7 +11,7 @@ import yt_dlp
 
 from lib.models.common import ExternalPlaylist, ExternalTrack
 from lib.env import get_environment_variable
-from lib.utils import dump_results, get_download_path
+from lib.utils import dump_results, get_download_path, normalize
 
 if TYPE_CHECKING:
     from yt_dlp import _Params
@@ -186,7 +186,7 @@ async def download_track_youtube(
     """
 
     search_query = f"{artist_name}"
-    if album_name:
+    if album_name and normalize(text=album_name) != normalize(text=track_name):
         search_query += f" {album_name}"
     search_query += f" {track_name}"
 
