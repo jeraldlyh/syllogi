@@ -109,6 +109,46 @@ def is_track_exists(artist_name: str, track_name: str, album_name: str = "") -> 
     return bool(existing_paths)
 
 
+def find_downloaded_file(filename: str) -> str | None:
+    """Find a file in DOWNLOAD_DIR by its basename.
+
+    Returns the full local path if exactly one match is found, None otherwise.
+    """
+
+    download_dir = str(get_environment_variable("DOWNLOAD_DIR"))
+    basename = os.path.basename(filename.replace("\\", "/"))
+    stem = Path(basename).stem
+
+    matches = glob.glob(
+        os.path.join(glob.escape(download_dir), "**", glob.escape(stem) + "*.*"),
+        recursive=True,
+    )
+
+    if len(matches) == 1:
+        return matches[0]
+
+    if len(matches) > 1:
+        logger.warning(
+            f"Ambiguous: {len(matches)} files matching '{stem}.*' found in {download_dir}"
+        )
+    return None
+
+
+def set_media_permissions(path: str) -> None:
+    """Set permissions on a media file and its parent directories."""
+
+    download_dir = Path(str(get_environment_variable("DOWNLOAD_DIR"))).resolve()
+    target = Path(path).resolve()
+
+    if target.is_file():
+        os.chmod(target, 0o664)
+
+    current = target.parent
+    while current != download_dir:
+        os.chmod(current, 0o775)
+        current = current.parent
+
+
 def normalize(text: str) -> str:
     """Normalize text for Unicode-aware, case-insensitive comparison."""
 

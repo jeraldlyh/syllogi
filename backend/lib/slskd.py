@@ -1,5 +1,9 @@
 import asyncio
+import errno
 import logging
+import os
+import shutil
+from pathlib import Path
 from typing import Any
 
 import httpx
@@ -15,6 +19,12 @@ from lib.models.slskd import (
 )
 from lib.env import get_environment_variable
 from lib.musicbrainz import get_artist_alias
+from lib.utils import (
+    find_downloaded_file,
+    get_download_path,
+    is_track_exists,
+    set_media_permissions,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -24,6 +34,8 @@ SEARCH_MAX_RETRIES = 18
 DOWNLOAD_RETRY_INTERVAL = 15
 QUEUE_DOWNLOAD_MAX_RETRIES = 3
 CHECK_DOWNLOAD_MAX_RETRIES = 40
+MOVE_FILE_MAX_RETRIES = 3
+MOVE_FILE_RETRY_INTERVAL = 5
 
 TERMINAL_STATES = {
     "Completed, Cancelled",
@@ -260,6 +272,88 @@ async def _get_downloaded_file(
     return None
 
 
+def _cleanup_empty_dirs(src: Path, dest: Path) -> None:
+    """Remove empty directories walking up from start, stopping at (not including) stop_at."""
+
+    current = src.resolve()
+    dest = dest.resolve()
+
+    while current != dest and current != current.parent:
+        try:
+            current.rmdir()
+            logger.debug(f"Removed empty directory: {current}")
+            current = current.parent
+        except OSError:
+            break
+
+
+async def _rename_slskd_download(
+    downloaded_file: SlskdDownloadFile,
+    artist_name: str,
+    track_name: str,
+    album_name: str,
+) -> bool:
+    """Move a completed slskd download to the standard download path.
+
+    Mirrors the format used by the YouTube downloader:
+      {DOWNLOAD_DIR}/{artist}/{album}/{track}.{ext}
+    or
+      {DOWNLOAD_DIR}/{artist}/Singles/{track}.{ext}
+
+    Returns True if the file exists at the correct location after the operation.
+    """
+    if is_track_exists(
+        artist_name=artist_name, track_name=track_name, album_name=album_name
+    ):
+        logger.info(
+            f"slskd file already at correct location for: {artist_name} - {track_name}"
+        )
+        return True
+
+    local_path = find_downloaded_file(filename=downloaded_file.filename)
+
+    if not local_path:
+        logger.warning(
+            f"Could not locate downloaded slskd file: {downloaded_file.filename}"
+        )
+        return False
+
+    old_dir = Path(local_path).parent
+    ext = Path(local_path).suffix
+    target_path = get_download_path(artist_name, track_name, album_name) + ext
+
+    os.makedirs(os.path.dirname(target_path), exist_ok=True)
+    is_target_path_exist = os.path.exists(target_path)
+
+    for attempt in range(1, MOVE_FILE_MAX_RETRIES + 1):
+        try:
+            shutil.move(local_path, target_path)
+            break
+        except OSError as e:
+            if (
+                not is_target_path_exist
+                and os.path.exists(target_path)
+                and not os.path.samefile(local_path, target_path)
+            ):
+                os.remove(target_path)
+
+            if e.errno == errno.EBUSY and attempt < MOVE_FILE_MAX_RETRIES:
+                logger.warning(
+                    f"[{attempt}/{MOVE_FILE_MAX_RETRIES}] File busy, retrying move in {MOVE_FILE_RETRY_INTERVAL}s: {local_path}"
+                )
+                await asyncio.sleep(MOVE_FILE_RETRY_INTERVAL)
+            else:
+                raise
+
+    set_media_permissions(target_path)
+    logger.info(f"Renamed slskd download: {local_path} -> {target_path}")
+
+    download_dir = Path(str(get_environment_variable("DOWNLOAD_DIR")))
+    _cleanup_empty_dirs(src=old_dir, dest=download_dir)
+
+    return is_track_exists(artist_name, track_name, album_name)
+
+
 def _get_best_entry(
     entries: list[SlskdSearchResult],
     artist_name: str,
@@ -383,6 +477,20 @@ async def download_track_slskd(
         downloaded_file = await _get_downloaded_file(
             best_entry.username, best_entry.file.filename
         )
+
+        if is_download_completed and downloaded_file:
+            rename_success = await _rename_slskd_download(
+                downloaded_file=downloaded_file,
+                artist_name=artist_name,
+                track_name=track_name,
+                album_name=album_name,
+            )
+
+            if not rename_success:
+                logger.error(
+                    f"Download succeeded but failed to move file to standard path for: {search_query}"
+                )
+                return False
 
         return is_download_completed
     except Exception as e:
