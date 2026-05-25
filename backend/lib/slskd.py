@@ -1,5 +1,5 @@
 import asyncio
-import glob
+import errno
 import logging
 import os
 import shutil
@@ -19,7 +19,12 @@ from lib.models.slskd import (
 )
 from lib.env import get_environment_variable
 from lib.musicbrainz import get_artist_alias
-from lib.utils import find_downloaded_file, get_download_path, is_track_exists
+from lib.utils import (
+    find_downloaded_file,
+    get_download_path,
+    is_track_exists,
+    set_media_permissions,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -29,6 +34,8 @@ SEARCH_MAX_RETRIES = 18
 DOWNLOAD_RETRY_INTERVAL = 15
 QUEUE_DOWNLOAD_MAX_RETRIES = 3
 CHECK_DOWNLOAD_MAX_RETRIES = 40
+MOVE_FILE_MAX_RETRIES = 3
+MOVE_FILE_RETRY_INTERVAL = 5
 
 TERMINAL_STATES = {
     "Completed, Cancelled",
@@ -265,8 +272,8 @@ async def _get_downloaded_file(
     return None
 
 
-def _rename_slskd_download(
-    remote_filename: str,
+async def _rename_slskd_download(
+    downloaded_file: SlskdDownloadFile,
     artist_name: str,
     track_name: str,
     album_name: str,
@@ -290,17 +297,41 @@ def _rename_slskd_download(
         )
         return True
 
-    local_path = find_downloaded_file(remote_filename)
+    local_path = find_downloaded_file(filename=downloaded_file.filename)
 
     if not local_path:
-        logger.warning(f"Could not locate downloaded slskd file: {remote_filename}")
+        logger.warning(
+            f"Could not locate downloaded slskd file: {downloaded_file.filename}"
+        )
         return False
 
     ext = Path(local_path).suffix
     target_path = get_download_path(artist_name, track_name, album_name) + ext
 
     os.makedirs(os.path.dirname(target_path), exist_ok=True)
-    shutil.move(local_path, target_path)
+    is_target_path_exist = os.path.exists(target_path)
+
+    for attempt in range(1, MOVE_FILE_MAX_RETRIES + 1):
+        try:
+            shutil.move(local_path, target_path)
+            break
+        except OSError as e:
+            if (
+                not is_target_path_exist
+                and os.path.exists(target_path)
+                and not os.path.samefile(local_path, target_path)
+            ):
+                os.remove(target_path)
+
+            if e.errno == errno.EBUSY and attempt < MOVE_FILE_MAX_RETRIES:
+                logger.warning(
+                    f"[{attempt}/{MOVE_FILE_MAX_RETRIES}] File busy, retrying move in {MOVE_FILE_RETRY_INTERVAL}s: {local_path}"
+                )
+                await asyncio.sleep(MOVE_FILE_RETRY_INTERVAL)
+            else:
+                raise
+
+    set_media_permissions(target_path)
     logger.info(f"Renamed slskd download: {local_path} -> {target_path}")
 
     return is_track_exists(artist_name, track_name, album_name)
@@ -430,9 +461,9 @@ async def download_track_slskd(
             best_entry.username, best_entry.file.filename
         )
 
-        if is_download_completed:
-            rename_success = _rename_slskd_download(
-                remote_filename=best_entry.file.filename,
+        if is_download_completed and downloaded_file:
+            rename_success = await _rename_slskd_download(
+                downloaded_file=downloaded_file,
                 artist_name=artist_name,
                 track_name=track_name,
                 album_name=album_name,
