@@ -236,6 +236,9 @@ async def _is_download_completed(username: str, filename: str) -> bool:
 
             if downloaded_file:
                 if downloaded_file.is_downloaded():
+                    await asyncio.sleep(
+                        5
+                    )  # Extra wait to ensure file is fully available on disk after completion
                     return True
 
                 if downloaded_file.state in TERMINAL_STATES:

@@ -64,20 +64,25 @@ async def get_recommendations(
                 limit=num_recommendations,
             )
         case RecommendationStrategy.mixed:
+            recent_limit = round(num_recommendations * 0.5)
             recent_tracks = await get_lastfm_recent_tracks(
                 user=lastfm_username,
-                limit=round(num_recommendations * 0.7),
+                limit=recent_limit,
             )
             top_tracks = await get_lastfm_top_tracks(
                 user=lastfm_username,
-                limit=round(num_recommendations * 0.3),
+                limit=num_recommendations - recent_limit,
             )
             all_tracks = recent_tracks + top_tracks
+
     missing: set[LastFMSimilarTrack] = set()
     found: set[LastFMSimilarTrack] = set()
-    jellyfin_tracks = []
+    jellyfin_tracks: list[JellyfinTrack] = []
 
     for track in all_tracks:
+        if len(found) + len(missing) >= num_recommendations:
+            break
+
         similar_tracks = await get_lastfm_similar_tracks(
             user=lastfm_username,
             artist=track.artist_name,
@@ -86,7 +91,10 @@ async def get_recommendations(
 
         has_missing = False
         for similar_track in similar_tracks:
-            if similar_track in found:
+            if len(found) + len(missing) >= num_recommendations:
+                break
+
+            if similar_track in found or similar_track in missing:
                 continue
 
             jellyfin_track = await find_track(
@@ -96,13 +104,14 @@ async def get_recommendations(
                 year="",
                 duration=similar_track.duration,
             )
+
+            if not jellyfin_track.is_not_found():
+                found.add(similar_track)
+                jellyfin_tracks.append(jellyfin_track)
+
             if not has_missing and jellyfin_track.is_not_found():
                 missing.add(similar_track)
                 has_missing = True
-            else:
-                found.add(similar_track)
-                jellyfin_tracks.append(jellyfin_track)
-                break
 
     return list(found), list(missing), jellyfin_tracks
 
@@ -175,6 +184,25 @@ async def generate_recommendations_task(
                         missing_tracks_after_download=still_missing_tracks,
                         missing_tracks_after_scan=missing_tracks_after_scan,
                         get_key=lambda t: (t.artist_name, t.track_name),
+                    )
+
+                    downloaded_jellyfin_tracks = [
+                        JellyfinTrack(
+                            id=resolved_track.jellyfin_id,
+                            track_name=resolved_track.track.track_name,
+                            album_name=resolved_track.track.album_name,
+                            album_id="",
+                            musicbrainz_id="",
+                            artists=[resolved_track.track.artist_name],
+                            duration_ticks=0,
+                            year=resolved_track.track.year,
+                        )
+                        for resolved_track in found_tracks_after_download
+                        if resolved_track.jellyfin_id
+                    ]
+                    jellyfin_tracks.extend(downloaded_jellyfin_tracks)
+                    logger.info(
+                        f"Extended jellyfin_tracks with {len(downloaded_jellyfin_tracks)} newly downloaded tracks"
                     )
 
             finished_at = get_now()
