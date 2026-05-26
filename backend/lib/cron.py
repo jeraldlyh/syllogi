@@ -6,7 +6,6 @@ from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from lib.utils import parse_cron_expression
 
 scheduler = AsyncIOScheduler()
-scheduler.start()
 
 
 logger = logging.getLogger(__name__)

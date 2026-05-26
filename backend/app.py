@@ -14,7 +14,7 @@ from starlette.middleware.base import BaseHTTPMiddleware
 from db.playlist import get_playlists
 from db.recommendation import get_recommendations
 from db.session import get_isolated_session
-from lib.cron import create_job
+from lib.cron import create_job, scheduler
 from lib.jellyfin import ensure_download_library_exists
 from lib.recommendation import generate_recommendations
 from lib.sync import sync_playlist
@@ -141,6 +141,7 @@ def create_app() -> FastAPI:
 
     @app.on_event("startup")
     async def startup_event():
+        scheduler.start()
         await ensure_download_library_exists()
 
         logger.info("Starting up application and initializing cron jobs")
@@ -171,6 +172,10 @@ def create_app() -> FastAPI:
                     cron_expression=recommendation.cron_expression,
                     job_id=str(recommendation.id),
                 )
+
+    @app.on_event("shutdown")
+    def shutdown_event():
+        scheduler.shutdown()
 
     return app
 
