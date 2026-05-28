@@ -75,7 +75,7 @@ ENV UV_COMPILE_BYTECODE=1 \
 WORKDIR /app/backend
 COPY backend/pyproject.toml backend/uv.lock ./
 COPY backend/SpotAPI ./SpotAPI
-RUN uv sync --frozen --no-dev
+RUN uv sync --frozen --no-dev --no-editable
 COPY backend/ .
 
 WORKDIR /app/web

@@ -21,8 +21,7 @@ dependencies = [
 ]
 
 [tool.uv.sources]
-# spotapi = { path = "SpotAPI", editable = true }
-spotapi = { git = "https://github.com/Aran404/SpotAPI.git" }
+spotapi = { path = "SpotAPI", editable = true }
 
 [dependency-groups]
 dev = [
