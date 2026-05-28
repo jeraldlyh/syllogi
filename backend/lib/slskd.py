@@ -357,13 +357,13 @@ async def _rename_slskd_download(
     return is_track_exists(artist_name, track_name, album_name)
 
 
-def _get_best_entry(
+def _get_ranked_candidates(
     entries: list[SlskdSearchResult],
     artist_name: str,
     track_name: str,
     duration: int,
-) -> SlskdTrackCandidate | None:
-    """Get the best entry from a list of slskd search results based on heuristics."""
+) -> list[SlskdTrackCandidate]:
+    """Return all valid candidates from slskd search results, sorted by quality (best first)."""
 
     candidates: list[SlskdTrackCandidate] = []
 
@@ -381,9 +381,11 @@ def _get_best_entry(
                     SlskdTrackCandidate(username=entry.username, file=file)
                 )
 
-    if candidates:
-        return max(candidates, key=lambda e: e.file.bit_depth or 0)
-    return None
+    return sorted(
+        candidates,
+        key=lambda c: (c.file.bit_depth or 0, c.file.sample_rate or 0),
+        reverse=True,
+    )
 
 
 async def _delete_search(search_id: str) -> None:
@@ -421,8 +423,6 @@ async def download_track_slskd(
     """
 
     search_id: str | None = None
-    downloaded_file: SlskdDownloadFile | None = None
-
     search_query = f"{artist_name} {track_name}"
 
     try:
@@ -455,47 +455,79 @@ async def download_track_slskd(
 
             results = await _get_search_results(search_id)
 
-        best_entry = _get_best_entry(
+        candidates = _get_ranked_candidates(
             entries=results,
             artist_name=artist_name,
             track_name=track_name,
             duration=duration,
         )
 
-        if not best_entry:
+        if not candidates:
             logger.warning(f"No suitable file found for: {search_query}")
             return False
 
-        if not await _queue_download(
-            username=best_entry.username,
-            filename=best_entry.file.filename,
-            size=best_entry.file.size,
-        ):
-            return False
+        logger.info(f"Found {len(candidates)} candidate(s) for: {search_query}")
 
-        is_download_completed = await _is_download_completed(
-            best_entry.username, best_entry.file.filename
-        )
+        for i, candidate in enumerate(candidates, start=1):
+            downloaded_file: SlskdDownloadFile | None = None
 
-        downloaded_file = await _get_downloaded_file(
-            best_entry.username, best_entry.file.filename
-        )
-
-        if is_download_completed and downloaded_file:
-            rename_success = await _rename_slskd_download(
-                downloaded_file=downloaded_file,
-                artist_name=artist_name,
-                track_name=track_name,
-                album_name=album_name,
-            )
-
-            if not rename_success:
-                logger.error(
-                    f"Download succeeded but failed to move file to standard path for: {search_query}"
+            try:
+                logger.info(
+                    f"[{i}/{len(candidates)}] Downloading candidate from {candidate.username}: {candidate.file.filename}"
                 )
-                return False
 
-        return is_download_completed
+                if not await _queue_download(
+                    username=candidate.username,
+                    filename=candidate.file.filename,
+                    size=candidate.file.size,
+                ):
+                    logger.warning(
+                        f"[{i}/{len(candidates)}] Failed to queue download, skipping candidate"
+                    )
+                    continue
+
+                is_download_completed = await _is_download_completed(
+                    candidate.username, candidate.file.filename
+                )
+
+                downloaded_file = await _get_downloaded_file(
+                    candidate.username, candidate.file.filename
+                )
+
+                if is_download_completed and not downloaded_file:
+                    for _ in range(3):
+                        await asyncio.sleep(5)
+                        downloaded_file = await _get_downloaded_file(
+                            candidate.username, candidate.file.filename
+                        )
+                        if downloaded_file:
+                            break
+
+                if is_download_completed and downloaded_file:
+                    rename_success = await _rename_slskd_download(
+                        downloaded_file=downloaded_file,
+                        artist_name=artist_name,
+                        track_name=track_name,
+                        album_name=album_name,
+                    )
+
+                    if rename_success:
+                        return True
+
+                    logger.error(
+                        f"[{i}/{len(candidates)}] Download succeeded but failed to rename track, deleting candidate"
+                    )
+                else:
+                    logger.warning(
+                        f"[{i}/{len(candidates)}] Download failed or incomplete, skipping candidate"
+                    )
+            finally:
+                if downloaded_file:
+                    await _delete_download(downloaded_file.username, downloaded_file.id)
+        logger.warning(
+            f"All {len(candidates)} candidate(s) exhausted for: {search_query}"
+        )
+        return False
     except Exception as e:
         logger.error(f"Failed to download '{search_query}': {e}")
 
@@ -503,6 +535,3 @@ async def download_track_slskd(
     finally:
         if search_id:
             await _delete_search(search_id)
-
-        if downloaded_file:
-            await _delete_download(downloaded_file.username, downloaded_file.id)
