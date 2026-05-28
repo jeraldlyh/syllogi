@@ -69,7 +69,7 @@ async def _slskd(
         return None
 
 
-async def _search_track(search_text: str) -> str:
+async def _search_slskd_track(search_text: str) -> str:
     """Initiate a search on slskd. Returns the search ID."""
 
     result = await _slskd(
@@ -98,7 +98,7 @@ async def _search_track_status(search_id: str) -> SlskdSearchStatus:
     )
 
 
-async def _is_search_completed(search_id: str) -> bool:
+async def _is_slskd_search_completed(search_id: str) -> bool:
     """Poll until search is complete. Returns True if available files were found."""
 
     for attempt in range(1, SEARCH_MAX_RETRIES + 1):
@@ -114,7 +114,7 @@ async def _is_search_completed(search_id: str) -> bool:
     return False
 
 
-async def _get_search_results(search_id: str) -> list[SlskdSearchResult]:
+async def _get_slskd_search_results(search_id: str) -> list[SlskdSearchResult]:
     """Fetch slskd search results for a completed search."""
 
     result = await _slskd(f"/api/v0/searches/{search_id}/responses")
@@ -388,7 +388,21 @@ def _get_ranked_candidates(
     )
 
 
-async def _delete_search(search_id: str) -> None:
+def _delete_downloaded_file(filename: str) -> None:
+    """Delete a downloaded file from disk by its slskd filename.
+
+    Used to clean up files that were successfully downloaded but could not be
+    renamed to the standard path, so they do not live in an improper location.
+    """
+    local_path = find_downloaded_file(filename=filename)
+    if local_path:
+        try:
+            os.remove(local_path)
+        except OSError as e:
+            logger.warning(f"Failed to delete improperly named file {local_path}: {e}")
+
+
+async def _delete_slskd_search(search_id: str) -> None:
     """Delete a completed/failed search from slskd."""
 
     try:
@@ -397,7 +411,7 @@ async def _delete_search(search_id: str) -> None:
         logger.debug(f"Failed to delete search {search_id}: {e}")
 
 
-async def _delete_download(user_id: str, file_id: str) -> None:
+async def _delete_slskd_download(user_id: str, file_id: str) -> None:
     """Delete completed/failed downloads from slskd."""
 
     try:
@@ -426,15 +440,15 @@ async def download_track_slskd(
     search_query = f"{artist_name} {track_name}"
 
     try:
-        search_id = await _search_track(search_text=search_query)
+        search_id = await _search_slskd_track(search_text=search_query)
 
-        if not await _is_search_completed(search_id=search_id):
+        if not await _is_slskd_search_completed(search_id=search_id):
             return False
 
-        results = await _get_search_results(search_id)
+        results = await _get_slskd_search_results(search_id)
 
         if not results:
-            await _delete_search(search_id)
+            await _delete_slskd_search(search_id)
 
             artist_alias = await get_artist_alias(artist_name)
 
@@ -448,12 +462,12 @@ async def download_track_slskd(
                 f"Retrying search with artist alias {artist_alias} for artist {artist_name!r}"
             )
 
-            search_id = await _search_track(search_text=search_query)
+            search_id = await _search_slskd_track(search_text=search_query)
 
-            if not await _is_search_completed(search_id=search_id):
+            if not await _is_slskd_search_completed(search_id=search_id):
                 return False
 
-            results = await _get_search_results(search_id)
+            results = await _get_slskd_search_results(search_id)
 
         candidates = _get_ranked_candidates(
             entries=results,
@@ -517,13 +531,16 @@ async def download_track_slskd(
                     logger.error(
                         f"[{i}/{len(candidates)}] Download succeeded but failed to rename track, deleting candidate"
                     )
+                    _delete_downloaded_file(filename=downloaded_file.filename)
                 else:
                     logger.warning(
                         f"[{i}/{len(candidates)}] Download failed or incomplete, skipping candidate"
                     )
             finally:
                 if downloaded_file:
-                    await _delete_download(downloaded_file.username, downloaded_file.id)
+                    await _delete_slskd_download(
+                        downloaded_file.username, downloaded_file.id
+                    )
         logger.warning(
             f"All {len(candidates)} candidate(s) exhausted for: {search_query}"
         )
@@ -534,4 +551,4 @@ async def download_track_slskd(
         return False
     finally:
         if search_id:
-            await _delete_search(search_id)
+            await _delete_slskd_search(search_id)
