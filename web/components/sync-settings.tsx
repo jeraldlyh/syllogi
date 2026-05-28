@@ -604,6 +604,7 @@ export const SyncSettings = () => {
                   </span>
                   ?
                 </p>
+                <br />
                 <p>
                   This will fetch the latest tracks and sync them to Jellyfin.
                 </p>

@@ -95,6 +95,8 @@ export const Recommendations = () => {
   const [errors, setErrors] = useState<FormErrors>({});
   const [recommendationToDelete, setRecommendationToDelete] =
     useState<Recommendation | null>(null);
+  const [recommendationToGenerate, setRecommendationToGenerate] =
+    useState<Recommendation | null>(null);
 
   const { data: users } = useJellyfinUsers();
   const {
@@ -197,6 +199,7 @@ export const Recommendations = () => {
   const handleGenerateRecommendation = async (
     recommendation: Recommendation,
   ): Promise<void> => {
+    setRecommendationToGenerate(null);
     await generateRecommendation(recommendation);
     toast.success("Recommendation run started", {
       description: `Generating recommendations for ${recommendation.username}`,
@@ -313,7 +316,7 @@ export const Recommendations = () => {
                       size="icon"
                       className="h-7 w-7 text-muted-foreground hover:text-foreground"
                       onClick={() =>
-                        handleGenerateRecommendation(recommendation)
+                        setRecommendationToGenerate(recommendation)
                       }
                       disabled={isGenerating}
                     >
@@ -604,6 +607,44 @@ export const Recommendations = () => {
               disabled={isDeleting}
             >
               Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+      <AlertDialog
+        open={!!recommendationToGenerate}
+        onOpenChange={(open) => !open && setRecommendationToGenerate(null)}
+      >
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Start Recommendation Generation</AlertDialogTitle>
+            <AlertDialogDescription asChild>
+              <div>
+                <p>
+                  Are you sure you want to start generating recommendations
+                  for&nbsp;
+                  <span className="font-medium">
+                    {recommendationToGenerate?.username}
+                  </span>
+                  ?
+                </p>
+                <br />
+                <p>
+                  This will fetch tracks from Last.fm and add them to Jellyfin.
+                </p>
+              </div>
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={() =>
+                recommendationToGenerate &&
+                handleGenerateRecommendation(recommendationToGenerate)
+              }
+              disabled={isGenerating}
+            >
+              Start Generation
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
