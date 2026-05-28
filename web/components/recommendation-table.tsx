@@ -30,7 +30,12 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { capitaliseFirstLetter, cn, formatDateTime } from "@/lib/utils";
+import {
+  capitaliseFirstLetter,
+  cn,
+  formatDateTime,
+  formatDuration,
+} from "@/lib/utils";
 import {
   RecommendationSession,
   useRecommendationSessions,
@@ -156,7 +161,7 @@ export const RecommendationTable = () => {
           />
           <DialogItem
             label="Duration"
-            value={`${selectedSession.duration_seconds}s`}
+            value={formatDuration(selectedSession.duration_seconds)}
           />
           <DialogItem
             label="Finished At"
