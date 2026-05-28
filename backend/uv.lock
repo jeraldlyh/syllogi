@@ -949,7 +949,7 @@ wheels = [
 [[package]]
 name = "spotapi"
 version = "1.2.7"
-source = { editable = "SpotAPI" }
+source = { git = "https://github.com/Aran404/SpotAPI.git#fd6674636870c0b9f11c1187b953907b21af7b6f" }
 dependencies = [
     { name = "beautifulsoup4" },
     { name = "colorama" },
@@ -972,23 +972,6 @@ redis = [
 websocket = [
     { name = "websockets" },
 ]
-
-[package.metadata]
-requires-dist = [
-    { name = "beautifulsoup4" },
-    { name = "colorama" },
-    { name = "pillow" },
-    { name = "pymongo", marker = "extra == 'pymongo'" },
-    { name = "pyotp" },
-    { name = "readerwriterlock" },
-    { name = "redis", marker = "extra == 'redis'" },
-    { name = "requests" },
-    { name = "tls-client" },
-    { name = "typing-extensions" },
-    { name = "validators" },
-    { name = "websockets", marker = "extra == 'websocket'" },
-]
-provides-extras = ["websocket", "redis", "pymongo"]
 
 [[package]]
 name = "sqlalchemy"
@@ -1077,7 +1060,7 @@ requires-dist = [
     { name = "python-multipart" },
     { name = "pytz" },
     { name = "requests" },
-    { name = "spotapi", extras = ["websocket", "redis", "pymongo"], editable = "SpotAPI" },
+    { name = "spotapi", extras = ["websocket", "redis", "pymongo"], git = "https://github.com/Aran404/SpotAPI.git" },
     { name = "sqlmodel" },
     { name = "uvicorn", extras = ["standard"] },
     { name = "yt-dlp" },
