@@ -13,9 +13,9 @@ const _jetbrainsMono = JetBrains_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "syllogi - Spotify to Jellyfin Sync",
+  title: "syllogi",
   description:
-    "Dashboard for managing Spotify to Jellyfin playlist synchronization",
+    "Mirrors external playlists into Jellyfin by matching tracks against your indexed audio.",
   icons: {
     icon: "/favicon.ico",
   },
