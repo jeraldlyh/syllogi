@@ -22,7 +22,7 @@ FROM python:3.13-slim AS development
 
 RUN apt-get update \
   && apt-get install -y --no-install-recommends \
-  curl ca-certificates ffmpeg nginx \
+  curl ca-certificates ffmpeg nginx git \
   nodejs npm \
   && npm install -g pnpm@9 \
   && rm -f /etc/nginx/sites-enabled/default \
@@ -60,7 +60,7 @@ FROM python:3.13-slim AS production
 
 RUN apt-get update \
   && apt-get install -y --no-install-recommends \
-  curl ca-certificates ffmpeg nginx \
+  curl ca-certificates ffmpeg nginx git \
   nodejs \
   && rm -f /etc/nginx/sites-enabled/default \
   && rm -rf /var/lib/apt/lists/*
