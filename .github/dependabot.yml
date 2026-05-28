@@ -31,7 +31,7 @@ updates:
           - "autoprefixer"
           - "tailwind-merge"
 
-  - package-ecosystem: "pip"
+  - package-ecosystem: "uv"
     directory: "/backend"
     schedule:
       interval: "weekly"
@@ -57,12 +57,12 @@ updates:
           - "starlette"
           - "uvicorn"
 
-  - package-ecosystem: "pip"
-    directory: "/backend/SpotAPI"
+  - package-ecosystem: "gitsubmodule"
+    directory: "/"
     schedule:
       interval: "weekly"
       day: "monday"
-    open-pull-requests-limit: 10
+    open-pull-requests-limit: 5
     commit-message:
       prefix: "chore"
       include: "scope"
@@ -70,9 +70,6 @@ updates:
       - "dependencies"
       - "backend"
       - "spotapi"
-    ignore:
-      - dependency-name: "*"
-        update-types: ["version-update:semver-major"]
 
   - package-ecosystem: "github-actions"
     directory: "/"
