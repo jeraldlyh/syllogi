@@ -37,8 +37,7 @@ export const OAuthCallback = () => {
         setTimeout(() => router.replace("/login"), 3000);
         return;
       }
-      const backendUrl = process.env.NEXT_PUBLIC_URL || "http://localhost:8000";
-      window.location.href = `${backendUrl}/api/oauth/callback?code=${encodeURIComponent(code)}&state=${encodeURIComponent(state)}`;
+      window.location.href = `/api/oauth/callback?code=${encodeURIComponent(code)}&state=${encodeURIComponent(state)}`;
     };
     handleOAuthCallback();
   }, [searchParams, router]);

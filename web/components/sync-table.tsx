@@ -28,7 +28,7 @@ import {
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { SyncSession, useSyncSessions } from "@/hooks/useSyncSessions";
 import { StatusBadge } from "@/components/common/status-badge";
-import { capitaliseFirstLetter, cn, formatDateTime } from "@/lib/utils";
+import { capitaliseFirstLetter, cn, formatDateTime, formatDuration } from "@/lib/utils";
 import { Text } from "@/components/common/text";
 import { Button } from "./ui/button";
 
@@ -137,7 +137,7 @@ export const SyncSessionTable = () => {
           />
           <DialogItem
             label="Duration"
-            value={`${selectedSession.duration_seconds}s`}
+            value={formatDuration(selectedSession.duration_seconds)}
           />
           <DialogItem
             label="Started At"
@@ -255,7 +255,7 @@ export const SyncSessionTable = () => {
                 <TableCell className="hidden lg:table-cell">
                   <Text
                     className="text-muted-foreground"
-                    value={`${session.duration_seconds}s`}
+                    value={formatDuration(session.duration_seconds)}
                   />
                 </TableCell>
                 <TableCell>

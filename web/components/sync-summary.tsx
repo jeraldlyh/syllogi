@@ -3,7 +3,7 @@ import { useSyncSessions } from "@/hooks/useSyncSessions";
 import { ListMusic, User, Music, Plus, Minus, Clock, Hash } from "lucide-react";
 import { StatusBadge } from "./common/status-badge";
 import { Card, CardHeader, CardTitle, CardContent } from "./ui/card";
-import { capitaliseFirstLetter, formatDateTime } from "@/lib/utils";
+import { capitaliseFirstLetter, formatDateTime, formatDuration } from "@/lib/utils";
 import { Text } from "./common/text";
 
 export const SyncSummary = () => {
@@ -56,7 +56,7 @@ export const SyncSummary = () => {
           <SummaryItem
             icon={<Clock className="h-4 w-4 text-muted-foreground" />}
             label="Duration"
-            value={`${latestRun.duration_seconds}s`}
+            value={formatDuration(latestRun.duration_seconds)}
           />
           <SummaryItem
             icon={<Clock className="h-4 w-4 text-muted-foreground" />}
