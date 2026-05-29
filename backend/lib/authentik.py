@@ -14,7 +14,7 @@ def _get_authentik_config() -> dict:
     authentik_secret = get_environment_variable("AUTHENTIK_SECRET")
     authentik_issuer = get_environment_variable("AUTHENTIK_ISSUER")
 
-    auth_url = authentik_issuer.split("application")[0].rstrip("/")
+    auth_url = str(authentik_issuer).split("application")[0].rstrip("/")
     return {
         "client_id": authentik_client_id,
         "client_secret": authentik_secret,
