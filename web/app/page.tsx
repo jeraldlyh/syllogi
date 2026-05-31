@@ -2,6 +2,7 @@
 
 import { Text } from "@/components/common/text";
 import { DashboardHeader } from "@/components/dashboard-header";
+import { Charts } from "@/components/charts";
 import { SyncSettings } from "@/components/sync-settings";
 import { Recommendations } from "@/components/recommendation-settings";
 import { RecommendationTable } from "@/components/recommendation-table";
@@ -111,6 +112,7 @@ export default function Page() {
                 <TabsTrigger value="recommendations">
                   Recommendations
                 </TabsTrigger>
+                <TabsTrigger value="charts">Charts</TabsTrigger>
               </TabsList>
               <TabsContent value="sync">
                 <div className="flex flex-col gap-6 pt-6">
@@ -123,6 +125,11 @@ export default function Page() {
                 <div className="flex flex-col gap-6 pt-6">
                   <Recommendations />
                   <RecommendationTable />
+                </div>
+              </TabsContent>
+              <TabsContent value="charts">
+                <div className="flex flex-col gap-6 pt-6">
+                  <Charts />
                 </div>
               </TabsContent>
             </Tabs>
