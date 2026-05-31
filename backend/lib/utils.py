@@ -13,6 +13,7 @@ import pytz
 from lib.env import get_environment_variable
 
 DEBUG_DIRECTORY = "debug"
+LOSSLESS_EXTENSIONS = {".flac"}
 
 logger = logging.getLogger(__name__)
 
@@ -102,11 +103,33 @@ def get_download_path(artist_name: str, track_name: str, album_name: str = "") -
     )
 
 
+def get_existing_track_path(
+    artist_name: str, track_name: str, album_name: str = ""
+) -> str | None:
+    """Return the full path of an existing track file, or None if not found."""
+
+    download_path = get_download_path(artist_name, track_name, album_name)
+    existing_paths = glob.glob(f"{glob.escape(download_path)}.*")
+    return existing_paths[0] if existing_paths else None
+
+
 def is_track_exists(artist_name: str, track_name: str, album_name: str = "") -> bool:
+    """Check if a track already exists at the download path."""
+
+    existing_path = get_existing_track_path(
+        artist_name=artist_name, track_name=track_name, album_name=album_name
+    )
+
+    return bool(existing_path)
+
+
+def is_track_lossless(artist_name: str, track_name: str, album_name: str = "") -> bool:
+    """Check if the existing track at the download path is in a lossless format (FLAC)."""
+
     download_path = get_download_path(artist_name, track_name, album_name)
     existing_paths = glob.glob(f"{glob.escape(download_path)}.*")
 
-    return bool(existing_paths)
+    return any(Path(p).suffix.lower() in LOSSLESS_EXTENSIONS for p in existing_paths)
 
 
 def find_downloaded_file(filename: str) -> str | None:

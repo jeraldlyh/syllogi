@@ -362,6 +362,7 @@ def _get_ranked_candidates(
     artist_name: str,
     track_name: str,
     duration: int,
+    lossless_only: bool = False,
 ) -> list[SlskdTrackCandidate]:
     """Return all valid candidates from slskd search results, sorted by quality (best first)."""
 
@@ -372,6 +373,9 @@ def _get_ranked_candidates(
             continue
 
         for file in entry.files:
+            if lossless_only and not file.is_lossless():
+                continue
+
             if file.is_available() and file.is_matching(
                 artist_name=artist_name,
                 track_name=track_name,
@@ -430,6 +434,7 @@ async def download_track_slskd(
     track_name: str,
     album_name: str = "",
     duration: int = 0,
+    lossless_only: bool = False,
 ) -> bool:
     """Search for a track on Soulseek via slskd and download it.
 
@@ -474,6 +479,7 @@ async def download_track_slskd(
             artist_name=artist_name,
             track_name=track_name,
             duration=duration,
+            lossless_only=lossless_only,
         )
 
         if not candidates:

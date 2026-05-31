@@ -1,9 +1,11 @@
 import logging
+import os
 
 from lib.models.common import ExternalTrack
+from lib.models.jellyfin import JellyfinTrack
 from lib.env import get_environment_variable
 from lib.slskd import download_track_slskd
-from lib.utils import is_track_exists
+from lib.utils import get_existing_track_path, is_track_exists, is_track_lossless
 from lib.youtube import download_track_youtube
 
 logger = logging.getLogger(__name__)
@@ -71,3 +73,73 @@ async def download_missing_tracks(
             logger.warning(f"{formatted_name}: STILL MISSING")
 
     return found_tracks_after_download, missing_tracks_after_download
+
+
+async def upgrade_non_lossless_tracks(
+    tracks: list[JellyfinTrack],
+) -> list[JellyfinTrack]:
+    """Attempt to upgrade non-lossless tracks to FLAC via slskd.
+
+    For each track that exists on disk in a non-lossless format, the old file is
+    deleted before attempting the FLAC download. If the download fails, the track
+    will be re-downloaded from scratch on the next sync.
+
+    Returns a list of tracks that were successfully upgraded.
+    """
+    slskd_url = get_environment_variable("SLSKD_URL")
+
+    if not slskd_url:
+        return []
+
+    upgraded: list[JellyfinTrack] = []
+
+    for track in tracks:
+        artist_name = track.artists[0] if track.artists else ""
+        track_name = track.track_name
+        album_name = track.album_name
+        duration = int(track.duration_ticks / 10_000_000) if track.duration_ticks else 0
+        formatted_name = f"{artist_name} - {album_name}: {track_name}"
+
+        if not is_track_exists(
+            artist_name=artist_name, track_name=track_name, album_name=album_name
+        ):
+            continue
+
+        if is_track_lossless(
+            artist_name=artist_name, track_name=track_name, album_name=album_name
+        ):
+            continue
+
+        existing_path = get_existing_track_path(
+            artist_name=artist_name, track_name=track_name, album_name=album_name
+        )
+
+        if not existing_path:
+            continue
+
+        try:
+            os.remove(existing_path)
+            logger.info(f"{formatted_name}: Removed non-lossless file for upgrade")
+        except OSError as e:
+            logger.warning(
+                f"{formatted_name}: Failed to remove non-lossless file, skipping upgrade: {e}"
+            )
+            continue
+
+        logger.info(f"{formatted_name}: Attempting lossless upgrade via slskd")
+
+        is_success = await download_track_slskd(
+            artist_name=artist_name,
+            track_name=track_name,
+            album_name=album_name,
+            duration=duration,
+            lossless_only=True,
+        )
+
+        if is_success:
+            upgraded.append(track)
+            logger.info(f"{formatted_name}: UPGRADED TO LOSSLESS")
+        else:
+            logger.info(f"{formatted_name}: LOSSLESS UPGRADE FAILED")
+
+    return upgraded
