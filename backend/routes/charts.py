@@ -5,7 +5,10 @@ from typing import Annotated
 from fastapi import APIRouter, BackgroundTasks, Query
 from pydantic import BaseModel, Field
 
-from lib.download import download_missing_tracks
+from lib.download import (
+    download_missing_tracks,
+    download_missing_tracks_and_refresh_library,
+)
 from lib.lastfm import get_lastfm_chart_top_tracks
 from lib.models.common import ExternalTrack
 from lib.track import is_track_in_jellyfin
@@ -82,5 +85,7 @@ async def _download_track(
         artist_name=item.artist_name,
         track_name=item.track_name,
     )
-    background_tasks.add_task(download_missing_tracks, missing_tracks=[track])
+    background_tasks.add_task(
+        download_missing_tracks_and_refresh_library, missing_tracks=[track]
+    )
     return {"message": "Download started"}

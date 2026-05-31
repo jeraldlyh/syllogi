@@ -1,6 +1,7 @@
 import logging
 import os
 
+from lib.jellyfin import rescan_jellyfin_library
 from lib.models.common import ExternalTrack
 from lib.models.jellyfin import JellyfinTrack
 from lib.env import get_environment_variable
@@ -73,6 +74,21 @@ async def download_missing_tracks(
             logger.warning(f"{formatted_name}: STILL MISSING")
 
     return found_tracks_after_download, missing_tracks_after_download
+
+
+async def download_missing_tracks_and_refresh_library(
+    missing_tracks: list[ExternalTrack],
+) -> tuple[list[ExternalTrack], list[ExternalTrack]]:
+    """Downloads missing tracks and refreshes the Jellyfin library.
+
+    This is a convenience wrapper around download_missing_tracks that also triggers
+    a library refresh after attempting downloads.
+    """
+    found, still_missing = await download_missing_tracks(missing_tracks)
+
+    if found:
+        await rescan_jellyfin_library()
+    return found, still_missing
 
 
 async def upgrade_non_lossless_tracks(
