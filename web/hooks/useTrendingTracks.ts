@@ -16,7 +16,10 @@ export interface TrendingTrack {
 export const useTrendingTracks = () => {
   const { data, error, isLoading, mutate } = useSWR<
     ApiResponse<TrendingTrack[]>
-  >("/charts/trending", fetcher);
+  >("/charts/trending", fetcher, {
+    revalidateOnFocus: false,
+    revalidateOnReconnect: false,
+  });
 
   return {
     data: data?.data,
