@@ -4,7 +4,7 @@ from typing import Any, TypeVar
 
 import httpx
 
-from lib.models.lastfm import LastFMRecentTrack, LastFMSimilarTrack, LastFMTopTrack
+from lib.models.lastfm import LastFMChartTrack, LastFMRecentTrack, LastFMSimilarTrack, LastFMTopTrack
 from lib.env import get_environment_variable
 
 
@@ -199,4 +199,35 @@ async def get_lastfm_similar_tracks(
                 similarity_score=raw_track.get("match", 0.0),
             )
         )
+    return tracks
+
+
+async def get_lastfm_chart_top_tracks(limit: int = 50) -> list[LastFMChartTrack]:
+    data = await _lastfm(
+        params={
+            "method": "chart.getTopTracks",
+            "limit": limit,
+        },
+    )
+    raw_tracks = _get_nested_value(data, "tracks.track") or []
+    tracks: list[LastFMChartTrack] = []
+
+    for raw_track in raw_tracks:
+        images = raw_track.get("image", [])
+        image_url = next(
+            (img["#text"] for img in reversed(images) if img.get("#text")),
+            "",
+        )
+        tracks.append(
+            LastFMChartTrack(
+                artist_name=raw_track.get("artist", {}).get("name", ""),
+                track_name=raw_track.get("name", ""),
+                duration=int(raw_track.get("duration", 0) or 0),
+                listeners=int(raw_track.get("listeners", 0) or 0),
+                playcount=int(raw_track.get("playcount", 0) or 0),
+                musicbrainz_id=raw_track.get("mbid", ""),
+                image_url=image_url,
+            )
+        )
+
     return tracks

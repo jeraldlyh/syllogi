@@ -4,6 +4,7 @@ from lib.auth import get_current_user
 from routes.auth import router as auth_router
 from routes.oauth import router as oauth_router
 from routes.cron import router as cron_router
+from routes.charts import router as charts_router
 from routes.health import router as health_router
 from routes.jellyfin import router as jellyfin_router
 from routes.notification import router as notification_router
@@ -39,6 +40,7 @@ OPENAPI_TAGS = [
         "name": "Recommendation Session",
         "description": "Track recommendation session history and results.",
     },
+    {"name": "Chart", "description": "Trending tracks and charts endpoints."},
 ]
 
 
@@ -117,5 +119,11 @@ def register_routes(app: FastAPI) -> None:
         prefix="/recommendation_session",
         dependencies=[Depends(get_current_user)],
         tags=["Recommendation Session"],
+    )
+    api.include_router(
+        router=charts_router,
+        prefix="/charts",
+        dependencies=[Depends(get_current_user)],
+        tags=["Charts"],
     )
     app.include_router(api)
