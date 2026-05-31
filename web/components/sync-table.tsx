@@ -1,7 +1,13 @@
 "use client";
 
 import { useState } from "react";
-import { RefreshCw, Search } from "lucide-react";
+import {
+  ArrowDown,
+  ArrowUp,
+  ArrowUpDown,
+  RefreshCw,
+  Search,
+} from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import {
@@ -28,9 +34,26 @@ import {
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { SyncSession, useSyncSessions } from "@/hooks/useSyncSessions";
 import { StatusBadge } from "@/components/common/status-badge";
-import { capitaliseFirstLetter, cn, formatDateTime, formatDuration } from "@/lib/utils";
+import {
+  capitaliseFirstLetter,
+  cn,
+  formatDateTime,
+  formatDuration,
+} from "@/lib/utils";
 import { Text } from "@/components/common/text";
 import { Button } from "./ui/button";
+import { SortDirection, SortIcon } from "./common/sort-icon";
+
+type SyncSortColumn =
+  | "time"
+  | "playlist"
+  | "user"
+  | "total"
+  | "added"
+  | "outdated"
+  | "duration"
+  | "status"
+  | null;
 
 export const SyncSessionTable = () => {
   const [search, setSearch] = useState("");
@@ -38,6 +61,8 @@ export const SyncSessionTable = () => {
   const [selectedSession, setSelectedSession] = useState<SyncSession | null>(
     null,
   );
+  const [sortColumn, setSortColumn] = useState<SyncSortColumn>(null);
+  const [sortDirection, setSortDirection] = useState<SortDirection>(null);
 
   const {
     data,
@@ -59,6 +84,65 @@ export const SyncSessionTable = () => {
       const matchesStatus =
         statusFilter === "all" || session.status === statusFilter;
       return matchesSearch && matchesStatus;
+    });
+  };
+
+  const handleSort = (column: typeof sortColumn): void => {
+    if (sortColumn !== column) {
+      setSortColumn(column);
+      setSortDirection("asc");
+      return;
+    }
+
+    if (sortDirection === "asc") {
+      setSortDirection("desc");
+    } else if (sortDirection === "desc") {
+      setSortDirection(null);
+      setSortColumn(null);
+    } else {
+      setSortDirection("asc");
+    }
+  };
+
+  const getSortedSessions = (): SyncSession[] => {
+    const filtered = getFilteredSessions();
+
+    if (!sortColumn || !sortDirection) return filtered;
+
+    const multiplier = sortDirection === "asc" ? 1 : -1;
+
+    return [...filtered].sort((a, b) => {
+      switch (sortColumn) {
+        case "time":
+          return (
+            multiplier *
+            (new Date(a.finished_at).getTime() -
+              new Date(b.finished_at).getTime())
+          );
+        case "playlist":
+          return (
+            multiplier *
+            a.target_playlist_name.localeCompare(b.target_playlist_name)
+          );
+        case "user":
+          return (
+            multiplier * a.target_username.localeCompare(b.target_username)
+          );
+        case "total":
+          return multiplier * (a.total_tracks.length - b.total_tracks.length);
+        case "added":
+          return multiplier * (a.new_tracks.length - b.new_tracks.length);
+        case "outdated":
+          return (
+            multiplier * (a.outdated_tracks.length - b.outdated_tracks.length)
+          );
+        case "duration":
+          return multiplier * (a.duration_seconds - b.duration_seconds);
+        case "status":
+          return multiplier * a.status.localeCompare(b.status);
+        default:
+          return 0;
+      }
     });
   };
 
@@ -183,7 +267,9 @@ export const SyncSessionTable = () => {
       );
     }
 
-    if (getFilteredSessions().length === 0) {
+    const sortedSessions = getSortedSessions();
+
+    if (sortedSessions.length === 0) {
       return (
         <div className="flex items-center justify-center py-6">
           <Text
@@ -203,20 +289,114 @@ export const SyncSessionTable = () => {
         <Table>
           <TableHeader>
             <TableRow className="hover:bg-transparent text-xs text-muted-foreground">
-              <TableHead>Time</TableHead>
-              <TableHead>Playlist</TableHead>
-              <TableHead className="hidden sm:table-cell">User</TableHead>
-              <TableHead className="hidden md:table-cell">Total</TableHead>
-              <TableHead className="text-centerhidden md:table-cell">
-                Added
+              <TableHead
+                className="cursor-pointer select-none"
+                onClick={() => handleSort("time")}
+              >
+                <span className="flex items-center">
+                  Time
+                  <SortIcon
+                    column="time"
+                    sortColumn={sortColumn}
+                    sortDirection={sortDirection}
+                  />
+                </span>
               </TableHead>
-              <TableHead className="hidden lg:table-cell">Outdated</TableHead>
-              <TableHead className="hidden lg:table-cell">Duration</TableHead>
-              <TableHead>Status</TableHead>
+              <TableHead
+                className="cursor-pointer select-none"
+                onClick={() => handleSort("playlist")}
+              >
+                <span className="flex items-center">
+                  Playlist
+                  <SortIcon
+                    column="playlist"
+                    sortColumn={sortColumn}
+                    sortDirection={sortDirection}
+                  />
+                </span>
+              </TableHead>
+              <TableHead
+                className="hidden sm:table-cell cursor-pointer select-none"
+                onClick={() => handleSort("user")}
+              >
+                <span className="flex items-center">
+                  User
+                  <SortIcon
+                    column="user"
+                    sortColumn={sortColumn}
+                    sortDirection={sortDirection}
+                  />
+                </span>
+              </TableHead>
+              <TableHead
+                className="hidden md:table-cell cursor-pointer select-none"
+                onClick={() => handleSort("total")}
+              >
+                <span className="flex items-center">
+                  Total
+                  <SortIcon
+                    column="total"
+                    sortColumn={sortColumn}
+                    sortDirection={sortDirection}
+                  />
+                </span>
+              </TableHead>
+              <TableHead
+                className="cursor-pointer select-none"
+                onClick={() => handleSort("added")}
+              >
+                <span className="flex items-center">
+                  Added
+                  <SortIcon
+                    column="added"
+                    sortColumn={sortColumn}
+                    sortDirection={sortDirection}
+                  />
+                </span>
+              </TableHead>
+              <TableHead
+                className="hidden lg:table-cell cursor-pointer select-none"
+                onClick={() => handleSort("outdated")}
+              >
+                <span className="flex items-center">
+                  Outdated
+                  <SortIcon
+                    column="outdated"
+                    sortColumn={sortColumn}
+                    sortDirection={sortDirection}
+                  />
+                </span>
+              </TableHead>
+              <TableHead
+                className="hidden lg:table-cell cursor-pointer select-none"
+                onClick={() => handleSort("duration")}
+              >
+                <span className="flex items-center">
+                  Duration
+                  <SortIcon
+                    column="duration"
+                    sortColumn={sortColumn}
+                    sortDirection={sortDirection}
+                  />
+                </span>
+              </TableHead>
+              <TableHead
+                className="cursor-pointer select-none"
+                onClick={() => handleSort("status")}
+              >
+                <span className="flex items-center">
+                  Status
+                  <SortIcon
+                    column="status"
+                    sortColumn={sortColumn}
+                    sortDirection={sortDirection}
+                  />
+                </span>
+              </TableHead>
             </TableRow>
           </TableHeader>
           <TableBody className="overflow-y-auto">
-            {getFilteredSessions().map((session) => (
+            {sortedSessions.map((session) => (
               <TableRow
                 key={session.id}
                 className="cursor-pointer transition-colors hover:bg-secondary/50"
