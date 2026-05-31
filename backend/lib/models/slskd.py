@@ -56,7 +56,7 @@ class SlskdSearchStatus:
 class SlskdSearchFile:
     """A file from Soulseek search results."""
 
-    PREFERRED_EXTENSIONS = ["flac", "mp3", "opus"]
+    PREFERRED_EXTENSIONS = ["flac", "mp3", "mp4"]
 
     def __init__(
         self,

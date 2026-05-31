@@ -30,7 +30,7 @@ print(
             "postprocessors": [
                 {
                     "key": "FFmpegExtractAudio",
-                    "preferredcodec": "opus",
+                    "preferredcodec": "mp4",
                     "preferredquality": "0",
                 }
             ],

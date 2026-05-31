@@ -222,7 +222,7 @@ async def download_track_youtube(
                     "postprocessors": [
                         {
                             "key": "FFmpegExtractAudio",
-                            "preferredcodec": "opus",
+                            "preferredcodec": "mp4",
                             "preferredquality": "0",
                         }
                     ],
