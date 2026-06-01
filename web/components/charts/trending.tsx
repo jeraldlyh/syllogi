@@ -202,6 +202,7 @@ export const Trending = () => {
               const key = getTrackKey(track);
               const isDownloading =
                 downloadingTracks.has(key) || isTrackDownloading(track);
+              const isExist = track.exists;
 
               return (
                 <TableRow key={key}>
@@ -221,7 +222,7 @@ export const Trending = () => {
                       <div className="flex flex-col gap-1">
                         <Text value={track.track_name} />
                         {renderBadge({
-                          isExist: track.exists,
+                          isExist,
                           isDownloading,
                         })}
                       </div>
@@ -257,7 +258,7 @@ export const Trending = () => {
                       size="icon"
                       className="h-7 w-7 text-muted-foreground hover:text-foreground"
                       onClick={() => handleDownload(track)}
-                      disabled={isDownloading}
+                      disabled={isDownloading || isExist}
                     >
                       <Download className="h-4 w-4" />
                     </Button>
