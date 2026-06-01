@@ -1,12 +1,23 @@
 import logging
 import os
+import uuid
 
+from fastapi import HTTPException, status
+
+from db.download_session import get_download_session_by_id, update_download_session
+from db.models.download_session import DownloadSession, DownloadSessionStatus
+from db.session import get_isolated_session
 from lib.jellyfin import rescan_jellyfin_library
 from lib.models.common import ExternalTrack
 from lib.models.jellyfin import JellyfinTrack
 from lib.env import get_environment_variable
 from lib.slskd import download_track_slskd
-from lib.utils import get_existing_track_path, is_track_exists, is_track_lossless
+from lib.utils import (
+    get_existing_track_path,
+    get_now,
+    is_track_exists,
+    is_track_lossless,
+)
 from lib.youtube import download_track_youtube
 
 logger = logging.getLogger(__name__)
@@ -159,3 +170,52 @@ async def upgrade_non_lossless_tracks(
             logger.info(f"{formatted_name}: LOSSLESS UPGRADE FAILED")
 
     return upgraded
+
+
+async def download_single_track(
+    download_session_id: uuid.UUID,
+    track: ExternalTrack,
+) -> None:
+    """Download a single chart track."""
+
+    download_session: DownloadSession | None = None
+
+    with get_isolated_session() as session:
+        try:
+            download_session = get_download_session_by_id(session, download_session_id)
+            if not download_session:
+                raise HTTPException(
+                    status_code=status.HTTP_404_NOT_FOUND,
+                    detail=f"Unable to find download session with ID: {download_session_id}",
+                )
+
+            download_session.status = DownloadSessionStatus.downloading
+            update_download_session(session, download_session)
+
+            found, missing = await download_missing_tracks([track])
+            is_exist = len(found) == 0 and len(missing) == 0
+
+            if found:
+                await rescan_jellyfin_library()
+
+            if not found and not is_exist:
+                raise HTTPException(
+                    status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                    detail="Failed to download track",
+                )
+
+            download_session.status = (
+                DownloadSessionStatus.completed
+                if (found or is_exist)
+                else DownloadSessionStatus.failed
+            )
+            download_session.finished_at = get_now()
+
+        except Exception as e:
+            if download_session:
+                download_session.status = DownloadSessionStatus.failed
+                download_session.finished_at = get_now()
+                download_session.error_message = str(e)
+        finally:
+            if download_session:
+                update_download_session(session, download_session)

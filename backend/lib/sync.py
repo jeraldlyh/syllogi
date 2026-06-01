@@ -87,32 +87,35 @@ async def sync_playlist_task(
 ) -> None:
     """Sync a playlist (Spotify/Youtube) to Jellyfin in a background task."""
 
+    sync_session: SyncSession | None = None
+    internal_playlist: Playlist | None = None
+
     with get_isolated_session() as session:
-        internal_playlist = get_playlist_by_id(
-            session=session, playlist_id=internal_playlist_id
-        )
-
-        if not internal_playlist:
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND,
-                detail=f"Unable to find playlist with ID: {internal_playlist_id}",
-            )
-
-        sync_session = get_sync_session_by_id(
-            session=session, sync_session_id=sync_session_id
-        )
-
-        if not sync_session:
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND,
-                detail=f"Unable to find sync session with ID: {sync_session_id}",
-            )
-
-        username = internal_playlist.username
-        started_at = sync_session.started_at
-        external_playlist_name = external_playlist.name
-
         try:
+            internal_playlist = get_playlist_by_id(
+                session=session, playlist_id=internal_playlist_id
+            )
+
+            if not internal_playlist:
+                raise HTTPException(
+                    status_code=status.HTTP_404_NOT_FOUND,
+                    detail=f"Unable to find playlist with ID: {internal_playlist_id}",
+                )
+
+            sync_session = get_sync_session_by_id(
+                session=session, sync_session_id=sync_session_id
+            )
+
+            if not sync_session:
+                raise HTTPException(
+                    status_code=status.HTTP_404_NOT_FOUND,
+                    detail=f"Unable to find sync session with ID: {sync_session_id}",
+                )
+
+            username = internal_playlist.username
+            started_at = sync_session.started_at
+            external_playlist_name = external_playlist.name
+
             found_tracks, missing_tracks = await resolve_tracks(songs)
 
             track_names = [
@@ -305,22 +308,22 @@ async def sync_playlist_task(
                     type=SyncSessionTrackType.downloaded,
                 )
             )
-
-            sync_session = update_sync_session(
-                session=session, sync_session=sync_session
-            )
         except Exception as e:
-            finished_at = get_now()
-            sync_session.status = SyncStatus.failed
-            sync_session.finished_at = finished_at
-            sync_session.duration_seconds = int(
-                finished_at.timestamp() - started_at.timestamp()
-            )
-            sync_session.error_message = str(e)
-            sync_session.target_playlist_name = internal_playlist.playlist_name
-            sync_session = update_sync_session(
-                session=session, sync_session=sync_session
-            )
+            if sync_session:
+                finished_at = get_now()
+                sync_session.status = SyncStatus.failed
+                sync_session.finished_at = finished_at
+                sync_session.duration_seconds = int(
+                    finished_at.timestamp() - started_at.timestamp()
+                )
+                sync_session.error_message = str(e)
+                sync_session.target_playlist_name = (
+                    internal_playlist.playlist_name if internal_playlist else ""
+                )
+
+        finally:
+            if sync_session:
+                update_sync_session(session=session, sync_session=sync_session)
 
 
 async def sync_playlist(playlist: Playlist) -> dict[str, str]:

@@ -5,10 +5,10 @@ from typing import Annotated
 from fastapi import APIRouter, BackgroundTasks, Query
 from pydantic import BaseModel, Field
 
-from lib.download import (
-    download_missing_tracks,
-    download_missing_tracks_and_refresh_library,
-)
+from db.download_session import create_download_session, get_download_sessions
+from db.models.download_session import DownloadSession, DownloadSessionStatus
+from db.session import SessionDep
+from lib.download import download_single_track
 from lib.lastfm import get_lastfm_chart_top_tracks
 from lib.models.common import ExternalTrack
 from lib.track import is_track_in_jellyfin
@@ -80,12 +80,31 @@ async def _get_trending_tracks(
 async def _download_track(
     item: DownloadTrackRequest,
     background_tasks: BackgroundTasks,
+    session: SessionDep,
 ) -> dict[str, str]:
     track = ExternalTrack(
         artist_name=item.artist_name,
         track_name=item.track_name,
     )
+    download_session = DownloadSession(
+        artist_name=item.artist_name,
+        track_name=item.track_name,
+        status=DownloadSessionStatus.pending,
+    )
+    create_download_session(session, download_session)
     background_tasks.add_task(
-        download_missing_tracks_and_refresh_library, missing_tracks=[track]
+        download_single_track,
+        download_session_id=download_session.id,
+        track=track,
     )
     return {"message": "Download started"}
+
+
+@router.get(
+    path="/downloads",
+    summary="Get chart downloads",
+    description="Retrieve recent chart download requests and their statuses.",
+)
+async def _get_download_sessions(session: SessionDep) -> list[dict]:
+    downloads = get_download_sessions(session, limit=20)
+    return [download.to_dict() for download in downloads]
