@@ -10,7 +10,7 @@ from db.session import get_isolated_session
 from lib.jellyfin import rescan_jellyfin_library
 from lib.models.common import ExternalTrack
 from lib.models.jellyfin import JellyfinTrack
-from lib.env import get_environment_variable
+from lib.env import is_slskd_configured
 from lib.slskd import download_track_slskd
 from lib.utils import (
     get_existing_track_path,
@@ -29,16 +29,14 @@ async def download_missing_tracks(
     """Download a list of missing songs.
 
     Attempts to download each track in the following order:
-    1. slskd (if SLSKD_URL is configured)
+    1. slskd
     2. yt-dlp (fallback)
 
     Returns a tuple of (successfully downloaded, still missing).
     """
-    slskd_url = get_environment_variable("SLSKD_URL")
-    use_slskd = bool(slskd_url)
-
     logger.info(f"Attempting to download {len(missing_tracks)} missing tracks...")
 
+    is_slskd_enabled = is_slskd_configured()
     found_tracks_after_download: list[ExternalTrack] = []
     missing_tracks_after_download: list[ExternalTrack] = []
 
@@ -57,7 +55,7 @@ async def download_missing_tracks(
 
         is_download_success = False
 
-        if use_slskd:
+        if is_slskd_enabled:
             logger.info(f"Downloading with slskd: {formatted_name}")
             is_download_success = await download_track_slskd(
                 artist_name=artist_name,
@@ -67,7 +65,7 @@ async def download_missing_tracks(
             )
 
         if not is_download_success:
-            if use_slskd:
+            if is_slskd_enabled:
                 logger.info(
                     f"slskd failed, falling back to yt-dlp for: {formatted_name}"
                 )
@@ -113,9 +111,7 @@ async def upgrade_non_lossless_tracks(
 
     Returns a list of tracks that were successfully upgraded.
     """
-    slskd_url = get_environment_variable("SLSKD_URL")
-
-    if not slskd_url:
+    if not is_slskd_configured():
         return []
 
     upgraded: list[JellyfinTrack] = []
