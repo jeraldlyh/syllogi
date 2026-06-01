@@ -10,7 +10,8 @@ from lib.models.common import (
     JellyfinTrack,
     ResolvedTrack,
 )
-from lib.utils import get_clean_name
+from lib.models.lastfm import LastFMChartTrack
+from lib.utils import get_clean_name, sanitize_filename
 
 logger = logging.getLogger(__name__)
 T = TypeVar("T")
@@ -88,7 +89,10 @@ async def find_track(
     """Find the best matching track in Jellyfin based on the provided metadata."""
 
     jellyfin_tracks = await search_jellyfin_track(
-        artist_name=artist_name, title=track_name, album=album_name, year=year
+        artist_name=artist_name,
+        title=sanitize_filename(name=track_name),
+        album=album_name,
+        year=year,
     )
     best_match, best_score = None, 0.0
 
@@ -138,7 +142,7 @@ async def resolve_tracks(
     missing: list[ResolvedTrack] = []
 
     for song in tracks:
-        display_name = f"{song.artist_name} - {song.album_name}: {song.track_name}"
+        display_name = f"{song.artist_name} {song.album_name}: {song.track_name}"
         track = await find_track(
             artist_name=song.artist_name,
             track_name=song.track_name,
@@ -212,3 +216,21 @@ def reconcile_after_download(
             updated_missing.append(original)
 
     return updated_found, updated_missing
+
+
+async def is_track_in_jellyfin(track: LastFMChartTrack) -> bool:
+    """Return True if the track exists in the Jellyfin library, False otherwise."""
+    try:
+        jellyfin_track = await find_track(
+            artist_name=track.artist_name,
+            track_name=track.track_name,
+            album_name="",
+            year="",
+            duration=track.duration,
+        )
+        return not jellyfin_track.is_not_found()
+    except Exception:
+        logger.warning(
+            f"Failed to check Jellyfin for '{track.artist_name} - {track.track_name}'"
+        )
+        return False

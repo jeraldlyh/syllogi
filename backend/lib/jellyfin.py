@@ -120,7 +120,7 @@ async def search_jellyfin_track(
         params={
             "includeItemTypes": "Audio",
             "recursive": "true",
-            "artists": artist_name,
+            # "artists": artist_name,
             "searchTerm": title,
             # "album": album,
             "fields": "Path,Album,Artists,CumulativeRunTimeTicks",

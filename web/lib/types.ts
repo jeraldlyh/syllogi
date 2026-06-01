@@ -12,7 +12,8 @@ export interface ApiConfig {
     | "sync"
     | "settings"
     | "auth"
-    | "recommendation";
+    | "recommendation"
+    | "charts";
   path?: string;
   query?: Record<string, any>;
   cache?: RequestCache;

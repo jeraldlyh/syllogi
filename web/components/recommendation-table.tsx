@@ -1,8 +1,6 @@
 "use client";
-
 import { useState } from "react";
 import { RefreshCw, Search } from "lucide-react";
-
 import { StatusBadge } from "@/components/common/status-badge";
 import { Text } from "@/components/common/text";
 import { Button } from "@/components/ui/button";
@@ -40,12 +38,26 @@ import {
   RecommendationSession,
   useRecommendationSessions,
 } from "@/hooks/useRecommendationSessions";
+import { SortDirection, SortIcon } from "./common/sort-icon";
+
+type SortColumn =
+  | "time"
+  | "user"
+  | "strategy"
+  | "requested"
+  | "matched"
+  | "missing"
+  | "duration"
+  | "status"
+  | null;
 
 export const RecommendationTable = () => {
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("all");
   const [selectedSession, setSelectedSession] =
     useState<RecommendationSession | null>(null);
+  const [sortColumn, setSortColumn] = useState<SortColumn>(null);
+  const [sortDirection, setSortDirection] = useState<SortDirection>(null);
 
   const {
     data,
@@ -66,6 +78,62 @@ export const RecommendationTable = () => {
         statusFilter === "all" || session.status === statusFilter;
 
       return matchesSearch && matchesStatus;
+    });
+  };
+
+  const handleSort = (column: typeof sortColumn): void => {
+    if (sortColumn !== column) {
+      setSortColumn(column);
+      setSortDirection("asc");
+      return;
+    }
+
+    if (sortDirection === "asc") {
+      setSortDirection("desc");
+    } else if (sortDirection === "desc") {
+      setSortDirection(null);
+      setSortColumn(null);
+    } else {
+      setSortDirection("asc");
+    }
+  };
+
+  const getSortedSessions = (): RecommendationSession[] => {
+    const filtered = getFilteredSessions();
+
+    if (!sortColumn || !sortDirection) return filtered;
+
+    const multiplier = sortDirection === "asc" ? 1 : -1;
+
+    return [...filtered].sort((a, b) => {
+      switch (sortColumn) {
+        case "time":
+          return (
+            multiplier *
+            (new Date(a.finished_at).getTime() -
+              new Date(b.finished_at).getTime())
+          );
+        case "user":
+          return multiplier * a.username.localeCompare(b.username);
+        case "strategy":
+          return multiplier * a.strategy.localeCompare(b.strategy);
+        case "requested":
+          return multiplier * (a.requested_count - b.requested_count);
+        case "matched":
+          return (
+            multiplier * (a.matched_tracks.length - b.matched_tracks.length)
+          );
+        case "missing":
+          return (
+            multiplier * (a.missing_tracks.length - b.missing_tracks.length)
+          );
+        case "duration":
+          return multiplier * (a.duration_seconds - b.duration_seconds);
+        case "status":
+          return multiplier * a.status.localeCompare(b.status);
+        default:
+          return 0;
+      }
     });
   };
 
@@ -205,7 +273,9 @@ export const RecommendationTable = () => {
       );
     }
 
-    if (getFilteredSessions().length === 0) {
+    const sortedSessions = getSortedSessions();
+
+    if (sortedSessions.length === 0) {
       return (
         <div className="flex items-center justify-center py-6">
           <Text
@@ -225,18 +295,114 @@ export const RecommendationTable = () => {
         <Table>
           <TableHeader>
             <TableRow className="hover:bg-transparent text-xs text-muted-foreground">
-              <TableHead>Time</TableHead>
-              <TableHead>User</TableHead>
-              <TableHead className="hidden sm:table-cell">Strategy</TableHead>
-              <TableHead className="hidden md:table-cell">Requested</TableHead>
-              <TableHead className="hidden md:table-cell">Matched</TableHead>
-              <TableHead className="hidden lg:table-cell">Missing</TableHead>
-              <TableHead className="hidden lg:table-cell">Duration</TableHead>
-              <TableHead>Status</TableHead>
+              <TableHead className="cursor-pointer select-none">
+                <button
+                  className="flex items-center"
+                  onClick={() => handleSort("time")}
+                >
+                  Time
+                  <SortIcon
+                    column="time"
+                    sortColumn={sortColumn}
+                    sortDirection={sortDirection}
+                  />
+                </button>
+              </TableHead>
+              <TableHead className="cursor-pointer select-none">
+                <button
+                  className="flex items-center"
+                  onClick={() => handleSort("user")}
+                >
+                  User
+                  <SortIcon
+                    column="user"
+                    sortColumn={sortColumn}
+                    sortDirection={sortDirection}
+                  />
+                </button>
+              </TableHead>
+              <TableHead className="hidden sm:table-cell cursor-pointer select-none">
+                <button
+                  className="flex items-center"
+                  onClick={() => handleSort("user")}
+                >
+                  Strategy
+                  <SortIcon
+                    column="strategy"
+                    sortColumn={sortColumn}
+                    sortDirection={sortDirection}
+                  />
+                </button>
+              </TableHead>
+              <TableHead className="hidden md:table-cell cursor-pointer select-none">
+                <button
+                  className="flex items-center"
+                  onClick={() => handleSort("requested")}
+                >
+                  Requested
+                  <SortIcon
+                    column="requested"
+                    sortColumn={sortColumn}
+                    sortDirection={sortDirection}
+                  />
+                </button>
+              </TableHead>
+              <TableHead className="hidden md:table-cell cursor-pointer select-none">
+                <button
+                  className="flex items-center"
+                  onClick={() => handleSort("matched")}
+                >
+                  Matched
+                  <SortIcon
+                    column="matched"
+                    sortColumn={sortColumn}
+                    sortDirection={sortDirection}
+                  />
+                </button>
+              </TableHead>
+              <TableHead className="hidden lg:table-cell cursor-pointer select-none">
+                <button
+                  className="flex items-center"
+                  onClick={() => handleSort("missing")}
+                >
+                  Missing
+                  <SortIcon
+                    column="missing"
+                    sortColumn={sortColumn}
+                    sortDirection={sortDirection}
+                  />
+                </button>
+              </TableHead>
+              <TableHead className="hidden lg:table-cell cursor-pointer select-none">
+                <button
+                  className="flex items-center"
+                  onClick={() => handleSort("duration")}
+                >
+                  Duration
+                  <SortIcon
+                    column="duration"
+                    sortColumn={sortColumn}
+                    sortDirection={sortDirection}
+                  />
+                </button>
+              </TableHead>
+              <TableHead className="cursor-pointer select-none">
+                <button
+                  className="flex items-center"
+                  onClick={() => handleSort("status")}
+                >
+                  Status
+                  <SortIcon
+                    column="status"
+                    sortColumn={sortColumn}
+                    sortDirection={sortDirection}
+                  />
+                </button>
+              </TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
-            {getFilteredSessions().map((session) => (
+            {sortedSessions.map((session) => (
               <TableRow
                 key={session.id}
                 className="cursor-pointer transition-colors hover:bg-secondary/50"

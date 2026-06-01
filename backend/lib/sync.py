@@ -58,13 +58,13 @@ def _diff_tracks(
     """
     existing_ids: set[str] = {track.id for track in existing_tracks}
     source_ids: set[str] = {
-        track.jellyfin_id for track in resolved_tracks if track.jellyfin_id is not None
+        track.jellyfin_id for track in resolved_tracks if track.jellyfin_id
     }
 
     diff = PlaylistDiff()
 
     for track in resolved_tracks:
-        if track.jellyfin_id is None:
+        if not track.jellyfin_id:
             continue
 
         if track.jellyfin_id in existing_ids:
@@ -87,36 +87,39 @@ async def sync_playlist_task(
 ) -> None:
     """Sync a playlist (Spotify/Youtube) to Jellyfin in a background task."""
 
+    sync_session: SyncSession | None = None
+    internal_playlist: Playlist | None = None
+
     with get_isolated_session() as session:
-        internal_playlist = get_playlist_by_id(
-            session=session, playlist_id=internal_playlist_id
-        )
-
-        if not internal_playlist:
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND,
-                detail=f"Unable to find playlist with ID: {internal_playlist_id}",
-            )
-
-        sync_session = get_sync_session_by_id(
-            session=session, sync_session_id=sync_session_id
-        )
-
-        if not sync_session:
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND,
-                detail=f"Unable to find sync session with ID: {sync_session_id}",
-            )
-
-        username = internal_playlist.username
-        started_at = sync_session.started_at
-        external_playlist_name = external_playlist.name
-
         try:
+            internal_playlist = get_playlist_by_id(
+                session=session, playlist_id=internal_playlist_id
+            )
+
+            if not internal_playlist:
+                raise HTTPException(
+                    status_code=status.HTTP_404_NOT_FOUND,
+                    detail=f"Unable to find playlist with ID: {internal_playlist_id}",
+                )
+
+            sync_session = get_sync_session_by_id(
+                session=session, sync_session_id=sync_session_id
+            )
+
+            if not sync_session:
+                raise HTTPException(
+                    status_code=status.HTTP_404_NOT_FOUND,
+                    detail=f"Unable to find sync session with ID: {sync_session_id}",
+                )
+
+            username = internal_playlist.username
+            started_at = sync_session.started_at
+            external_playlist_name = external_playlist.name
+
             found_tracks, missing_tracks = await resolve_tracks(songs)
 
             track_names = [
-                f"{song.artist_name} - {song.album_name}: {song.track_name}"
+                f"{song.artist_name} {song.album_name}: {song.track_name}"
                 for song in songs
             ]
 
@@ -151,7 +154,6 @@ async def sync_playlist_task(
                     logger.info(f"Downloaded {len(downloaded_tracks)} missing songs")
 
                     await rescan_jellyfin_library()
-                    await asyncio.sleep(3)
 
                     while await is_jellyfin_scanning_library():
                         logger.info(
@@ -202,9 +204,7 @@ async def sync_playlist_task(
                     f"{internal_playlist.playlist_name} playlist"
                 )
                 added_track_ids = [
-                    track.jellyfin_id
-                    for track in diff.added
-                    if track.jellyfin_id is not None
+                    track.jellyfin_id for track in diff.added if track.jellyfin_id
                 ]
                 await add_songs_to_jellyfin_playlist(
                     playlist_id=existing_playlist_id,
@@ -305,22 +305,22 @@ async def sync_playlist_task(
                     type=SyncSessionTrackType.downloaded,
                 )
             )
-
-            sync_session = update_sync_session(
-                session=session, sync_session=sync_session
-            )
         except Exception as e:
-            finished_at = get_now()
-            sync_session.status = SyncStatus.failed
-            sync_session.finished_at = finished_at
-            sync_session.duration_seconds = int(
-                finished_at.timestamp() - started_at.timestamp()
-            )
-            sync_session.error_message = str(e)
-            sync_session.target_playlist_name = internal_playlist.playlist_name
-            sync_session = update_sync_session(
-                session=session, sync_session=sync_session
-            )
+            if sync_session:
+                finished_at = get_now()
+                sync_session.status = SyncStatus.failed
+                sync_session.finished_at = finished_at
+                sync_session.duration_seconds = int(
+                    finished_at.timestamp() - started_at.timestamp()
+                )
+                sync_session.error_message = str(e)
+                sync_session.target_playlist_name = (
+                    internal_playlist.playlist_name if internal_playlist else ""
+                )
+
+        finally:
+            if sync_session:
+                update_sync_session(session=session, sync_session=sync_session)
 
 
 async def sync_playlist(playlist: Playlist) -> dict[str, str]:

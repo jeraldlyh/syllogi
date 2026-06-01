@@ -79,6 +79,9 @@ class SlskdSearchFile:
             self.filename.lower().endswith(ext) for ext in self.PREFERRED_EXTENSIONS
         )
 
+    def is_lossless(self) -> bool:
+        return self.filename.lower().endswith(".flac")
+
     def is_available(self) -> bool:
         return not self.is_locked and self.is_music_file()
 

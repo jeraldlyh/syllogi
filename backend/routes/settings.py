@@ -1,5 +1,5 @@
 from fastapi import APIRouter
-from lib.authentik import _get_authentik_config
+from lib.env import is_oauth_configured, is_slskd_configured
 
 router = APIRouter()
 
@@ -23,12 +23,7 @@ router = APIRouter()
     },
 )
 def settings():
-    authentik_config = _get_authentik_config()
-
     return {
-        "is_oauth_enabled": bool(
-            authentik_config.get("client_id")
-            and authentik_config.get("client_secret")
-            and authentik_config.get("issuer")
-        )
+        "is_oauth_enabled": is_oauth_configured(),
+        "is_slskd_enabled": is_slskd_configured(),
     }

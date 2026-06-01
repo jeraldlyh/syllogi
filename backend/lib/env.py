@@ -39,3 +39,19 @@ def get_environment_variable(name: str, ignore_error=True) -> str | bool:
     ):
         raise ValueError(f"Environment variable '{name}' is required but not set.")
     return variable if variable is not None else ""
+
+
+def is_oauth_configured() -> bool:
+    variables = get_environment_variables()
+
+    return bool(
+        variables.get("AUTHENTIK_CLIENT_ID")
+        and variables.get("AUTHENTIK_SECRET")
+        and variables.get("AUTHENTIK_ISSUER")
+    )
+
+
+def is_slskd_configured() -> bool:
+    variables = get_environment_variables()
+
+    return bool(variables.get("SLSKD_URL") and variables.get("SLSKD_API_KEY"))
