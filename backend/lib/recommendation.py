@@ -164,7 +164,6 @@ async def generate_recommendations_task(
                     logger.info(f"Downloaded {len(downloaded_tracks)} missing songs")
 
                     await rescan_jellyfin_library()
-                    await asyncio.sleep(3)
 
                     while await is_jellyfin_scanning_library():
                         logger.info(
