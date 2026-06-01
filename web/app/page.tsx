@@ -1,8 +1,8 @@
 "use client";
-
 import { Text } from "@/components/common/text";
 import { DashboardHeader } from "@/components/dashboard-header";
 import { Charts } from "@/components/charts";
+import { DownloadActivity } from "@/components/charts/download-activity";
 import { SyncSettings } from "@/components/sync-settings";
 import { Recommendations } from "@/components/recommendation-settings";
 import { RecommendationTable } from "@/components/recommendation-table";
@@ -129,6 +129,7 @@ export default function Page() {
               </TabsContent>
               <TabsContent value="charts">
                 <div className="flex flex-col gap-6 pt-6">
+                  <DownloadActivity />
                   <Charts />
                 </div>
               </TabsContent>

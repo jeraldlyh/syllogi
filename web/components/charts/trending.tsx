@@ -17,6 +17,10 @@ import {
 } from "@/components/ui/table";
 import Image from "next/image";
 import { TrendingTrack, useTrendingTracks } from "@/hooks/useTrendingTracks";
+import {
+  DownloadSession,
+  useDownloadSessions,
+} from "@/hooks/useDownloadSessions";
 import { api } from "@/lib/api";
 import { formatDuration } from "@/lib/utils";
 
@@ -33,8 +37,22 @@ export const Trending = () => {
     mutate: fetchTrendingTracks,
   } = useTrendingTracks();
 
+  const { data: downloadSessions, mutate: refreshDownloads } =
+    useDownloadSessions();
+
   const getTrackKey = (track: TrendingTrack): string =>
     track.musicbrainz_id || `${track.artist_name}||${track.track_name}`;
+
+  const isTrackDownloading = (track: TrendingTrack): boolean => {
+    if (!downloadSessions) return false;
+
+    return downloadSessions.some(
+      (session: DownloadSession) =>
+        (session.status === "pending" || session.status === "downloading") &&
+        session.artist_name.toLowerCase() === track.artist_name.toLowerCase() &&
+        session.track_name.toLowerCase() === track.track_name.toLowerCase(),
+    );
+  };
 
   const getFilteredTracks = (): TrendingTrack[] => {
     if (isError || isLoading || !data) return [];
@@ -73,6 +91,7 @@ export const Trending = () => {
       toast.success("Download started", {
         description: `${track.artist_name} - ${track.track_name}`,
       });
+      refreshDownloads();
     } finally {
       setDownloadingTracks((prev) => {
         const next = new Set(prev);
@@ -97,6 +116,36 @@ export const Trending = () => {
         </div>
       </div>
     );
+  };
+
+  const renderBadge = ({
+    isExist,
+    isDownloading,
+  }: {
+    isExist: boolean;
+    isDownloading: boolean;
+  }): React.JSX.Element | undefined => {
+    if (isDownloading) {
+      return (
+        <Badge
+          variant="outline"
+          className="w-fit text-xs border-yellow-500/30 bg-yellow-500/10 text-yellow-400 px-1.5 py-0"
+        >
+          Downloading
+        </Badge>
+      );
+    }
+
+    if (isExist) {
+      return (
+        <Badge
+          variant="outline"
+          className="w-fit text-xs border-emerald-500/30 bg-emerald-500/10 text-emerald-400 px-1.5 py-0"
+        >
+          In Library
+        </Badge>
+      );
+    }
   };
 
   const renderTable = (): React.JSX.Element => {
@@ -150,7 +199,8 @@ export const Trending = () => {
           <TableBody>
             {getFilteredTracks().map((track) => {
               const key = getTrackKey(track);
-              const isDownloading = downloadingTracks.has(key);
+              const isDownloading =
+                downloadingTracks.has(key) || isTrackDownloading(track);
 
               return (
                 <TableRow key={key}>
@@ -169,14 +219,10 @@ export const Trending = () => {
                       )}
                       <div className="flex flex-col gap-1">
                         <Text value={track.track_name} />
-                        {track.exists && (
-                          <Badge
-                            variant="outline"
-                            className="w-fit text-xs border-emerald-500/30 bg-emerald-500/10 text-emerald-400 px-1.5 py-0"
-                          >
-                            In Library
-                          </Badge>
-                        )}
+                        {renderBadge({
+                          isExist: track.exists,
+                          isDownloading,
+                        })}
                       </div>
                     </div>
                   </TableCell>
