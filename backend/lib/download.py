@@ -195,7 +195,7 @@ async def download_single_track(
             found, missing = await download_missing_tracks([track])
             is_exist = len(found) == 0 and len(missing) == 0
 
-            if found:
+            if found or is_exist:
                 await rescan_jellyfin_library()
 
             if not found and not is_exist:
