@@ -175,7 +175,7 @@ importers:
         specifier: ^16.1.6
         version: 16.2.3(@typescript-eslint/parser@8.58.1(eslint@9.39.4(jiti@1.21.7))(typescript@5.7.3))(eslint@9.39.4(jiti@1.21.7))(typescript@5.7.3)
       postcss:
-        specifier: ^8.5
+        specifier: ^8.5.10
         version: 8.5.15
       tailwindcss:
         specifier: 3.4.19
