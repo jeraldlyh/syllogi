@@ -301,7 +301,7 @@ async def _rename_slskd_download(
     Mirrors the format used by the YouTube downloader:
       {DOWNLOAD_DIR}/{artist}/{album}/{track}.{ext}
     or
-      {DOWNLOAD_DIR}/{artist}/Singles/{track}.{ext}
+      {DOWNLOAD_DIR}/{artist}/{track}.{ext}
 
     Returns True if the file exists at the correct location after the operation.
     """
