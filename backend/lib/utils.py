@@ -54,8 +54,11 @@ def get_now() -> datetime:
     return datetime.now(pytz.timezone(os.getenv("TZ", "Asia/Singapore")))
 
 
-def format_time_with_locale(date: datetime) -> datetime:
+def format_time_with_locale(date: datetime | None) -> datetime | None:
     """Format a datetime object to the specified timezone."""
+
+    if not date:
+        return None
 
     return date.astimezone(pytz.timezone(os.getenv("TZ", "Asia/Singapore")))
 
