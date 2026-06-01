@@ -1,13 +1,6 @@
 "use client";
-
 import { useState } from "react";
-import {
-  ArrowDown,
-  ArrowUp,
-  ArrowUpDown,
-  RefreshCw,
-  Search,
-} from "lucide-react";
+import { RefreshCw, Search } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import {
@@ -289,109 +282,109 @@ export const SyncSessionTable = () => {
         <Table>
           <TableHeader>
             <TableRow className="hover:bg-transparent text-xs text-muted-foreground">
-              <TableHead
-                className="cursor-pointer select-none"
-                onClick={() => handleSort("time")}
-              >
-                <span className="flex items-center">
+              <TableHead className="cursor-pointer select-none">
+                <button
+                  className="flex items-center"
+                  onClick={() => handleSort("time")}
+                >
                   Time
                   <SortIcon
                     column="time"
                     sortColumn={sortColumn}
                     sortDirection={sortDirection}
                   />
-                </span>
+                </button>
               </TableHead>
-              <TableHead
-                className="cursor-pointer select-none"
-                onClick={() => handleSort("playlist")}
-              >
-                <span className="flex items-center">
+              <TableHead className="cursor-pointer select-none">
+                <button
+                  className="flex items-center"
+                  onClick={() => handleSort("playlist")}
+                >
                   Playlist
                   <SortIcon
                     column="playlist"
                     sortColumn={sortColumn}
                     sortDirection={sortDirection}
                   />
-                </span>
+                </button>
               </TableHead>
-              <TableHead
-                className="hidden sm:table-cell cursor-pointer select-none"
-                onClick={() => handleSort("user")}
-              >
-                <span className="flex items-center">
+              <TableHead className="hidden sm:table-cell cursor-pointer select-none">
+                <button
+                  className="flex items-center"
+                  onClick={() => handleSort("user")}
+                >
                   User
                   <SortIcon
                     column="user"
                     sortColumn={sortColumn}
                     sortDirection={sortDirection}
                   />
-                </span>
+                </button>
               </TableHead>
-              <TableHead
-                className="hidden md:table-cell cursor-pointer select-none"
-                onClick={() => handleSort("total")}
-              >
-                <span className="flex items-center">
+              <TableHead className="hidden md:table-cell cursor-pointer select-none">
+                <button
+                  className="flex items-center"
+                  onClick={() => handleSort("total")}
+                >
                   Total
                   <SortIcon
                     column="total"
                     sortColumn={sortColumn}
                     sortDirection={sortDirection}
                   />
-                </span>
+                </button>
               </TableHead>
-              <TableHead
-                className="cursor-pointer select-none"
-                onClick={() => handleSort("added")}
-              >
-                <span className="flex items-center">
+              <TableHead className="cursor-pointer select-none">
+                <button
+                  className="flex items-center"
+                  onClick={() => handleSort("added")}
+                >
                   Added
                   <SortIcon
                     column="added"
                     sortColumn={sortColumn}
                     sortDirection={sortDirection}
                   />
-                </span>
+                </button>
               </TableHead>
-              <TableHead
-                className="hidden lg:table-cell cursor-pointer select-none"
-                onClick={() => handleSort("outdated")}
-              >
-                <span className="flex items-center">
+              <TableHead className="hidden lg:table-cell cursor-pointer select-none">
+                <button
+                  className="flex items-center"
+                  onClick={() => handleSort("outdated")}
+                >
                   Outdated
                   <SortIcon
                     column="outdated"
                     sortColumn={sortColumn}
                     sortDirection={sortDirection}
                   />
-                </span>
+                </button>
               </TableHead>
-              <TableHead
-                className="hidden lg:table-cell cursor-pointer select-none"
-                onClick={() => handleSort("duration")}
-              >
-                <span className="flex items-center">
+              <TableHead className="hidden lg:table-cell cursor-pointer select-none">
+                <button
+                  className="flex items-center"
+                  onClick={() => handleSort("duration")}
+                >
                   Duration
                   <SortIcon
                     column="duration"
                     sortColumn={sortColumn}
                     sortDirection={sortDirection}
                   />
-                </span>
+                </button>
               </TableHead>
-              <TableHead
-                className="cursor-pointer select-none"
-                onClick={() => handleSort("status")}
-              >
-                <span className="flex items-center">
+              <TableHead className="cursor-pointer select-none">
+                <button
+                  className="flex items-center"
+                  onClick={() => handleSort("status")}
+                >
                   Status
                   <SortIcon
                     column="status"
                     sortColumn={sortColumn}
                     sortDirection={sortDirection}
                   />
-                </span>
+                </button>
               </TableHead>
             </TableRow>
           </TableHeader>

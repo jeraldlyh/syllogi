@@ -295,109 +295,109 @@ export const RecommendationTable = () => {
         <Table>
           <TableHeader>
             <TableRow className="hover:bg-transparent text-xs text-muted-foreground">
-              <TableHead
-                className="cursor-pointer select-none"
-                onClick={() => handleSort("time")}
-              >
-                <span className="flex items-center">
+              <TableHead className="cursor-pointer select-none">
+                <button
+                  className="flex items-center"
+                  onClick={() => handleSort("time")}
+                >
                   Time
                   <SortIcon
                     column="time"
                     sortColumn={sortColumn}
                     sortDirection={sortDirection}
                   />
-                </span>
+                </button>
               </TableHead>
-              <TableHead
-                className="cursor-pointer select-none"
-                onClick={() => handleSort("user")}
-              >
-                <span className="flex items-center">
+              <TableHead className="cursor-pointer select-none">
+                <button
+                  className="flex items-center"
+                  onClick={() => handleSort("user")}
+                >
                   User
                   <SortIcon
                     column="user"
                     sortColumn={sortColumn}
                     sortDirection={sortDirection}
                   />
-                </span>
+                </button>
               </TableHead>
-              <TableHead
-                className="hidden sm:table-cell cursor-pointer select-none"
-                onClick={() => handleSort("strategy")}
-              >
-                <span className="flex items-center">
+              <TableHead className="hidden sm:table-cell cursor-pointer select-none">
+                <button
+                  className="flex items-center"
+                  onClick={() => handleSort("user")}
+                >
                   Strategy
                   <SortIcon
                     column="strategy"
                     sortColumn={sortColumn}
                     sortDirection={sortDirection}
                   />
-                </span>
+                </button>
               </TableHead>
-              <TableHead
-                className="hidden md:table-cell cursor-pointer select-none"
-                onClick={() => handleSort("requested")}
-              >
-                <span className="flex items-center">
+              <TableHead className="hidden md:table-cell cursor-pointer select-none">
+                <button
+                  className="flex items-center"
+                  onClick={() => handleSort("requested")}
+                >
                   Requested
                   <SortIcon
                     column="requested"
                     sortColumn={sortColumn}
                     sortDirection={sortDirection}
                   />
-                </span>
+                </button>
               </TableHead>
-              <TableHead
-                className="hidden md:table-cell cursor-pointer select-none"
-                onClick={() => handleSort("matched")}
-              >
-                <span className="flex items-center">
+              <TableHead className="hidden md:table-cell cursor-pointer select-none">
+                <button
+                  className="flex items-center"
+                  onClick={() => handleSort("matched")}
+                >
                   Matched
                   <SortIcon
                     column="matched"
                     sortColumn={sortColumn}
                     sortDirection={sortDirection}
                   />
-                </span>
+                </button>
               </TableHead>
-              <TableHead
-                className="hidden lg:table-cell cursor-pointer select-none"
-                onClick={() => handleSort("missing")}
-              >
-                <span className="flex items-center">
+              <TableHead className="hidden lg:table-cell cursor-pointer select-none">
+                <button
+                  className="flex items-center"
+                  onClick={() => handleSort("missing")}
+                >
                   Missing
                   <SortIcon
                     column="missing"
                     sortColumn={sortColumn}
                     sortDirection={sortDirection}
                   />
-                </span>
+                </button>
               </TableHead>
-              <TableHead
-                className="hidden lg:table-cell cursor-pointer select-none"
-                onClick={() => handleSort("duration")}
-              >
-                <span className="flex items-center">
+              <TableHead className="hidden lg:table-cell cursor-pointer select-none">
+                <button
+                  className="flex items-center"
+                  onClick={() => handleSort("duration")}
+                >
                   Duration
                   <SortIcon
                     column="duration"
                     sortColumn={sortColumn}
                     sortDirection={sortDirection}
                   />
-                </span>
+                </button>
               </TableHead>
-              <TableHead
-                className="cursor-pointer select-none"
-                onClick={() => handleSort("status")}
-              >
-                <span className="flex items-center">
+              <TableHead className="cursor-pointer select-none">
+                <button
+                  className="flex items-center"
+                  onClick={() => handleSort("status")}
+                >
                   Status
                   <SortIcon
                     column="status"
                     sortColumn={sortColumn}
                     sortDirection={sortDirection}
                   />
-                </span>
+                </button>
               </TableHead>
             </TableRow>
           </TableHeader>

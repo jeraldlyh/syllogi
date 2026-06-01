@@ -40,7 +40,7 @@ OPENAPI_TAGS = [
         "name": "Recommendation Session",
         "description": "Track recommendation session history and results.",
     },
-    {"name": "Chart", "description": "Trending tracks and charts endpoints."},
+    {"name": "Charts", "description": "Trending tracks and charts endpoints."},
 ]
 
 

@@ -58,13 +58,13 @@ def _diff_tracks(
     """
     existing_ids: set[str] = {track.id for track in existing_tracks}
     source_ids: set[str] = {
-        track.jellyfin_id for track in resolved_tracks if track.jellyfin_id is not None
+        track.jellyfin_id for track in resolved_tracks if track.jellyfin_id
     }
 
     diff = PlaylistDiff()
 
     for track in resolved_tracks:
-        if track.jellyfin_id is None:
+        if not track.jellyfin_id:
             continue
 
         if track.jellyfin_id in existing_ids:
@@ -205,9 +205,7 @@ async def sync_playlist_task(
                     f"{internal_playlist.playlist_name} playlist"
                 )
                 added_track_ids = [
-                    track.jellyfin_id
-                    for track in diff.added
-                    if track.jellyfin_id is not None
+                    track.jellyfin_id for track in diff.added if track.jellyfin_id
                 ]
                 await add_songs_to_jellyfin_playlist(
                     playlist_id=existing_playlist_id,
