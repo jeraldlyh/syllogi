@@ -1,5 +1,6 @@
 "use client";
 import { Music2 } from "lucide-react";
+import Image from "next/image";
 import { Text } from "@/components/common/text";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -106,7 +107,13 @@ export const DownloadActivity = () => {
               <TableRow key={download.id}>
                 <TableCell>
                   <div className="flex items-center gap-3">
-                    <div className="h-9 w-9 rounded bg-secondary shrink-0" />
+                    <Image
+                      src={download.image_url}
+                      alt={download.track_name}
+                      width={36}
+                      height={36}
+                      className="rounded object-cover shrink-0"
+                    />
                     <Text
                       value={download.track_name}
                       className="truncate max-w-[160px]"

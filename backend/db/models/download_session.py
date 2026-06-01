@@ -23,6 +23,7 @@ class DownloadSession(TimestampMixin, SerializerMixin, SQLModel, table=True):
 
     artist_name: str = Field(max_length=512, nullable=False)
     track_name: str = Field(max_length=512, nullable=False)
+    image_url: str = Field(max_length=2048, nullable=False)
 
     status: DownloadSessionStatus = Field(nullable=False, index=True)
 
@@ -45,6 +46,7 @@ class DownloadSession(TimestampMixin, SerializerMixin, SQLModel, table=True):
             "id": str(self.id),
             "artist_name": self.artist_name,
             "track_name": self.track_name,
+            "image_url": self.image_url,
             "status": self.status.value,
             "started_at": format_time_with_locale(self.started_at),
             "finished_at": format_time_with_locale(self.finished_at),

@@ -6,6 +6,7 @@ export interface DownloadSession {
   id: string;
   artist_name: string;
   track_name: string;
+  image_url: string;
   status: "pending" | "downloading" | "completed" | "failed";
   started_at: string;
   finished_at: string | null;

@@ -78,6 +78,7 @@ export const Trending = () => {
         body: {
           artist_name: track.artist_name,
           track_name: track.track_name,
+          image_url: track.image_url,
         },
       });
 

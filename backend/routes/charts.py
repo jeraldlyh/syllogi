@@ -21,6 +21,7 @@ router = APIRouter()
 class DownloadTrackRequest(BaseModel):
     artist_name: str = Field(min_length=1)
     track_name: str = Field(min_length=1)
+    image_url: str = Field(min_length=1, max_length=2048)
 
 
 @router.get(
@@ -89,6 +90,7 @@ async def _download_track(
     download_session = DownloadSession(
         artist_name=item.artist_name,
         track_name=item.track_name,
+        image_url=item.image_url,
         status=DownloadSessionStatus.pending,
     )
     create_download_session(session, download_session)
