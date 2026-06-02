@@ -40,7 +40,7 @@ from lib.models.jellyfin import JellyfinTrack
 from lib.notification import send_discord_notification
 from lib.spotify import get_spotify_playlist, get_spotify_playlist_songs
 from lib.track import reconcile_after_download, resolve_tracks
-from lib.utils import convert_seconds_to_readable_time, get_now
+from lib.utils import convert_seconds_to_readable_time, get_now, truncate
 from lib.youtube import get_youtube_playlist, get_youtube_playlist_songs
 
 logger = logging.getLogger(__name__)
@@ -313,7 +313,7 @@ async def sync_playlist_task(
                 sync_session.duration_seconds = int(
                     finished_at.timestamp() - started_at.timestamp()
                 )
-                sync_session.error_message = str(e)
+                sync_session.error_message = truncate(text=str(e), max_length=1024)
                 sync_session.target_playlist_name = (
                     internal_playlist.playlist_name if internal_playlist else ""
                 )
