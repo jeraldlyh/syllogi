@@ -179,18 +179,25 @@ async def add_songs_to_jellyfin_playlist(
     playlist_id: str,
     user_id: str,
     track_ids: list[str],
-) -> dict[str, Any]:
-    """Append tracks to an existing Jellyfin playlist."""
+    batch_size: int = 50,
+) -> None:
+    """Append tracks to an existing Jellyfin playlist.
 
-    return await _jellyfin(
-        f"/Playlists/{playlist_id}/Items",
-        method="POST",
-        params={
-            "playlistId": playlist_id,
-            "userId": user_id,
-            "ids": ",".join(track_ids),
-        },
-    )
+    Splits requests into batches to avoid `HTTP 414 Request-URI Too Large`
+    errors when there are many tracks.
+    """
+
+    for i in range(0, len(track_ids), batch_size):
+        batch = track_ids[i : i + batch_size]
+        await _jellyfin(
+            f"/Playlists/{playlist_id}/Items",
+            method="POST",
+            params={
+                "playlistId": playlist_id,
+                "userId": user_id,
+                "ids": ",".join(batch),
+            },
+        )
 
 
 async def get_or_create_jellyfin_playlist(
