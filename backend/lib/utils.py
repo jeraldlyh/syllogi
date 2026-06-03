@@ -179,3 +179,11 @@ def normalize(text: str) -> str:
     """Normalize text for Unicode-aware, case-insensitive comparison."""
 
     return unicodedata.normalize("NFKC", text).casefold().strip()
+
+
+def truncate(text: str, max_length: int) -> str:
+    """Truncate text to a maximum length"""
+
+    if len(text) <= max_length:
+        return text
+    return text[:max_length]

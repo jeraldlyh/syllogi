@@ -17,6 +17,7 @@ from lib.utils import (
     get_now,
     is_track_exists,
     is_track_lossless,
+    truncate,
 )
 from lib.youtube import download_track_youtube
 
@@ -211,7 +212,7 @@ async def download_single_track(
             if download_session:
                 download_session.status = DownloadSessionStatus.failed
                 download_session.finished_at = get_now()
-                download_session.error_message = str(e)
+                download_session.error_message = truncate(text=str(e), max_length=1024)
         finally:
             if download_session:
                 update_download_session(session, download_session)

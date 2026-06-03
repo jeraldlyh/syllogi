@@ -41,7 +41,7 @@ from lib.lastfm import (
     get_lastfm_top_tracks,
 )
 from lib.track import find_track, reconcile_after_download, resolve_tracks
-from lib.utils import get_now
+from lib.utils import get_now, truncate
 
 logger = logging.getLogger(__name__)
 
@@ -278,7 +278,9 @@ async def generate_recommendations_task(
             recommendation_session.duration_seconds = int(
                 finished_at.timestamp() - started_at.timestamp()
             )
-            recommendation_session.error_message = str(e)
+            recommendation_session.error_message = truncate(
+                text=str(e), max_length=1024
+            )
 
             update_recommendation_session(
                 session=session, recommendation_session=recommendation_session
