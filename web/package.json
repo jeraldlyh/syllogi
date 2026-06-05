@@ -69,5 +69,10 @@
     "postcss": "^8.5.10",
     "tailwindcss": "3.4.19",
     "typescript": "5.7.3"
+  },
+  "pnpm": {
+    "overrides": {
+      "postcss": ">=8.5.10"
+    }
   }
 }
