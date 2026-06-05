@@ -10,7 +10,7 @@ def get_environment_variables() -> dict[str, str | bool | None]:
         "DOWNLOAD_LIBRARY_NAME": os.getenv("DOWNLOAD_LIBRARY_NAME", "Downloads"),
         "DOWNLOAD_DIR": os.getenv("DOWNLOAD_DIR", "/downloads"),
         "AUTH_SECRET_KEY": os.getenv("AUTH_SECRET_KEY"),
-        "NEXT_PUBLIC_URL": os.getenv("NEXT_PUBLIC_URL", "http://localhost:3000"),
+        "NEXT_PUBLIC_URL": os.getenv("NEXT_PUBLIC_URL", "http://localhost:8000"),
         "DISCORD_WEBHOOK_URL": os.getenv("DISCORD_WEBHOOK_URL", ""),
         "DATABASE_USERNAME": os.getenv("DATABASE_USERNAME", "syllogi"),
         "DATABASE_PASSWORD": os.getenv("DATABASE_PASSWORD", "syllogi"),
