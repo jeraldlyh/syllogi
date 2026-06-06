@@ -1,33 +1,4 @@
 "use client";
-
-import React, { useState } from "react";
-import { Plus, Pencil, Trash2, Clock, Play, Info } from "lucide-react";
-import { toast } from "sonner";
-import useSWRMutation from "swr/mutation";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Switch } from "@/components/ui/switch";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogFooter,
-} from "@/components/ui/dialog";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -38,6 +9,26 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Dialog,
+  DialogContent,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Switch } from "@/components/ui/switch";
 import {
   Table,
   TableBody,
@@ -46,8 +37,11 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Badge } from "@/components/ui/badge";
-import { CRON_PRESETS, ErrorResponse, PROVIDERS } from "@/lib/types";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 import {
   createPlaylistMutation,
   deletePlaylistMutation,
@@ -55,10 +49,15 @@ import {
   updatePlaylistMutation,
   usePlaylists,
 } from "@/hooks/usePlaylist";
-import { capitaliseFirstLetter, cn } from "@/lib/utils";
-import { Text } from "../common/text";
 import { useJellyfinUsers } from "@/hooks/useUsers";
 import { api } from "@/lib/api";
+import { CRON_PRESETS, ErrorResponse, PROVIDERS } from "@/lib/types";
+import { capitaliseFirstLetter, cn } from "@/lib/utils";
+import { Info, Pencil, Play, Plus, Trash2 } from "lucide-react";
+import React, { useState } from "react";
+import { toast } from "sonner";
+import useSWRMutation from "swr/mutation";
+import { Text } from "../common/text";
 
 interface FormState {
   provider: (typeof PROVIDERS)[number]["value"];
