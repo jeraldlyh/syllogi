@@ -334,7 +334,7 @@ export const SyncSessionTable = () => {
                   />
                 </button>
               </TableHead>
-              <TableHead className="cursor-pointer select-none">
+              <TableHead className="hidden md:table-cell cursor-pointer select-none">
                 <button
                   className="flex items-center"
                   onClick={() => handleSort("added")}
@@ -416,7 +416,7 @@ export const SyncSessionTable = () => {
                     value={String(session.total_tracks.length)}
                   />
                 </TableCell>
-                <TableCell className="text-emerald-400">
+                <TableCell className="hidden md:table-cell text-emerald-400">
                   <Text value={`+${session.new_tracks.length}`} />
                 </TableCell>
                 <TableCell className="hidden lg:table-cell">

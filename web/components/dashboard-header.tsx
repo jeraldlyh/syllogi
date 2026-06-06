@@ -1,5 +1,4 @@
 "use client";
-
 import { Button } from "@/components/ui/button";
 import {
   Tooltip,
@@ -76,7 +75,7 @@ export function DashboardHeader() {
   }
 
   return (
-    <header className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+    <header className="flex gap-4 items-center justify-between">
       <div className="flex items-center gap-3">
         <div className="flex h-12 w-12 items-center justify-center rounded-full bg-purple-600/20">
           <Image src="/icon.png" alt="syllogi logo" width={36} height={36} />
@@ -93,7 +92,6 @@ export function DashboardHeader() {
           </p>
         </div>
       </div>
-
       <div className="flex items-center gap-3 self-start md:self-auto">
         {currentUser?.username && (
           <p className="text-sm font-medium border-b border-border text-muted-foreground">
