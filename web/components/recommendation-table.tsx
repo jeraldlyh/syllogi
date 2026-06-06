@@ -39,6 +39,7 @@ import {
   useRecommendationSessions,
 } from "@/hooks/useRecommendationSessions";
 import { SortDirection, SortIcon } from "./common/sort-icon";
+import { RecommendationStrategyBadge } from "./common/recommendation-strategy-badge";
 
 type SortColumn =
   | "time"
@@ -257,7 +258,7 @@ export const RecommendationTable = () => {
     if (isLoading) {
       return (
         <div className="flex items-center justify-center py-6">
-          <Text className="text-muted-foreground italic" value="Loading..." />
+          <Text muted className="italic" value="Loading..." />
         </div>
       );
     }
@@ -266,7 +267,8 @@ export const RecommendationTable = () => {
       return (
         <div className="flex items-center justify-center py-6">
           <Text
-            className="text-muted-foreground italic text-red-400"
+            muted
+            className="italic text-red-400"
             value="Failed to load recommendation sessions"
           />
         </div>
@@ -279,7 +281,8 @@ export const RecommendationTable = () => {
       return (
         <div className="flex items-center justify-center py-6">
           <Text
-            className="text-muted-foreground italic"
+            muted
+            className="italic"
             value={
               data && data.length === 0
                 ? "Run your first recommendation"
@@ -409,27 +412,16 @@ export const RecommendationTable = () => {
                 onClick={() => setSelectedSession(session)}
               >
                 <TableCell>
-                  <Text
-                    className="text-muted-foreground"
-                    value={formatDateTime(session.finished_at)}
-                  />
+                  <Text muted value={formatDateTime(session.finished_at)} />
                 </TableCell>
                 <TableCell>
                   <Text value={session.username} />
                 </TableCell>
                 <TableCell className="hidden sm:table-cell">
-                  <Text
-                    className="text-muted-foreground"
-                    value={capitaliseFirstLetter(
-                      session.strategy.replace("_", " "),
-                    )}
-                  />
+                  <RecommendationStrategyBadge strategy={session.strategy} />
                 </TableCell>
                 <TableCell className="hidden md:table-cell">
-                  <Text
-                    className="text-muted-foreground"
-                    value={String(session.requested_count)}
-                  />
+                  <Text muted value={String(session.requested_count)} />
                 </TableCell>
                 <TableCell className="hidden md:table-cell text-emerald-400">
                   <Text value={String(session.matched_tracks.length)} />
@@ -439,8 +431,8 @@ export const RecommendationTable = () => {
                 </TableCell>
                 <TableCell className="hidden lg:table-cell">
                   <Text
-                    className="text-muted-foreground"
-                    value={`${session.duration_seconds}s`}
+                    muted
+                    value={formatDuration(session.duration_seconds)}
                   />
                 </TableCell>
                 <TableCell>
@@ -502,7 +494,7 @@ const TrackList = ({
 }) => {
   const renderTracks = (): React.JSX.Element => {
     if (tracks.length === 0) {
-      return <p className="text-xs text-muted-foreground">None</p>;
+      return <Text muted value="None" />;
     }
 
     const uniqueTracks = Array.from(new Set(tracks));
@@ -512,11 +504,7 @@ const TrackList = ({
         <ul className="flex flex-col gap-1">
           {uniqueTracks.map((track) => (
             <li key={track} className="border-b last:border-0 py-1">
-              <Text
-                value={track}
-                mono
-                className="text-xs text-muted-foreground leading-relaxed"
-              />
+              <Text mono muted value={track} />
             </li>
           ))}
         </ul>
