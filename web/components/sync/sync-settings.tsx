@@ -56,7 +56,7 @@ import {
   usePlaylists,
 } from "@/hooks/usePlaylist";
 import { capitaliseFirstLetter, cn } from "@/lib/utils";
-import { Text } from "./common/text";
+import { Text } from "../common/text";
 import { useJellyfinUsers } from "@/hooks/useUsers";
 import { api } from "@/lib/api";
 

@@ -1,11 +1,7 @@
 "use client";
-import { Download, RefreshCw, Search } from "lucide-react";
-import { useState } from "react";
-import { toast } from "sonner";
 import { Text } from "@/components/common/text";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import {
   Table,
@@ -15,17 +11,20 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import Image from "next/image";
-import { TrendingTrack, useTrendingTracks } from "@/hooks/useTrendingTracks";
 import {
   DownloadSession,
   useDownloadSessions,
 } from "@/hooks/useDownloadSessions";
+import { TrendingTrack, useTrendingTracks } from "@/hooks/useTrendingTracks";
 import { api } from "@/lib/api";
 import { formatDuration } from "@/lib/utils";
-import { ChartBadge } from "../common/chart-badge";
+import { Download, RefreshCw, Search } from "lucide-react";
+import Image from "next/image";
+import { useState } from "react";
+import { toast } from "sonner";
+import { ChartBadge } from "./chart-badge";
 
-export const Trending = () => {
+export const ChartTrending = () => {
   const [search, setSearch] = useState("");
   const [downloadingTracks, setDownloadingTracks] = useState<Set<string>>(
     new Set(),

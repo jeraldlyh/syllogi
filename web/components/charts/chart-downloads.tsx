@@ -48,7 +48,7 @@ const DownloadStatusBadge = ({
   );
 };
 
-export const DownloadActivity = () => {
+export const ChartDownloads = () => {
   const { data, isError, isLoading } = useDownloadSessions();
 
   const renderContent = (): React.JSX.Element => {

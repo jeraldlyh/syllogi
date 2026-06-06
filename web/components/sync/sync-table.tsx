@@ -34,8 +34,8 @@ import {
   formatDuration,
 } from "@/lib/utils";
 import { Text } from "@/components/common/text";
-import { Button } from "./ui/button";
-import { SortDirection, SortIcon } from "./common/sort-icon";
+import { Button } from "../ui/button";
+import { SortDirection, SortIcon } from "../common/sort-icon";
 
 type SyncSortColumn =
   | "time"

@@ -1,6 +1,4 @@
 "use client";
-import { useState } from "react";
-import { RefreshCw, Search } from "lucide-react";
 import { StatusBadge } from "@/components/common/status-badge";
 import { Text } from "@/components/common/text";
 import { Button } from "@/components/ui/button";
@@ -29,17 +27,19 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import {
+  RecommendationSession,
+  useRecommendationSessions,
+} from "@/hooks/useRecommendationSessions";
+import {
   capitaliseFirstLetter,
   cn,
   formatDateTime,
   formatDuration,
 } from "@/lib/utils";
-import {
-  RecommendationSession,
-  useRecommendationSessions,
-} from "@/hooks/useRecommendationSessions";
-import { SortDirection, SortIcon } from "./common/sort-icon";
-import { RecommendationStrategyBadge } from "./common/recommendation-strategy-badge";
+import { RefreshCw, Search } from "lucide-react";
+import { useState } from "react";
+import { SortDirection, SortIcon } from "../common/sort-icon";
+import { RecommendationStrategyBadge } from "./recommendation-strategy-badge";
 
 type SortColumn =
   | "time"

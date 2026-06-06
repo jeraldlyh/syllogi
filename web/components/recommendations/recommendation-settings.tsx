@@ -1,8 +1,4 @@
 "use client";
-import { Pencil, Play, Plus, Trash2 } from "lucide-react";
-import React, { useState } from "react";
-import { toast } from "sonner";
-import useSWRMutation from "swr/mutation";
 import { Text } from "@/components/common/text";
 import {
   AlertDialog,
@@ -14,7 +10,6 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
@@ -52,8 +47,12 @@ import {
 } from "@/hooks/useRecommendation";
 import { useJellyfinUsers } from "@/hooks/useUsers";
 import { CRON_PRESETS } from "@/lib/types";
-import { cn, convertSnakeCaseToTitleCase } from "@/lib/utils";
-import { RecommendationStrategyBadge } from "./common/recommendation-strategy-badge";
+import { cn } from "@/lib/utils";
+import { Pencil, Play, Plus, Trash2 } from "lucide-react";
+import React, { useState } from "react";
+import { toast } from "sonner";
+import useSWRMutation from "swr/mutation";
+import { RecommendationStrategyBadge } from "./recommendation-strategy-badge";
 
 interface FormState {
   username: string;
