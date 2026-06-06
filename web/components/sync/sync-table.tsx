@@ -1,18 +1,8 @@
 "use client";
 import { useState } from "react";
 import { RefreshCw, Search } from "lucide-react";
-import { StatusBadge } from "@/components/common/status-badge";
-import { Text } from "@/components/common/text";
-import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
-import { ScrollArea } from "@/components/ui/scroll-area";
 import {
   Select,
   SelectContent,
@@ -29,54 +19,63 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { SyncSession, useSyncSessions } from "@/hooks/useSyncSessions";
+import { StatusBadge } from "@/components/common/status-badge";
+import {
   capitaliseFirstLetter,
   cn,
   formatDateTime,
   formatDuration,
 } from "@/lib/utils";
-import {
-  RecommendationSession,
-  useRecommendationSessions,
-} from "@/hooks/useRecommendationSessions";
-import { SortDirection, SortIcon } from "./common/sort-icon";
+import { Text } from "@/components/common/text";
+import { Button } from "../ui/button";
+import { SortDirection, SortIcon } from "../common/sort-icon";
 
-type SortColumn =
+type SyncSortColumn =
   | "time"
+  | "playlist"
   | "user"
-  | "strategy"
-  | "requested"
-  | "matched"
-  | "missing"
+  | "total"
+  | "added"
+  | "outdated"
   | "duration"
   | "status"
   | null;
 
-export const RecommendationTable = () => {
+export const SyncSessionTable = () => {
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("all");
-  const [selectedSession, setSelectedSession] =
-    useState<RecommendationSession | null>(null);
-  const [sortColumn, setSortColumn] = useState<SortColumn>(null);
+  const [selectedSession, setSelectedSession] = useState<SyncSession | null>(
+    null,
+  );
+  const [sortColumn, setSortColumn] = useState<SyncSortColumn>(null);
   const [sortDirection, setSortDirection] = useState<SortDirection>(null);
 
   const {
     data,
     isError,
     isLoading,
-    mutate: fetchRecommendationSessions,
-  } = useRecommendationSessions();
+    mutate: fetchSyncSessions,
+  } = useSyncSessions();
 
-  const getFilteredSessions = (): RecommendationSession[] => {
+  const getFilteredSessions = (): SyncSession[] => {
     if (isError || isLoading || !data) return [];
 
-    return data.filter((session) => {
+    return data?.filter((session) => {
       const matchesSearch =
-        session.username.toLowerCase().includes(search.toLowerCase()) ||
-        session.strategy.toLowerCase().includes(search.toLowerCase());
+        session.target_playlist_name
+          .toLowerCase()
+          .includes(search.toLowerCase()) ||
+        session.target_username.toLowerCase().includes(search.toLowerCase());
 
       const matchesStatus =
         statusFilter === "all" || session.status === statusFilter;
-
       return matchesSearch && matchesStatus;
     });
   };
@@ -98,7 +97,7 @@ export const RecommendationTable = () => {
     }
   };
 
-  const getSortedSessions = (): RecommendationSession[] => {
+  const getSortedSessions = (): SyncSession[] => {
     const filtered = getFilteredSessions();
 
     if (!sortColumn || !sortDirection) return filtered;
@@ -113,19 +112,22 @@ export const RecommendationTable = () => {
             (new Date(a.finished_at).getTime() -
               new Date(b.finished_at).getTime())
           );
-        case "user":
-          return multiplier * a.username.localeCompare(b.username);
-        case "strategy":
-          return multiplier * a.strategy.localeCompare(b.strategy);
-        case "requested":
-          return multiplier * (a.requested_count - b.requested_count);
-        case "matched":
+        case "playlist":
           return (
-            multiplier * (a.matched_tracks.length - b.matched_tracks.length)
+            multiplier *
+            a.target_playlist_name.localeCompare(b.target_playlist_name)
           );
-        case "missing":
+        case "user":
           return (
-            multiplier * (a.missing_tracks.length - b.missing_tracks.length)
+            multiplier * a.target_username.localeCompare(b.target_username)
+          );
+        case "total":
+          return multiplier * (a.total_tracks.length - b.total_tracks.length);
+        case "added":
+          return multiplier * (a.new_tracks.length - b.new_tracks.length);
+        case "outdated":
+          return (
+            multiplier * (a.outdated_tracks.length - b.outdated_tracks.length)
           );
         case "duration":
           return multiplier * (a.duration_seconds - b.duration_seconds);
@@ -143,7 +145,7 @@ export const RecommendationTable = () => {
         <div className="relative flex-1">
           <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
           <Input
-            placeholder="Search by username or strategy..."
+            placeholder="Search by playlist or username..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             className="pl-9"
@@ -177,10 +179,7 @@ export const RecommendationTable = () => {
         <DialogContent className="max-w-lg bg-card">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
-              <Text
-                value="Recommendation Failed"
-                className="text-lg font-semibold"
-              />
+              <Text value="Sync Failed" className="text-lg font-semibold" />
               <StatusBadge status={selectedSession.status} />
             </DialogTitle>
           </DialogHeader>
@@ -195,64 +194,52 @@ export const RecommendationTable = () => {
         </DialogContent>
       );
     }
-
     return (
       <DialogContent className="max-w-lg bg-card">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
-            <Text
-              value={selectedSession.username}
-              className="text-lg font-semibold"
-            />
+            {selectedSession.target_playlist_name}
             <StatusBadge status={selectedSession.status} />
           </DialogTitle>
         </DialogHeader>
-
         <div className="grid grid-cols-2 gap-3 text-sm">
           <DialogItem
-            label="Provider"
-            value={capitaliseFirstLetter(selectedSession.provider)}
+            label={`${capitaliseFirstLetter(selectedSession.provider)} ID`}
+            value={selectedSession.provider_playlist_id}
           />
+          <DialogItem label="User" value={selectedSession.target_username} />
           <DialogItem
-            label="Strategy"
-            value={capitaliseFirstLetter(
-              selectedSession.strategy.replaceAll("_", " "),
-            )}
-          />
-          <DialogItem
-            label="Requested"
-            value={String(selectedSession.requested_count)}
-          />
-          <DialogItem
-            label="Generated"
-            value={String(selectedSession.generated_count)}
+            label="Total tracks"
+            value={String(selectedSession.total_tracks.length)}
           />
           <DialogItem
             label="Duration"
             value={formatDuration(selectedSession.duration_seconds)}
           />
           <DialogItem
+            label="Started At"
+            value={formatDateTime(selectedSession.started_at)}
+          />
+          <DialogItem
             label="Finished At"
             value={formatDateTime(selectedSession.finished_at)}
           />
         </div>
-
         <div className="mt-2 grid grid-cols-1 gap-4 sm:grid-cols-2">
           <TrackList
-            title={`Matched tracks (${selectedSession.matched_tracks.length})`}
-            tracks={selectedSession.matched_tracks}
+            title={`Added tracks (${selectedSession.new_tracks.length})`}
+            tracks={selectedSession.new_tracks}
             accent="text-emerald-400"
           />
           <TrackList
-            title={`Missing tracks (${selectedSession.missing_tracks.length})`}
-            tracks={selectedSession.missing_tracks}
+            title={`Outdated tracks (${selectedSession.outdated_tracks.length})`}
+            tracks={selectedSession.outdated_tracks}
             accent="text-amber-400"
           />
         </div>
       </DialogContent>
     );
   };
-
   const renderTable = (): React.JSX.Element => {
     if (isLoading) {
       return (
@@ -267,7 +254,7 @@ export const RecommendationTable = () => {
         <div className="flex items-center justify-center py-6">
           <Text
             className="text-muted-foreground italic text-red-400"
-            value="Failed to load recommendation sessions"
+            value="Failed to load sync sessions"
           />
         </div>
       );
@@ -282,7 +269,7 @@ export const RecommendationTable = () => {
             className="text-muted-foreground italic"
             value={
               data && data.length === 0
-                ? "Run your first recommendation"
+                ? "Run your first sync"
                 : "No sessions match your filters"
             }
           />
@@ -311,11 +298,11 @@ export const RecommendationTable = () => {
               <TableHead className="cursor-pointer select-none">
                 <button
                   className="flex items-center"
-                  onClick={() => handleSort("user")}
+                  onClick={() => handleSort("playlist")}
                 >
-                  User
+                  Playlist
                   <SortIcon
-                    column="user"
+                    column="playlist"
                     sortColumn={sortColumn}
                     sortDirection={sortDirection}
                   />
@@ -326,9 +313,9 @@ export const RecommendationTable = () => {
                   className="flex items-center"
                   onClick={() => handleSort("user")}
                 >
-                  Strategy
+                  User
                   <SortIcon
-                    column="strategy"
+                    column="user"
                     sortColumn={sortColumn}
                     sortDirection={sortDirection}
                   />
@@ -337,11 +324,11 @@ export const RecommendationTable = () => {
               <TableHead className="hidden md:table-cell cursor-pointer select-none">
                 <button
                   className="flex items-center"
-                  onClick={() => handleSort("requested")}
+                  onClick={() => handleSort("total")}
                 >
-                  Requested
+                  Total
                   <SortIcon
-                    column="requested"
+                    column="total"
                     sortColumn={sortColumn}
                     sortDirection={sortDirection}
                   />
@@ -350,11 +337,11 @@ export const RecommendationTable = () => {
               <TableHead className="hidden md:table-cell cursor-pointer select-none">
                 <button
                   className="flex items-center"
-                  onClick={() => handleSort("matched")}
+                  onClick={() => handleSort("added")}
                 >
-                  Matched
+                  Added
                   <SortIcon
-                    column="matched"
+                    column="added"
                     sortColumn={sortColumn}
                     sortDirection={sortDirection}
                   />
@@ -363,11 +350,11 @@ export const RecommendationTable = () => {
               <TableHead className="hidden lg:table-cell cursor-pointer select-none">
                 <button
                   className="flex items-center"
-                  onClick={() => handleSort("missing")}
+                  onClick={() => handleSort("outdated")}
                 >
-                  Missing
+                  Outdated
                   <SortIcon
-                    column="missing"
+                    column="outdated"
                     sortColumn={sortColumn}
                     sortDirection={sortDirection}
                   />
@@ -401,7 +388,7 @@ export const RecommendationTable = () => {
               </TableHead>
             </TableRow>
           </TableHeader>
-          <TableBody>
+          <TableBody className="overflow-y-auto">
             {sortedSessions.map((session) => (
               <TableRow
                 key={session.id}
@@ -415,32 +402,33 @@ export const RecommendationTable = () => {
                   />
                 </TableCell>
                 <TableCell>
-                  <Text value={session.username} />
+                  <Text value={session.target_playlist_name} />
                 </TableCell>
                 <TableCell className="hidden sm:table-cell">
                   <Text
                     className="text-muted-foreground"
-                    value={capitaliseFirstLetter(
-                      session.strategy.replace("_", " "),
-                    )}
+                    value={session.target_username}
                   />
                 </TableCell>
                 <TableCell className="hidden md:table-cell">
                   <Text
                     className="text-muted-foreground"
-                    value={String(session.requested_count)}
+                    value={String(session.total_tracks.length)}
                   />
                 </TableCell>
                 <TableCell className="hidden md:table-cell text-emerald-400">
-                  <Text value={String(session.matched_tracks.length)} />
+                  <Text value={`+${session.new_tracks.length}`} />
                 </TableCell>
-                <TableCell className="hidden lg:table-cell text-amber-400">
-                  <Text value={String(session.missing_tracks.length)} />
+                <TableCell className="hidden lg:table-cell">
+                  <Text
+                    className="text-amber-400"
+                    value={`-${session.outdated_tracks.length}`}
+                  />
                 </TableCell>
                 <TableCell className="hidden lg:table-cell">
                   <Text
                     className="text-muted-foreground"
-                    value={`${session.duration_seconds}s`}
+                    value={formatDuration(session.duration_seconds)}
                   />
                 </TableCell>
                 <TableCell>
@@ -461,7 +449,7 @@ export const RecommendationTable = () => {
           <CardTitle className="text-base font-medium text-foreground">
             Recent Sessions
           </CardTitle>
-          <Button size="sm" onClick={() => fetchRecommendationSessions()}>
+          <Button size="sm" onClick={() => fetchSyncSessions()}>
             <RefreshCw className="w-4 h-4" />
             Refresh
           </Button>
@@ -471,7 +459,6 @@ export const RecommendationTable = () => {
           {renderTable()}
         </CardContent>
       </Card>
-
       <Dialog
         open={selectedSession !== null}
         onOpenChange={(open) => !open && setSelectedSession(null)}
@@ -482,11 +469,19 @@ export const RecommendationTable = () => {
   );
 };
 
-const DialogItem = ({ label, value }: { label: string; value: string }) => {
+const DialogItem = ({
+  label,
+  value,
+  mono = false,
+}: {
+  label: string;
+  value: string;
+  mono?: boolean;
+}) => {
   return (
     <div>
       <p className="text-xs text-muted-foreground">{label}</p>
-      <Text className="truncate" value={value} />
+      <Text className="truncate" value={value} mono={mono} />
     </div>
   );
 };
@@ -504,7 +499,6 @@ const TrackList = ({
     if (tracks.length === 0) {
       return <p className="text-xs text-muted-foreground">None</p>;
     }
-
     const uniqueTracks = Array.from(new Set(tracks));
 
     return (

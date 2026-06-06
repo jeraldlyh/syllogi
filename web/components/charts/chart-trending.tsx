@@ -1,11 +1,7 @@
 "use client";
-import { Download, RefreshCw, Search } from "lucide-react";
-import { useState } from "react";
-import { toast } from "sonner";
 import { Text } from "@/components/common/text";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import {
   Table,
@@ -15,16 +11,20 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import Image from "next/image";
-import { TrendingTrack, useTrendingTracks } from "@/hooks/useTrendingTracks";
 import {
   DownloadSession,
   useDownloadSessions,
 } from "@/hooks/useDownloadSessions";
+import { TrendingTrack, useTrendingTracks } from "@/hooks/useTrendingTracks";
 import { api } from "@/lib/api";
 import { formatDuration } from "@/lib/utils";
+import { Download, RefreshCw, Search } from "lucide-react";
+import Image from "next/image";
+import { useState } from "react";
+import { toast } from "sonner";
+import { ChartBadge } from "./chart-badge";
 
-export const Trending = () => {
+export const ChartTrending = () => {
   const [search, setSearch] = useState("");
   const [downloadingTracks, setDownloadingTracks] = useState<Set<string>>(
     new Set(),
@@ -119,36 +119,6 @@ export const Trending = () => {
     );
   };
 
-  const renderBadge = ({
-    isExist,
-    isDownloading,
-  }: {
-    isExist: boolean;
-    isDownloading: boolean;
-  }): React.JSX.Element | undefined => {
-    if (isDownloading) {
-      return (
-        <Badge
-          variant="outline"
-          className="w-fit text-xs border-yellow-500/30 bg-yellow-500/10 text-yellow-400 px-1.5 py-0"
-        >
-          Downloading
-        </Badge>
-      );
-    }
-
-    if (isExist) {
-      return (
-        <Badge
-          variant="outline"
-          className="w-fit text-xs border-emerald-500/30 bg-emerald-500/10 text-emerald-400 px-1.5 py-0"
-        >
-          In Library
-        </Badge>
-      );
-    }
-  };
-
   const renderTable = (): React.JSX.Element => {
     if (isLoading) {
       return (
@@ -221,10 +191,10 @@ export const Trending = () => {
                       )}
                       <div className="flex flex-col gap-1">
                         <Text value={track.track_name} />
-                        {renderBadge({
-                          isExist,
-                          isDownloading,
-                        })}
+                        <ChartBadge
+                          isExist={isExist}
+                          isDownloading={isDownloading}
+                        />
                       </div>
                     </div>
                   </TableCell>

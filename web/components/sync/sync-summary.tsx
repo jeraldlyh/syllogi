@@ -1,10 +1,14 @@
 "use client";
 import { useSyncSessions } from "@/hooks/useSyncSessions";
 import { ListMusic, User, Music, Plus, Minus, Clock, Hash } from "lucide-react";
-import { StatusBadge } from "./common/status-badge";
-import { Card, CardHeader, CardTitle, CardContent } from "./ui/card";
-import { capitaliseFirstLetter, formatDateTime, formatDuration } from "@/lib/utils";
-import { Text } from "./common/text";
+import { StatusBadge } from "../common/status-badge";
+import { Card, CardHeader, CardTitle, CardContent } from "../ui/card";
+import {
+  capitaliseFirstLetter,
+  formatDateTime,
+  formatDuration,
+} from "@/lib/utils";
+import { Text } from "../common/text";
 
 export const SyncSummary = () => {
   const { data, isError, isLoading } = useSyncSessions();

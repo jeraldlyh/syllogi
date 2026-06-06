@@ -1,33 +1,4 @@
 "use client";
-
-import React, { useState } from "react";
-import { Plus, Pencil, Trash2, Clock, Play, Info } from "lucide-react";
-import { toast } from "sonner";
-import useSWRMutation from "swr/mutation";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Switch } from "@/components/ui/switch";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogFooter,
-} from "@/components/ui/dialog";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -38,6 +9,26 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Dialog,
+  DialogContent,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Switch } from "@/components/ui/switch";
 import {
   Table,
   TableBody,
@@ -46,8 +37,11 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Badge } from "@/components/ui/badge";
-import { CRON_PRESETS, ErrorResponse, PROVIDERS } from "@/lib/types";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 import {
   createPlaylistMutation,
   deletePlaylistMutation,
@@ -55,10 +49,15 @@ import {
   updatePlaylistMutation,
   usePlaylists,
 } from "@/hooks/usePlaylist";
-import { capitaliseFirstLetter, cn } from "@/lib/utils";
-import { Text } from "./common/text";
 import { useJellyfinUsers } from "@/hooks/useUsers";
 import { api } from "@/lib/api";
+import { CRON_PRESETS, ErrorResponse, PROVIDERS } from "@/lib/types";
+import { capitaliseFirstLetter, cn } from "@/lib/utils";
+import { Info, Pencil, Play, Plus, Trash2 } from "lucide-react";
+import React, { useState } from "react";
+import { toast } from "sonner";
+import useSWRMutation from "swr/mutation";
+import { Text } from "../common/text";
 
 interface FormState {
   provider: (typeof PROVIDERS)[number]["value"];
@@ -257,27 +256,24 @@ export const SyncSettings = () => {
                   <Text value={playlist.playlist_name} />
                   <Text
                     value={playlist.playlist_id}
-                    className="text-muted-foreground mt-0.5"
+                    className="hidden lg:block mt-0.5"
                     mono
+                    muted
                   />
                 </TableCell>
                 <TableCell className="hidden sm:table-cell">
-                  <Text
-                    value={playlist.username}
-                    className="text-muted-foreground"
-                  />
+                  <Text value={playlist.username} muted />
                 </TableCell>
                 <TableCell className="hidden md:table-cell">
-                  <div className="flex items-center gap-1.5 text-muted-foreground">
-                    <Clock className="h-4 w-4" />
-                    <Text
-                      value={
-                        CRON_PRESETS.find(
-                          (cron) => cron.value === playlist.cron_expression,
-                        )?.label ?? playlist.cron_expression
-                      }
-                    />
-                  </div>
+                  <Text
+                    muted
+                    noWrap
+                    value={
+                      CRON_PRESETS.find(
+                        (cron) => cron.value === playlist.cron_expression,
+                      )?.label ?? playlist.cron_expression
+                    }
+                  />
                 </TableCell>
                 <TableCell>
                   <div className="flex items-center gap-1">
@@ -365,8 +361,8 @@ export const SyncSettings = () => {
                 className="flex justify-between items-center"
               >
                 <Text
+                  muted
                   value={`${capitaliseFirstLetter(form.provider)} Playlist ID`}
-                  className="text-xs text-muted-foreground"
                 />
                 {renderErrorMessage(errors.playlist_id)}
               </Label>
@@ -392,10 +388,7 @@ export const SyncSettings = () => {
                 htmlFor="playlist_name"
                 className="flex justify-between items-center"
               >
-                <Text
-                  value="Playlist Name"
-                  className="text-xs text-muted-foreground"
-                />
+                <Text muted value="Playlist Name" />
                 {renderErrorMessage(errors.playlist_name)}
               </Label>
               <Input
@@ -416,10 +409,7 @@ export const SyncSettings = () => {
                 htmlFor="username"
                 className="flex justify-between items-center"
               >
-                <Text
-                  value="Username"
-                  className="text-xs text-muted-foreground"
-                />
+                <Text muted value="Username" />
                 {renderErrorMessage(errors.username)}
               </Label>
               <Select
@@ -443,10 +433,7 @@ export const SyncSettings = () => {
             </div>
             <div className="flex flex-col gap-2">
               <Label className="flex justify-between items-center">
-                <Text
-                  value="Schedule"
-                  className="text-xs text-muted-foreground"
-                />
+                <Text muted value="Schedule" />
                 {renderErrorMessage(errors.cron_expression)}
               </Label>
               <div className="flex items-center gap-2">
@@ -527,8 +514,9 @@ export const SyncSettings = () => {
                     className="font-mono text-sm"
                   />
                   <Text
+                    muted
+                    className="mt-1"
                     value="Use standard cron format. For example, '0 * * * *' to sync every hour."
-                    className="mt-1 text-xs text-muted-foreground"
                   />
                 </div>
               )}

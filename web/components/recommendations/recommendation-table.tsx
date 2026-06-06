@@ -1,8 +1,16 @@
 "use client";
-import { useState } from "react";
-import { RefreshCw, Search } from "lucide-react";
+import { StatusBadge } from "@/components/common/status-badge";
+import { Text } from "@/components/common/text";
+import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
+import { ScrollArea } from "@/components/ui/scroll-area";
 import {
   Select,
   SelectContent,
@@ -19,63 +27,57 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
-import { ScrollArea } from "@/components/ui/scroll-area";
-import { SyncSession, useSyncSessions } from "@/hooks/useSyncSessions";
-import { StatusBadge } from "@/components/common/status-badge";
+  RecommendationSession,
+  useRecommendationSessions,
+} from "@/hooks/useRecommendationSessions";
 import {
   capitaliseFirstLetter,
   cn,
   formatDateTime,
   formatDuration,
 } from "@/lib/utils";
-import { Text } from "@/components/common/text";
-import { Button } from "./ui/button";
-import { SortDirection, SortIcon } from "./common/sort-icon";
+import { RefreshCw, Search } from "lucide-react";
+import { useState } from "react";
+import { SortDirection, SortIcon } from "../common/sort-icon";
+import { RecommendationStrategyBadge } from "./recommendation-strategy-badge";
 
-type SyncSortColumn =
+type SortColumn =
   | "time"
-  | "playlist"
   | "user"
-  | "total"
-  | "added"
-  | "outdated"
+  | "strategy"
+  | "requested"
+  | "matched"
+  | "missing"
   | "duration"
   | "status"
   | null;
 
-export const SyncSessionTable = () => {
+export const RecommendationTable = () => {
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("all");
-  const [selectedSession, setSelectedSession] = useState<SyncSession | null>(
-    null,
-  );
-  const [sortColumn, setSortColumn] = useState<SyncSortColumn>(null);
+  const [selectedSession, setSelectedSession] =
+    useState<RecommendationSession | null>(null);
+  const [sortColumn, setSortColumn] = useState<SortColumn>(null);
   const [sortDirection, setSortDirection] = useState<SortDirection>(null);
 
   const {
     data,
     isError,
     isLoading,
-    mutate: fetchSyncSessions,
-  } = useSyncSessions();
+    mutate: fetchRecommendationSessions,
+  } = useRecommendationSessions();
 
-  const getFilteredSessions = (): SyncSession[] => {
+  const getFilteredSessions = (): RecommendationSession[] => {
     if (isError || isLoading || !data) return [];
 
-    return data?.filter((session) => {
+    return data.filter((session) => {
       const matchesSearch =
-        session.target_playlist_name
-          .toLowerCase()
-          .includes(search.toLowerCase()) ||
-        session.target_username.toLowerCase().includes(search.toLowerCase());
+        session.username.toLowerCase().includes(search.toLowerCase()) ||
+        session.strategy.toLowerCase().includes(search.toLowerCase());
 
       const matchesStatus =
         statusFilter === "all" || session.status === statusFilter;
+
       return matchesSearch && matchesStatus;
     });
   };
@@ -97,7 +99,7 @@ export const SyncSessionTable = () => {
     }
   };
 
-  const getSortedSessions = (): SyncSession[] => {
+  const getSortedSessions = (): RecommendationSession[] => {
     const filtered = getFilteredSessions();
 
     if (!sortColumn || !sortDirection) return filtered;
@@ -112,22 +114,19 @@ export const SyncSessionTable = () => {
             (new Date(a.finished_at).getTime() -
               new Date(b.finished_at).getTime())
           );
-        case "playlist":
-          return (
-            multiplier *
-            a.target_playlist_name.localeCompare(b.target_playlist_name)
-          );
         case "user":
+          return multiplier * a.username.localeCompare(b.username);
+        case "strategy":
+          return multiplier * a.strategy.localeCompare(b.strategy);
+        case "requested":
+          return multiplier * (a.requested_count - b.requested_count);
+        case "matched":
           return (
-            multiplier * a.target_username.localeCompare(b.target_username)
+            multiplier * (a.matched_tracks.length - b.matched_tracks.length)
           );
-        case "total":
-          return multiplier * (a.total_tracks.length - b.total_tracks.length);
-        case "added":
-          return multiplier * (a.new_tracks.length - b.new_tracks.length);
-        case "outdated":
+        case "missing":
           return (
-            multiplier * (a.outdated_tracks.length - b.outdated_tracks.length)
+            multiplier * (a.missing_tracks.length - b.missing_tracks.length)
           );
         case "duration":
           return multiplier * (a.duration_seconds - b.duration_seconds);
@@ -145,7 +144,7 @@ export const SyncSessionTable = () => {
         <div className="relative flex-1">
           <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
           <Input
-            placeholder="Search by playlist or username..."
+            placeholder="Search by username or strategy..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             className="pl-9"
@@ -179,7 +178,10 @@ export const SyncSessionTable = () => {
         <DialogContent className="max-w-lg bg-card">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
-              <Text value="Sync Failed" className="text-lg font-semibold" />
+              <Text
+                value="Recommendation Failed"
+                className="text-lg font-semibold"
+              />
               <StatusBadge status={selectedSession.status} />
             </DialogTitle>
           </DialogHeader>
@@ -194,57 +196,69 @@ export const SyncSessionTable = () => {
         </DialogContent>
       );
     }
+
     return (
       <DialogContent className="max-w-lg bg-card">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
-            {selectedSession.target_playlist_name}
+            <Text
+              value={selectedSession.username}
+              className="text-lg font-semibold"
+            />
             <StatusBadge status={selectedSession.status} />
           </DialogTitle>
         </DialogHeader>
+
         <div className="grid grid-cols-2 gap-3 text-sm">
           <DialogItem
-            label={`${capitaliseFirstLetter(selectedSession.provider)} ID`}
-            value={selectedSession.provider_playlist_id}
+            label="Provider"
+            value={capitaliseFirstLetter(selectedSession.provider)}
           />
-          <DialogItem label="User" value={selectedSession.target_username} />
           <DialogItem
-            label="Total tracks"
-            value={String(selectedSession.total_tracks.length)}
+            label="Strategy"
+            value={capitaliseFirstLetter(
+              selectedSession.strategy.replaceAll("_", " "),
+            )}
+          />
+          <DialogItem
+            label="Requested"
+            value={String(selectedSession.requested_count)}
+          />
+          <DialogItem
+            label="Generated"
+            value={String(selectedSession.generated_count)}
           />
           <DialogItem
             label="Duration"
             value={formatDuration(selectedSession.duration_seconds)}
           />
           <DialogItem
-            label="Started At"
-            value={formatDateTime(selectedSession.started_at)}
-          />
-          <DialogItem
             label="Finished At"
             value={formatDateTime(selectedSession.finished_at)}
           />
         </div>
+
         <div className="mt-2 grid grid-cols-1 gap-4 sm:grid-cols-2">
           <TrackList
-            title={`Added tracks (${selectedSession.new_tracks.length})`}
-            tracks={selectedSession.new_tracks}
+            title={`Matched tracks (${selectedSession.matched_tracks.length})`}
+            tracks={selectedSession.matched_tracks}
             accent="text-emerald-400"
           />
           <TrackList
-            title={`Outdated tracks (${selectedSession.outdated_tracks.length})`}
-            tracks={selectedSession.outdated_tracks}
+            title={`Missing tracks (${selectedSession.missing_tracks.length})`}
+            tracks={selectedSession.missing_tracks}
             accent="text-amber-400"
           />
         </div>
       </DialogContent>
     );
   };
+
   const renderTable = (): React.JSX.Element => {
     if (isLoading) {
       return (
         <div className="flex items-center justify-center py-6">
-          <Text className="text-muted-foreground italic" value="Loading..." />
+          <Text muted className="italic" value="Loading..." />
         </div>
       );
     }
@@ -253,8 +267,9 @@ export const SyncSessionTable = () => {
       return (
         <div className="flex items-center justify-center py-6">
           <Text
-            className="text-muted-foreground italic text-red-400"
-            value="Failed to load sync sessions"
+            muted
+            className="italic text-red-400"
+            value="Failed to load recommendation sessions"
           />
         </div>
       );
@@ -266,10 +281,11 @@ export const SyncSessionTable = () => {
       return (
         <div className="flex items-center justify-center py-6">
           <Text
-            className="text-muted-foreground italic"
+            muted
+            className="italic"
             value={
               data && data.length === 0
-                ? "Run your first sync"
+                ? "Run your first recommendation"
                 : "No sessions match your filters"
             }
           />
@@ -298,19 +314,6 @@ export const SyncSessionTable = () => {
               <TableHead className="cursor-pointer select-none">
                 <button
                   className="flex items-center"
-                  onClick={() => handleSort("playlist")}
-                >
-                  Playlist
-                  <SortIcon
-                    column="playlist"
-                    sortColumn={sortColumn}
-                    sortDirection={sortDirection}
-                  />
-                </button>
-              </TableHead>
-              <TableHead className="hidden sm:table-cell cursor-pointer select-none">
-                <button
-                  className="flex items-center"
                   onClick={() => handleSort("user")}
                 >
                   User
@@ -321,27 +324,40 @@ export const SyncSessionTable = () => {
                   />
                 </button>
               </TableHead>
-              <TableHead className="hidden md:table-cell cursor-pointer select-none">
+              <TableHead className="hidden sm:table-cell cursor-pointer select-none">
                 <button
                   className="flex items-center"
-                  onClick={() => handleSort("total")}
+                  onClick={() => handleSort("user")}
                 >
-                  Total
+                  Strategy
                   <SortIcon
-                    column="total"
+                    column="strategy"
                     sortColumn={sortColumn}
                     sortDirection={sortDirection}
                   />
                 </button>
               </TableHead>
-              <TableHead className="cursor-pointer select-none">
+              <TableHead className="hidden md:table-cell cursor-pointer select-none">
                 <button
                   className="flex items-center"
-                  onClick={() => handleSort("added")}
+                  onClick={() => handleSort("requested")}
                 >
-                  Added
+                  Requested
                   <SortIcon
-                    column="added"
+                    column="requested"
+                    sortColumn={sortColumn}
+                    sortDirection={sortDirection}
+                  />
+                </button>
+              </TableHead>
+              <TableHead className="hidden md:table-cell cursor-pointer select-none">
+                <button
+                  className="flex items-center"
+                  onClick={() => handleSort("matched")}
+                >
+                  Matched
+                  <SortIcon
+                    column="matched"
                     sortColumn={sortColumn}
                     sortDirection={sortDirection}
                   />
@@ -350,11 +366,11 @@ export const SyncSessionTable = () => {
               <TableHead className="hidden lg:table-cell cursor-pointer select-none">
                 <button
                   className="flex items-center"
-                  onClick={() => handleSort("outdated")}
+                  onClick={() => handleSort("missing")}
                 >
-                  Outdated
+                  Missing
                   <SortIcon
-                    column="outdated"
+                    column="missing"
                     sortColumn={sortColumn}
                     sortDirection={sortDirection}
                   />
@@ -388,7 +404,7 @@ export const SyncSessionTable = () => {
               </TableHead>
             </TableRow>
           </TableHeader>
-          <TableBody className="overflow-y-auto">
+          <TableBody>
             {sortedSessions.map((session) => (
               <TableRow
                 key={session.id}
@@ -396,38 +412,26 @@ export const SyncSessionTable = () => {
                 onClick={() => setSelectedSession(session)}
               >
                 <TableCell>
-                  <Text
-                    className="text-muted-foreground"
-                    value={formatDateTime(session.finished_at)}
-                  />
+                  <Text muted value={formatDateTime(session.finished_at)} />
                 </TableCell>
                 <TableCell>
-                  <Text value={session.target_playlist_name} />
+                  <Text value={session.username} />
                 </TableCell>
                 <TableCell className="hidden sm:table-cell">
-                  <Text
-                    className="text-muted-foreground"
-                    value={session.target_username}
-                  />
+                  <RecommendationStrategyBadge strategy={session.strategy} />
                 </TableCell>
                 <TableCell className="hidden md:table-cell">
-                  <Text
-                    className="text-muted-foreground"
-                    value={String(session.total_tracks.length)}
-                  />
+                  <Text muted value={String(session.requested_count)} />
                 </TableCell>
-                <TableCell className="text-emerald-400">
-                  <Text value={`+${session.new_tracks.length}`} />
+                <TableCell className="hidden md:table-cell text-emerald-400">
+                  <Text value={String(session.matched_tracks.length)} />
                 </TableCell>
-                <TableCell className="hidden lg:table-cell">
-                  <Text
-                    className="text-amber-400"
-                    value={`-${session.outdated_tracks.length}`}
-                  />
+                <TableCell className="hidden lg:table-cell text-amber-400">
+                  <Text value={String(session.missing_tracks.length)} />
                 </TableCell>
                 <TableCell className="hidden lg:table-cell">
                   <Text
-                    className="text-muted-foreground"
+                    muted
                     value={formatDuration(session.duration_seconds)}
                   />
                 </TableCell>
@@ -449,7 +453,7 @@ export const SyncSessionTable = () => {
           <CardTitle className="text-base font-medium text-foreground">
             Recent Sessions
           </CardTitle>
-          <Button size="sm" onClick={() => fetchSyncSessions()}>
+          <Button size="sm" onClick={() => fetchRecommendationSessions()}>
             <RefreshCw className="w-4 h-4" />
             Refresh
           </Button>
@@ -459,6 +463,7 @@ export const SyncSessionTable = () => {
           {renderTable()}
         </CardContent>
       </Card>
+
       <Dialog
         open={selectedSession !== null}
         onOpenChange={(open) => !open && setSelectedSession(null)}
@@ -469,19 +474,11 @@ export const SyncSessionTable = () => {
   );
 };
 
-const DialogItem = ({
-  label,
-  value,
-  mono = false,
-}: {
-  label: string;
-  value: string;
-  mono?: boolean;
-}) => {
+const DialogItem = ({ label, value }: { label: string; value: string }) => {
   return (
     <div>
       <p className="text-xs text-muted-foreground">{label}</p>
-      <Text className="truncate" value={value} mono={mono} />
+      <Text className="truncate" value={value} />
     </div>
   );
 };
@@ -497,8 +494,9 @@ const TrackList = ({
 }) => {
   const renderTracks = (): React.JSX.Element => {
     if (tracks.length === 0) {
-      return <p className="text-xs text-muted-foreground">None</p>;
+      return <Text muted value="None" />;
     }
+
     const uniqueTracks = Array.from(new Set(tracks));
 
     return (
@@ -506,11 +504,7 @@ const TrackList = ({
         <ul className="flex flex-col gap-1">
           {uniqueTracks.map((track) => (
             <li key={track} className="border-b last:border-0 py-1">
-              <Text
-                value={track}
-                mono
-                className="text-xs text-muted-foreground leading-relaxed"
-              />
+              <Text mono muted value={track} />
             </li>
           ))}
         </ul>

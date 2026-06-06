@@ -48,7 +48,7 @@ const DownloadStatusBadge = ({
   );
 };
 
-export const DownloadActivity = () => {
+export const ChartDownloads = () => {
   const { data, isError, isLoading } = useDownloadSessions();
 
   const renderContent = (): React.JSX.Element => {
@@ -112,7 +112,7 @@ export const DownloadActivity = () => {
                       alt={download.track_name}
                       width={36}
                       height={36}
-                      className="rounded object-cover shrink-0"
+                      className="rounded object-cover shrink-0 hidden md:block"
                     />
                     <Text
                       value={download.track_name}

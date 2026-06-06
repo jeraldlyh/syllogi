@@ -1,10 +1,4 @@
 "use client";
-
-import { Clock, Pencil, Play, Plus, Trash2 } from "lucide-react";
-import React, { useState } from "react";
-import { toast } from "sonner";
-import useSWRMutation from "swr/mutation";
-
 import { Text } from "@/components/common/text";
 import {
   AlertDialog,
@@ -16,7 +10,6 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
@@ -54,7 +47,12 @@ import {
 } from "@/hooks/useRecommendation";
 import { useJellyfinUsers } from "@/hooks/useUsers";
 import { CRON_PRESETS } from "@/lib/types";
-import { cn, convertSnakeCaseToTitleCase } from "@/lib/utils";
+import { cn } from "@/lib/utils";
+import { Pencil, Play, Plus, Trash2 } from "lucide-react";
+import React, { useState } from "react";
+import { toast } from "sonner";
+import useSWRMutation from "swr/mutation";
+import { RecommendationStrategyBadge } from "./recommendation-strategy-badge";
 
 interface FormState {
   username: string;
@@ -251,7 +249,7 @@ export const Recommendations = () => {
         <Table>
           <TableHeader>
             <TableRow className="hover:bg-transparent text-xs text-muted-foreground">
-              <TableHead>Jellyfin User</TableHead>
+              <TableHead className="text-nowrap">Jellyfin User</TableHead>
               <TableHead className="hidden sm:table-cell">
                 Last.fm User
               </TableHead>
@@ -268,45 +266,29 @@ export const Recommendations = () => {
                   <Text value={recommendation.username} />
                 </TableCell>
                 <TableCell className="hidden sm:table-cell">
-                  <Text
-                    value={recommendation.lastfm_username}
-                    className="text-muted-foreground"
-                  />
+                  <Text muted value={recommendation.lastfm_username} />
                 </TableCell>
                 <TableCell>
-                  <Badge
-                    variant="outline"
-                    className={cn("text-xs font-medium", {
-                      "border-blue-500/30 text-blue-400":
-                        recommendation.strategy === "recent_tracks",
-                      "border-purple-500/30 text-purple-400":
-                        recommendation.strategy === "top_tracks",
-                    })}
-                  >
-                    {convertSnakeCaseToTitleCase(recommendation.strategy)}
-                  </Badge>
+                  <RecommendationStrategyBadge
+                    strategy={recommendation.strategy}
+                  />
                 </TableCell>
                 <TableCell className="hidden md:table-cell">
-                  <Text
-                    value={String(recommendation.requested_count)}
-                    className="text-muted-foreground"
-                  />
+                  <Text muted value={String(recommendation.requested_count)} />
                 </TableCell>
                 <TableCell className="hidden md:table-cell">
                   {recommendation.cron_expression ? (
-                    <div className="flex items-center gap-1.5 text-muted-foreground">
-                      <Clock className="h-4 w-4" />
-                      <Text
-                        value={
-                          CRON_PRESETS.find(
-                            (cron) =>
-                              cron.value === recommendation.cron_expression,
-                          )?.label ?? recommendation.cron_expression
-                        }
-                      />
-                    </div>
+                    <Text
+                      muted
+                      value={
+                        CRON_PRESETS.find(
+                          (cron) =>
+                            cron.value === recommendation.cron_expression,
+                        )?.label ?? recommendation.cron_expression
+                      }
+                    />
                   ) : (
-                    <Text value="Manual" className="text-muted-foreground" />
+                    <Text muted value="Manual" />
                   )}
                 </TableCell>
                 <TableCell>
@@ -376,10 +358,7 @@ export const Recommendations = () => {
                 htmlFor="username"
                 className="flex justify-between items-center"
               >
-                <Text
-                  value="Jellyfin Username"
-                  className="text-xs text-muted-foreground"
-                />
+                <Text muted value="Jellyfin Username" />
                 {renderErrorMessage(errors.username)}
               </Label>
               <Select
@@ -406,10 +385,7 @@ export const Recommendations = () => {
                 htmlFor="lastfm_username"
                 className="flex justify-between items-center"
               >
-                <Text
-                  value="Last.fm Username"
-                  className="text-xs text-muted-foreground"
-                />
+                <Text muted value="Last.fm Username" />
                 {renderErrorMessage(errors.lastfm_username)}
               </Label>
               <Input
@@ -452,10 +428,7 @@ export const Recommendations = () => {
                 htmlFor="requested_count"
                 className="flex justify-between items-center"
               >
-                <Text
-                  value="Requested Count"
-                  className="text-xs text-muted-foreground"
-                />
+                <Text muted value="Requested Count" />
                 {renderErrorMessage(errors.requested_count)}
               </Label>
               <Input
@@ -476,10 +449,7 @@ export const Recommendations = () => {
             </div>
             <div className="flex flex-col gap-2">
               <Label className="flex justify-between items-center">
-                <Text
-                  value="Schedule"
-                  className="text-xs text-muted-foreground"
-                />
+                <Text muted value="Schedule" />
                 {renderErrorMessage(errors.cron_expression)}
               </Label>
               <div className="flex items-center gap-2">
@@ -560,8 +530,9 @@ export const Recommendations = () => {
                     className="font-mono text-sm"
                   />
                   <Text
+                    muted
+                    className="mt-1"
                     value="Use standard cron format. For example, '0 0 * * *' to generate daily."
-                    className="mt-1 text-xs text-muted-foreground"
                   />
                 </div>
               )}

@@ -1,13 +1,13 @@
 "use client";
 import { Text } from "@/components/common/text";
 import { DashboardHeader } from "@/components/dashboard-header";
-import { Charts } from "@/components/charts";
-import { DownloadActivity } from "@/components/charts/download-activity";
-import { SyncSettings } from "@/components/sync-settings";
-import { Recommendations } from "@/components/recommendation-settings";
-import { RecommendationTable } from "@/components/recommendation-table";
-import { SyncSummary } from "@/components/sync-summary";
-import { SyncSessionTable } from "@/components/sync-table";
+import { Charts } from "@/components/charts/charts";
+import { ChartDownloads } from "@/components/charts/chart-downloads";
+import { SyncSettings } from "@/components/sync/sync-settings";
+import { Recommendations } from "@/components/recommendations/recommendation-settings";
+import { RecommendationTable } from "@/components/recommendations/recommendation-table";
+import { SyncSummary } from "@/components/sync/sync-summary";
+import { SyncSessionTable } from "@/components/sync/sync-table";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { api } from "@/lib/api";
 import Image from "next/image";
@@ -129,7 +129,7 @@ export default function Page() {
               </TabsContent>
               <TabsContent value="charts">
                 <div className="flex flex-col gap-6 pt-6">
-                  <DownloadActivity />
+                  <ChartDownloads />
                   <Charts />
                 </div>
               </TabsContent>
