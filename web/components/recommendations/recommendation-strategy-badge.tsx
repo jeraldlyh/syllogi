@@ -10,7 +10,7 @@ export const RecommendationStrategyBadge = ({
   return (
     <Badge
       variant="outline"
-      className={cn("text-xs text-nowrap font-medium", {
+      className={cn("text-xs whitespace-nowrap", {
         "border-blue-500/30 text-blue-400": strategy === "recent_tracks",
         "border-purple-500/30 text-purple-400": strategy === "top_tracks",
       })}

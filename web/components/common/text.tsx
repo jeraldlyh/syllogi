@@ -15,7 +15,7 @@ export const Text = ({ className, value, mono, noWrap, muted }: IProps) => {
         {
           "font-mono": mono,
           "text-foreground": className && !className.includes("text-"),
-          "text-nowrap": noWrap,
+          "whitespace-nowrap": noWrap,
           "text-muted-foreground": muted,
         },
         className,
