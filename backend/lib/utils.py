@@ -101,9 +101,7 @@ def get_download_path(artist_name: str, track_name: str, album_name: str = "") -
     if album_name:
         sanitized_album_name = sanitize_filename(album_name)
         return f"{Path(download_dir)}/{sanitized_artist_name}/{sanitized_album_name}/{sanitized_track_name}"
-    return (
-        f"{Path(download_dir)}/{sanitized_artist_name}/Singles/{sanitized_track_name}"
-    )
+    return f"{Path(download_dir)}/{sanitized_artist_name}/{sanitized_track_name}"
 
 
 def get_existing_track_path(
