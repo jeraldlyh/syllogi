@@ -10,12 +10,16 @@ interface IProps {
 export const Text = ({ className, value, mono, noWrap, muted }: IProps) => {
   return (
     <p
-      className={cn("text-xs md:text-sm font-medium", className, {
-        "font-mono": mono,
-        "text-foreground": className && !className.includes("text-"),
-        "text-nowrap": noWrap,
-        "text-muted-foreground": muted,
-      })}
+      className={cn(
+        "text-xs md:text-sm font-medium",
+        {
+          "font-mono": mono,
+          "text-foreground": className && !className.includes("text-"),
+          "text-nowrap": noWrap,
+          "text-muted-foreground": muted,
+        },
+        className,
+      )}
     >
       {value}
     </p>
