@@ -1,3 +1,4 @@
+import asyncio
 import logging
 from typing import Any
 
@@ -327,7 +328,7 @@ async def update_jellyfin_playlist_image(
     )
 
 
-async def rescan_jellyfin_library() -> None:
+async def _rescan_jellyfin_library() -> None:
     """Trigger a full metadata refresh on the configured download library."""
 
     media_folders_response = await _jellyfin("/Library/MediaFolders")
@@ -374,6 +375,36 @@ async def is_jellyfin_scanning_library() -> bool:
         if library.name == download_library_name and library.refresh_status == "Active":
             return True
     return False
+
+
+async def wait_for_jellyfin_rescan(
+    start_timeout_seconds: int = 30,
+    poll_interval_seconds: int = 3,
+    scan_poll_interval_seconds: int = 15,
+) -> None:
+    """Trigger a rescan and block until Jellyfin finishes indexing."""
+
+    await _rescan_jellyfin_library()
+
+    waited = 0
+    is_scan_started = False
+
+    while waited < start_timeout_seconds:
+        if await is_jellyfin_scanning_library():
+            is_scan_started = True
+            break
+
+        await asyncio.sleep(poll_interval_seconds)
+        waited += poll_interval_seconds
+
+    if not is_scan_started:
+        logger.warning("Jellyfin library scan did not start within expected time")
+
+    while await is_jellyfin_scanning_library():
+        logger.info("Waiting for Jellyfin to finish scanning library...")
+        await asyncio.sleep(scan_poll_interval_seconds)
+
+    logger.info("Jellyfin library scan complete")
 
 
 async def get_jellyfin_libraries() -> list[JellyfinLibrary]:

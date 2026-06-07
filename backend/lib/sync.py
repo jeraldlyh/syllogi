@@ -26,8 +26,7 @@ from lib.jellyfin import (
     delete_songs_from_jellyfin_playlist,
     get_or_create_jellyfin_playlist,
     get_jellyfin_playlist_songs,
-    is_jellyfin_scanning_library,
-    rescan_jellyfin_library,
+    wait_for_jellyfin_rescan,
     update_jellyfin_playlist_image,
 )
 from lib.models.common import (
@@ -153,13 +152,7 @@ async def sync_playlist_task(
                 if len(downloaded_tracks) > 0:
                     logger.info(f"Downloaded {len(downloaded_tracks)} missing songs")
 
-                    await rescan_jellyfin_library()
-
-                    while await is_jellyfin_scanning_library():
-                        logger.info(
-                            "Waiting for Jellyfin to finish scanning library..."
-                        )
-                        await asyncio.sleep(15)
+                    await wait_for_jellyfin_rescan()
 
                     (
                         newly_found_tracks,

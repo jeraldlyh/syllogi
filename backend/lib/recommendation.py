@@ -1,4 +1,3 @@
-import asyncio
 import logging
 import uuid
 from typing import Any
@@ -28,8 +27,7 @@ from lib.jellyfin import (
     delete_songs_from_jellyfin_playlist,
     get_jellyfin_playlist_songs,
     get_or_create_jellyfin_playlist,
-    is_jellyfin_scanning_library,
-    rescan_jellyfin_library,
+    wait_for_jellyfin_rescan,
 )
 from lib.models.jellyfin import JellyfinTrack
 from lib.models.lastfm import (
@@ -163,13 +161,7 @@ async def generate_recommendations_task(
                 if downloaded_tracks:
                     logger.info(f"Downloaded {len(downloaded_tracks)} missing songs")
 
-                    await rescan_jellyfin_library()
-
-                    while await is_jellyfin_scanning_library():
-                        logger.info(
-                            "Waiting for Jellyfin to finish scanning library..."
-                        )
-                        await asyncio.sleep(15)
+                    await wait_for_jellyfin_rescan()
 
                     (
                         found_tracks_after_download,

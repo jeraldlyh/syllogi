@@ -7,7 +7,7 @@ from fastapi import HTTPException, status
 from db.download_session import get_download_session_by_id, update_download_session
 from db.models.download_session import DownloadSession, DownloadSessionStatus
 from db.session import get_isolated_session
-from lib.jellyfin import rescan_jellyfin_library
+from lib.jellyfin import _rescan_jellyfin_library
 from lib.models.common import ExternalTrack
 from lib.models.jellyfin import JellyfinTrack
 from lib.env import is_slskd_configured
@@ -97,7 +97,7 @@ async def download_missing_tracks_and_refresh_library(
     found, still_missing = await download_missing_tracks(missing_tracks)
 
     if found:
-        await rescan_jellyfin_library()
+        await _rescan_jellyfin_library()
     return found, still_missing
 
 
@@ -193,7 +193,7 @@ async def download_single_track(
             is_exist = len(found) == 0 and len(missing) == 0
 
             if found or is_exist:
-                await rescan_jellyfin_library()
+                await _rescan_jellyfin_library()
 
             if not found and not is_exist:
                 raise HTTPException(
