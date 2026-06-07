@@ -178,6 +178,88 @@ async def create_jellyfin_playlist(
     )
 
 
+async def delete_jellyfin_playlist(playlist_id: str) -> None:
+    """Delete a Jellyfin playlist by its item ID.
+
+    Args:
+        playlist_id: The Jellyfin item ID of the playlist to delete
+    """
+
+    await _jellyfin(f"/Items/{playlist_id}", method="DELETE")
+
+
+async def update_jellyfin_playlist_visibility(
+    playlist_name: str,
+    username: str,
+    is_public: bool,
+) -> None:
+    """Update the visibility of an existing Jellyfin playlist by
+    recreating it with all existing tracks preserved.
+
+    Unable to directly update the visibility of a playlist via the API due to
+    the following issue: https://github.com/jellyfin/jellyfin/issues/13476
+
+    Args:
+        playlist_name: The Jellyfin playlist name to look up
+        username: The Jellyfin username who owns the playlist
+        is_public: Whether the playlist should be visible to all users
+    """
+
+    user = await get_jellyfin_user_by_name(username=username)
+
+    if not user:
+        logger.warning(
+            f"Unable to find Jellyfin user '{username}' when updating playlist visibility"
+        )
+        return
+
+    playlists = await get_jellyfin_playlists(user_id=user.id)
+
+    existing_playlist = next(
+        (
+            playlist
+            for playlist in playlists
+            if playlist.name == playlist_name
+            and (playlist.owner_id is None or playlist.owner_id == user.id)
+        ),
+        None,
+    )
+
+    if not existing_playlist:
+        logger.warning(
+            f"Unable to find existing Jellyfin playlist '{playlist_name}' for user '{username}' when updating playlist visibility"
+        )
+        return
+
+    existing_tracks = await get_jellyfin_playlist_songs(
+        playlist_id=existing_playlist.id,
+        user_id=user.id,
+    )
+    track_ids = [track.id for track in existing_tracks]
+
+    await delete_jellyfin_playlist(playlist_id=existing_playlist.id)
+
+    new_playlist = await create_jellyfin_playlist(
+        playlist_name=playlist_name,
+        user_id=user.id,
+        is_public=is_public,
+    )
+    new_playlist_id = new_playlist.get("Id")
+
+    if not new_playlist_id:
+        logger.error(
+            f"Failed to recreate Jellyfin playlist '{playlist_name}' when updating visibility"
+        )
+        return
+
+    if track_ids:
+        await add_songs_to_jellyfin_playlist(
+            playlist_id=new_playlist_id,
+            user_id=user.id,
+            track_ids=track_ids,
+        )
+
+
 async def add_songs_to_jellyfin_playlist(
     playlist_id: str,
     user_id: str,
