@@ -10,6 +10,7 @@ export interface Playlist {
   username: string;
   enable_sync: boolean;
   enable_download: boolean;
+  is_public: boolean;
   cron_expression: string;
 }
 

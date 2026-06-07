@@ -66,6 +66,7 @@ interface FormState {
   username: string;
   enable_sync: boolean;
   enable_download: boolean;
+  is_public: boolean;
   cron_expression: string;
   cron_mode: "simple" | "custom";
 }
@@ -84,6 +85,7 @@ const DEFAULT_FORM: FormState = {
   username: "",
   enable_sync: true,
   enable_download: true,
+  is_public: false,
   cron_expression: "0 * * * *",
   cron_mode: "simple",
 };
@@ -428,6 +430,23 @@ export const SyncSettings = () => {
                       {user.name}
                     </SelectItem>
                   ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="flex flex-col gap-2">
+              <Label className="text-xs text-muted-foreground">Visibility</Label>
+              <Select
+                value={form.is_public ? "true" : "false"}
+                onValueChange={(value) =>
+                  setForm((prev) => ({ ...prev, is_public: value === "true" }))
+                }
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Select visibility" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="false">Private</SelectItem>
+                  <SelectItem value="true">Public</SelectItem>
                 </SelectContent>
               </Select>
             </div>
