@@ -54,8 +54,8 @@ export const SyncSessionTable = () => {
   const [selectedSession, setSelectedSession] = useState<SyncSession | null>(
     null,
   );
-  const [sortColumn, setSortColumn] = useState<SyncSortColumn>(null);
-  const [sortDirection, setSortDirection] = useState<SortDirection>(null);
+  const [sortColumn, setSortColumn] = useState<SyncSortColumn>("time");
+  const [sortDirection, setSortDirection] = useState<SortDirection>("desc");
 
   const {
     data,
@@ -83,7 +83,7 @@ export const SyncSessionTable = () => {
   const handleSort = (column: typeof sortColumn): void => {
     if (sortColumn !== column) {
       setSortColumn(column);
-      setSortDirection("asc");
+      setSortDirection(column === "time" ? "desc" : "asc");
       return;
     }
 

@@ -57,8 +57,8 @@ export const RecommendationTable = () => {
   const [statusFilter, setStatusFilter] = useState<string>("all");
   const [selectedSession, setSelectedSession] =
     useState<RecommendationSession | null>(null);
-  const [sortColumn, setSortColumn] = useState<SortColumn>(null);
-  const [sortDirection, setSortDirection] = useState<SortDirection>(null);
+  const [sortColumn, setSortColumn] = useState<SortColumn>("time");
+  const [sortDirection, setSortDirection] = useState<SortDirection>("desc");
 
   const {
     data,
@@ -85,7 +85,7 @@ export const RecommendationTable = () => {
   const handleSort = (column: typeof sortColumn): void => {
     if (sortColumn !== column) {
       setSortColumn(column);
-      setSortDirection("asc");
+      setSortDirection(column === "time" ? "desc" : "asc");
       return;
     }
 
