@@ -81,4 +81,4 @@ def _get_sync_sessions(session: SessionDep) -> list[dict]:
         sync_session_dict["downloaded_tracks"] = sync_session_tracks["downloaded"]
 
         response.append(sync_session_dict)
-    return response
+    return sorted(response, key=lambda x: x["created_at"], reverse=True)
