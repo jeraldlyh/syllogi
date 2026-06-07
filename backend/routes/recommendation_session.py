@@ -60,4 +60,4 @@ def _get_recommendation_sessions(session: SessionDep) -> list[dict]:
 
         response.append(recommendation_session_dict)
 
-    return response
+    return sorted(response, key=lambda x: x["created_at"], reverse=True)

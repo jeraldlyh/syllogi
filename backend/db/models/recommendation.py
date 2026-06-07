@@ -8,7 +8,7 @@ from sqlmodel import Field, Relationship, SQLModel
 
 from lib.mixin.metadata import TimestampMixin
 from lib.mixin.serializer import SerializerMixin
-from lib.utils import get_now
+from lib.utils import format_time_with_locale, get_now
 
 
 class RecommendationStatus(str, enum.Enum):
@@ -81,11 +81,13 @@ class RecommendationSession(TimestampMixin, SerializerMixin, SQLModel, table=Tru
             "strategy": self.strategy.value,
             "requested_count": self.requested_count,
             "generated_count": self.generated_count,
-            "started_at": self.started_at.isoformat(),
-            "finished_at": self.finished_at.isoformat(),
+            "started_at": format_time_with_locale(self.started_at),
+            "finished_at": format_time_with_locale(self.finished_at),
             "duration_seconds": self.duration_seconds,
             "status": self.status.value,
             "error_message": self.error_message,
+            "created_at": format_time_with_locale(self.created_at),
+            "updated_at": format_time_with_locale(self.updated_at),
         }
 
 
