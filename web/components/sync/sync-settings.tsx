@@ -53,7 +53,7 @@ import { useJellyfinUsers } from "@/hooks/useUsers";
 import { api } from "@/lib/api";
 import { CRON_PRESETS, ErrorResponse, PROVIDERS } from "@/lib/types";
 import { capitaliseFirstLetter, cn } from "@/lib/utils";
-import { Info, Pencil, Play, Plus, Trash2 } from "lucide-react";
+import { Info, Loader2, Pencil, Play, Plus, Trash2 } from "lucide-react";
 import React, { useState } from "react";
 import { toast } from "sonner";
 import useSWRMutation from "swr/mutation";
@@ -170,16 +170,27 @@ export const SyncSettings = () => {
 
     const { cron_mode, ...formData } = form;
 
-    if (editingId) {
-      await updatePlaylist({ id: editingId, ...formData });
-      toast.success("Playlist updated");
-    } else {
-      await createPlaylist(formData);
-
-      toast.success("Playlist created");
-    }
-    await fetchPlaylist();
     setDialogOpen(false);
+
+    const toastId = toast.loading(
+      editingId ? "Updating playlist…" : "Creating playlist…",
+    );
+
+    try {
+      if (editingId) {
+        await updatePlaylist({ id: editingId, ...formData });
+        toast.success("Playlist updated", { id: toastId });
+      } else {
+        await createPlaylist(formData);
+        toast.success("Playlist created", { id: toastId });
+      }
+      await fetchPlaylist();
+    } catch (error) {
+      toast.error(
+        editingId ? "Failed to update playlist" : "Failed to create playlist",
+        { id: toastId },
+      );
+    }
   };
 
   const handleSyncPlaylist = async (playlist: Playlist): Promise<void> => {
@@ -434,7 +445,9 @@ export const SyncSettings = () => {
               </Select>
             </div>
             <div className="flex flex-col gap-2">
-              <Label className="text-xs text-muted-foreground">Visibility</Label>
+              <Label className="text-xs text-muted-foreground">
+                Visibility
+              </Label>
               <Select
                 value={form.is_public ? "true" : "false"}
                 onValueChange={(value) =>
@@ -589,7 +602,13 @@ export const SyncSettings = () => {
             <Button variant="outline" onClick={() => setDialogOpen(false)}>
               Cancel
             </Button>
-            <Button onClick={handleSavePlaylist}>
+            <Button
+              onClick={handleSavePlaylist}
+              disabled={isCreating || isUpdating}
+            >
+              {(isCreating || isUpdating) && (
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              )}
               {editingId ? "Update" : "Add"}
             </Button>
           </DialogFooter>
