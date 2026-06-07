@@ -23,6 +23,7 @@ class CreateOrUpdatePlaylistRequest(BaseModel):
     username: str
     enable_sync: bool
     enable_download: bool
+    is_public: bool
     cron_expression: str
 
 
@@ -46,6 +47,7 @@ class CreateOrUpdatePlaylistRequest(BaseModel):
                                 "username": "jerald",
                                 "enable_sync": True,
                                 "enable_download": False,
+                                "is_public": False,
                                 "cron_expression": "0 * * * *",
                             }
                         ],
@@ -87,6 +89,7 @@ def _create_playlist(item: CreateOrUpdatePlaylistRequest, session: SessionDep):
         username=item.username,
         enable_sync=item.enable_sync,
         enable_download=item.enable_download,
+        is_public=item.is_public,
         cron_expression=item.cron_expression,
     )
     create_playlist(session=session, playlist=playlist)
@@ -152,6 +155,7 @@ def _update_playlist(
     playlist.username = item.username
     playlist.enable_sync = item.enable_sync
     playlist.enable_download = item.enable_download
+    playlist.is_public = item.is_public
     playlist.cron_expression = item.cron_expression
 
     update_playlist(session=session, playlist=playlist)

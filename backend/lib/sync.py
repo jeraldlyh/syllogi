@@ -129,6 +129,7 @@ async def sync_playlist_task(
             ) = await get_or_create_jellyfin_playlist(
                 playlist_name=internal_playlist_name,
                 username=username,
+                is_public=internal_playlist.is_public,
             )
 
             sync_session.provider_playlist_name = external_playlist_name

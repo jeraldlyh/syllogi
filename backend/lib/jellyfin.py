@@ -151,12 +151,14 @@ async def search_jellyfin_track(
 async def create_jellyfin_playlist(
     playlist_name: str,
     user_id: str,
+    is_public: bool = False,
 ) -> dict[str, Any]:
-    """Create a new private audio playlist in Jellyfin owned by user.
+    """Create a new audio playlist in Jellyfin owned by user.
 
     Args:
         playlist_name: The name of the playlist to create
         user_id: The ID of the Jellyfin user who will own the playlist
+        is_public: Whether the playlist should be visible to all users
 
     Returns:
         The created playlist data from Jellyfin
@@ -171,7 +173,7 @@ async def create_jellyfin_playlist(
             "UserId": user_id,
             "Users": [{"UserId": user_id, "CanEdit": True}],
             "MediaType": "Audio",
-            "IsPublic": False,
+            "IsPublic": is_public,
         },
     )
 
@@ -204,6 +206,7 @@ async def add_songs_to_jellyfin_playlist(
 async def get_or_create_jellyfin_playlist(
     playlist_name: str,
     username: str,
+    is_public: bool = False,
 ) -> tuple[str, str]:
     """Get an existing Jellyfin playlist by name or create a new one.
 
@@ -236,7 +239,9 @@ async def get_or_create_jellyfin_playlist(
 
     if not existing_playlist_id:
         new_playlist = await create_jellyfin_playlist(
-            playlist_name=playlist_name, user_id=jellyfin_user.id
+            playlist_name=playlist_name,
+            user_id=jellyfin_user.id,
+            is_public=is_public,
         )
         existing_playlist_id = new_playlist.get("Id")
 

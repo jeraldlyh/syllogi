@@ -24,6 +24,7 @@ class Playlist(TimestampMixin, SerializerMixin, SQLModel, table=True):
     username: str = Field(default="", max_length=128, nullable=False, index=True)
     enable_sync: bool = Field(default=True, nullable=False)
     enable_download: bool = Field(default=True, nullable=False)
+    is_public: bool = Field(default=False, nullable=False)
     cron_expression: str = Field(default="", max_length=128, nullable=False)
 
     def to_dict(self) -> dict:
@@ -35,6 +36,7 @@ class Playlist(TimestampMixin, SerializerMixin, SQLModel, table=True):
             "username": self.username,
             "enable_sync": self.enable_sync,
             "enable_download": self.enable_download,
+            "is_public": self.is_public,
             "cron_expression": self.cron_expression,
             "created_at": format_time_with_locale(self.created_at),
             "updated_at": format_time_with_locale(self.updated_at),
