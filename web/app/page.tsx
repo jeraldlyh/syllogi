@@ -4,6 +4,7 @@ import { DashboardHeader } from "@/components/dashboard-header";
 import { Charts } from "@/components/charts/charts";
 import { ChartDownloads } from "@/components/charts/chart-downloads";
 import { SyncSettings } from "@/components/sync/sync-settings";
+import { RecommendationSummary } from "@/components/recommendations/recommendation-summary";
 import { Recommendations } from "@/components/recommendations/recommendation-settings";
 import { RecommendationTable } from "@/components/recommendations/recommendation-table";
 import { SyncSummary } from "@/components/sync/sync-summary";
@@ -123,6 +124,7 @@ export default function Page() {
               </TabsContent>
               <TabsContent value="recommendations">
                 <div className="flex flex-col gap-6 pt-6">
+                  <RecommendationSummary />
                   <Recommendations />
                   <RecommendationTable />
                 </div>
