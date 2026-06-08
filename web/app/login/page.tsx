@@ -39,6 +39,8 @@ export default function LoginPage() {
   const handlePasswordLogin = async (e: React.FormEvent): Promise<void> => {
     e.preventDefault();
 
+    const toastId = toast.loading("Signing in...");
+
     const formData = new FormData();
     formData.append("username", username);
     formData.append("password", password);
@@ -51,10 +53,12 @@ export default function LoginPage() {
     });
 
     if (response.statusCode === 200) {
+      toast.success("Signed in", { id: toastId });
       router.push("/");
     } else {
       toast.error("Login failed", {
         description: response.error?.message || "An unknown error occurred",
+        id: toastId,
       });
     }
   };

@@ -1,4 +1,3 @@
-import asyncio
 import logging
 import uuid
 from typing import Any
@@ -28,8 +27,7 @@ from lib.jellyfin import (
     delete_songs_from_jellyfin_playlist,
     get_jellyfin_playlist_songs,
     get_or_create_jellyfin_playlist,
-    is_jellyfin_scanning_library,
-    rescan_jellyfin_library,
+    wait_for_jellyfin_rescan,
 )
 from lib.models.jellyfin import JellyfinTrack
 from lib.models.lastfm import (
@@ -42,6 +40,7 @@ from lib.lastfm import (
 )
 from lib.track import find_track, reconcile_after_download, resolve_tracks
 from lib.utils import get_now, truncate
+from lib.constants import DEFAULT_RECOMMENDED_PLAYLIST_NAME
 
 logger = logging.getLogger(__name__)
 
@@ -119,6 +118,7 @@ async def get_recommendations(
 async def generate_recommendations_task(
     lastfm_username: str,
     recommendation_session_id: uuid.UUID,
+    recommendation_id: uuid.UUID,
 ) -> Any:
     """Get track recommendations for a user based on their listening history in a background task."""
 
@@ -126,13 +126,20 @@ async def generate_recommendations_task(
         logger.info(
             f"Generating recommendations for user {lastfm_username} with session ID {recommendation_session_id}"
         )
+        recommendation = get_recommendation_by_id(
+            session=session, recommendation_id=recommendation_id
+        )
+        if not recommendation:
+            raise ValueError(
+                f"Unable to find recommendation setting: {recommendation_id}",
+            )
+
         recommendation_session = get_recommendation_session_by_id(
             session=session, recommendation_session_id=recommendation_session_id
         )
         if not recommendation_session:
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND,
-                detail=f"Unable to find recommendation session: {recommendation_session_id}",
+            raise ValueError(
+                f"Unable to find recommendation session: {recommendation_session_id}",
             )
 
         started_at = recommendation_session.started_at
@@ -163,13 +170,7 @@ async def generate_recommendations_task(
                 if downloaded_tracks:
                     logger.info(f"Downloaded {len(downloaded_tracks)} missing songs")
 
-                    await rescan_jellyfin_library()
-
-                    while await is_jellyfin_scanning_library():
-                        logger.info(
-                            "Waiting for Jellyfin to finish scanning library..."
-                        )
-                        await asyncio.sleep(15)
+                    await wait_for_jellyfin_rescan()
 
                     (
                         found_tracks_after_download,
@@ -250,8 +251,9 @@ async def generate_recommendations_task(
             )
 
             playlist_id, jellyfin_user_id = await get_or_create_jellyfin_playlist(
-                playlist_name="Daily Recommendations",
+                playlist_name=DEFAULT_RECOMMENDED_PLAYLIST_NAME,
                 username=recommendation_session.username,
+                is_public=recommendation.is_public,
             )
 
             existing_tracks = await get_jellyfin_playlist_songs(
@@ -324,5 +326,6 @@ async def generate_recommendations(
         await generate_recommendations_task(
             lastfm_username=internal_recommendation.lastfm_username,
             recommendation_session_id=recommendation_session.id,
+            recommendation_id=internal_recommendation.id,
         )
         return {"id": str(recommendation_session.id)}

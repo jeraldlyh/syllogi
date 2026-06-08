@@ -70,6 +70,10 @@ export const ChartTrending = () => {
     const key = getTrackKey(track);
     setDownloadingTracks((prev) => new Set(prev).add(key));
 
+    const toastId = toast.loading(
+      `Downloading ${track.artist_name} - ${track.track_name}...`,
+    );
+
     try {
       const response = await api({
         method: "POST",
@@ -85,12 +89,14 @@ export const ChartTrending = () => {
       if (response.statusCode !== 200) {
         toast.error("Failed to start download", {
           description: `${track.artist_name} - ${track.track_name}`,
+          id: toastId,
         });
         return;
       }
 
       toast.success("Download started", {
         description: `${track.artist_name} - ${track.track_name}`,
+        id: toastId,
       });
       refreshDownloads();
     } finally {

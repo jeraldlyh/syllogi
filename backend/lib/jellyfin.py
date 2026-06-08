@@ -1,3 +1,4 @@
+import asyncio
 import logging
 from typing import Any
 
@@ -150,12 +151,14 @@ async def search_jellyfin_track(
 async def create_jellyfin_playlist(
     playlist_name: str,
     user_id: str,
+    is_public: bool = False,
 ) -> dict[str, Any]:
-    """Create a new private audio playlist in Jellyfin owned by user.
+    """Create a new audio playlist in Jellyfin owned by user.
 
     Args:
         playlist_name: The name of the playlist to create
         user_id: The ID of the Jellyfin user who will own the playlist
+        is_public: Whether the playlist should be visible to all users
 
     Returns:
         The created playlist data from Jellyfin
@@ -170,9 +173,91 @@ async def create_jellyfin_playlist(
             "UserId": user_id,
             "Users": [{"UserId": user_id, "CanEdit": True}],
             "MediaType": "Audio",
-            "IsPublic": False,
+            "IsPublic": is_public,
         },
     )
+
+
+async def delete_jellyfin_playlist(playlist_id: str) -> None:
+    """Delete a Jellyfin playlist by its item ID.
+
+    Args:
+        playlist_id: The Jellyfin item ID of the playlist to delete
+    """
+
+    await _jellyfin(f"/Items/{playlist_id}", method="DELETE")
+
+
+async def update_jellyfin_playlist_visibility(
+    playlist_name: str,
+    username: str,
+    is_public: bool,
+) -> None:
+    """Update the visibility of an existing Jellyfin playlist by
+    recreating it with all existing tracks preserved.
+
+    Unable to directly update the visibility of a playlist via the API due to
+    the following issue: https://github.com/jellyfin/jellyfin/issues/13476
+
+    Args:
+        playlist_name: The Jellyfin playlist name to look up
+        username: The Jellyfin username who owns the playlist
+        is_public: Whether the playlist should be visible to all users
+    """
+
+    user = await get_jellyfin_user_by_name(username=username)
+
+    if not user:
+        logger.warning(
+            f"Unable to find Jellyfin user '{username}' when updating playlist visibility"
+        )
+        return
+
+    playlists = await get_jellyfin_playlists(user_id=user.id)
+
+    existing_playlist = next(
+        (
+            playlist
+            for playlist in playlists
+            if playlist.name == playlist_name
+            and (playlist.owner_id is None or playlist.owner_id == user.id)
+        ),
+        None,
+    )
+
+    if not existing_playlist:
+        logger.warning(
+            f"Unable to find existing Jellyfin playlist '{playlist_name}' for user '{username}' when updating playlist visibility"
+        )
+        return
+
+    existing_tracks = await get_jellyfin_playlist_songs(
+        playlist_id=existing_playlist.id,
+        user_id=user.id,
+    )
+    track_ids = [track.id for track in existing_tracks]
+
+    await delete_jellyfin_playlist(playlist_id=existing_playlist.id)
+
+    new_playlist = await create_jellyfin_playlist(
+        playlist_name=playlist_name,
+        user_id=user.id,
+        is_public=is_public,
+    )
+    new_playlist_id = new_playlist.get("Id")
+
+    if not new_playlist_id:
+        logger.error(
+            f"Failed to recreate Jellyfin playlist '{playlist_name}' when updating visibility"
+        )
+        return
+
+    if track_ids:
+        await add_songs_to_jellyfin_playlist(
+            playlist_id=new_playlist_id,
+            user_id=user.id,
+            track_ids=track_ids,
+        )
 
 
 async def add_songs_to_jellyfin_playlist(
@@ -203,6 +288,7 @@ async def add_songs_to_jellyfin_playlist(
 async def get_or_create_jellyfin_playlist(
     playlist_name: str,
     username: str,
+    is_public: bool = False,
 ) -> tuple[str, str]:
     """Get an existing Jellyfin playlist by name or create a new one.
 
@@ -235,7 +321,9 @@ async def get_or_create_jellyfin_playlist(
 
     if not existing_playlist_id:
         new_playlist = await create_jellyfin_playlist(
-            playlist_name=playlist_name, user_id=jellyfin_user.id
+            playlist_name=playlist_name,
+            user_id=jellyfin_user.id,
+            is_public=is_public,
         )
         existing_playlist_id = new_playlist.get("Id")
 
@@ -327,7 +415,7 @@ async def update_jellyfin_playlist_image(
     )
 
 
-async def rescan_jellyfin_library() -> None:
+async def _rescan_jellyfin_library() -> None:
     """Trigger a full metadata refresh on the configured download library."""
 
     media_folders_response = await _jellyfin("/Library/MediaFolders")
@@ -374,6 +462,31 @@ async def is_jellyfin_scanning_library() -> bool:
         if library.name == download_library_name and library.refresh_status == "Active":
             return True
     return False
+
+
+async def wait_for_jellyfin_rescan(
+    start_timeout_seconds: int = 30,
+    poll_interval_seconds: int = 3,
+) -> None:
+    """Trigger a rescan and block until Jellyfin finishes indexing."""
+
+    await _rescan_jellyfin_library()
+
+    waited = 0
+    is_scan_started = False
+
+    while waited < start_timeout_seconds:
+        if await is_jellyfin_scanning_library():
+            is_scan_started = True
+            break
+
+        await asyncio.sleep(poll_interval_seconds)
+        waited += poll_interval_seconds
+
+    if not is_scan_started:
+        logger.warning("Jellyfin library scan did not start within expected time")
+    else:
+        logger.info("Jellyfin library scan complete")
 
 
 async def get_jellyfin_libraries() -> list[JellyfinLibrary]:

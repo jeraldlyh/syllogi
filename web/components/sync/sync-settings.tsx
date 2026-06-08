@@ -53,7 +53,7 @@ import { useJellyfinUsers } from "@/hooks/useUsers";
 import { api } from "@/lib/api";
 import { CRON_PRESETS, ErrorResponse, PROVIDERS } from "@/lib/types";
 import { capitaliseFirstLetter, cn } from "@/lib/utils";
-import { Info, Pencil, Play, Plus, Trash2 } from "lucide-react";
+import { Info, Loader2, Pencil, Play, Plus, Trash2 } from "lucide-react";
 import React, { useState } from "react";
 import { toast } from "sonner";
 import useSWRMutation from "swr/mutation";
@@ -66,6 +66,7 @@ interface FormState {
   username: string;
   enable_sync: boolean;
   enable_download: boolean;
+  is_public: boolean;
   cron_expression: string;
   cron_mode: "simple" | "custom";
 }
@@ -84,6 +85,7 @@ const DEFAULT_FORM: FormState = {
   username: "",
   enable_sync: true,
   enable_download: true,
+  is_public: false,
   cron_expression: "0 * * * *",
   cron_mode: "simple",
 };
@@ -168,16 +170,27 @@ export const SyncSettings = () => {
 
     const { cron_mode, ...formData } = form;
 
-    if (editingId) {
-      await updatePlaylist({ id: editingId, ...formData });
-      toast.success("Playlist updated");
-    } else {
-      await createPlaylist(formData);
-
-      toast.success("Playlist created");
-    }
-    await fetchPlaylist();
     setDialogOpen(false);
+
+    const toastId = toast.loading(
+      editingId ? "Updating playlist…" : "Creating playlist…",
+    );
+
+    try {
+      if (editingId) {
+        await updatePlaylist({ id: editingId, ...formData });
+        toast.success("Playlist updated", { id: toastId });
+      } else {
+        await createPlaylist(formData);
+        toast.success("Playlist created", { id: toastId });
+      }
+      await fetchPlaylist();
+    } catch (error) {
+      toast.error(
+        editingId ? "Failed to update playlist" : "Failed to create playlist",
+        { id: toastId },
+      );
+    }
   };
 
   const handleSyncPlaylist = async (playlist: Playlist): Promise<void> => {
@@ -432,6 +445,25 @@ export const SyncSettings = () => {
               </Select>
             </div>
             <div className="flex flex-col gap-2">
+              <Label className="text-xs text-muted-foreground">
+                Visibility
+              </Label>
+              <Select
+                value={form.is_public ? "true" : "false"}
+                onValueChange={(value) =>
+                  setForm((prev) => ({ ...prev, is_public: value === "true" }))
+                }
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Select visibility" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="false">Private</SelectItem>
+                  <SelectItem value="true">Public</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="flex flex-col gap-2">
               <Label className="flex justify-between items-center">
                 <Text muted value="Schedule" />
                 {renderErrorMessage(errors.cron_expression)}
@@ -570,7 +602,13 @@ export const SyncSettings = () => {
             <Button variant="outline" onClick={() => setDialogOpen(false)}>
               Cancel
             </Button>
-            <Button onClick={handleSavePlaylist}>
+            <Button
+              onClick={handleSavePlaylist}
+              disabled={isCreating || isUpdating}
+            >
+              {(isCreating || isUpdating) && (
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              )}
               {editingId ? "Update" : "Add"}
             </Button>
           </DialogFooter>

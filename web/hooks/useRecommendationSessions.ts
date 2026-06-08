@@ -3,10 +3,11 @@ import { ApiResponse } from "@/lib/types";
 import useSWR from "swr";
 
 export type RecommendationStrategy = "top_tracks" | "recent_tracks" | "mixed";
+export type RecommendationProvider = "lastfm";
 export interface RecommendationSession {
   id: string;
   username: string;
-  provider: "lastfm";
+  provider: RecommendationProvider;
   strategy: RecommendationStrategy;
   requested_count: number;
   generated_count: number;

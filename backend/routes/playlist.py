@@ -12,6 +12,7 @@ from db.playlist import (
 from db.session import SessionDep
 from lib.sync import sync_playlist
 from lib.cron import delete_job, update_job, create_job
+from lib.jellyfin import update_jellyfin_playlist_visibility
 
 router = APIRouter()
 
@@ -23,6 +24,7 @@ class CreateOrUpdatePlaylistRequest(BaseModel):
     username: str
     enable_sync: bool
     enable_download: bool
+    is_public: bool
     cron_expression: str
 
 
@@ -46,6 +48,7 @@ class CreateOrUpdatePlaylistRequest(BaseModel):
                                 "username": "jerald",
                                 "enable_sync": True,
                                 "enable_download": False,
+                                "is_public": False,
                                 "cron_expression": "0 * * * *",
                             }
                         ],
@@ -87,6 +90,7 @@ def _create_playlist(item: CreateOrUpdatePlaylistRequest, session: SessionDep):
         username=item.username,
         enable_sync=item.enable_sync,
         enable_download=item.enable_download,
+        is_public=item.is_public,
         cron_expression=item.cron_expression,
     )
     create_playlist(session=session, playlist=playlist)
@@ -135,7 +139,7 @@ def _create_playlist(item: CreateOrUpdatePlaylistRequest, session: SessionDep):
         },
     },
 )
-def _update_playlist(
+async def _update_playlist(
     playlist_id: str, item: CreateOrUpdatePlaylistRequest, session: SessionDep
 ):
     playlist = get_playlist_by_id(session=session, playlist_id=playlist_id)
@@ -152,9 +156,16 @@ def _update_playlist(
     playlist.username = item.username
     playlist.enable_sync = item.enable_sync
     playlist.enable_download = item.enable_download
+    playlist.is_public = item.is_public
     playlist.cron_expression = item.cron_expression
 
     update_playlist(session=session, playlist=playlist)
+
+    await update_jellyfin_playlist_visibility(
+        playlist_name=playlist.playlist_name,
+        username=playlist.username,
+        is_public=playlist.is_public,
+    )
 
     if not playlist.enable_sync:
         delete_job(job_id=playlist_id)

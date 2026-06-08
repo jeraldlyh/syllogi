@@ -61,6 +61,7 @@ interface FormState {
   requested_count: number;
   cron_expression: string;
   cron_mode: "simple" | "custom";
+  is_public: boolean;
 }
 
 interface FormErrors {
@@ -78,6 +79,7 @@ const DEFAULT_FORM: FormState = {
   requested_count: 50,
   cron_expression: "0 * * * *",
   cron_mode: "simple",
+  is_public: false,
 };
 
 const STRATEGIES: { label: string; value: RecommendationStrategy }[] = [
@@ -134,6 +136,7 @@ export const Recommendations = () => {
       cron_expression: recommendation.cron_expression,
       cron_mode:
         isPreset || !recommendation.cron_expression ? "simple" : "custom",
+      is_public: recommendation.is_public,
     });
     setErrors({});
     setDialogOpen(true);
@@ -180,35 +183,64 @@ export const Recommendations = () => {
       lastfm_username: formData.lastfm_username,
       requested_count: formData.requested_count,
       cron_expression: formData.cron_expression,
+      is_public: formData.is_public,
     };
 
-    if (editingId) {
-      await updateRecommendation({ id: editingId, ...payload });
-      toast.success("Recommendation updated");
-    } else {
-      await createRecommendation(payload);
-      toast.success("Recommendation created");
-    }
-
-    await fetchRecommendations();
     setDialogOpen(false);
+
+    const toastId = toast.loading(
+      editingId ? "Updating recommendation..." : "Creating recommendation...",
+    );
+
+    try {
+      if (editingId) {
+        await updateRecommendation({ id: editingId, ...payload });
+        toast.success("Recommendation updated", { id: toastId });
+      } else {
+        await createRecommendation(payload);
+        toast.success("Recommendation created", { id: toastId });
+      }
+      await fetchRecommendations();
+    } catch {
+      toast.error(
+        editingId
+          ? "Failed to update recommendation"
+          : "Failed to create recommendation",
+        { id: toastId },
+      );
+    }
   };
 
   const handleGenerateRecommendation = async (
     recommendation: Recommendation,
   ): Promise<void> => {
     setRecommendationToGenerate(null);
-    await generateRecommendation(recommendation);
-    toast.success("Recommendation run started", {
-      description: `Generating recommendations for ${recommendation.username}`,
-    });
+    const toastId = toast.loading("Starting recommendation generation...");
+
+    try {
+      await generateRecommendation(recommendation);
+      toast.success("Recommendation run started", {
+        description: `Generating recommendations for ${recommendation.username}`,
+        id: toastId,
+      });
+    } catch {
+      toast.error("Failed to start recommendation generation", {
+        id: toastId,
+      });
+    }
   };
 
   const handleDeleteRecommendation = async (id: string): Promise<void> => {
     setRecommendationToDelete(null);
-    await deleteRecommendation(id);
-    toast.success("Recommendation deleted");
-    await fetchRecommendations();
+    const toastId = toast.loading("Deleting recommendation…");
+
+    try {
+      await deleteRecommendation(id);
+      toast.success("Recommendation deleted", { id: toastId });
+      await fetchRecommendations();
+    } catch {
+      toast.error("Failed to delete recommendation", { id: toastId });
+    }
   };
 
   const renderErrorMessage = (
@@ -446,6 +478,25 @@ export const Recommendations = () => {
                 }
                 placeholder="e.g. 50"
               />
+            </div>
+            <div className="flex flex-col gap-2">
+              <Label className="text-xs text-muted-foreground">
+                Visibility
+              </Label>
+              <Select
+                value={form.is_public ? "true" : "false"}
+                onValueChange={(value) =>
+                  setForm((prev) => ({ ...prev, is_public: value === "true" }))
+                }
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Select visibility" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="false">Private</SelectItem>
+                  <SelectItem value="true">Public</SelectItem>
+                </SelectContent>
+              </Select>
             </div>
             <div className="flex flex-col gap-2">
               <Label className="flex justify-between items-center">

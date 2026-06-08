@@ -81,6 +81,8 @@ export default function SignupPage() {
 
     setIsLoading(true);
 
+    const toastId = toast.loading("Creating account...");
+
     const response = await api({
       method: "POST",
       service: "auth",
@@ -91,10 +93,12 @@ export default function SignupPage() {
     setIsLoading(false);
 
     if (response.statusCode === 200) {
+      toast.success("Account created", { id: toastId });
       router.push("/");
     } else {
       toast.error("Registration failed", {
         description: response.error?.message || "An unknown error occurred",
+        id: toastId,
       });
     }
   };

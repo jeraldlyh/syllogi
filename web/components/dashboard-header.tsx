@@ -46,6 +46,8 @@ export function DashboardHeader() {
 
     setIsLoggingOut(true);
 
+    const toastId = toast.loading("Logging out...");
+
     try {
       const response = await api({
         method: "POST",
@@ -54,16 +56,19 @@ export function DashboardHeader() {
       });
 
       if (response.statusCode === 200 || response.statusCode === 401) {
+        toast.success("Logged out", { id: toastId });
         router.replace("/login");
         return;
       }
 
       toast.error("Logout failed", {
         description: response.error?.message || "An unknown error occurred",
+        id: toastId,
       });
     } catch {
       toast.error("Logout failed", {
         description: "Unable to reach the server right now.",
+        id: toastId,
       });
     } finally {
       setIsLoggingOut(false);

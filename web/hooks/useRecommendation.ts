@@ -11,6 +11,7 @@ export interface Recommendation {
   lastfm_username: string;
   requested_count: number;
   cron_expression: string;
+  is_public: boolean;
 }
 
 export const useRecommendations = () => {

@@ -17,7 +17,9 @@ from db.recommendation import (
 )
 from db.recommendation_session import create_recommendation_session
 from db.session import SessionDep
+from lib.constants import DEFAULT_RECOMMENDED_PLAYLIST_NAME
 from lib.cron import create_job, delete_job, update_job
+from lib.jellyfin import update_jellyfin_playlist_visibility
 from lib.recommendation import (
     generate_recommendations,
     generate_recommendations_task,
@@ -33,6 +35,7 @@ class CreateOrUpdateRecommendationRequest(BaseModel):
     lastfm_username: str = Field(min_length=1)
     requested_count: int = Field(default=50, ge=1, le=50)
     cron_expression: str = Field(min_length=1)
+    is_public: bool = Field(default=False)
 
 
 @router.get(
@@ -90,6 +93,7 @@ def _create_recommendation(
         lastfm_username=item.lastfm_username,
         requested_count=item.requested_count,
         cron_expression=item.cron_expression,
+        is_public=item.is_public,
     )
 
     create_recommendation(session=session, recommendation_setting=recommendation)
@@ -128,7 +132,7 @@ def _create_recommendation(
         },
     },
 )
-def _update_recommendation(
+async def _update_recommendation(
     recommendation_id: str,
     item: CreateOrUpdateRecommendationRequest,
     session: SessionDep,
@@ -148,10 +152,16 @@ def _update_recommendation(
     recommendation.lastfm_username = item.lastfm_username
     recommendation.requested_count = item.requested_count
     recommendation.cron_expression = item.cron_expression
+    recommendation.is_public = item.is_public
 
     update_recommendation(
         session=session,
         recommendation_setting=recommendation,
+    )
+    await update_jellyfin_playlist_visibility(
+        playlist_name=DEFAULT_RECOMMENDED_PLAYLIST_NAME,
+        username=recommendation.username,
+        is_public=recommendation.is_public,
     )
     update_job(
         func=generate_recommendations,
@@ -253,6 +263,7 @@ def _generate_recommendations(
         generate_recommendations_task,
         lastfm_username=recommendation.lastfm_username,
         recommendation_session_id=recommendation_session.id,
+        recommendation_id=recommendation.id,
     )
 
     return {"id": str(recommendation_session.id)}

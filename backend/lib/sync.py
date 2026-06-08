@@ -26,8 +26,7 @@ from lib.jellyfin import (
     delete_songs_from_jellyfin_playlist,
     get_or_create_jellyfin_playlist,
     get_jellyfin_playlist_songs,
-    is_jellyfin_scanning_library,
-    rescan_jellyfin_library,
+    wait_for_jellyfin_rescan,
     update_jellyfin_playlist_image,
 )
 from lib.models.common import (
@@ -97,9 +96,8 @@ async def sync_playlist_task(
             )
 
             if not internal_playlist:
-                raise HTTPException(
-                    status_code=status.HTTP_404_NOT_FOUND,
-                    detail=f"Unable to find playlist with ID: {internal_playlist_id}",
+                raise ValueError(
+                    f"Unable to find playlist with ID: {internal_playlist_id}",
                 )
 
             sync_session = get_sync_session_by_id(
@@ -107,9 +105,8 @@ async def sync_playlist_task(
             )
 
             if not sync_session:
-                raise HTTPException(
-                    status_code=status.HTTP_404_NOT_FOUND,
-                    detail=f"Unable to find sync session with ID: {sync_session_id}",
+                raise ValueError(
+                    f"Unable to find sync session with ID: {sync_session_id}",
                 )
 
             username = internal_playlist.username
@@ -130,6 +127,7 @@ async def sync_playlist_task(
             ) = await get_or_create_jellyfin_playlist(
                 playlist_name=internal_playlist_name,
                 username=username,
+                is_public=internal_playlist.is_public,
             )
 
             sync_session.provider_playlist_name = external_playlist_name
@@ -153,13 +151,7 @@ async def sync_playlist_task(
                 if len(downloaded_tracks) > 0:
                     logger.info(f"Downloaded {len(downloaded_tracks)} missing songs")
 
-                    await rescan_jellyfin_library()
-
-                    while await is_jellyfin_scanning_library():
-                        logger.info(
-                            "Waiting for Jellyfin to finish scanning library..."
-                        )
-                        await asyncio.sleep(15)
+                    await wait_for_jellyfin_rescan()
 
                     (
                         newly_found_tracks,
