@@ -182,33 +182,61 @@ export const Recommendations = () => {
       cron_expression: formData.cron_expression,
     };
 
-    if (editingId) {
-      await updateRecommendation({ id: editingId, ...payload });
-      toast.success("Recommendation updated");
-    } else {
-      await createRecommendation(payload);
-      toast.success("Recommendation created");
-    }
-
-    await fetchRecommendations();
     setDialogOpen(false);
+
+    const toastId = toast.loading(
+      editingId ? "Updating recommendation..." : "Creating recommendation...",
+    );
+
+    try {
+      if (editingId) {
+        await updateRecommendation({ id: editingId, ...payload });
+        toast.success("Recommendation updated", { id: toastId });
+      } else {
+        await createRecommendation(payload);
+        toast.success("Recommendation created", { id: toastId });
+      }
+      await fetchRecommendations();
+    } catch {
+      toast.error(
+        editingId
+          ? "Failed to update recommendation"
+          : "Failed to create recommendation",
+        { id: toastId },
+      );
+    }
   };
 
   const handleGenerateRecommendation = async (
     recommendation: Recommendation,
   ): Promise<void> => {
     setRecommendationToGenerate(null);
-    await generateRecommendation(recommendation);
-    toast.success("Recommendation run started", {
-      description: `Generating recommendations for ${recommendation.username}`,
-    });
+    const toastId = toast.loading("Starting recommendation generation...");
+
+    try {
+      await generateRecommendation(recommendation);
+      toast.success("Recommendation run started", {
+        description: `Generating recommendations for ${recommendation.username}`,
+        id: toastId,
+      });
+    } catch {
+      toast.error("Failed to start recommendation generation", {
+        id: toastId,
+      });
+    }
   };
 
   const handleDeleteRecommendation = async (id: string): Promise<void> => {
     setRecommendationToDelete(null);
-    await deleteRecommendation(id);
-    toast.success("Recommendation deleted");
-    await fetchRecommendations();
+    const toastId = toast.loading("Deleting recommendation…");
+
+    try {
+      await deleteRecommendation(id);
+      toast.success("Recommendation deleted", { id: toastId });
+      await fetchRecommendations();
+    } catch {
+      toast.error("Failed to delete recommendation", { id: toastId });
+    }
   };
 
   const renderErrorMessage = (
