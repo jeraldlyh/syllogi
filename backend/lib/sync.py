@@ -96,9 +96,8 @@ async def sync_playlist_task(
             )
 
             if not internal_playlist:
-                raise HTTPException(
-                    status_code=status.HTTP_404_NOT_FOUND,
-                    detail=f"Unable to find playlist with ID: {internal_playlist_id}",
+                raise ValueError(
+                    f"Unable to find playlist with ID: {internal_playlist_id}",
                 )
 
             sync_session = get_sync_session_by_id(
@@ -106,9 +105,8 @@ async def sync_playlist_task(
             )
 
             if not sync_session:
-                raise HTTPException(
-                    status_code=status.HTTP_404_NOT_FOUND,
-                    detail=f"Unable to find sync session with ID: {sync_session_id}",
+                raise ValueError(
+                    f"Unable to find sync session with ID: {sync_session_id}",
                 )
 
             username = internal_playlist.username

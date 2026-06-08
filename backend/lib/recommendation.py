@@ -130,18 +130,16 @@ async def generate_recommendations_task(
             session=session, recommendation_id=recommendation_id
         )
         if not recommendation:
-            raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST,
-                detail=f"Unable to find recommendation setting: {recommendation_id}",
+            raise ValueError(
+                f"Unable to find recommendation setting: {recommendation_id}",
             )
 
         recommendation_session = get_recommendation_session_by_id(
             session=session, recommendation_session_id=recommendation_session_id
         )
         if not recommendation_session:
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND,
-                detail=f"Unable to find recommendation session: {recommendation_session_id}",
+            raise ValueError(
+                f"Unable to find recommendation session: {recommendation_session_id}",
             )
 
         started_at = recommendation_session.started_at
