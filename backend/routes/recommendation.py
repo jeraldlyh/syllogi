@@ -17,7 +17,9 @@ from db.recommendation import (
 )
 from db.recommendation_session import create_recommendation_session
 from db.session import SessionDep
+from lib.constants import DEFAULT_RECOMMENDED_PLAYLIST_NAME
 from lib.cron import create_job, delete_job, update_job
+from lib.jellyfin import update_jellyfin_playlist_visibility
 from lib.recommendation import (
     generate_recommendations,
     generate_recommendations_task,
@@ -130,7 +132,7 @@ def _create_recommendation(
         },
     },
 )
-def _update_recommendation(
+async def _update_recommendation(
     recommendation_id: str,
     item: CreateOrUpdateRecommendationRequest,
     session: SessionDep,
@@ -155,6 +157,11 @@ def _update_recommendation(
     update_recommendation(
         session=session,
         recommendation_setting=recommendation,
+    )
+    await update_jellyfin_playlist_visibility(
+        playlist_name=DEFAULT_RECOMMENDED_PLAYLIST_NAME,
+        username=recommendation.username,
+        is_public=recommendation.is_public,
     )
     update_job(
         func=generate_recommendations,

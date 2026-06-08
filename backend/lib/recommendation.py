@@ -40,6 +40,7 @@ from lib.lastfm import (
 )
 from lib.track import find_track, reconcile_after_download, resolve_tracks
 from lib.utils import get_now, truncate
+from lib.constants import DEFAULT_RECOMMENDED_PLAYLIST_NAME
 
 logger = logging.getLogger(__name__)
 
@@ -252,7 +253,7 @@ async def generate_recommendations_task(
             )
 
             playlist_id, jellyfin_user_id = await get_or_create_jellyfin_playlist(
-                playlist_name="Daily Recommendations",
+                playlist_name=DEFAULT_RECOMMENDED_PLAYLIST_NAME,
                 username=recommendation_session.username,
                 is_public=recommendation.is_public,
             )

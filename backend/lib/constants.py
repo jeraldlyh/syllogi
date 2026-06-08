@@ -1,0 +1,1 @@
+DEFAULT_RECOMMENDED_PLAYLIST_NAME = "Daily Recommendations"
