@@ -467,7 +467,6 @@ async def is_jellyfin_scanning_library() -> bool:
 async def wait_for_jellyfin_rescan(
     start_timeout_seconds: int = 30,
     poll_interval_seconds: int = 3,
-    scan_poll_interval_seconds: int = 15,
 ) -> None:
     """Trigger a rescan and block until Jellyfin finishes indexing."""
 
@@ -486,12 +485,8 @@ async def wait_for_jellyfin_rescan(
 
     if not is_scan_started:
         logger.warning("Jellyfin library scan did not start within expected time")
-
-    while await is_jellyfin_scanning_library():
-        logger.info("Waiting for Jellyfin to finish scanning library...")
-        await asyncio.sleep(scan_poll_interval_seconds)
-
-    logger.info("Jellyfin library scan complete")
+    else:
+        logger.info("Jellyfin library scan complete")
 
 
 async def get_jellyfin_libraries() -> list[JellyfinLibrary]:
