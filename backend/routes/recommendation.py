@@ -33,6 +33,7 @@ class CreateOrUpdateRecommendationRequest(BaseModel):
     lastfm_username: str = Field(min_length=1)
     requested_count: int = Field(default=50, ge=1, le=50)
     cron_expression: str = Field(min_length=1)
+    is_public: bool = Field(default=False)
 
 
 @router.get(
@@ -90,6 +91,7 @@ def _create_recommendation(
         lastfm_username=item.lastfm_username,
         requested_count=item.requested_count,
         cron_expression=item.cron_expression,
+        is_public=item.is_public,
     )
 
     create_recommendation(session=session, recommendation_setting=recommendation)
@@ -148,6 +150,7 @@ def _update_recommendation(
     recommendation.lastfm_username = item.lastfm_username
     recommendation.requested_count = item.requested_count
     recommendation.cron_expression = item.cron_expression
+    recommendation.is_public = item.is_public
 
     update_recommendation(
         session=session,
@@ -253,6 +256,7 @@ def _generate_recommendations(
         generate_recommendations_task,
         lastfm_username=recommendation.lastfm_username,
         recommendation_session_id=recommendation_session.id,
+        recommendation_id=recommendation.id,
     )
 
     return {"id": str(recommendation_session.id)}

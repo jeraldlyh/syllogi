@@ -117,6 +117,7 @@ async def get_recommendations(
 async def generate_recommendations_task(
     lastfm_username: str,
     recommendation_session_id: uuid.UUID,
+    recommendation_id: uuid.UUID,
 ) -> Any:
     """Get track recommendations for a user based on their listening history in a background task."""
 
@@ -124,6 +125,15 @@ async def generate_recommendations_task(
         logger.info(
             f"Generating recommendations for user {lastfm_username} with session ID {recommendation_session_id}"
         )
+        recommendation = get_recommendation_by_id(
+            session=session, recommendation_id=recommendation_id
+        )
+        if not recommendation:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail=f"Unable to find recommendation setting: {recommendation_id}",
+            )
+
         recommendation_session = get_recommendation_session_by_id(
             session=session, recommendation_session_id=recommendation_session_id
         )
@@ -244,6 +254,7 @@ async def generate_recommendations_task(
             playlist_id, jellyfin_user_id = await get_or_create_jellyfin_playlist(
                 playlist_name="Daily Recommendations",
                 username=recommendation_session.username,
+                is_public=recommendation.is_public,
             )
 
             existing_tracks = await get_jellyfin_playlist_songs(
@@ -316,5 +327,6 @@ async def generate_recommendations(
         await generate_recommendations_task(
             lastfm_username=internal_recommendation.lastfm_username,
             recommendation_session_id=recommendation_session.id,
+            recommendation_id=internal_recommendation.id,
         )
         return {"id": str(recommendation_session.id)}
