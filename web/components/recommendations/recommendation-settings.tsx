@@ -61,6 +61,7 @@ interface FormState {
   requested_count: number;
   cron_expression: string;
   cron_mode: "simple" | "custom";
+  is_public: boolean;
 }
 
 interface FormErrors {
@@ -78,6 +79,7 @@ const DEFAULT_FORM: FormState = {
   requested_count: 50,
   cron_expression: "0 * * * *",
   cron_mode: "simple",
+  is_public: false,
 };
 
 const STRATEGIES: { label: string; value: RecommendationStrategy }[] = [
@@ -134,6 +136,7 @@ export const Recommendations = () => {
       cron_expression: recommendation.cron_expression,
       cron_mode:
         isPreset || !recommendation.cron_expression ? "simple" : "custom",
+      is_public: recommendation.is_public,
     });
     setErrors({});
     setDialogOpen(true);
@@ -180,6 +183,7 @@ export const Recommendations = () => {
       lastfm_username: formData.lastfm_username,
       requested_count: formData.requested_count,
       cron_expression: formData.cron_expression,
+      is_public: formData.is_public,
     };
 
     setDialogOpen(false);
@@ -474,6 +478,25 @@ export const Recommendations = () => {
                 }
                 placeholder="e.g. 50"
               />
+            </div>
+            <div className="flex flex-col gap-2">
+              <Label className="text-xs text-muted-foreground">
+                Visibility
+              </Label>
+              <Select
+                value={form.is_public ? "true" : "false"}
+                onValueChange={(value) =>
+                  setForm((prev) => ({ ...prev, is_public: value === "true" }))
+                }
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Select visibility" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="false">Private</SelectItem>
+                  <SelectItem value="true">Public</SelectItem>
+                </SelectContent>
+              </Select>
             </div>
             <div className="flex flex-col gap-2">
               <Label className="flex justify-between items-center">
