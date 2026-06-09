@@ -44,7 +44,7 @@ class CreateOrUpdateSyncRequest(BaseModel):
 
 
 @router.get(
-    path="/config",
+    path="",
     summary="Get sync configs",
     description="Retrieve a list of all sync configurations.",
     responses={
@@ -52,22 +52,19 @@ class CreateOrUpdateSyncRequest(BaseModel):
             "description": "Sync configs retrieved successfully",
             "content": {
                 "application/json": {
-                    "example": {
-                        "success": True,
-                        "data": [
-                            {
-                                "id": "2baf7b6b-87de-4289-bdd8-42f138f8c9e1",
-                                "provider": "spotify",
-                                "playlist_id": "37i9dQZF1DXcBWIGoYBM5M",
-                                "playlist_name": "Today's Top Hits",
-                                "username": "jerald",
-                                "enable_sync": True,
-                                "enable_download": False,
-                                "is_public": False,
-                                "cron_expression": "0 * * * *",
-                            }
-                        ],
-                    }
+                    "example": [
+                        {
+                            "id": "2baf7b6b-87de-4289-bdd8-42f138f8c9e1",
+                            "provider": "spotify",
+                            "playlist_id": "37i9dQZF1DXcBWIGoYBM5M",
+                            "playlist_name": "Today's Top Hits",
+                            "username": "jerald",
+                            "enable_sync": True,
+                            "enable_download": False,
+                            "is_public": False,
+                            "cron_expression": "0 * * * *",
+                        }
+                    ],
                 }
             },
         }
@@ -79,7 +76,7 @@ def _get_sync_configs(session: SessionDep):
 
 
 @router.post(
-    path="/config",
+    path="",
     summary="Create sync config",
     description="Create a new sync configuration.",
     responses={
@@ -87,10 +84,7 @@ def _get_sync_configs(session: SessionDep):
             "description": "Sync config created successfully",
             "content": {
                 "application/json": {
-                    "example": {
-                        "success": True,
-                        "data": {"id": "2baf7b6b-87de-4289-bdd8-42f138f8c9e1"},
-                    }
+                    "example": {"id": "2baf7b6b-87de-4289-bdd8-42f138f8c9e1"},
                 }
             },
         }
@@ -121,7 +115,7 @@ def _create_sync_config(item: CreateOrUpdateSyncRequest, session: SessionDep):
 
 
 @router.put(
-    path="/config/{id}",
+    path="/{id}",
     summary="Update sync config",
     description="Update an existing sync configuration by its ID.",
     responses={
@@ -129,10 +123,7 @@ def _create_sync_config(item: CreateOrUpdateSyncRequest, session: SessionDep):
             "description": "Sync config updated successfully",
             "content": {
                 "application/json": {
-                    "example": {
-                        "success": True,
-                        "data": {"message": "Sync config updated successfully"},
-                    }
+                    "example": {"message": "Sync config updated successfully"},
                 }
             },
         },
@@ -141,12 +132,7 @@ def _create_sync_config(item: CreateOrUpdateSyncRequest, session: SessionDep):
             "content": {
                 "application/json": {
                     "example": {
-                        "success": False,
-                        "error": {
-                            "code": 400,
-                            "name": "Bad Request",
-                            "message": "Unable to find sync config: <sync_id>",
-                        },
+                        "detail": "Unable to find sync config: <sync_id>",
                     }
                 }
             },
@@ -196,7 +182,7 @@ async def _update_sync_config(
 
 
 @router.delete(
-    path="/config/{sync_id}",
+    path="/{id}",
     summary="Delete sync config",
     description="Delete a sync configuration by its ID.",
     responses={
@@ -204,10 +190,7 @@ async def _update_sync_config(
             "description": "Sync config deleted successfully",
             "content": {
                 "application/json": {
-                    "example": {
-                        "success": True,
-                        "data": {"message": "Sync config deleted successfully"},
-                    }
+                    "example": {"message": "Sync config deleted successfully"},
                 }
             },
         },
@@ -216,35 +199,30 @@ async def _update_sync_config(
             "content": {
                 "application/json": {
                     "example": {
-                        "success": False,
-                        "error": {
-                            "code": 400,
-                            "name": "Bad Request",
-                            "message": "Unable to find sync config: <sync_id>",
-                        },
+                        "detail": "Unable to find sync config: <sync_id>",
                     }
                 }
             },
         },
     },
 )
-def _delete_sync_config(sync_id: str, session: SessionDep):
-    sync = get_sync_by_id(session=session, sync_id=sync_id)
+def _delete_sync_config(id: str, session: SessionDep):
+    sync = get_sync_by_id(session=session, sync_id=id)
 
     if not sync:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail=f"Unable to find sync config: {sync_id}",
+            detail=f"Unable to find sync config: {id}",
         )
 
     delete_sync(session=session, sync=sync)
-    delete_job(job_id=sync_id)
+    delete_job(job_id=id)
 
     return {"message": "Sync config deleted successfully"}
 
 
 @router.post(
-    path="",
+    path="/generate",
     summary="Sync playlist",
     description="Sync a playlist (Spotify/Youtube) to Jellyfin.",
     responses={
@@ -252,10 +230,7 @@ def _delete_sync_config(sync_id: str, session: SessionDep):
             "description": "Sync session created",
             "content": {
                 "application/json": {
-                    "example": {
-                        "success": True,
-                        "data": {"id": "2baf7b6b-87de-4289-bdd8-42f138f8c9e1"},
-                    }
+                    "example": {"id": "2baf7b6b-87de-4289-bdd8-42f138f8c9e1"},
                 }
             },
         },
@@ -264,12 +239,7 @@ def _delete_sync_config(sync_id: str, session: SessionDep):
             "content": {
                 "application/json": {
                     "example": {
-                        "success": False,
-                        "error": {
-                            "code": 404,
-                            "name": "Not Found",
-                            "message": "Unable to find playlist: <playlist_id>",
-                        },
+                        "detail": "Unable to find playlist: <playlist_id>",
                     }
                 }
             },

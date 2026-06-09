@@ -17,7 +17,7 @@ export interface SyncConfig {
 export const useSyncConfigs = () => {
   const { data, error, isLoading, mutate } = useSWR<
     ApiResponse<SyncConfig[]>
-  >("/sync/config", fetcher);
+  >("/sync", fetcher);
 
   return {
     data: data?.data,
@@ -33,7 +33,7 @@ const createSyncConfig = async (
   const response = await api<{ id: string }>({
     method: "POST",
     service: "sync",
-    path: "config",
+    path: "",
     body: config,
   });
 
@@ -47,7 +47,7 @@ const updateSyncConfig = async (config: SyncConfig): Promise<string> => {
   const response = await api<{ id: string }>({
     method: "PUT",
     service: "sync",
-    path: `config/${config.id}`,
+    path: config.id,
     body: config,
   });
 
@@ -61,7 +61,7 @@ const deleteSyncConfig = async (configId: string): Promise<void> => {
   const response = await api({
     method: "DELETE",
     service: "sync",
-    path: `config/${configId}`,
+    path: configId,
   });
 
   if (response.statusCode !== 200 || !response.data) {

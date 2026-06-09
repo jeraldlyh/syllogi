@@ -176,7 +176,7 @@ async def _update_recommendation(
 
 
 @router.delete(
-    path="/{recommendation_id}",
+    path="/{id}",
     summary="Delete recommendation",
     description="Delete recommendation by ID.",
     responses={
@@ -201,21 +201,21 @@ async def _update_recommendation(
     },
 )
 def _delete_recommendation(
-    recommendation_id: str,
+    id: str,
     session: SessionDep,
 ) -> dict[str, str]:
     recommendation = get_recommendation_by_id(
-        session=session, recommendation_id=recommendation_id
+        session=session, recommendation_id=id
     )
 
     if not recommendation:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail=f"Unable to find recommendation setting: {recommendation_id}",
+            detail=f"Unable to find recommendation setting: {id}",
         )
 
     delete_recommendation(session=session, recommendation_setting=recommendation)
-    delete_job(job_id=str(recommendation_id))
+    delete_job(job_id=str(id))
 
     return {"message": "Recommendation deleted successfully"}
 

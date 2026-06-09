@@ -112,19 +112,19 @@ export const SyncSettings = () => {
     data: createPlaylistResponse,
     error: createPlaylistError,
     isMutating: isCreating,
-  } = useSWRMutation("/sync/config", createSyncConfigMutation);
+  } = useSWRMutation("/sync", createSyncConfigMutation);
   const {
     trigger: updatePlaylist,
     data: updatePlaylistResponse,
     error: updatePlaylistError,
     isMutating: isUpdating,
-  } = useSWRMutation("/sync/config", updateSyncConfigMutation);
+  } = useSWRMutation("/sync", updateSyncConfigMutation);
   const {
     trigger: deletePlaylist,
     data: deletePlaylistResponse,
     error: deletePlaylistError,
     isMutating: isDeleting,
-  } = useSWRMutation("/sync/config", deleteSyncConfigMutation);
+  } = useSWRMutation("/sync", deleteSyncConfigMutation);
 
   const handleAddPlaylist = () => {
     setEditingId(null);
@@ -198,7 +198,7 @@ export const SyncSettings = () => {
     const response = await api({
       method: "POST",
       service: "sync",
-      path: "",
+      path: "generate",
       body: playlist,
     });
 
