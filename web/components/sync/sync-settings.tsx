@@ -43,12 +43,12 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import {
-  createPlaylistMutation,
-  deletePlaylistMutation,
-  Playlist,
-  updatePlaylistMutation,
-  usePlaylists,
-} from "@/hooks/usePlaylist";
+  createSyncConfigMutation,
+  deleteSyncConfigMutation,
+  SyncConfig,
+  updateSyncConfigMutation,
+  useSyncConfigs,
+} from "@/hooks/useSync";
 import { useJellyfinUsers } from "@/hooks/useUsers";
 import { api } from "@/lib/api";
 import { CRON_PRESETS, ErrorResponse, PROVIDERS } from "@/lib/types";
@@ -95,8 +95,8 @@ export const SyncSettings = () => {
   const [editingId, setEditingId] = useState<string | null>(null);
   const [form, setForm] = useState<FormState>(DEFAULT_FORM);
   const [errors, setErrors] = useState<FormErrors>({});
-  const [playlistToSync, setPlaylistToSync] = useState<Playlist | null>(null);
-  const [playlistToDelete, setPlaylistToDelete] = useState<Playlist | null>(
+  const [playlistToSync, setPlaylistToSync] = useState<SyncConfig | null>(null);
+  const [playlistToDelete, setPlaylistToDelete] = useState<SyncConfig | null>(
     null,
   );
 
@@ -105,26 +105,26 @@ export const SyncSettings = () => {
     data: playlists,
     isLoading,
     isError,
-    mutate: fetchPlaylist,
-  } = usePlaylists();
+    mutate: fetchSyncConfigs,
+  } = useSyncConfigs();
   const {
     trigger: createPlaylist,
     data: createPlaylistResponse,
     error: createPlaylistError,
     isMutating: isCreating,
-  } = useSWRMutation("/playlist", createPlaylistMutation);
+  } = useSWRMutation("/sync/config", createSyncConfigMutation);
   const {
     trigger: updatePlaylist,
     data: updatePlaylistResponse,
     error: updatePlaylistError,
     isMutating: isUpdating,
-  } = useSWRMutation("/playlist", updatePlaylistMutation);
+  } = useSWRMutation("/sync/config", updateSyncConfigMutation);
   const {
     trigger: deletePlaylist,
     data: deletePlaylistResponse,
     error: deletePlaylistError,
     isMutating: isDeleting,
-  } = useSWRMutation("/playlist", deletePlaylistMutation);
+  } = useSWRMutation("/sync/config", deleteSyncConfigMutation);
 
   const handleAddPlaylist = () => {
     setEditingId(null);
@@ -133,7 +133,7 @@ export const SyncSettings = () => {
     setDialogOpen(true);
   };
 
-  const handleEditPlaylist = (playlist: Playlist) => {
+  const handleEditPlaylist = (playlist: SyncConfig) => {
     const isPreset = CRON_PRESETS.some(
       (p) => p.value === playlist.cron_expression,
     );
@@ -184,7 +184,7 @@ export const SyncSettings = () => {
         await createPlaylist(formData);
         toast.success("Playlist created", { id: toastId });
       }
-      await fetchPlaylist();
+      await fetchSyncConfigs();
     } catch (error) {
       toast.error(
         editingId ? "Failed to update playlist" : "Failed to create playlist",
@@ -193,7 +193,7 @@ export const SyncSettings = () => {
     }
   };
 
-  const handleSyncPlaylist = async (playlist: Playlist): Promise<void> => {
+  const handleSyncPlaylist = async (playlist: SyncConfig): Promise<void> => {
     setPlaylistToSync(null);
     const response = await api({
       method: "POST",
