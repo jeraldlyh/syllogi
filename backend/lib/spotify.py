@@ -3,7 +3,7 @@ import sys
 from pathlib import Path
 
 
-from lib.models.common import ExternalPlaylist, ExternalTrack
+from lib.models.common import ExternalSync, ExternalTrack
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 SPOTAPI_DIR = BASE_DIR / "SpotAPI"
@@ -20,7 +20,7 @@ from spotapi.playlist import PublicPlaylist  # noqa: E402
 logger = logging.getLogger(__name__)
 
 
-def get_spotify_playlist(playlist_id: str) -> ExternalPlaylist:
+def get_spotify_playlist(playlist_id: str) -> ExternalSync:
     playlist = PublicPlaylist(playlist_id)
     playlist_info = playlist.get_playlist_info()
 
@@ -29,7 +29,7 @@ def get_spotify_playlist(playlist_id: str) -> ExternalPlaylist:
         key=lambda x: x.get("height"),
     )
 
-    return ExternalPlaylist(
+    return ExternalSync(
         id=playlist_id,
         name=playlist.get_playlist_info()["data"]["playlistV2"]["name"],
         total=playlist.get_playlist_info()["data"]["playlistV2"]["content"][

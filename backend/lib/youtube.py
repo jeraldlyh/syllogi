@@ -9,7 +9,7 @@ from typing import TYPE_CHECKING, Any
 
 import yt_dlp
 
-from lib.models.common import ExternalPlaylist, ExternalTrack
+from lib.models.common import ExternalSync, ExternalTrack
 from lib.env import get_environment_variable
 from lib.utils import dump_results, get_download_path, normalize
 
@@ -47,7 +47,7 @@ def _ytdlp(url: str, opts: _Params | None = None, *, download: bool = False) -> 
         return result
 
 
-def get_youtube_playlist(playlist_id: str) -> ExternalPlaylist:
+def get_youtube_playlist(playlist_id: str) -> ExternalSync:
     """Fetch YouTube playlist metadata."""
 
     url = f"https://www.youtube.com/playlist?list={playlist_id}"
@@ -63,7 +63,7 @@ def get_youtube_playlist(playlist_id: str) -> ExternalPlaylist:
     if IS_DEVELOPMENT:
         dump_results(f"youtube-{playlist_id}", playlist)
 
-    return ExternalPlaylist(
+    return ExternalSync(
         id=playlist.get("id", ""),
         name=playlist.get("title", ""),
         thumbnail_url=playlist.get("thumbnails", [{}])[-1].get("url", ""),

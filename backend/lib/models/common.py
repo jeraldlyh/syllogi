@@ -1,6 +1,6 @@
 from dataclasses import dataclass, field
 
-from lib.providers.models import ProviderTrack
+from lib.models.provider import ProviderTrack
 
 
 @dataclass
@@ -32,7 +32,7 @@ class ExternalTrack:
 
 
 @dataclass
-class ExternalPlaylist:
+class ExternalSync:
     """A source playlist from an external service (Spotify/Youtube)."""
 
     def __init__(
@@ -67,7 +67,7 @@ class ResolvedTrack:
 
 
 @dataclass
-class PlaylistDiff:
+class SyncDiff:
     """Result of diffing resolved source tracks against an existing provider playlist."""
 
     added: list[ResolvedTrack] = field(default_factory=list)

@@ -4,14 +4,14 @@ import uuid
 
 from fastapi import HTTPException, status
 
-from db.models.playlist import Playlist, PlaylistProvider
-from db.models.sync_session import (
+from db.models.sync import (
+    Sync,
     SyncProvider,
     SyncSession,
     SyncSessionTrackType,
     SyncStatus,
 )
-from db.playlist import get_playlist_by_id
+from db.sync import get_sync_by_id
 from db.session import get_isolated_session
 from db.sync_session import (
     build_sync_session_tracks,
@@ -22,9 +22,9 @@ from db.sync_session import (
 from lib.download import download_missing_tracks
 from lib.env import get_environment_variable
 from lib.models.common import (
-    ExternalPlaylist,
+    ExternalSync,
     ExternalTrack,
-    PlaylistDiff,
+    SyncDiff,
     ResolvedTrack,
 )
 from lib.models.provider import ProviderTrack
@@ -41,7 +41,7 @@ logger = logging.getLogger(__name__)
 def _diff_tracks(
     resolved_tracks: list[ResolvedTrack],
     existing_tracks: list[ProviderTrack],
-) -> PlaylistDiff:
+) -> SyncDiff:
     """Compute the difference between the source playlist (resolved_tracks) and the
     existing provider playlist (existing_tracks).
 
@@ -54,7 +54,7 @@ def _diff_tracks(
         track.provider_track_id for track in resolved_tracks if track.provider_track_id
     }
 
-    diff = PlaylistDiff()
+    diff = SyncDiff()
 
     for track in resolved_tracks:
         if not track.provider_track_id:
@@ -75,24 +75,24 @@ def _diff_tracks(
 async def sync_playlist_task(
     provider: MusicPlaylistProvider,
     internal_playlist_id: str | uuid.UUID,
-    external_playlist: ExternalPlaylist,
+    external_playlist: ExternalSync,
     songs: list[ExternalTrack],
     sync_session_id: uuid.UUID,
 ) -> None:
     """Sync a playlist (Spotify/Youtube) to the music provider in a background task."""
 
     sync_session: SyncSession | None = None
-    internal_playlist: Playlist | None = None
+    internal_sync: Sync | None = None
 
     with get_isolated_session() as session:
         try:
-            internal_playlist = get_playlist_by_id(
-                session=session, playlist_id=internal_playlist_id
+            internal_sync = get_sync_by_id(
+                session=session, sync_id=internal_playlist_id
             )
 
-            if not internal_playlist:
+            if not internal_sync:
                 raise ValueError(
-                    f"Unable to find playlist with ID: {internal_playlist_id}",
+                    f"Unable to find sync config with ID: {internal_playlist_id}",
                 )
 
             sync_session = get_sync_session_by_id(
@@ -104,7 +104,7 @@ async def sync_playlist_task(
                     f"Unable to find sync session with ID: {sync_session_id}",
                 )
 
-            username = internal_playlist.username
+            username = internal_sync.username
             started_at = sync_session.started_at
             external_playlist_name = external_playlist.name
 
@@ -115,27 +115,27 @@ async def sync_playlist_task(
                 for song in songs
             ]
 
-            internal_playlist_name = internal_playlist.playlist_name
+            internal_playlist_name = internal_sync.playlist_name
             (
                 existing_playlist_id,
                 provider_user_id,
             ) = await provider.get_or_create_playlist(
                 playlist_name=internal_playlist_name,
                 username=username,
-                is_public=internal_playlist.is_public,
+                is_public=internal_sync.is_public,
             )
 
             sync_session.provider_playlist_name = external_playlist_name
             sync_session.target_user_id = provider_user_id
             sync_session.target_playlist_id = existing_playlist_id
-            sync_session.target_playlist_name = internal_playlist.playlist_name
+            sync_session.target_playlist_name = internal_sync.playlist_name
             sync_session = update_sync_session(
                 session=session, sync_session=sync_session
             )
 
             downloaded_tracks: list[ExternalTrack] = []
 
-            if missing_tracks and internal_playlist.enable_download:
+            if missing_tracks and internal_sync.enable_download:
                 missing_songs = [missing.track for missing in missing_tracks]
                 (
                     found_tracks_after_download,
@@ -178,7 +178,7 @@ async def sync_playlist_task(
             if num_of_removed_tracks > 0:
                 logger.info(
                     f"Removing {num_of_removed_tracks} outdated songs from "
-                    f"{internal_playlist.playlist_name} playlist"
+                    f"{internal_sync.playlist_name} playlist"
                 )
                 removed_entry_ids = [track.id for track in diff.removed]
                 await provider.delete_songs_from_playlist(
@@ -188,7 +188,7 @@ async def sync_playlist_task(
             if num_of_added_tracks > 0:
                 logger.info(
                     f"Adding {num_of_added_tracks} new songs to "
-                    f"{internal_playlist.playlist_name} playlist"
+                    f"{internal_sync.playlist_name} playlist"
                 )
                 added_track_ids = [
                     track.provider_track_id
@@ -302,7 +302,7 @@ async def sync_playlist_task(
                 )
                 sync_session.error_message = truncate(text=str(e), max_length=1024)
                 sync_session.target_playlist_name = (
-                    internal_playlist.playlist_name if internal_playlist else ""
+                    internal_sync.playlist_name if internal_sync else ""
                 )
 
         finally:
@@ -311,25 +311,25 @@ async def sync_playlist_task(
 
 
 async def sync_playlist(
-    provider: MusicPlaylistProvider, playlist: Playlist
+    provider: MusicPlaylistProvider, sync_config: Sync
 ) -> dict[str, str]:
     """Sync a playlist (Spotify/Youtube) to the music provider."""
 
     with get_isolated_session() as session:
-        internal_playlist = get_playlist_by_id(session=session, playlist_id=playlist.id)
+        internal_sync = get_sync_by_id(session=session, sync_id=sync_config.id)
 
-        if not internal_playlist:
+        if not internal_sync:
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
-                detail=f"Unable to find playlist setting: {playlist.playlist_id}",
+                detail=f"Unable to find sync config: {sync_config.playlist_id}",
             )
 
-        playlist_id = internal_playlist.playlist_id
-        username = internal_playlist.username
+        playlist_id = internal_sync.playlist_id
+        username = internal_sync.username
         started_at = get_now()
 
         sync_session = SyncSession(
-            provider=SyncProvider(internal_playlist.provider.value),
+            provider=internal_sync.provider,
             provider_playlist_id=playlist_id,
             provider_playlist_name="",
             target_user_id="",
@@ -344,17 +344,17 @@ async def sync_playlist(
         create_sync_session(session=session, sync_session=sync_session)
 
         songs: list[ExternalTrack] = []
-        external_playlist: ExternalPlaylist | None = None
+        external_playlist: ExternalSync | None = None
 
-        match internal_playlist.provider:
-            case PlaylistProvider.spotify:
+        match internal_sync.provider:
+            case SyncProvider.spotify:
                 songs = await asyncio.to_thread(
                     get_spotify_playlist_songs, playlist_id=playlist_id
                 )
                 external_playlist = await asyncio.to_thread(
                     get_spotify_playlist, playlist_id=playlist_id
                 )
-            case PlaylistProvider.youtube:
+            case SyncProvider.youtube:
                 songs = await asyncio.to_thread(
                     get_youtube_playlist_songs, playlist_id=playlist_id
                 )
@@ -364,7 +364,7 @@ async def sync_playlist(
 
         await sync_playlist_task(
             provider=provider,
-            internal_playlist_id=internal_playlist.id,
+            internal_playlist_id=internal_sync.id,
             external_playlist=external_playlist,
             songs=songs,
             sync_session_id=sync_session.id,

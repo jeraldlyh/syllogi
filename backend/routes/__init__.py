@@ -8,7 +8,7 @@ from routes.charts import router as charts_router
 from routes.health import router as health_router
 from routes.jellyfin import router as jellyfin_router
 from routes.notification import router as notification_router
-from routes.playlist import router as playlist_router
+
 from routes.spotify import router as spotify_router
 from routes.sync import router as sync_router
 from routes.sync_session import router as sync_session_router
@@ -25,13 +25,12 @@ OPENAPI_TAGS = [
     {"name": "Track", "description": "Track search and matching endpoints."},
     {"name": "Jellyfin", "description": "Jellyfin integration endpoints."},
     {"name": "Notification", "description": "Notification retrieval endpoints."},
-    {"name": "Sync", "description": "Playlist sync execution endpoints."},
+    {"name": "Sync", "description": "Sync configuration and execution endpoints."},
     {
         "name": "Sync Session",
         "description": "Playlist sync session history and results.",
     },
     {"name": "Spotify", "description": "Spotify playlist and track endpoints."},
-    {"name": "Playlist", "description": "Managed playlists configuration endpoints."},
     {"name": "Cron", "description": "Scheduler and cron job endpoints."},
     {"name": "YouTube", "description": "YouTube playlist and download endpoints."},
     {"name": "Settings", "description": "User settings endpoints."},
@@ -84,12 +83,6 @@ def register_routes(app: FastAPI) -> None:
         prefix="/spotify",
         dependencies=[Depends(get_current_user)],
         tags=["Spotify"],
-    )
-    api.include_router(
-        router=playlist_router,
-        prefix="/playlist",
-        dependencies=[Depends(get_current_user)],
-        tags=["Playlist"],
     )
     api.include_router(
         router=cron_router,
