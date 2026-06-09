@@ -46,7 +46,11 @@ async def download_missing_tracks(
         track_name = song.track_name
         album_name = song.album_name
         duration = song.duration
-        formatted_name = f"{artist_name} - {album_name}: {track_name}"
+
+        if album_name is None:
+            formatted_name = f"{artist_name} {track_name}"
+        else:
+            formatted_name = f"{artist_name} {album_name}: {track_name}"
 
         if is_track_exists(
             artist_name=artist_name, track_name=track_name, album_name=album_name
