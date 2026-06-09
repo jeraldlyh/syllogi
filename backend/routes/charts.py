@@ -11,7 +11,8 @@ from db.session import SessionDep
 from lib.download import download_single_track
 from lib.lastfm import get_lastfm_chart_top_tracks
 from lib.models.common import ExternalTrack
-from lib.track import is_track_in_jellyfin
+from lib.providers.jellyfin import JellyfinProvider
+from lib.track import is_track_in_provider
 
 logger = logging.getLogger(__name__)
 
@@ -55,9 +56,11 @@ async def _get_trending_tracks(
         int, Query(description="Number of tracks to return", ge=1, le=100)
     ] = 50,
 ) -> list[dict]:
+    jellyfin = JellyfinProvider()
     tracks = await get_lastfm_chart_top_tracks(limit=limit)
+
     jellyfin_statuses = await asyncio.gather(
-        *[is_track_in_jellyfin(track) for track in tracks]
+        *[is_track_in_provider(jellyfin, track) for track in tracks]
     )
     return [
         {**track.to_dict(), "exists": exists}
@@ -83,6 +86,7 @@ async def _download_track(
     background_tasks: BackgroundTasks,
     session: SessionDep,
 ) -> dict[str, str]:
+    jellyfin = JellyfinProvider()
     track = ExternalTrack(
         artist_name=item.artist_name,
         track_name=item.track_name,
@@ -98,6 +102,7 @@ async def _download_track(
         download_single_track,
         download_session_id=download_session.id,
         track=track,
+        provider=jellyfin,
     )
     return {"message": "Download started"}
 

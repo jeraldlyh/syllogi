@@ -19,7 +19,7 @@ from db.recommendation_session import create_recommendation_session
 from db.session import SessionDep
 from lib.constants import DEFAULT_RECOMMENDED_PLAYLIST_NAME
 from lib.cron import create_job, delete_job, update_job
-from lib.jellyfin import update_jellyfin_playlist_visibility
+from lib.providers.jellyfin import JellyfinProvider
 from lib.recommendation import (
     generate_recommendations,
     generate_recommendations_task,
@@ -158,14 +158,16 @@ async def _update_recommendation(
         session=session,
         recommendation_setting=recommendation,
     )
-    await update_jellyfin_playlist_visibility(
+
+    jellyfin = JellyfinProvider()
+    await jellyfin.update_playlist_visibility(
         playlist_name=DEFAULT_RECOMMENDED_PLAYLIST_NAME,
         username=recommendation.username,
         is_public=recommendation.is_public,
     )
     update_job(
         func=generate_recommendations,
-        kwargs={"recommendation": recommendation},
+        kwargs={"recommendation": recommendation, "provider": jellyfin},
         cron_expression=item.cron_expression,
         job_id=str(recommendation_id),
     )
@@ -174,7 +176,7 @@ async def _update_recommendation(
 
 
 @router.delete(
-    path="/{recommendation_id}",
+    path="/{id}",
     summary="Delete recommendation",
     description="Delete recommendation by ID.",
     responses={
@@ -199,21 +201,21 @@ async def _update_recommendation(
     },
 )
 def _delete_recommendation(
-    recommendation_id: str,
+    id: str,
     session: SessionDep,
 ) -> dict[str, str]:
     recommendation = get_recommendation_by_id(
-        session=session, recommendation_id=recommendation_id
+        session=session, recommendation_id=id
     )
 
     if not recommendation:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail=f"Unable to find recommendation setting: {recommendation_id}",
+            detail=f"Unable to find recommendation setting: {id}",
         )
 
     delete_recommendation(session=session, recommendation_setting=recommendation)
-    delete_job(job_id=str(recommendation_id))
+    delete_job(job_id=str(id))
 
     return {"message": "Recommendation deleted successfully"}
 
@@ -242,6 +244,7 @@ def _generate_recommendations(
 ) -> dict[str, str]:
     username = recommendation.username
     started_at = get_now()
+    jellyfin = JellyfinProvider()
 
     recommendation_session = RecommendationSession(
         username=username,
@@ -261,6 +264,7 @@ def _generate_recommendations(
 
     background_tasks.add_task(
         generate_recommendations_task,
+        provider=jellyfin,
         lastfm_username=recommendation.lastfm_username,
         recommendation_session_id=recommendation_session.id,
         recommendation_id=recommendation.id,

@@ -1,6 +1,6 @@
 from dataclasses import dataclass, field
 
-from lib.models.jellyfin import JellyfinTrack
+from lib.models.provider import ProviderTrack
 
 
 @dataclass
@@ -32,7 +32,7 @@ class ExternalTrack:
 
 
 @dataclass
-class ExternalPlaylist:
+class ExternalSync:
     """A source playlist from an external service (Spotify/Youtube)."""
 
     def __init__(
@@ -58,17 +58,17 @@ class ExternalPlaylist:
 
 @dataclass
 class ResolvedTrack:
-    """A source song that has been resolved against the Jellyfin library."""
+    """A source song that has been resolved against the music provider library."""
 
     track: ExternalTrack
-    jellyfin_id: str | None = None
+    provider_track_id: str | None = None
     display_name: str = ""
 
 
 @dataclass
-class PlaylistDiff:
-    """Result of diffing resolved source tracks against an existing Jellyfin playlist."""
+class SyncDiff:
+    """Result of diffing resolved source tracks against an existing provider playlist."""
 
     added: list[ResolvedTrack] = field(default_factory=list)
-    removed: list[JellyfinTrack] = field(default_factory=list)
+    removed: list[ProviderTrack] = field(default_factory=list)
     unchanged: list[ResolvedTrack] = field(default_factory=list)

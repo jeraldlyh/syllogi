@@ -7,13 +7,20 @@ from typing import Any, Optional, cast
 from sqlmodel import Field, Relationship, SQLModel
 
 from lib.utils import get_now, format_time_with_locale
-from lib.mixin.serializer import SerializerMixin
 from lib.mixin.metadata import TimestampMixin
+from lib.mixin.serializer import SerializerMixin
 
 
 class SyncProvider(str, enum.Enum):
     spotify = "spotify"
     youtube = "youtube"
+
+
+class SyncStatus(str, enum.Enum):
+    pending = "pending"
+    in_progress = "in_progress"
+    completed = "completed"
+    failed = "failed"
 
 
 class SyncSessionTrackType(str, enum.Enum):
@@ -24,11 +31,34 @@ class SyncSessionTrackType(str, enum.Enum):
     downloaded = "downloaded"
 
 
-class SyncStatus(str, enum.Enum):
-    pending = "pending"
-    in_progress = "in_progress"
-    completed = "completed"
-    failed = "failed"
+class Sync(TimestampMixin, SerializerMixin, SQLModel, table=True):
+    id: uuid.UUID = Field(default_factory=uuid.uuid4, primary_key=True, nullable=False)
+
+    provider: SyncProvider = Field(nullable=False, index=True)
+
+    playlist_id: str = Field(max_length=128, nullable=False, index=True)
+    playlist_name: str = Field(default="", max_length=512, nullable=False)
+
+    username: str = Field(default="", max_length=128, nullable=False, index=True)
+    enable_sync: bool = Field(default=True, nullable=False)
+    enable_download: bool = Field(default=True, nullable=False)
+    is_public: bool = Field(default=False, nullable=False)
+    cron_expression: str = Field(default="", max_length=128, nullable=False)
+
+    def to_dict(self) -> dict:
+        return {
+            "id": str(self.id),
+            "provider": self.provider.value,
+            "playlist_id": self.playlist_id,
+            "playlist_name": self.playlist_name,
+            "username": self.username,
+            "enable_sync": self.enable_sync,
+            "enable_download": self.enable_download,
+            "is_public": self.is_public,
+            "cron_expression": self.cron_expression,
+            "created_at": format_time_with_locale(self.created_at),
+            "updated_at": format_time_with_locale(self.updated_at),
+        }
 
 
 class SyncSession(TimestampMixin, SerializerMixin, SQLModel, table=True):

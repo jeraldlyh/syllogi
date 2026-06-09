@@ -11,11 +11,11 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse, Response
 from starlette.middleware.base import BaseHTTPMiddleware
 
-from db.playlist import get_playlists
+from db.sync import get_syncs
 from db.recommendation import get_recommendations
 from db.session import get_isolated_session
 from lib.cron import create_job, scheduler
-from lib.jellyfin import ensure_download_library_exists
+from lib.providers.jellyfin import JellyfinProvider
 from lib.recommendation import generate_recommendations
 from lib.sync import sync_playlist
 from routes import OPENAPI_TAGS, register_routes
@@ -142,23 +142,25 @@ def create_app() -> FastAPI:
     @app.on_event("startup")
     async def startup_event():
         scheduler.start()
-        await ensure_download_library_exists()
+
+        jellyfin = JellyfinProvider()
+        await jellyfin.ensure_download_library_exists()
 
         logger.info("Starting up application and initializing cron jobs")
         with get_isolated_session() as session:
-            playlists = get_playlists(session=session)
+            syncs = get_syncs(session=session)
             recommendations = get_recommendations(session=session)
 
-        for playlist in playlists:
-            if playlist.cron_expression:
+        for sync_config in syncs:
+            if sync_config.cron_expression:
                 logger.info(
-                    f"Registering cron job for playlist {playlist.id} with cron expression: {playlist.cron_expression}"
+                    f"Registering cron job for sync config {sync_config.id} with cron expression: {sync_config.cron_expression}"
                 )
                 create_job(
                     func=sync_playlist,
-                    kwargs={"playlist": playlist},
-                    cron_expression=playlist.cron_expression,
-                    job_id=str(playlist.id),
+                    kwargs={"sync_config": sync_config, "provider": jellyfin},
+                    cron_expression=sync_config.cron_expression,
+                    job_id=str(sync_config.id),
                 )
 
         for recommendation in recommendations:
@@ -168,7 +170,7 @@ def create_app() -> FastAPI:
                 )
                 create_job(
                     func=generate_recommendations,
-                    kwargs={"recommendation": recommendation},
+                    kwargs={"recommendation": recommendation, "provider": jellyfin},
                     cron_expression=recommendation.cron_expression,
                     job_id=str(recommendation.id),
                 )

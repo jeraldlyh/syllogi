@@ -22,14 +22,8 @@ from db.recommendation_session import (
 )
 from db.session import get_isolated_session
 from lib.download import download_missing_tracks
-from lib.jellyfin import (
-    add_songs_to_jellyfin_playlist,
-    delete_songs_from_jellyfin_playlist,
-    get_jellyfin_playlist_songs,
-    get_or_create_jellyfin_playlist,
-    wait_for_jellyfin_rescan,
-)
-from lib.models.jellyfin import JellyfinTrack
+from lib.providers.base import MusicPlaylistProvider
+from lib.models.provider import ProviderTrack
 from lib.models.lastfm import (
     LastFMSimilarTrack,
 )
@@ -46,10 +40,11 @@ logger = logging.getLogger(__name__)
 
 
 async def get_recommendations(
+    provider: MusicPlaylistProvider,
     lastfm_username: str,
     strategy: RecommendationStrategy,
     num_recommendations: int,
-) -> tuple[list[LastFMSimilarTrack], list[LastFMSimilarTrack], list[JellyfinTrack]]:
+) -> tuple[list[LastFMSimilarTrack], list[LastFMSimilarTrack], list[ProviderTrack]]:
     """Get track recommendations for a user based on their listening history."""
     match strategy:
         case RecommendationStrategy.top_tracks:
@@ -76,7 +71,7 @@ async def get_recommendations(
 
     missing: set[LastFMSimilarTrack] = set()
     found: set[LastFMSimilarTrack] = set()
-    jellyfin_tracks: list[JellyfinTrack] = []
+    provider_tracks: list[ProviderTrack] = []
 
     for track in all_tracks:
         if len(found) + len(missing) >= num_recommendations:
@@ -96,7 +91,8 @@ async def get_recommendations(
             if similar_track in found or similar_track in missing:
                 continue
 
-            jellyfin_track = await find_track(
+            provider_track = await find_track(
+                provider=provider,
                 artist_name=similar_track.artist_name,
                 track_name=similar_track.track_name,
                 album_name="",
@@ -104,18 +100,19 @@ async def get_recommendations(
                 duration=similar_track.duration,
             )
 
-            if not jellyfin_track.is_not_found():
+            if not provider_track.is_not_found():
                 found.add(similar_track)
-                jellyfin_tracks.append(jellyfin_track)
+                provider_tracks.append(provider_track)
 
-            if not has_missing and jellyfin_track.is_not_found():
+            if not has_missing and provider_track.is_not_found():
                 missing.add(similar_track)
                 has_missing = True
 
-    return list(found), list(missing), jellyfin_tracks
+    return list(found), list(missing), provider_tracks
 
 
 async def generate_recommendations_task(
+    provider: MusicPlaylistProvider,
     lastfm_username: str,
     recommendation_session_id: uuid.UUID,
     recommendation_id: uuid.UUID,
@@ -150,7 +147,8 @@ async def generate_recommendations_task(
                 session=session, recommendation_session=recommendation_session
             )
 
-            found_tracks, missing_tracks, jellyfin_tracks = await get_recommendations(
+            found_tracks, missing_tracks, provider_tracks = await get_recommendations(
+                provider=provider,
                 lastfm_username=lastfm_username,
                 strategy=recommendation_session.strategy,
                 num_recommendations=recommendation_session.requested_count,
@@ -170,12 +168,14 @@ async def generate_recommendations_task(
                 if downloaded_tracks:
                     logger.info(f"Downloaded {len(downloaded_tracks)} missing songs")
 
-                    await wait_for_jellyfin_rescan()
+                    await provider.wait_for_rescan()
 
                     (
                         found_tracks_after_download,
                         missing_tracks_after_scan,
-                    ) = await resolve_tracks(tracks=downloaded_tracks)
+                    ) = await resolve_tracks(
+                        provider=provider, tracks=downloaded_tracks
+                    )
 
                     found_tracks, missing_tracks = reconcile_after_download(
                         found_tracks=found_tracks,
@@ -186,9 +186,9 @@ async def generate_recommendations_task(
                         get_key=lambda t: (t.artist_name, t.track_name),
                     )
 
-                    downloaded_jellyfin_tracks = [
-                        JellyfinTrack(
-                            id=resolved_track.jellyfin_id,
+                    downloaded_provider_tracks = [
+                        ProviderTrack(
+                            id=resolved_track.provider_track_id,
                             track_name=resolved_track.track.track_name,
                             album_name=resolved_track.track.album_name,
                             album_id="",
@@ -198,11 +198,11 @@ async def generate_recommendations_task(
                             year=resolved_track.track.year,
                         )
                         for resolved_track in found_tracks_after_download
-                        if resolved_track.jellyfin_id
+                        if resolved_track.provider_track_id
                     ]
-                    jellyfin_tracks.extend(downloaded_jellyfin_tracks)
+                    provider_tracks.extend(downloaded_provider_tracks)
                     logger.info(
-                        f"Extended jellyfin_tracks with {len(downloaded_jellyfin_tracks)} newly downloaded tracks"
+                        f"Extended provider_tracks with {len(downloaded_provider_tracks)} newly downloaded tracks"
                     )
 
             finished_at = get_now()
@@ -235,42 +235,42 @@ async def generate_recommendations_task(
             )
 
             if not found_tracks:
-                logger.info("No tracks found in Jellyfin for recommendations")
+                logger.info("No tracks found in provider for recommendations")
                 return
 
-            jellyfin_track_ids = [track.id for track in jellyfin_tracks]
+            provider_track_ids = [track.id for track in provider_tracks]
 
-            if not jellyfin_track_ids:
+            if not provider_track_ids:
                 logger.info(
-                    "No tracks from recommendations could be resolved to Jellyfin IDs"
+                    "No tracks from recommendations could be resolved to provider IDs"
                 )
                 return
 
             logger.info(
-                f"Creating Jellyfin playlist with {len(jellyfin_track_ids)} tracks"
+                f"Creating provider playlist with {len(provider_track_ids)} tracks"
             )
 
-            playlist_id, jellyfin_user_id = await get_or_create_jellyfin_playlist(
+            playlist_id, provider_user_id = await provider.get_or_create_playlist(
                 playlist_name=DEFAULT_RECOMMENDED_PLAYLIST_NAME,
                 username=recommendation_session.username,
                 is_public=recommendation.is_public,
             )
 
-            existing_tracks = await get_jellyfin_playlist_songs(
+            existing_tracks = await provider.get_playlist_songs(
                 playlist_id=playlist_id,
-                user_id=jellyfin_user_id,
+                user_id=provider_user_id,
             )
 
             if existing_tracks:
-                await delete_songs_from_jellyfin_playlist(
+                await provider.delete_songs_from_playlist(
                     playlist_id=playlist_id,
-                    track_ids=[track.id for track in existing_tracks],
+                    entry_ids=[track.id for track in existing_tracks],
                 )
 
-            await add_songs_to_jellyfin_playlist(
+            await provider.add_songs_to_playlist(
                 playlist_id=playlist_id,
-                user_id=jellyfin_user_id,
-                track_ids=jellyfin_track_ids,
+                user_id=provider_user_id,
+                track_ids=provider_track_ids,
             )
 
         except Exception as e:
@@ -290,9 +290,11 @@ async def generate_recommendations_task(
 
 
 async def generate_recommendations(
+    provider: MusicPlaylistProvider,
     recommendation: Recommendation,
 ) -> dict[str, str]:
     """Get track recommendations for a user based on their listening history."""
+
     with get_isolated_session() as session:
         internal_recommendation = get_recommendation_by_id(
             session=session, recommendation_id=recommendation.id
@@ -324,6 +326,7 @@ async def generate_recommendations(
             f"Scheduling background task to generate recommendations for user {internal_recommendation.username} with session ID {recommendation_session.id}"
         )
         await generate_recommendations_task(
+            provider=provider,
             lastfm_username=internal_recommendation.lastfm_username,
             recommendation_session_id=recommendation_session.id,
             recommendation_id=internal_recommendation.id,

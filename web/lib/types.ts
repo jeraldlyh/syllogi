@@ -8,7 +8,6 @@ export interface ApiConfig {
     | "spotify"
     | "youtube"
     | "log"
-    | "playlist"
     | "sync"
     | "settings"
     | "auth"

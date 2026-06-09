@@ -2,7 +2,7 @@ from typing import Sequence
 import uuid
 
 from sqlmodel import desc, select
-from db.models.sync_session import SyncSession, SyncSessionTrack, SyncSessionTrackType
+from db.models.sync import SyncSession, SyncSessionTrack, SyncSessionTrackType
 from db.session import SessionDep
 
 
