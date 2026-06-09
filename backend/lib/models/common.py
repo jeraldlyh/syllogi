@@ -63,7 +63,6 @@ class ResolvedTrack:
     track: ExternalTrack
     provider_track_id: str | None = None
     display_name: str = ""
-    jellyfin_id: str | None = None
 
 
 @dataclass

@@ -2,14 +2,12 @@ import logging
 from difflib import SequenceMatcher
 from typing import Callable, TypeVar
 
-from fastapi import HTTPException, status
-
 from lib.models.common import (
     ExternalTrack,
     ResolvedTrack,
 )
-from lib.models.provider import ProviderTrack
 from lib.models.lastfm import LastFMChartTrack
+from lib.models.provider import ProviderTrack
 from lib.providers.base import MusicPlaylistProvider
 from lib.utils import get_clean_name, sanitize_filename
 
@@ -105,9 +103,8 @@ async def find_track(
         jellyfin_track_name = provider_track.track_name
 
         if not jellyfin_track_name:
-            raise HTTPException(
-                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-                detail="Missing provider track name",
+            logger.warning(
+                f"Skipping track with missing name: {artist_name} {album_name})"
             )
 
         score = _score_track(

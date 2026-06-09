@@ -249,24 +249,28 @@ def _delete_sync_config(id: str, session: SessionDep):
 def sync_playlist_endpoint(
     item: Sync, background_tasks: BackgroundTasks, session: SessionDep
 ) -> dict[str, str]:
-    songs: list[ExternalTrack] = []
-    external_playlist: ExternalSync | None = None
-
-    match item.provider:
-        case SyncProvider.spotify:
-            songs = get_spotify_playlist_songs(playlist_id=item.playlist_id)
-            external_playlist = get_spotify_playlist(playlist_id=item.playlist_id)
-        case SyncProvider.youtube:
-            songs = get_youtube_playlist_songs(playlist_id=item.playlist_id)
-            external_playlist = get_youtube_playlist(playlist_id=item.playlist_id)
-
     internal_sync = get_sync_by_id(session=session, sync_id=item.id)
 
-    if not internal_sync or not external_playlist:
+    if not internal_sync:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail=f"Unable to find playlist: {item.playlist_id}",
         )
+
+    songs: list[ExternalTrack] = []
+    external_playlist: ExternalSync | None = None
+
+    match internal_sync.provider:
+        case SyncProvider.spotify:
+            songs = get_spotify_playlist_songs(playlist_id=internal_sync.playlist_id)
+            external_playlist = get_spotify_playlist(
+                playlist_id=internal_sync.playlist_id
+            )
+        case SyncProvider.youtube:
+            songs = get_youtube_playlist_songs(playlist_id=internal_sync.playlist_id)
+            external_playlist = get_youtube_playlist(
+                playlist_id=internal_sync.playlist_id
+            )
 
     playlist_id = internal_sync.playlist_id
     username = item.username

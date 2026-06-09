@@ -443,7 +443,7 @@ class JellyfinProvider(MusicPlaylistProvider):
         poll_interval_seconds: int = 3,
         scan_poll_interval_seconds: int = 15,
     ) -> None:
-        """Trigger a rescan and block until Jellyfin finishes indexing."""
+        """Trigger a rescan and wait until it starts or the timeout is reached."""
 
         await self.rescan_library()
 
