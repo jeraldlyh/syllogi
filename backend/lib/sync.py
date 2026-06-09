@@ -152,6 +152,7 @@ async def sync_playlist_task(
                         newly_found_tracks,
                         still_missing_tracks_after_download,
                     ) = await resolve_tracks(provider, tracks=downloaded_tracks)
+
                     found_tracks, missing_tracks = reconcile_after_download(
                         found_tracks=found_tracks,
                         missing_tracks=missing_tracks,
