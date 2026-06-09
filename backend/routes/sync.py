@@ -8,6 +8,7 @@ from db.playlist import get_playlist_by_id
 from db.session import SessionDep
 from db.sync_session import create_sync_session
 from lib.models.common import ExternalPlaylist, ExternalTrack
+from lib.providers.jellyfin import JellyfinProvider
 from lib.sync import sync_playlist_task
 from lib.spotify import (
     get_spotify_playlist,
@@ -81,6 +82,7 @@ def sync_playlist(
     playlist_id = internal_playlist.playlist_id
     username = item.username
     started_at = get_now()
+    jellyfin = JellyfinProvider()
 
     sync_session = SyncSession(
         provider=SyncProvider(internal_playlist.provider.value),
@@ -99,6 +101,7 @@ def sync_playlist(
 
     background_tasks.add_task(
         sync_playlist_task,
+        provider=jellyfin,
         internal_playlist_id=internal_playlist.id,
         external_playlist=external_playlist,
         songs=songs,

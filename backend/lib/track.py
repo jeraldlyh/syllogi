@@ -4,13 +4,13 @@ from typing import Callable, TypeVar
 
 from fastapi import HTTPException, status
 
-from lib.jellyfin import search_jellyfin_track
 from lib.models.common import (
     ExternalTrack,
-    JellyfinTrack,
     ResolvedTrack,
 )
+from lib.models.provider import ProviderTrack
 from lib.models.lastfm import LastFMChartTrack
+from lib.providers.base import MusicPlaylistProvider
 from lib.utils import get_clean_name, sanitize_filename
 
 logger = logging.getLogger(__name__)
@@ -43,7 +43,7 @@ def _similarity_score(a: str, b: str) -> float:
 
 
 def _score_track(
-    jellyfin_track: JellyfinTrack,
+    track: ProviderTrack,
     artist_name: str,
     track_name: str,
     album_name: str,
@@ -52,23 +52,23 @@ def _score_track(
 ) -> float:
     """Score a track based on heuristic comparisons of its metadata against the provided metadata."""
 
-    title_score = _similarity_score(jellyfin_track.track_name, track_name)
+    title_score = _similarity_score(track.track_name, track_name)
 
     artist_score = 0.0
-    for artist in jellyfin_track.artists:
+    for artist in track.artists:
         artist_score = max(artist_score, _similarity_score(artist, artist_name))
 
     album_score = 0.0
-    if album_name and jellyfin_track.album_name:
-        album_score = _similarity_score(jellyfin_track.album_name, album_name)
+    if album_name and track.album_name:
+        album_score = _similarity_score(track.album_name, album_name)
 
     year_score = 0.0
-    if year and str(jellyfin_track.year) == str(year):
+    if year and str(track.year) == str(year):
         year_score = 1.0
 
     duration_score = 0.0
-    if duration and jellyfin_track.duration_ticks:
-        track_duration = jellyfin_track.duration_ticks / 10_000_000
+    if duration and track.duration_ticks:
+        track_duration = track.duration_ticks / 10_000_000
         duration_difference = max(
             0.0, 1.0 - abs(track_duration - duration) / max(duration, track_duration)
         )
@@ -84,11 +84,16 @@ def _score_track(
 
 
 async def find_track(
-    artist_name: str, track_name: str, album_name: str, year: str, duration: int
-) -> JellyfinTrack:
-    """Find the best matching track in Jellyfin based on the provided metadata."""
+    provider: MusicPlaylistProvider,
+    artist_name: str,
+    track_name: str,
+    album_name: str,
+    year: str,
+    duration: int,
+) -> ProviderTrack:
+    """Find the best matching track in the music provider based on the provided metadata."""
 
-    jellyfin_tracks = await search_jellyfin_track(
+    provider_tracks = await provider.search_track(
         artist_name=artist_name,
         title=sanitize_filename(name=track_name),
         album=album_name,
@@ -96,17 +101,17 @@ async def find_track(
     )
     best_match, best_score = None, 0.0
 
-    for jellyfin_track in jellyfin_tracks:
-        jellyfin_track_name = jellyfin_track.track_name
+    for provider_track in provider_tracks:
+        jellyfin_track_name = provider_track.track_name
 
         if not jellyfin_track_name:
             raise HTTPException(
                 status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-                detail="Missing Jellyfin track name",
+                detail="Missing provider track name",
             )
 
         score = _score_track(
-            jellyfin_track=jellyfin_track,
+            track=provider_track,
             artist_name=artist_name,
             track_name=track_name,
             album_name=album_name,
@@ -115,11 +120,11 @@ async def find_track(
         )
         if score > best_score:
             best_score = score
-            best_match = jellyfin_track
+            best_match = provider_track
 
     if best_match:
         return best_match
-    return JellyfinTrack(
+    return ProviderTrack(
         id="",
         track_name=track_name,
         album_id="",
@@ -132,9 +137,10 @@ async def find_track(
 
 
 async def resolve_tracks(
+    provider: MusicPlaylistProvider,
     tracks: list[ExternalTrack],
 ) -> tuple[list[ResolvedTrack], list[ResolvedTrack]]:
-    """Verifies which tracks from the source playlist can be found in the Jellyfin library.
+    """Verifies which tracks from the source playlist can be found in the provider library.
 
     Returns (found_tracks, missing_tracks).
     """
@@ -144,6 +150,7 @@ async def resolve_tracks(
     for song in tracks:
         display_name = f"{song.artist_name} {song.album_name}: {song.track_name}"
         track = await find_track(
+            provider=provider,
             artist_name=song.artist_name,
             track_name=song.track_name,
             album_name=song.album_name,
@@ -153,7 +160,7 @@ async def resolve_tracks(
 
         resolved = ResolvedTrack(
             track=song,
-            jellyfin_id=track.id,
+            provider_track_id=track.id,
             display_name=display_name,
         )
 
@@ -218,19 +225,23 @@ def reconcile_after_download(
     return updated_found, updated_missing
 
 
-async def is_track_in_jellyfin(track: LastFMChartTrack) -> bool:
-    """Return True if the track exists in the Jellyfin library, False otherwise."""
+async def is_track_in_provider(
+    provider: MusicPlaylistProvider, track: LastFMChartTrack
+) -> bool:
+    """Return True if the track exists in the provider library, False otherwise."""
+
     try:
-        jellyfin_track = await find_track(
+        provider_track = await find_track(
+            provider=provider,
             artist_name=track.artist_name,
             track_name=track.track_name,
             album_name="",
             year="",
             duration=track.duration,
         )
-        return not jellyfin_track.is_not_found()
+        return not provider_track.is_not_found()
     except Exception:
         logger.warning(
-            f"Failed to check Jellyfin for '{track.artist_name} - {track.track_name}'"
+            f"Failed to check provider for '{track.artist_name} - {track.track_name}'"
         )
         return False

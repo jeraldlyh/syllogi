@@ -12,7 +12,7 @@ from db.playlist import (
 from db.session import SessionDep
 from lib.sync import sync_playlist
 from lib.cron import delete_job, update_job, create_job
-from lib.jellyfin import update_jellyfin_playlist_visibility
+from lib.providers.jellyfin import JellyfinProvider
 
 router = APIRouter()
 
@@ -159,9 +159,10 @@ async def _update_playlist(
     playlist.is_public = item.is_public
     playlist.cron_expression = item.cron_expression
 
+    jellyfin = JellyfinProvider()
     update_playlist(session=session, playlist=playlist)
 
-    await update_jellyfin_playlist_visibility(
+    await jellyfin.update_playlist_visibility(
         playlist_name=playlist.playlist_name,
         username=playlist.username,
         is_public=playlist.is_public,

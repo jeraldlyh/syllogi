@@ -2,6 +2,7 @@ from typing import Annotated
 
 from fastapi import APIRouter, Query
 
+from lib.providers.jellyfin import JellyfinProvider
 from lib.track import find_track
 
 router = APIRouter()
@@ -41,6 +42,14 @@ async def _find_track(
     artist_name: Annotated[str, Query(description="Artist name")],
     title: Annotated[str, Query(description="Track title")],
 ):
-    track = await find_track(artist_name, title, album_name="", year="", duration=0)
+    jellyfin = JellyfinProvider()
+    track = await find_track(
+        provider=jellyfin,
+        artist_name=artist_name,
+        track_name=title,
+        album_name="",
+        year="",
+        duration=0,
+    )
 
     return track.to_dict()

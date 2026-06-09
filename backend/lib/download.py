@@ -7,10 +7,10 @@ from fastapi import HTTPException, status
 from db.download_session import get_download_session_by_id, update_download_session
 from db.models.download_session import DownloadSession, DownloadSessionStatus
 from db.session import get_isolated_session
-from lib.jellyfin import _rescan_jellyfin_library
-from lib.models.common import ExternalTrack
-from lib.models.jellyfin import JellyfinTrack
 from lib.env import is_slskd_configured
+from lib.models.common import ExternalTrack
+from lib.providers.base import MusicPlaylistProvider
+from lib.models.provider import ProviderTrack
 from lib.slskd import download_track_slskd
 from lib.utils import (
     get_existing_track_path,
@@ -87,23 +87,25 @@ async def download_missing_tracks(
 
 
 async def download_missing_tracks_and_refresh_library(
+    provider: MusicPlaylistProvider,
     missing_tracks: list[ExternalTrack],
 ) -> tuple[list[ExternalTrack], list[ExternalTrack]]:
-    """Downloads missing tracks and refreshes the Jellyfin library.
+    """Downloads missing tracks and refreshes the music provider library.
 
     This is a convenience wrapper around download_missing_tracks that also triggers
     a library refresh after attempting downloads.
     """
+
     found, still_missing = await download_missing_tracks(missing_tracks)
 
     if found:
-        await _rescan_jellyfin_library()
+        await provider.rescan_library()
     return found, still_missing
 
 
 async def upgrade_non_lossless_tracks(
-    tracks: list[JellyfinTrack],
-) -> list[JellyfinTrack]:
+    tracks: list[ProviderTrack],
+) -> list[ProviderTrack]:
     """Attempt to upgrade non-lossless tracks to FLAC via slskd.
 
     For each track that exists on disk in a non-lossless format, the old file is
@@ -115,7 +117,7 @@ async def upgrade_non_lossless_tracks(
     if not is_slskd_configured():
         return []
 
-    upgraded: list[JellyfinTrack] = []
+    upgraded: list[ProviderTrack] = []
 
     for track in tracks:
         artist_name = track.artists[0] if track.artists else ""
@@ -170,6 +172,7 @@ async def upgrade_non_lossless_tracks(
 
 
 async def download_single_track(
+    provider: MusicPlaylistProvider,
     download_session_id: uuid.UUID,
     track: ExternalTrack,
 ) -> None:
@@ -193,7 +196,7 @@ async def download_single_track(
             is_exist = len(found) == 0 and len(missing) == 0
 
             if found or is_exist:
-                await _rescan_jellyfin_library()
+                await provider.rescan_library()
 
             if not found and not is_exist:
                 raise HTTPException(
