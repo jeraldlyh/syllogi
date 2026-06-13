@@ -1,8 +1,12 @@
 import { api, fetcher } from "@/lib/api";
 import { ApiResponse } from "@/lib/types";
 import useSWR from "swr";
+import { RecommendationStrategy } from "./useRecommendationSessions";
 
-export type RecommendationStrategy = "top_tracks" | "recent_tracks" | "mixed";
+export interface BlendUser {
+  name: string;
+  lastfm_username: string;
+}
 
 export interface Recommendation {
   id: string;
@@ -13,6 +17,7 @@ export interface Recommendation {
   cron_expression: string;
   is_public: boolean;
   playlist_name: string;
+  blend_users?: BlendUser[];
 }
 
 export const useRecommendations = () => {
