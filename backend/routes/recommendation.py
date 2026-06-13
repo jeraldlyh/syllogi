@@ -1,5 +1,7 @@
 from fastapi import APIRouter, BackgroundTasks, HTTPException, status
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, model_validator
+
+from lib.models.blend import BlendUser
 
 from db.models.recommendation import (
     Recommendation,
@@ -31,11 +33,32 @@ router = APIRouter()
 class CreateOrUpdateRecommendationRequest(BaseModel):
     username: str = Field(min_length=1)
     strategy: RecommendationStrategy = Field(min_length=1)
-    lastfm_username: str = Field(min_length=1)
+    lastfm_username: str
     requested_count: int = Field(default=50, ge=1, le=50)
     cron_expression: str = Field(min_length=1)
     is_public: bool = Field(default=False)
     playlist_name: str = Field(min_length=1, max_length=256)
+    blend_users: list[BlendUser] | None = Field(default=None)
+
+    @model_validator(mode="after")
+    def validate_blend_users(self) -> "CreateOrUpdateRecommendationRequest":
+        if self.strategy == RecommendationStrategy.blend:
+            if not self.blend_users or len(self.blend_users) < 2:
+                raise ValueError(
+                    "There must be at least 2 blend_users for the 'blend' strategy"
+                )
+            for user in self.blend_users:
+                if not user.name or not user.lastfm_username:
+                    raise ValueError(
+                        "Each blend user must have 'name' and 'lastfm_username'"
+                    )
+        else:
+            if not self.lastfm_username:
+                raise ValueError(
+                    "Last.fm username is required for non-blend strategies"
+                )
+            self.blend_users = None
+        return self
 
 
 @router.get(
@@ -95,6 +118,9 @@ def _create_recommendation(
         cron_expression=item.cron_expression,
         is_public=item.is_public,
         playlist_name=item.playlist_name,
+        blend_users=[u.to_dict() for u in item.blend_users]
+        if item.blend_users
+        else None,
     )
 
     create_recommendation(session=session, recommendation_setting=recommendation)
@@ -155,6 +181,9 @@ async def _update_recommendation(
     recommendation.cron_expression = item.cron_expression
     recommendation.is_public = item.is_public
     recommendation.playlist_name = item.playlist_name
+    recommendation.blend_users = (
+        [u.to_dict() for u in item.blend_users] if item.blend_users else None
+    )
 
     update_recommendation(
         session=session,
@@ -252,6 +281,9 @@ def _generate_recommendations(
         strategy=recommendation.strategy,
         requested_count=recommendation.requested_count,
         generated_count=0,
+        blend_users=[u.to_dict() for u in recommendation.get_blend_users()]
+        if recommendation.get_blend_users()
+        else None,
         started_at=started_at,
         finished_at=started_at,
         duration_seconds=0,
@@ -268,6 +300,7 @@ def _generate_recommendations(
         lastfm_username=recommendation.lastfm_username,
         recommendation_session_id=recommendation_session.id,
         recommendation_id=recommendation.id,
+        blend_users=recommendation.get_blend_users(),
     )
 
     return {"id": str(recommendation_session.id)}

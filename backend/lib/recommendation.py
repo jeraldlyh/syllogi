@@ -24,6 +24,7 @@ from db.session import get_isolated_session
 from lib.download import download_missing_tracks
 from lib.providers.base import MusicPlaylistProvider
 from lib.models.provider import ProviderTrack
+from lib.models.blend import BlendUser
 from lib.models.lastfm import (
     LastFMSimilarTrack,
 )
@@ -43,6 +44,7 @@ async def get_recommendations(
     lastfm_username: str,
     strategy: RecommendationStrategy,
     num_recommendations: int,
+    blend_users: list[BlendUser] | None,
 ) -> tuple[list[LastFMSimilarTrack], list[LastFMSimilarTrack], list[ProviderTrack]]:
     """Get track recommendations for a user based on their listening history."""
     match strategy:
@@ -67,6 +69,22 @@ async def get_recommendations(
                 limit=num_recommendations - recent_limit,
             )
             all_tracks = recent_tracks + top_tracks
+        case RecommendationStrategy.blend:
+            if not blend_users:
+                raise ValueError("blend_users required for blend strategy")
+
+            per_user_limit = max(1, num_recommendations // (2 * len(blend_users)))
+            all_tracks = []
+
+            for user in blend_users:
+                lastfm_name = user.lastfm_username
+                recent = await get_lastfm_recent_tracks(
+                    user=lastfm_name, limit=per_user_limit
+                )
+                top = await get_lastfm_top_tracks(
+                    user=lastfm_name, limit=per_user_limit
+                )
+                all_tracks.extend(recent + top)
 
     missing: set[LastFMSimilarTrack] = set()
     found: set[LastFMSimilarTrack] = set()
@@ -115,6 +133,7 @@ async def generate_recommendations_task(
     lastfm_username: str,
     recommendation_session_id: uuid.UUID,
     recommendation_id: uuid.UUID,
+    blend_users: list[BlendUser] | None,
 ) -> Any:
     """Get track recommendations for a user based on their listening history in a background task."""
 
@@ -151,6 +170,7 @@ async def generate_recommendations_task(
                 lastfm_username=lastfm_username,
                 strategy=recommendation_session.strategy,
                 num_recommendations=recommendation_session.requested_count,
+                blend_users=blend_users,
             )
             all_tracks = found_tracks + missing_tracks
 
@@ -312,6 +332,7 @@ async def generate_recommendations(
             strategy=internal_recommendation.strategy,
             requested_count=internal_recommendation.requested_count,
             generated_count=0,
+            blend_users=internal_recommendation.blend_users,
             started_at=started_at,
             finished_at=started_at,
             duration_seconds=0,
@@ -329,5 +350,6 @@ async def generate_recommendations(
             lastfm_username=internal_recommendation.lastfm_username,
             recommendation_session_id=recommendation_session.id,
             recommendation_id=internal_recommendation.id,
+            blend_users=internal_recommendation.get_blend_users(),
         )
         return {"id": str(recommendation_session.id)}

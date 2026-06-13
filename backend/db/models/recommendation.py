@@ -8,6 +8,7 @@ from sqlmodel import Field, Relationship, SQLModel
 
 from lib.mixin.metadata import TimestampMixin
 from lib.mixin.serializer import SerializerMixin
+from lib.models.blend import BlendUser
 from lib.utils import format_time_with_locale, get_now
 
 
@@ -32,6 +33,7 @@ class RecommendationStrategy(str, enum.Enum):
     top_tracks = "top_tracks"
     recent_tracks = "recent_tracks"
     mixed = "mixed"
+    blend = "blend"
 
 
 class Recommendation(TimestampMixin, SerializerMixin, SQLModel, table=True):
@@ -44,6 +46,14 @@ class Recommendation(TimestampMixin, SerializerMixin, SQLModel, table=True):
     cron_expression: str = Field(default="", max_length=128, nullable=False)
     is_public: bool = Field(default=False, nullable=False)
     playlist_name: str = Field(default="", max_length=256, nullable=False)
+    blend_users: list[dict[str, str]] | None = Field(
+        default=None, sa_type=sa.JSON, nullable=True
+    )
+
+    def get_blend_users(self) -> list[BlendUser] | None:
+        if self.blend_users is None:
+            return None
+        return [BlendUser.from_dict(user) for user in self.blend_users]
 
 
 class RecommendationSession(TimestampMixin, SerializerMixin, SQLModel, table=True):
@@ -55,6 +65,14 @@ class RecommendationSession(TimestampMixin, SerializerMixin, SQLModel, table=Tru
     strategy: RecommendationStrategy = Field(nullable=False)
     requested_count: int = Field(default=50, nullable=False)
     generated_count: int = Field(default=0, nullable=False)
+    blend_users: list[dict[str, str]] | None = Field(
+        default=None, sa_type=sa.JSON, nullable=True
+    )
+
+    def get_blend_users(self) -> list[BlendUser] | None:
+        if self.blend_users is None:
+            return None
+        return [BlendUser.from_dict(user) for user in self.blend_users]
 
     started_at: datetime = Field(
         default=get_now(),
@@ -83,6 +101,7 @@ class RecommendationSession(TimestampMixin, SerializerMixin, SQLModel, table=Tru
             "strategy": self.strategy.value,
             "requested_count": self.requested_count,
             "generated_count": self.generated_count,
+            "blend_users": self.blend_users,
             "started_at": format_time_with_locale(self.started_at),
             "finished_at": format_time_with_locale(self.finished_at),
             "duration_seconds": self.duration_seconds,
