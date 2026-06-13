@@ -43,6 +43,7 @@ class Recommendation(TimestampMixin, SerializerMixin, SQLModel, table=True):
     requested_count: int = Field(default=50, nullable=False)
     cron_expression: str = Field(default="", max_length=128, nullable=False)
     is_public: bool = Field(default=False, nullable=False)
+    playlist_name: str = Field(default="", max_length=256, nullable=False)
 
 
 class RecommendationSession(TimestampMixin, SerializerMixin, SQLModel, table=True):

@@ -34,7 +34,6 @@ from lib.lastfm import (
 )
 from lib.track import find_track, reconcile_after_download, resolve_tracks
 from lib.utils import get_now, truncate
-from lib.constants import DEFAULT_RECOMMENDED_PLAYLIST_NAME
 
 logger = logging.getLogger(__name__)
 
@@ -251,7 +250,7 @@ async def generate_recommendations_task(
             )
 
             playlist_id, provider_user_id = await provider.get_or_create_playlist(
-                playlist_name=DEFAULT_RECOMMENDED_PLAYLIST_NAME,
+                playlist_name=recommendation.playlist_name,
                 username=recommendation_session.username,
                 is_public=recommendation.is_public,
             )

@@ -17,7 +17,6 @@ from db.recommendation import (
 )
 from db.recommendation_session import create_recommendation_session
 from db.session import SessionDep
-from lib.constants import DEFAULT_RECOMMENDED_PLAYLIST_NAME
 from lib.cron import create_job, delete_job, update_job
 from lib.providers.jellyfin import JellyfinProvider
 from lib.recommendation import (
@@ -36,6 +35,7 @@ class CreateOrUpdateRecommendationRequest(BaseModel):
     requested_count: int = Field(default=50, ge=1, le=50)
     cron_expression: str = Field(min_length=1)
     is_public: bool = Field(default=False)
+    playlist_name: str = Field(min_length=1, max_length=256)
 
 
 @router.get(
@@ -94,6 +94,7 @@ def _create_recommendation(
         requested_count=item.requested_count,
         cron_expression=item.cron_expression,
         is_public=item.is_public,
+        playlist_name=item.playlist_name,
     )
 
     create_recommendation(session=session, recommendation_setting=recommendation)
@@ -153,6 +154,7 @@ async def _update_recommendation(
     recommendation.requested_count = item.requested_count
     recommendation.cron_expression = item.cron_expression
     recommendation.is_public = item.is_public
+    recommendation.playlist_name = item.playlist_name
 
     update_recommendation(
         session=session,
@@ -161,7 +163,7 @@ async def _update_recommendation(
 
     jellyfin = JellyfinProvider()
     await jellyfin.update_playlist_visibility(
-        playlist_name=DEFAULT_RECOMMENDED_PLAYLIST_NAME,
+        playlist_name=recommendation.playlist_name,
         username=recommendation.username,
         is_public=recommendation.is_public,
     )
@@ -204,9 +206,7 @@ def _delete_recommendation(
     id: str,
     session: SessionDep,
 ) -> dict[str, str]:
-    recommendation = get_recommendation_by_id(
-        session=session, recommendation_id=id
-    )
+    recommendation = get_recommendation_by_id(session=session, recommendation_id=id)
 
     if not recommendation:
         raise HTTPException(
