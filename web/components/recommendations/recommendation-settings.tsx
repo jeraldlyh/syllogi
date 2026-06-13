@@ -62,6 +62,7 @@ interface FormState {
   cron_expression: string;
   cron_mode: "simple" | "custom";
   is_public: boolean;
+  playlist_name: string;
 }
 
 interface FormErrors {
@@ -70,6 +71,7 @@ interface FormErrors {
   lastfm_username?: string;
   requested_count?: string;
   cron_expression?: string;
+  playlist_name?: string;
 }
 
 const DEFAULT_FORM: FormState = {
@@ -80,6 +82,7 @@ const DEFAULT_FORM: FormState = {
   cron_expression: "0 * * * *",
   cron_mode: "simple",
   is_public: false,
+  playlist_name: "",
 };
 
 const STRATEGIES: { label: string; value: RecommendationStrategy }[] = [
@@ -137,6 +140,7 @@ export const Recommendations = () => {
       cron_mode:
         isPreset || !recommendation.cron_expression ? "simple" : "custom",
       is_public: recommendation.is_public,
+      playlist_name: recommendation.playlist_name,
     });
     setErrors({});
     setDialogOpen(true);
@@ -151,6 +155,10 @@ export const Recommendations = () => {
 
     if (!form.lastfm_username.trim()) {
       newErrors.lastfm_username = "Required";
+    }
+
+    if (!form.playlist_name.trim()) {
+      newErrors.playlist_name = "Required";
     }
 
     if (form.requested_count < 1) {
@@ -184,6 +192,7 @@ export const Recommendations = () => {
       requested_count: formData.requested_count,
       cron_expression: formData.cron_expression,
       is_public: formData.is_public,
+      playlist_name: formData.playlist_name,
     };
 
     setDialogOpen(false);
@@ -282,6 +291,7 @@ export const Recommendations = () => {
           <TableHeader>
             <TableRow className="hover:bg-transparent text-xs text-muted-foreground">
               <TableHead className="text-nowrap">Jellyfin User</TableHead>
+              <TableHead className="hidden sm:table-cell">Playlist</TableHead>
               <TableHead className="hidden sm:table-cell">
                 Last.fm User
               </TableHead>
@@ -296,6 +306,9 @@ export const Recommendations = () => {
               <TableRow key={recommendation.id}>
                 <TableCell>
                   <Text value={recommendation.username} />
+                </TableCell>
+                <TableCell className="hidden sm:table-cell">
+                  <Text muted value={recommendation.playlist_name} />
                 </TableCell>
                 <TableCell className="hidden sm:table-cell">
                   <Text muted value={recommendation.lastfm_username} />
@@ -411,6 +424,26 @@ export const Recommendations = () => {
                   ))}
                 </SelectContent>
               </Select>
+            </div>
+            <div className="flex flex-col gap-2">
+              <Label
+                htmlFor="playlist_name"
+                className="flex justify-between items-center"
+              >
+                <Text muted value="Playlist Name" />
+                {renderErrorMessage(errors.playlist_name)}
+              </Label>
+              <Input
+                id="playlist_name"
+                value={form.playlist_name}
+                onChange={(e) =>
+                  setForm((prev) => ({
+                    ...prev,
+                    playlist_name: e.target.value,
+                  }))
+                }
+                placeholder="e.g. Daily Recommendations"
+              />
             </div>
             <div className="flex flex-col gap-2">
               <Label

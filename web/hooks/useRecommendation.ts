@@ -12,6 +12,7 @@ export interface Recommendation {
   requested_count: number;
   cron_expression: string;
   is_public: boolean;
+  playlist_name: string;
 }
 
 export const useRecommendations = () => {
