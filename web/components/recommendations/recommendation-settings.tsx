@@ -587,6 +587,7 @@ export const Recommendations = () => {
                   setForm((prev) => ({
                     ...prev,
                     strategy: value as RecommendationStrategy,
+                    is_public: value === "blend" ? true : false,
                   }))
                 }
               >
@@ -626,25 +627,27 @@ export const Recommendations = () => {
                 placeholder="e.g. 50"
               />
             </div>
-            <div className="flex flex-col gap-2">
-              <Label className="text-xs text-muted-foreground">
-                Visibility
-              </Label>
-              <Select
-                value={form.is_public ? "true" : "false"}
-                onValueChange={(value) =>
-                  setForm((prev) => ({ ...prev, is_public: value === "true" }))
-                }
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder="Select visibility" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="false">Private</SelectItem>
-                  <SelectItem value="true">Public</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
+            {form.strategy !== "blend" && (
+              <div className="flex flex-col gap-2">
+                <Label className="text-xs text-muted-foreground">
+                  Visibility
+                </Label>
+                <Select
+                  value={form.is_public ? "true" : "false"}
+                  onValueChange={(value) =>
+                    setForm((prev) => ({ ...prev, is_public: value === "true" }))
+                  }
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select visibility" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="false">Private</SelectItem>
+                    <SelectItem value="true">Public</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            )}
             <div className="flex flex-col gap-2">
               <Label className="flex justify-between items-center">
                 <Text muted value="Schedule" />

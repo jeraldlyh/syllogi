@@ -43,6 +43,8 @@ class CreateOrUpdateRecommendationRequest(BaseModel):
     @model_validator(mode="after")
     def validate_blend_users(self) -> "CreateOrUpdateRecommendationRequest":
         if self.strategy == RecommendationStrategy.blend:
+            self.is_public = True
+
             if not self.blend_users or len(self.blend_users) < 2:
                 raise ValueError(
                     "There must be at least 2 blend_users for the 'blend' strategy"
