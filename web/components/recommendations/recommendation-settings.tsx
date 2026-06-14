@@ -311,9 +311,6 @@ export const Recommendations = () => {
             <TableRow className="hover:bg-transparent text-xs text-muted-foreground">
               <TableHead className="text-nowrap">Jellyfin User</TableHead>
               <TableHead className="hidden sm:table-cell">Playlist</TableHead>
-              <TableHead className="hidden sm:table-cell">
-                Last.fm User
-              </TableHead>
               <TableHead>Strategy</TableHead>
               <TableHead className="hidden md:table-cell">Requested</TableHead>
               <TableHead className="hidden md:table-cell">Schedule</TableHead>
@@ -328,9 +325,6 @@ export const Recommendations = () => {
                 </TableCell>
                 <TableCell className="hidden sm:table-cell">
                   <Text muted value={recommendation.playlist_name} />
-                </TableCell>
-                <TableCell className="hidden sm:table-cell">
-                  <Text muted value={recommendation.lastfm_username} />
                 </TableCell>
                 <TableCell>
                   <RecommendationStrategyBadge
