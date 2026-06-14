@@ -124,11 +124,12 @@ def _create_recommendation(
         if item.blend_users
         else None,
     )
+    jellyfin = JellyfinProvider()
 
     create_recommendation(session=session, recommendation_setting=recommendation)
     create_job(
         func=generate_recommendations,
-        kwargs={"recommendation": recommendation},
+        kwargs={"recommendation": recommendation, "provider": jellyfin},
         cron_expression=item.cron_expression,
         job_id=str(recommendation.id),
     )
@@ -277,15 +278,18 @@ def _generate_recommendations(
     started_at = get_now()
     jellyfin = JellyfinProvider()
 
+    blend_users = recommendation.get_blend_users()
+    serialized_blend_users = (
+        [user.to_dict() for user in blend_users] if blend_users else None
+    )
+
     recommendation_session = RecommendationSession(
         username=username,
         provider=RecommendationProvider.lastfm,
         strategy=recommendation.strategy,
         requested_count=recommendation.requested_count,
         generated_count=0,
-        blend_users=[u.to_dict() for u in recommendation.get_blend_users()]
-        if recommendation.get_blend_users()
-        else None,
+        blend_users=serialized_blend_users,
         started_at=started_at,
         finished_at=started_at,
         duration_seconds=0,
