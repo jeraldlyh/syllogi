@@ -17,7 +17,7 @@ export interface Recommendation {
   cron_expression: string;
   is_public: boolean;
   playlist_name: string;
-  blend_users?: BlendUser[];
+  blend_users?: BlendUser[] | null;
 }
 
 export const useRecommendations = () => {

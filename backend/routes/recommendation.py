@@ -33,7 +33,7 @@ router = APIRouter()
 class CreateOrUpdateRecommendationRequest(BaseModel):
     username: str = Field(min_length=1)
     strategy: RecommendationStrategy = Field(min_length=1)
-    lastfm_username: str
+    lastfm_username: str = Field(default="")
     requested_count: int = Field(default=50, ge=1, le=50)
     cron_expression: str = Field(min_length=1)
     is_public: bool = Field(default=False)

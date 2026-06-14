@@ -64,7 +64,7 @@ interface FormState {
   cron_mode: "simple" | "custom";
   is_public: boolean;
   playlist_name: string;
-  blend_users?: BlendUser[];
+  blend_users?: BlendUser[] | null;
 }
 
 interface FormErrors {
@@ -86,7 +86,7 @@ const DEFAULT_FORM: FormState = {
   cron_mode: "simple",
   is_public: false,
   playlist_name: "",
-  blend_users: undefined,
+  blend_users: null,
 };
 
 const STRATEGIES: { label: string; value: RecommendationStrategy }[] = [
@@ -210,8 +210,7 @@ export const Recommendations = () => {
       cron_expression: formData.cron_expression,
       is_public: formData.is_public,
       playlist_name: formData.playlist_name,
-      blend_users:
-        formData.strategy === "blend" ? formData.blend_users : undefined,
+      blend_users: formData.strategy === "blend" ? formData.blend_users : null,
     };
 
     setDialogOpen(false);
@@ -629,7 +628,10 @@ export const Recommendations = () => {
                 <Select
                   value={form.is_public ? "true" : "false"}
                   onValueChange={(value) =>
-                    setForm((prev) => ({ ...prev, is_public: value === "true" }))
+                    setForm((prev) => ({
+                      ...prev,
+                      is_public: value === "true",
+                    }))
                   }
                 >
                   <SelectTrigger>
