@@ -580,7 +580,7 @@ export const Recommendations = () => {
                   setForm((prev) => ({
                     ...prev,
                     strategy: value as RecommendationStrategy,
-                    is_public: value === "blend" ? true : false,
+                    is_public: value === "blend" ? true : prev.is_public,
                   }))
                 }
               >
