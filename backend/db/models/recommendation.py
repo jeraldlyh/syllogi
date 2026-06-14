@@ -39,7 +39,7 @@ class RecommendationStrategy(str, enum.Enum):
 class Recommendation(TimestampMixin, SerializerMixin, SQLModel, table=True):
     id: uuid.UUID = Field(default_factory=uuid.uuid4, primary_key=True, nullable=False)
 
-    username: str = Field(max_length=128, nullable=False, unique=True, index=True)
+    username: str = Field(max_length=128, nullable=False, index=True)
     strategy: RecommendationStrategy = Field(nullable=False)
     lastfm_username: str = Field(max_length=128, nullable=False)
     requested_count: int = Field(default=50, nullable=False)
