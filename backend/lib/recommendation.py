@@ -49,25 +49,33 @@ async def get_recommendations(
     """Get track recommendations for a user based on their listening history."""
     match strategy:
         case RecommendationStrategy.top_tracks:
-            all_tracks = await get_lastfm_top_tracks(
+            tracks = await get_lastfm_top_tracks(
                 user=lastfm_username,
                 limit=num_recommendations,
             )
+            all_tracks = [(track, lastfm_username) for track in tracks]
         case RecommendationStrategy.recent_tracks:
-            all_tracks = await get_lastfm_recent_tracks(
+            tracks = await get_lastfm_recent_tracks(
                 user=lastfm_username,
                 limit=num_recommendations,
             )
+            all_tracks = [(track, lastfm_username) for track in tracks]
         case RecommendationStrategy.mixed:
             recent_limit = round(num_recommendations * 0.5)
-            recent_tracks = await get_lastfm_recent_tracks(
-                user=lastfm_username,
-                limit=recent_limit,
-            )
-            top_tracks = await get_lastfm_top_tracks(
-                user=lastfm_username,
-                limit=num_recommendations - recent_limit,
-            )
+            recent_tracks = [
+                (track, lastfm_username)
+                for track in await get_lastfm_recent_tracks(
+                    user=lastfm_username,
+                    limit=recent_limit,
+                )
+            ]
+            top_tracks = [
+                (track, lastfm_username)
+                for track in await get_lastfm_top_tracks(
+                    user=lastfm_username,
+                    limit=num_recommendations - recent_limit,
+                )
+            ]
             all_tracks = recent_tracks + top_tracks
         case RecommendationStrategy.blend:
             if not blend_users:
@@ -84,18 +92,21 @@ async def get_recommendations(
                 top = await get_lastfm_top_tracks(
                     user=lastfm_name, limit=per_user_limit
                 )
-                all_tracks.extend(recent + top)
+                all_tracks.extend(
+                    [(track, lastfm_name) for track in recent]
+                    + [(track, lastfm_name) for track in top]
+                )
 
     missing: set[LastFMSimilarTrack] = set()
     found: set[LastFMSimilarTrack] = set()
     provider_tracks: list[ProviderTrack] = []
 
-    for track in all_tracks:
+    for track, track_lastfm_username in all_tracks:
         if len(found) + len(missing) >= num_recommendations:
             break
 
         similar_tracks = await get_lastfm_similar_tracks(
-            user=lastfm_username,
+            user=track_lastfm_username,
             artist=track.artist_name,
             track=track.track_name,
         )
