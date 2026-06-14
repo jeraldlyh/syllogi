@@ -37,22 +37,23 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import {
+  BlendUser,
   createRecommendationMutation,
   deleteRecommendationMutation,
   generateRecommendationMutation,
   Recommendation,
-  RecommendationStrategy,
   updateRecommendationMutation,
   useRecommendations,
 } from "@/hooks/useRecommendation";
 import { useJellyfinUsers } from "@/hooks/useUsers";
 import { CRON_PRESETS } from "@/lib/types";
 import { cn } from "@/lib/utils";
-import { Pencil, Play, Plus, Trash2 } from "lucide-react";
+import { X, Pencil, Play, Plus, Trash2 } from "lucide-react";
 import React, { useState } from "react";
 import { toast } from "sonner";
 import useSWRMutation from "swr/mutation";
 import { RecommendationStrategyBadge } from "./recommendation-strategy-badge";
+import { RecommendationStrategy } from "@/hooks/useRecommendationSessions";
 
 interface FormState {
   username: string;
@@ -62,6 +63,8 @@ interface FormState {
   cron_expression: string;
   cron_mode: "simple" | "custom";
   is_public: boolean;
+  playlist_name: string;
+  blend_users?: BlendUser[] | null;
 }
 
 interface FormErrors {
@@ -70,6 +73,8 @@ interface FormErrors {
   lastfm_username?: string;
   requested_count?: string;
   cron_expression?: string;
+  playlist_name?: string;
+  blend_users?: string;
 }
 
 const DEFAULT_FORM: FormState = {
@@ -80,12 +85,15 @@ const DEFAULT_FORM: FormState = {
   cron_expression: "0 * * * *",
   cron_mode: "simple",
   is_public: false,
+  playlist_name: "",
+  blend_users: null,
 };
 
 const STRATEGIES: { label: string; value: RecommendationStrategy }[] = [
   { label: "Recent Tracks", value: "recent_tracks" },
   { label: "Top Tracks", value: "top_tracks" },
   { label: "Mixed", value: "mixed" },
+  { label: "Blend", value: "blend" },
 ];
 
 export const Recommendations = () => {
@@ -137,6 +145,8 @@ export const Recommendations = () => {
       cron_mode:
         isPreset || !recommendation.cron_expression ? "simple" : "custom",
       is_public: recommendation.is_public,
+      playlist_name: recommendation.playlist_name,
+      blend_users: recommendation.blend_users,
     });
     setErrors({});
     setDialogOpen(true);
@@ -149,8 +159,22 @@ export const Recommendations = () => {
       newErrors.username = "Required";
     }
 
-    if (!form.lastfm_username.trim()) {
+    if (form.strategy === "blend" && form.blend_users) {
+      if (form.blend_users.length < 2) {
+        newErrors.blend_users = "Select at least 2 users";
+      }
+
+      if (form.blend_users.some((user) => !user.lastfm_username.trim())) {
+        newErrors.blend_users = "Enter a Last.fm username for each user";
+      }
+    }
+
+    if (form.strategy !== "blend" && !form.lastfm_username.trim()) {
       newErrors.lastfm_username = "Required";
+    }
+
+    if (!form.playlist_name.trim()) {
+      newErrors.playlist_name = "Required";
     }
 
     if (form.requested_count < 1) {
@@ -180,10 +204,13 @@ export const Recommendations = () => {
     const payload = {
       username: formData.username,
       strategy: formData.strategy,
-      lastfm_username: formData.lastfm_username,
+      lastfm_username:
+        formData.strategy === "blend" ? "" : formData.lastfm_username,
       requested_count: formData.requested_count,
       cron_expression: formData.cron_expression,
       is_public: formData.is_public,
+      playlist_name: formData.playlist_name,
+      blend_users: formData.strategy === "blend" ? formData.blend_users : null,
     };
 
     setDialogOpen(false);
@@ -282,9 +309,7 @@ export const Recommendations = () => {
           <TableHeader>
             <TableRow className="hover:bg-transparent text-xs text-muted-foreground">
               <TableHead className="text-nowrap">Jellyfin User</TableHead>
-              <TableHead className="hidden sm:table-cell">
-                Last.fm User
-              </TableHead>
+              <TableHead className="hidden sm:table-cell">Playlist</TableHead>
               <TableHead>Strategy</TableHead>
               <TableHead className="hidden md:table-cell">Requested</TableHead>
               <TableHead className="hidden md:table-cell">Schedule</TableHead>
@@ -298,7 +323,7 @@ export const Recommendations = () => {
                   <Text value={recommendation.username} />
                 </TableCell>
                 <TableCell className="hidden sm:table-cell">
-                  <Text muted value={recommendation.lastfm_username} />
+                  <Text muted value={recommendation.playlist_name} />
                 </TableCell>
                 <TableCell>
                   <RecommendationStrategyBadge
@@ -362,6 +387,91 @@ export const Recommendations = () => {
     );
   };
 
+  const renderBlendUserChips = (): React.JSX.Element => {
+    if (!users || users.length === 0) {
+      return (
+        <Text
+          muted
+          className="text-xs py-2 text-center w-full"
+          value="No users available"
+        />
+      );
+    }
+
+    return (
+      <div className="flex flex-wrap gap-1.5">
+        {users.map((user) => {
+          const isSelected =
+            (form.blend_users ?? []).find((u) => u.name === user.name) !==
+            undefined;
+          return (
+            <button
+              key={user.id}
+              type="button"
+              onClick={() =>
+                setForm((prev) => ({
+                  ...prev,
+                  blend_users: isSelected
+                    ? (prev.blend_users ?? []).filter(
+                        (u) => u.name !== user.name,
+                      )
+                    : [
+                        ...(prev.blend_users ?? []),
+                        {
+                          name: user.name,
+                          lastfm_username: "",
+                        },
+                      ],
+                }))
+              }
+              className={cn(
+                "inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-medium select-none cursor-pointer transition-colors duration-150",
+                isSelected
+                  ? "bg-primary text-primary-foreground"
+                  : "bg-secondary text-secondary-foreground hover:bg-secondary/80",
+              )}
+            >
+              {user.name}
+              {isSelected && <X className="h-3 w-3" />}
+            </button>
+          );
+        })}
+      </div>
+    );
+  };
+
+  const renderBlendUserInputs = (): React.JSX.Element => {
+    if (!form.blend_users || form.strategy !== "blend" || !form.blend_users)
+      return <></>;
+
+    return (
+      <div className="flex flex-col gap-2 border-t border-border pt-2 mt-1">
+        {form.blend_users.map((user) => (
+          <div key={user.name} className="flex items-center gap-2 text-sm">
+            <span className="text-foreground font-medium whitespace-nowrap min-w-[80px]">
+              {user.name}
+            </span>
+            <Input
+              value={user.lastfm_username}
+              onChange={(e) =>
+                setForm((prev) => ({
+                  ...prev,
+                  blend_users: (prev.blend_users ?? []).map((new_user) =>
+                    new_user.name === user.name
+                      ? { ...new_user, lastfm_username: e.target.value }
+                      : new_user,
+                  ),
+                }))
+              }
+              placeholder="Last.fm username"
+              className="h-7 text-xs"
+            />
+          </div>
+        ))}
+      </div>
+    );
+  };
+
   return (
     <>
       <Card>
@@ -376,9 +486,8 @@ export const Recommendations = () => {
         </CardHeader>
         <CardContent>{renderTable()}</CardContent>
       </Card>
-
       <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-        <DialogContent className="max-w-md bg-card text-card-foreground">
+        <DialogContent className="max-w-lg bg-card text-card-foreground">
           <DialogHeader>
             <DialogTitle className="text-foreground">
               {editingId ? "Edit Recommendation" : "Add Recommendation"}
@@ -414,24 +523,55 @@ export const Recommendations = () => {
             </div>
             <div className="flex flex-col gap-2">
               <Label
-                htmlFor="lastfm_username"
+                htmlFor="playlist_name"
                 className="flex justify-between items-center"
               >
-                <Text muted value="Last.fm Username" />
-                {renderErrorMessage(errors.lastfm_username)}
+                <Text muted value="Playlist Name" />
+                {renderErrorMessage(errors.playlist_name)}
               </Label>
               <Input
-                id="lastfm_username"
-                value={form.lastfm_username}
+                id="playlist_name"
+                value={form.playlist_name}
                 onChange={(e) =>
                   setForm((prev) => ({
                     ...prev,
-                    lastfm_username: e.target.value,
+                    playlist_name: e.target.value,
                   }))
                 }
-                placeholder="e.g. john_doe"
+                placeholder="e.g. Daily Recommendations"
               />
             </div>
+            {form.strategy === "blend" ? (
+              <div className="flex flex-col gap-2">
+                <Label className="flex justify-between items-center">
+                  <Text muted value="Blend Users" />
+                  {renderErrorMessage(errors.blend_users)}
+                </Label>
+                {renderBlendUserChips()}
+                {renderBlendUserInputs()}
+              </div>
+            ) : (
+              <div className="flex flex-col gap-2">
+                <Label
+                  htmlFor="lastfm_username"
+                  className="flex justify-between items-center"
+                >
+                  <Text muted value="Last.fm Username" />
+                  {renderErrorMessage(errors.lastfm_username)}
+                </Label>
+                <Input
+                  id="lastfm_username"
+                  value={form.lastfm_username}
+                  onChange={(e) =>
+                    setForm((prev) => ({
+                      ...prev,
+                      lastfm_username: e.target.value,
+                    }))
+                  }
+                  placeholder="e.g. john_doe"
+                />
+              </div>
+            )}
             <div className="flex flex-col gap-2">
               <Label className="text-xs text-muted-foreground">Strategy</Label>
               <Select
@@ -440,6 +580,7 @@ export const Recommendations = () => {
                   setForm((prev) => ({
                     ...prev,
                     strategy: value as RecommendationStrategy,
+                    is_public: value === "blend" ? true : prev.is_public,
                   }))
                 }
               >
@@ -479,25 +620,30 @@ export const Recommendations = () => {
                 placeholder="e.g. 50"
               />
             </div>
-            <div className="flex flex-col gap-2">
-              <Label className="text-xs text-muted-foreground">
-                Visibility
-              </Label>
-              <Select
-                value={form.is_public ? "true" : "false"}
-                onValueChange={(value) =>
-                  setForm((prev) => ({ ...prev, is_public: value === "true" }))
-                }
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder="Select visibility" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="false">Private</SelectItem>
-                  <SelectItem value="true">Public</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
+            {form.strategy !== "blend" && (
+              <div className="flex flex-col gap-2">
+                <Label className="text-xs text-muted-foreground">
+                  Visibility
+                </Label>
+                <Select
+                  value={form.is_public ? "true" : "false"}
+                  onValueChange={(value) =>
+                    setForm((prev) => ({
+                      ...prev,
+                      is_public: value === "true",
+                    }))
+                  }
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select visibility" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="false">Private</SelectItem>
+                    <SelectItem value="true">Public</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            )}
             <div className="flex flex-col gap-2">
               <Label className="flex justify-between items-center">
                 <Text muted value="Schedule" />

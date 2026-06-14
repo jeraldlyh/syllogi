@@ -1,9 +1,15 @@
 import { fetcher } from "@/lib/api";
 import { ApiResponse } from "@/lib/types";
+import { BlendUser } from "@/hooks/useRecommendation";
 import useSWR from "swr";
 
-export type RecommendationStrategy = "top_tracks" | "recent_tracks" | "mixed";
+export type RecommendationStrategy =
+  | "top_tracks"
+  | "recent_tracks"
+  | "mixed"
+  | "blend";
 export type RecommendationProvider = "lastfm";
+
 export interface RecommendationSession {
   id: string;
   username: string;
@@ -20,6 +26,7 @@ export interface RecommendationSession {
   duration_seconds: number;
   status: "pending" | "completed" | "failed";
   error_message: string | null;
+  blend_users?: BlendUser[] | null;
 }
 
 export const useRecommendationSessions = () => {

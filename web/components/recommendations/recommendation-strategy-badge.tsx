@@ -13,6 +13,7 @@ export const RecommendationStrategyBadge = ({
       className={cn("text-xs whitespace-nowrap w-fit", {
         "border-blue-500/30 text-blue-400": strategy === "recent_tracks",
         "border-purple-500/30 text-purple-400": strategy === "top_tracks",
+        "border-orange-500/30 text-orange-400": strategy === "blend",
       })}
     >
       {convertSnakeCaseToTitleCase(strategy)}

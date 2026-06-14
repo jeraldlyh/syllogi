@@ -1,5 +1,7 @@
 from fastapi import APIRouter, BackgroundTasks, HTTPException, status
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, model_validator
+
+from lib.models.blend import BlendUser
 
 from db.models.recommendation import (
     Recommendation,
@@ -17,7 +19,6 @@ from db.recommendation import (
 )
 from db.recommendation_session import create_recommendation_session
 from db.session import SessionDep
-from lib.constants import DEFAULT_RECOMMENDED_PLAYLIST_NAME
 from lib.cron import create_job, delete_job, update_job
 from lib.providers.jellyfin import JellyfinProvider
 from lib.recommendation import (
@@ -32,10 +33,34 @@ router = APIRouter()
 class CreateOrUpdateRecommendationRequest(BaseModel):
     username: str = Field(min_length=1)
     strategy: RecommendationStrategy = Field(min_length=1)
-    lastfm_username: str = Field(min_length=1)
+    lastfm_username: str = Field(default="")
     requested_count: int = Field(default=50, ge=1, le=50)
     cron_expression: str = Field(min_length=1)
     is_public: bool = Field(default=False)
+    playlist_name: str = Field(min_length=1, max_length=256)
+    blend_users: list[BlendUser] | None = Field(default=None)
+
+    @model_validator(mode="after")
+    def validate_blend_users(self) -> "CreateOrUpdateRecommendationRequest":
+        if self.strategy == RecommendationStrategy.blend:
+            self.is_public = True
+
+            if not self.blend_users or len(self.blend_users) < 2:
+                raise ValueError(
+                    "There must be at least 2 blend_users for the 'blend' strategy"
+                )
+            for user in self.blend_users:
+                if not user.name or not user.lastfm_username:
+                    raise ValueError(
+                        "Each blend user must have 'name' and 'lastfm_username'"
+                    )
+        else:
+            if not self.lastfm_username:
+                raise ValueError(
+                    "Last.fm username is required for non-blend strategies"
+                )
+            self.blend_users = None
+        return self
 
 
 @router.get(
@@ -94,12 +119,17 @@ def _create_recommendation(
         requested_count=item.requested_count,
         cron_expression=item.cron_expression,
         is_public=item.is_public,
+        playlist_name=item.playlist_name,
+        blend_users=[u.to_dict() for u in item.blend_users]
+        if item.blend_users
+        else None,
     )
+    jellyfin = JellyfinProvider()
 
     create_recommendation(session=session, recommendation_setting=recommendation)
     create_job(
         func=generate_recommendations,
-        kwargs={"recommendation": recommendation},
+        kwargs={"recommendation": recommendation, "provider": jellyfin},
         cron_expression=item.cron_expression,
         job_id=str(recommendation.id),
     )
@@ -153,6 +183,10 @@ async def _update_recommendation(
     recommendation.requested_count = item.requested_count
     recommendation.cron_expression = item.cron_expression
     recommendation.is_public = item.is_public
+    recommendation.playlist_name = item.playlist_name
+    recommendation.blend_users = (
+        [u.to_dict() for u in item.blend_users] if item.blend_users else None
+    )
 
     update_recommendation(
         session=session,
@@ -161,7 +195,7 @@ async def _update_recommendation(
 
     jellyfin = JellyfinProvider()
     await jellyfin.update_playlist_visibility(
-        playlist_name=DEFAULT_RECOMMENDED_PLAYLIST_NAME,
+        playlist_name=recommendation.playlist_name,
         username=recommendation.username,
         is_public=recommendation.is_public,
     )
@@ -204,9 +238,7 @@ def _delete_recommendation(
     id: str,
     session: SessionDep,
 ) -> dict[str, str]:
-    recommendation = get_recommendation_by_id(
-        session=session, recommendation_id=id
-    )
+    recommendation = get_recommendation_by_id(session=session, recommendation_id=id)
 
     if not recommendation:
         raise HTTPException(
@@ -246,12 +278,18 @@ def _generate_recommendations(
     started_at = get_now()
     jellyfin = JellyfinProvider()
 
+    blend_users = recommendation.get_blend_users()
+    serialized_blend_users = (
+        [user.to_dict() for user in blend_users] if blend_users else None
+    )
+
     recommendation_session = RecommendationSession(
         username=username,
         provider=RecommendationProvider.lastfm,
         strategy=recommendation.strategy,
         requested_count=recommendation.requested_count,
         generated_count=0,
+        blend_users=serialized_blend_users,
         started_at=started_at,
         finished_at=started_at,
         duration_seconds=0,
@@ -268,6 +306,7 @@ def _generate_recommendations(
         lastfm_username=recommendation.lastfm_username,
         recommendation_session_id=recommendation_session.id,
         recommendation_id=recommendation.id,
+        blend_users=recommendation.get_blend_users(),
     )
 
     return {"id": str(recommendation_session.id)}
