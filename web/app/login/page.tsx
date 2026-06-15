@@ -107,7 +107,7 @@ export default function LoginPage() {
             </h1>
             <Text
               className="text-muted-foreground"
-              value="Unify your playlists with Jellyfin"
+              value="Unify your playlists with your music server"
             />
           </div>
         </div>

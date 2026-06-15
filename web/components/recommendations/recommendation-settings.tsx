@@ -308,7 +308,7 @@ export const Recommendations = () => {
         <Table>
           <TableHeader>
             <TableRow className="hover:bg-transparent text-xs text-muted-foreground">
-              <TableHead className="text-nowrap">Jellyfin User</TableHead>
+              <TableHead className="text-nowrap">User</TableHead>
               <TableHead className="hidden sm:table-cell">Playlist</TableHead>
               <TableHead>Strategy</TableHead>
               <TableHead className="hidden md:table-cell">Requested</TableHead>
@@ -499,7 +499,7 @@ export const Recommendations = () => {
                 htmlFor="username"
                 className="flex justify-between items-center"
               >
-                <Text muted value="Jellyfin Username" />
+                <Text muted value="Username" />
                 {renderErrorMessage(errors.username)}
               </Label>
               <Select
@@ -798,7 +798,7 @@ export const Recommendations = () => {
                 </p>
                 <br />
                 <p>
-                  This will fetch tracks from Last.fm and add them to Jellyfin.
+                  This will fetch tracks from Last.fm and add them to your music server.
                 </p>
               </div>
             </AlertDialogDescription>

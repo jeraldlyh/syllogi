@@ -39,7 +39,7 @@ export const SyncSummary = () => {
           />
           <SummaryItem
             icon={<User className="h-4 w-4 text-primary" />}
-            label="Jellyfin User"
+            label="User"
             value={latestRun.target_username}
           />
           <SummaryItem
