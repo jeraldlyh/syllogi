@@ -16,7 +16,7 @@ from db.session import SessionDep
 from db.sync_session import create_sync_session
 from lib.cron import create_job, delete_job, update_job
 from lib.models.common import ExternalSync, ExternalTrack
-from lib.providers.jellyfin import JellyfinProvider
+from lib.providers import get_provider
 from lib.sync import sync_playlist, sync_playlist_task
 from lib.spotify import (
     get_spotify_playlist,
@@ -106,7 +106,7 @@ def _create_sync_config(item: CreateOrUpdateSyncRequest, session: SessionDep):
     if sync.enable_sync:
         create_job(
             func=sync_playlist,
-            kwargs={"sync_config": sync, "provider": JellyfinProvider()},
+            kwargs={"sync_config": sync, "provider": get_provider()},
             cron_expression=sync.cron_expression,
             job_id=str(sync.id),
         )
@@ -159,10 +159,10 @@ async def _update_sync_config(
     sync.is_public = item.is_public
     sync.cron_expression = item.cron_expression
 
-    jellyfin = JellyfinProvider()
+    provider = get_provider()
     update_sync(session=session, sync=sync)
 
-    await jellyfin.update_playlist_visibility(
+    await provider.update_playlist_visibility(
         playlist_name=sync.playlist_name,
         username=sync.username,
         is_public=sync.is_public,
@@ -173,7 +173,7 @@ async def _update_sync_config(
     else:
         update_job(
             func=sync_playlist,
-            kwargs={"sync_config": sync, "provider": jellyfin},
+            kwargs={"sync_config": sync, "provider": provider},
             cron_expression=sync.cron_expression,
             job_id=str(sync.id),
         )
@@ -275,7 +275,7 @@ def sync_playlist_endpoint(
     playlist_id = internal_sync.playlist_id
     username = item.username
     started_at = get_now()
-    jellyfin = JellyfinProvider()
+    provider = get_provider()
 
     sync_session = SyncSession(
         provider=internal_sync.provider,
@@ -294,7 +294,7 @@ def sync_playlist_endpoint(
 
     background_tasks.add_task(
         sync_playlist_task,
-        provider=jellyfin,
+        provider=provider,
         internal_playlist_id=internal_sync.id,
         external_playlist=external_playlist,
         songs=songs,

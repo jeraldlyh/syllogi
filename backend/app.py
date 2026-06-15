@@ -15,7 +15,7 @@ from db.sync import get_syncs
 from db.recommendation import get_recommendations
 from db.session import get_isolated_session
 from lib.cron import create_job, scheduler
-from lib.providers.jellyfin import JellyfinProvider
+from lib.providers import get_provider
 from lib.recommendation import generate_recommendations
 from lib.sync import sync_playlist
 from routes import OPENAPI_TAGS, register_routes
@@ -143,8 +143,8 @@ def create_app() -> FastAPI:
     async def startup_event():
         scheduler.start()
 
-        jellyfin = JellyfinProvider()
-        await jellyfin.ensure_download_library_exists()
+        provider = get_provider()
+        await provider.ensure_download_library_exists()
 
         logger.info("Starting up application and initializing cron jobs")
         with get_isolated_session() as session:
@@ -158,7 +158,7 @@ def create_app() -> FastAPI:
                 )
                 create_job(
                     func=sync_playlist,
-                    kwargs={"sync_config": sync_config, "provider": jellyfin},
+                    kwargs={"sync_config": sync_config, "provider": provider},
                     cron_expression=sync_config.cron_expression,
                     job_id=str(sync_config.id),
                 )
@@ -170,7 +170,7 @@ def create_app() -> FastAPI:
                 )
                 create_job(
                     func=generate_recommendations,
-                    kwargs={"recommendation": recommendation, "provider": jellyfin},
+                    kwargs={"recommendation": recommendation, "provider": provider},
                     cron_expression=recommendation.cron_expression,
                     job_id=str(recommendation.id),
                 )

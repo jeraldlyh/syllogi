@@ -6,7 +6,7 @@ from routes.oauth import router as oauth_router
 from routes.cron import router as cron_router
 from routes.charts import router as charts_router
 from routes.health import router as health_router
-from routes.jellyfin import router as jellyfin_router
+from routes.users import router as users_router
 from routes.notification import router as notification_router
 
 from routes.spotify import router as spotify_router
@@ -23,7 +23,7 @@ OPENAPI_TAGS = [
     {"name": "OAuth", "description": "OAuth login endpoints."},
     {"name": "Health", "description": "Service health and readiness checks."},
     {"name": "Track", "description": "Track search and matching endpoints."},
-    {"name": "Jellyfin", "description": "Jellyfin integration endpoints."},
+    {"name": "Users", "description": "Music server user endpoints."},
     {"name": "Notification", "description": "Notification retrieval endpoints."},
     {"name": "Sync", "description": "Sync configuration and execution endpoints."},
     {
@@ -55,10 +55,10 @@ def register_routes(app: FastAPI) -> None:
         tags=["Track"],
     )
     api.include_router(
-        router=jellyfin_router,
-        prefix="/jellyfin",
+        router=users_router,
+        prefix="/users",
         dependencies=[Depends(get_current_user)],
-        tags=["Jellyfin"],
+        tags=["Users"],
     )
     api.include_router(
         router=notification_router,

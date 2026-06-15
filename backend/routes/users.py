@@ -1,16 +1,16 @@
 from fastapi import APIRouter
-from lib.providers.jellyfin import JellyfinProvider
+from lib.providers import get_provider
 
 router = APIRouter()
 
 
 @router.get(
-    path="/users",
-    summary="Get Jellyfin users",
-    description="Retrieve a list of all Jellyfin users.",
+    path="",
+    summary="Get music server users",
+    description="Retrieve a list of all users from the configured music server.",
     responses={
         200: {
-            "description": "Jellyfin users retrieved successfully",
+            "description": "Users retrieved successfully",
             "content": {
                 "application/json": {
                     "example": {
@@ -25,8 +25,8 @@ router = APIRouter()
         }
     },
 )
-async def _get_jellyfin_users():
-    jellyfin = JellyfinProvider()
-    users = await jellyfin.get_users()
+async def _get_users():
+    provider = get_provider()
+    users = await provider.get_users()
 
     return [user.to_dict() for user in users]
