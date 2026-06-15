@@ -45,7 +45,7 @@ import {
   updateRecommendationMutation,
   useRecommendations,
 } from "@/hooks/useRecommendation";
-import { useJellyfinUsers } from "@/hooks/useUsers";
+import { useMusicServerUsers } from "@/hooks/useUsers";
 import { CRON_PRESETS } from "@/lib/types";
 import { cn } from "@/lib/utils";
 import { X, Pencil, Play, Plus, Trash2 } from "lucide-react";
@@ -106,7 +106,7 @@ export const Recommendations = () => {
   const [recommendationToGenerate, setRecommendationToGenerate] =
     useState<Recommendation | null>(null);
 
-  const { data: users } = useJellyfinUsers();
+  const { data: users } = useMusicServerUsers();
   const {
     data: recommendations,
     isLoading,

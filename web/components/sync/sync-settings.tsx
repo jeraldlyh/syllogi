@@ -49,7 +49,7 @@ import {
   updateSyncConfigMutation,
   useSyncConfigs,
 } from "@/hooks/useSync";
-import { useJellyfinUsers } from "@/hooks/useUsers";
+import { useMusicServerUsers } from "@/hooks/useUsers";
 import { api } from "@/lib/api";
 import { CRON_PRESETS, ErrorResponse, PROVIDERS } from "@/lib/types";
 import { capitaliseFirstLetter, cn } from "@/lib/utils";
@@ -100,7 +100,7 @@ export const SyncSettings = () => {
     null,
   );
 
-  const { data: users } = useJellyfinUsers();
+  const { data: users } = useMusicServerUsers();
   const {
     data: playlists,
     isLoading,
