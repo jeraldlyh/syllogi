@@ -161,12 +161,17 @@ class NavidromeProvider(MusicPlaylistProvider):
             new_playlist = await self.create_playlist(
                 playlist_name=playlist_name,
                 user_id=user.id,
-                is_public=is_public,
             )
             playlist_id = new_playlist.id
 
             if not playlist_id:
                 raise ProviderError("Unable to create new playlist in Navidrome")
+
+        await self.update_playlist_visibility(
+            playlist_name=playlist_name,
+            username=username,
+            is_public=is_public,
+        )
 
         return playlist_id, user.id
 
