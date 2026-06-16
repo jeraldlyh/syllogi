@@ -6,6 +6,7 @@ import httpx
 
 from lib.env import get_environment_variable
 from lib.providers.base import MusicPlaylistProvider
+from lib.utils import sanitize_filename
 from lib.models.provider import (
     ProviderError,
     ProviderPlaylist,
@@ -31,20 +32,28 @@ class JellyfinProvider(MusicPlaylistProvider):
         data: dict[str, Any] | str | bytes | None = None,
         timeout: float = 30.0,
     ) -> Any:
-        """HTTP helper for the Jellyfin API."""
+        """HTTP helper for the Jellyfin API.
+
+        Raises:
+            ProviderError: If required environment variables are missing.
+        """
 
         api_key = get_environment_variable("JELLYFIN_API_KEY", ignore_error=False)
-        api_url = get_environment_variable("JELLYFIN_URL", ignore_error=False)
+        url = get_environment_variable("JELLYFIN_URL", ignore_error=False)
+
+        if not api_key or not url:
+            raise ProviderError("Jellyfin API key and URL must be configured")
 
         base_headers = {
             "X-Emby-Token": api_key,
             "Content-Type": "application/json",
         }
+        request_url = f"{str(url).rstrip('/')}{path}"
 
         async with httpx.AsyncClient() as client:
             response = await client.request(
                 method=method.upper(),
-                url=f"{api_url}{path}",
+                url=request_url,
                 headers={**base_headers, **(headers or {})},
                 params=params,
                 json=json,
@@ -102,46 +111,46 @@ class JellyfinProvider(MusicPlaylistProvider):
             tuple[str, str]: (playlist_id, user_id)
 
         Raises:
-            HTTPException: If user is not found or playlist creation fails
+            ProviderError: If user is not found or playlist creation fails
         """
 
-        jellyfin_user = await self.get_user_by_name(username=username)
+        user = await self.get_user_by_name(username=username)
 
-        if not jellyfin_user:
+        if not user:
             raise ProviderError(f"Unable to find username: {username}")
 
-        jellyfin_playlists = await self.get_playlists(user_id=jellyfin_user.id)
+        playlists = await self.get_playlists(user_id=user.id)
 
         existing_playlist = next(
             (
                 playlist
-                for playlist in jellyfin_playlists
+                for playlist in playlists
                 if playlist.name == playlist_name
-                and (playlist.owner_id is None or playlist.owner_id == jellyfin_user.id)
+                and (playlist.owner_id is None or playlist.owner_id == user.id)
             ),
             None,
         )
-        existing_playlist_id = existing_playlist.id if existing_playlist else None
+        playlist_id = existing_playlist.id if existing_playlist else None
 
-        if not existing_playlist_id:
+        if not playlist_id:
             new_playlist = await self.create_playlist(
                 playlist_name=playlist_name,
-                user_id=jellyfin_user.id,
+                user_id=user.id,
                 is_public=is_public,
             )
-            existing_playlist_id = new_playlist.id
+            playlist_id = new_playlist.id
 
-            if not existing_playlist_id:
+            if not playlist_id:
                 raise ProviderError("Unable to create new playlist in Jellyfin")
 
-        return existing_playlist_id, jellyfin_user.id
+        return playlist_id, user.id
 
     async def create_playlist(
         self, playlist_name: str, user_id: str, is_public: bool = False
     ) -> ProviderPlaylist:
         """Create a new audio playlist in Jellyfin owned by user."""
 
-        result = await self._jellyfin(
+        data = await self._jellyfin(
             "/Playlists",
             method="POST",
             json={
@@ -155,13 +164,14 @@ class JellyfinProvider(MusicPlaylistProvider):
         )
 
         return ProviderPlaylist(
-            id=result.get("Id", ""),
+            id=data.get("Id", ""),
             name=playlist_name,
             owner_id=user_id,
         )
 
     async def delete_playlist(self, playlist_id: str) -> None:
-        """Delete a Jellyfin playlist by its item ID."""
+        """Delete a Jellyfin playlist by its ID."""
+
         await self._jellyfin(f"/Items/{playlist_id}", method="DELETE")
 
     async def get_playlist_songs(
@@ -198,8 +208,10 @@ class JellyfinProvider(MusicPlaylistProvider):
         Splits requests into batches to avoid HTTP 414 Request-URI Too Large
         errors when there are many tracks.
         """
+
         for i in range(0, len(track_ids), batch_size):
             batch = track_ids[i : i + batch_size]
+
             await self._jellyfin(
                 f"/Playlists/{playlist_id}/Items",
                 method="POST",
@@ -244,7 +256,7 @@ class JellyfinProvider(MusicPlaylistProvider):
             params={
                 "includeItemTypes": "Audio",
                 "recursive": "true",
-                "searchTerm": title,
+                "searchTerm": sanitize_filename(title),
                 "fields": "Path,Album,Artists,CumulativeRunTimeTicks",
                 "limit": 10,
                 "enableTotalRecordCount": "false",
@@ -439,29 +451,25 @@ class JellyfinProvider(MusicPlaylistProvider):
 
     async def wait_for_rescan(
         self,
-        start_timeout_seconds: int = 30,
-        poll_interval_seconds: int = 3,
-        scan_poll_interval_seconds: int = 15,
+        poll_interval_seconds: int = 15,
+        max_wait_seconds: int = 600,
     ) -> None:
-        """Trigger a rescan and wait until it starts or the timeout is reached."""
+        """Trigger a rescan and block until the scan finishes."""
 
         await self.rescan_library()
 
         waited = 0
-        is_scan_started = False
 
-        while waited < start_timeout_seconds:
-            if await self.is_scanning_library():
-                is_scan_started = True
-                break
-
+        while waited < max_wait_seconds:
+            if not await self.is_scanning_library():
+                logger.info("Jellyfin library scan complete")
+                return
             await asyncio.sleep(poll_interval_seconds)
             waited += poll_interval_seconds
 
-        if not is_scan_started:
-            logger.warning("Jellyfin library scan did not start within expected time")
-        else:
-            logger.info("Jellyfin library scan complete")
+        logger.warning(
+            f"Jellyfin library scan did not complete within {max_wait_seconds}s"
+        )
 
     async def _create_download_library(self) -> None:
         """Create the download library in Jellyfin using DOWNLOAD_LIBRARY_NAME and DOWNLOAD_DIR."""

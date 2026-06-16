@@ -4,7 +4,7 @@
 
 # syllogi
 
-**syllogi** mirrors external playlists into Jellyfin by matching tracks against your indexed audio. Missing tracks can optionally be downloaded with [yt-dlp] or [slskd].
+**syllogi** mirrors external playlists into [Jellyfin] or [Navidrome] by matching tracks against your indexed audio. Missing tracks can optionally be downloaded with [yt-dlp] or [slskd].
 
 Supported playlist providers:
 
@@ -13,10 +13,17 @@ Supported playlist providers:
 | **Spotify** | No API key or account needed, public playlists only, via [SpotAPI] |
 | **YouTube** | No API key needed, public playlists only, via [yt-dlp]             |
 
+Supported music servers:
+
+| Server        | Requirements                                           |
+| ------------- | ------------------------------------------------------ |
+| **Jellyfin**  | API key with permission to create and manage playlists |
+| **Navidrome** | URL, username, and password for the Subsonic REST API  |
+
 > [!WARNING]
 >
-> - Matching depends on metadata quality from the provider and Jellyfin.
-> - Jellyfin library refresh timing can delay newly downloaded tracks.
+> - Matching depends on metadata quality from the provider and music server.
+> - Library refresh timing can delay newly downloaded tracks.
 > - OAuth state is stored in-memory, so a restart invalidates in-flight OAuth flows.
 
 ## Quick Links
@@ -31,17 +38,17 @@ Supported playlist providers:
 
 ### Playlist Sync
 
-Mirrors external Spotify or YouTube playlists into Jellyfin. Each sync run diffs the source playlist against your Jellyfin library and produces a per-run breakdown:
+Mirrors external Spotify or YouTube playlists into your music server. Each sync run diffs the source playlist against your library and produces a per-run breakdown:
 
 | Column     | Description                                          |
 | ---------- | ---------------------------------------------------- |
 | Total      | Total tracks in the source playlist                  |
-| New        | Tracks added to the Jellyfin playlist this run       |
+| New        | Tracks added to the music server playlist this run   |
 | Removed    | Tracks removed because they left the source playlist |
 | Missing    | Tracks not found in the library and not downloaded   |
 | Downloaded | Tracks that were downloaded and added this run       |
 
-Each playlist requires a **Jellyfin username** (the exact username of the Jellyfin account that will own the playlist) and a **cron schedule**.
+Each playlist requires a **music server username** (the exact username of the account that will own the playlist) and a **cron schedule**.
 
 ### Downloads
 
@@ -50,19 +57,20 @@ Missing tracks are downloaded automatically via the following providers:
 1. [slskd] if `SLSKD_URL` and `SLSKD_API_KEY` are set.
 2. [yt-dlp] as a fallback.
 
-Downloaded files are placed in `DOWNLOAD_DIR` and the Jellyfin library is rescanned immediately after.
+Downloaded files are placed in `DOWNLOAD_DIR` and the music server library is rescanned immediately after.
 
 ### Recommendations
 
-Generates a playlist named `Daily Recommendations` in Jellyfin based on your [Last.fm] scrobble history (requires `LASTFM_API_KEY`). The existing playlist is replaced with fresh recommendations daily. Supports three strategies:
+Generates a playlist in your music server based on your [Last.fm] scrobble history (requires `LASTFM_API_KEY`). The existing playlist is replaced with fresh recommendations daily. Supports three strategies:
 
 | Strategy        | Description                                                  |
 | --------------- | ------------------------------------------------------------ |
 | `top_tracks`    | Seeds from your all-time Last.fm top tracks (6-month window) |
 | `recent_tracks` | Seeds from your recently scrobbled tracks                    |
 | `mixed`         | 50% top tracks + 50% recent tracks                           |
+| `blend`         | Blend with other users in the music server                   |
 
-Each recommendation rule requires a **Jellyfin username**, a **Last.fm username**, the desired strategy, a track count, and a cron schedule.
+Each recommendation rule requires a **music server username**, a **Last.fm username**, the desired strategy, a track count, and a cron schedule.
 
 ### Charts
 
@@ -90,8 +98,8 @@ Browse Last.fm globally trending tracks, and tracks can be queued for download d
 
 ### Requirements
 
-- A running Jellyfin server with an API key that has permission to manage playlists.
-- A Jellyfin library that includes your local music.
+- A running [Jellyfin] or [Navidrome] server.
+- A music library that includes your local music.
 - Docker and Docker Compose.
 
 ### Building from source
@@ -125,16 +133,33 @@ All configuration is supplied through environment variables on the `syllogi` con
 
 #### Required
 
-| Name                | Description                                                                                       |
-| ------------------- | ------------------------------------------------------------------------------------------------- |
-| `JELLYFIN_API_KEY`  | Jellyfin API key for the target user with permission to create and manage playlists.              |
-| `JELLYFIN_URL`      | Base URL of your Jellyfin server, e.g. `https://jellyfin.example.com` or `http://localhost:8096`. |
-| `DATABASE_URL`      | PostgreSQL host and port, e.g. `syllogi-postgres:5432`.                                           |
-| `DATABASE_USERNAME` | PostgreSQL username.                                                                              |
-| `DATABASE_PASSWORD` | PostgreSQL password.                                                                              |
-| `DATABASE_NAME`     | PostgreSQL database name.                                                                         |
-| `NEXT_PUBLIC_URL`   | Public URL of the syllogi web UI, e.g. `http://localhost:8000`. Used for OAuth redirect URIs.     |
-| `AUTH_SECRET_KEY`   | Secret used to sign JWT session tokens. Set to a long random string in production.                |
+| Name                | Description                                                                                   |
+| ------------------- | --------------------------------------------------------------------------------------------- |
+| `DATABASE_URL`      | PostgreSQL host and port, e.g. `syllogi-postgres:5432`.                                       |
+| `DATABASE_USERNAME` | PostgreSQL username.                                                                          |
+| `DATABASE_PASSWORD` | PostgreSQL password.                                                                          |
+| `DATABASE_NAME`     | PostgreSQL database name.                                                                     |
+| `NEXT_PUBLIC_URL`   | Public URL of the syllogi web UI, e.g. `http://localhost:8000`. Used for OAuth redirect URIs. |
+| `AUTH_SECRET_KEY`   | Secret used to sign JWT session tokens. Set to a long random string in production.            |
+
+#### Music Server
+
+Configure **one** of the following providers. If both are configured, set `MUSIC_PROVIDER` to disambiguate.
+
+**Jellyfin:**
+
+| Name               | Description                                                                                       |
+| ------------------ | ------------------------------------------------------------------------------------------------- |
+| `JELLYFIN_API_KEY` | Jellyfin API key for the target user with permission to create and manage playlists.              |
+| `JELLYFIN_URL`     | Base URL of your Jellyfin server, e.g. `https://jellyfin.example.com` or `http://localhost:8096`. |
+
+**Navidrome:**
+
+| Name                 | Description                                                      |
+| -------------------- | ---------------------------------------------------------------- |
+| `NAVIDROME_URL`      | Base URL of your Navidrome server, e.g. `http://localhost:4533`. |
+| `NAVIDROME_USERNAME` | Username for the Navidrome Subsonic API.                         |
+| `NAVIDROME_PASSWORD` | Password for the Navidrome Subsonic API (token-based auth).      |
 
 #### Optional
 
@@ -155,6 +180,7 @@ All configuration is supplied through environment variables on the `syllogi` con
 | `LASTFM_URL`             | `https://ws.audioscrobbler.com/2.0`                    | Base URL for Last.fm API.                                                                                                         |
 | `SLSKD_URL`              | _(unset)_                                              | Base URL for SLSKD API.                                                                                                           |
 | `SLSKD_API_KEY`          | _(unset)_                                              | API key for SLSKD for downloading audio when tracks are missing from library.                                                     |
+| `MUSIC_PROVIDER`         | _(unset)_                                              | Set to `navidrome` if both Jellyfin and Navidrome are configured.                                                                 |
 
 ### Authentik OIDC
 
@@ -184,11 +210,13 @@ Special thanks to the following projects for making **syllogi** possible:
 - [SpotAPI]
 - [yt-dlp]
 - [Jellyfin]
+- [Navidrome]
 - [Last.fm]
 - [slskd]
 
 [SpotAPI]: https://github.com/Aran404/SpotAPI/tree/main
 [yt-dlp]: https://github.com/yt-dlp/yt-dlp
 [Jellyfin]: https://github.com/jellyfin/jellyfin
+[Navidrome]: https://github.com/navidrome/navidrome
 [Last.fm]: https://www.last.fm/
 [slskd]: https://github.com/slskd/slskd

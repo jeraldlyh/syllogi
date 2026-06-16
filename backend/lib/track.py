@@ -9,7 +9,7 @@ from lib.models.common import (
 from lib.models.lastfm import LastFMChartTrack
 from lib.models.provider import ProviderTrack
 from lib.providers.base import MusicPlaylistProvider
-from lib.utils import get_clean_name, sanitize_filename
+from lib.utils import get_clean_name
 
 logger = logging.getLogger(__name__)
 T = TypeVar("T")
@@ -93,7 +93,7 @@ async def find_track(
 
     provider_tracks = await provider.search_track(
         artist_name=artist_name,
-        title=sanitize_filename(name=track_name),
+        title=track_name,
         album=album_name,
         year=year,
     )

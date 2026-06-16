@@ -49,7 +49,7 @@ import {
   updateSyncConfigMutation,
   useSyncConfigs,
 } from "@/hooks/useSync";
-import { useJellyfinUsers } from "@/hooks/useUsers";
+import { useMusicServerUsers } from "@/hooks/useUsers";
 import { api } from "@/lib/api";
 import { CRON_PRESETS, ErrorResponse, PROVIDERS } from "@/lib/types";
 import { capitaliseFirstLetter, cn } from "@/lib/utils";
@@ -100,7 +100,7 @@ export const SyncSettings = () => {
     null,
   );
 
-  const { data: users } = useJellyfinUsers();
+  const { data: users } = useMusicServerUsers();
   const {
     data: playlists,
     isLoading,
@@ -592,7 +592,7 @@ export const SyncSettings = () => {
                 <TooltipContent side="right" className="max-w-xs">
                   <p>
                     When enabled, missing tracks are automatically downloaded
-                    via yt-dlp during sync and added to your Jellyfin library.
+                    via yt-dlp during sync and added to your music server library.
                   </p>
                 </TooltipContent>
               </Tooltip>
@@ -632,7 +632,7 @@ export const SyncSettings = () => {
                 </p>
                 <br />
                 <p>
-                  This will fetch the latest tracks and sync them to Jellyfin.
+                  This will fetch the latest tracks and sync them to your music server.
                 </p>
               </div>
             </AlertDialogDescription>

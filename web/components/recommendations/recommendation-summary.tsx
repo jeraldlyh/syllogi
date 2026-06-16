@@ -40,7 +40,7 @@ export const RecommendationSummary = () => {
           />
           <SummaryItem
             icon={<User className="h-4 w-4 text-primary" />}
-            label="Jellyfin User"
+            label="User"
             value={latestRun.username}
           />
           <SummaryItem

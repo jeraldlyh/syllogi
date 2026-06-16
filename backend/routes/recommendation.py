@@ -20,7 +20,7 @@ from db.recommendation import (
 from db.recommendation_session import create_recommendation_session
 from db.session import SessionDep
 from lib.cron import create_job, delete_job, update_job
-from lib.providers.jellyfin import JellyfinProvider
+from lib.providers import get_provider
 from lib.recommendation import (
     generate_recommendations,
     generate_recommendations_task,
@@ -124,12 +124,12 @@ def _create_recommendation(
         if item.blend_users
         else None,
     )
-    jellyfin = JellyfinProvider()
+    provider = get_provider()
 
     create_recommendation(session=session, recommendation_setting=recommendation)
     create_job(
         func=generate_recommendations,
-        kwargs={"recommendation": recommendation, "provider": jellyfin},
+        kwargs={"recommendation": recommendation, "provider": provider},
         cron_expression=item.cron_expression,
         job_id=str(recommendation.id),
     )
@@ -193,15 +193,15 @@ async def _update_recommendation(
         recommendation_setting=recommendation,
     )
 
-    jellyfin = JellyfinProvider()
-    await jellyfin.update_playlist_visibility(
+    provider = get_provider()
+    await provider.update_playlist_visibility(
         playlist_name=recommendation.playlist_name,
         username=recommendation.username,
         is_public=recommendation.is_public,
     )
     update_job(
         func=generate_recommendations,
-        kwargs={"recommendation": recommendation, "provider": jellyfin},
+        kwargs={"recommendation": recommendation, "provider": provider},
         cron_expression=item.cron_expression,
         job_id=str(recommendation_id),
     )
@@ -276,7 +276,7 @@ def _generate_recommendations(
 ) -> dict[str, str]:
     username = recommendation.username
     started_at = get_now()
-    jellyfin = JellyfinProvider()
+    provider = get_provider()
 
     blend_users = recommendation.get_blend_users()
     serialized_blend_users = (
@@ -302,7 +302,7 @@ def _generate_recommendations(
 
     background_tasks.add_task(
         generate_recommendations_task,
-        provider=jellyfin,
+        provider=provider,
         lastfm_username=recommendation.lastfm_username,
         recommendation_session_id=recommendation_session.id,
         recommendation_id=recommendation.id,

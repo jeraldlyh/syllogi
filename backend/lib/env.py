@@ -27,6 +27,10 @@ def get_environment_variables() -> dict[str, str | bool | None]:
             "MUSICBRAINZ_USER_AGENT",
             "syllogi/0.1.0 (https://github.com/jeraldlyh/syllogi)",
         ),
+        "NAVIDROME_URL": os.getenv("NAVIDROME_URL", ""),
+        "NAVIDROME_USERNAME": os.getenv("NAVIDROME_USERNAME", ""),
+        "NAVIDROME_PASSWORD": os.getenv("NAVIDROME_PASSWORD", ""),
+        "MUSIC_PROVIDER": os.getenv("MUSIC_PROVIDER", ""),
     }
 
 
@@ -55,3 +59,17 @@ def is_slskd_configured() -> bool:
     variables = get_environment_variables()
 
     return bool(variables.get("SLSKD_URL") and variables.get("SLSKD_API_KEY"))
+
+
+def is_navidrome_configured() -> bool:
+    variables = get_environment_variables()
+    return bool(
+        variables.get("NAVIDROME_URL")
+        and variables.get("NAVIDROME_USERNAME")
+        and variables.get("NAVIDROME_PASSWORD")
+    )
+
+
+def is_jellyfin_configured() -> bool:
+    variables = get_environment_variables()
+    return bool(variables.get("JELLYFIN_URL") and variables.get("JELLYFIN_API_KEY"))

@@ -120,7 +120,7 @@ export default function SignupPage() {
             </h1>
             <Text
               className="text-muted-foreground"
-              value="Start syncing your playlists with Jellyfin"
+              value="Start syncing your playlists with your music server"
             />
           </div>
         </div>
