@@ -216,7 +216,7 @@ class NavidromeProvider(MusicPlaylistProvider):
                 track_name=entry.get("title", ""),
                 album_name=entry.get("album", ""),
                 album_id=entry.get("albumId", ""),
-                musicbrainz_id="",  # TODO: check if plugins provide MusicBrainz ID in the response
+                musicbrainz_id=entry.get("musicBrainzId", ""),
                 artists=([entry["artist"]] if entry.get("artist") else []),
                 duration_ticks=int(entry.get("duration", 0)) * 10_000_000,
                 year=str(entry.get("year", "")),
@@ -279,7 +279,7 @@ class NavidromeProvider(MusicPlaylistProvider):
                 track_name=song.get("title", ""),
                 album_name=song.get("album", ""),
                 album_id=song.get("albumId", ""),
-                musicbrainz_id="",  # TODO: check if plugins provide MusicBrainz ID in the response
+                musicbrainz_id=song.get("musicBrainzId", ""),
                 artists=([song["artist"]] if song.get("artist") else []),
                 duration_ticks=int(song.get("duration", 0)) * 10_000_000,
                 year=str(song.get("year", "")),
