@@ -246,13 +246,34 @@ class NavidromeProvider(MusicPlaylistProvider):
     async def delete_songs_from_playlist(
         self, playlist_id: str, entry_ids: list[str]
     ) -> None:
-        """Remove tracks from a Navidrome playlist by their 0-based indices."""
+        """Remove tracks from a Navidrome playlist by their track IDs.
+
+        Converts track IDs to 0-based playlist indices for the Subsonic API.
+        """
+
+        data = await self._subsonic("getPlaylist", params={"id": playlist_id})
+        playlist = data.get("playlist", {})
+        entries = playlist.get("entry", [])
+
+        if isinstance(entries, dict):
+            entries = [entries]
+
+        id_to_index = {entry.get("id"): idx for idx, entry in enumerate(entries)}
+
+        indices_to_remove = [
+            str(id_to_index[id]) for id in entry_ids if id in id_to_index
+        ]
+
+        indices_to_remove.sort(reverse=True)
+
+        if not indices_to_remove:
+            return
 
         await self._subsonic(
             "updatePlaylist",
             params={
                 "playlistId": playlist_id,
-                "songIndexToRemove": entry_ids,
+                "songIndexToRemove": indices_to_remove,
             },
             http_method="POST",
         )
