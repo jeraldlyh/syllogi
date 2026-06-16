@@ -104,6 +104,9 @@ class NavidromeProvider(MusicPlaylistProvider):
         data = await self._subsonic("getUser", params={"username": username})
         user = data.get("user", {})
 
+        if not user or user.get("username") != username:
+            return None
+
         return ProviderUser(
             id=str(user.get("id", "")),
             name=user.get("username", ""),
@@ -260,9 +263,7 @@ class NavidromeProvider(MusicPlaylistProvider):
 
         id_to_index = {entry.get("id"): idx for idx, entry in enumerate(entries)}
 
-        indices_to_remove = [
-            str(id_to_index[id]) for id in entry_ids if id in id_to_index
-        ]
+        indices_to_remove = [id_to_index[id] for id in entry_ids if id in id_to_index]
 
         indices_to_remove.sort(reverse=True)
 
@@ -273,7 +274,7 @@ class NavidromeProvider(MusicPlaylistProvider):
             "updatePlaylist",
             params={
                 "playlistId": playlist_id,
-                "songIndexToRemove": indices_to_remove,
+                "songIndexToRemove": [str(idx) for idx in indices_to_remove],
             },
             http_method="POST",
         )
