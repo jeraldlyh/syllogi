@@ -56,6 +56,7 @@ async def download_missing_tracks(
             artist_name=artist_name, track_name=track_name, album_name=album_name
         ):
             logger.info(f"{formatted_name}: ALREADY EXISTS")
+            found_tracks_after_download.append(song)
             continue
 
         is_download_success = False
