@@ -92,9 +92,8 @@ class MusicPlaylistProvider(ABC):
     @abstractmethod
     async def wait_for_rescan(
         self,
-        start_timeout_seconds: int = 30,
-        poll_interval_seconds: int = 3,
-        scan_poll_interval_seconds: int = 15,
+        poll_interval_seconds: int = 15,
+        max_wait_seconds: int = 600,
     ) -> None:
         """Trigger a rescan and block until the server finishes indexing."""
         ...

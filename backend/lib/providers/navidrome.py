@@ -316,28 +316,25 @@ class NavidromeProvider(MusicPlaylistProvider):
 
     async def wait_for_rescan(
         self,
-        start_timeout_seconds: int = 30,
-        poll_interval_seconds: int = 3,
-        scan_poll_interval_seconds: int = 15,
+        poll_interval_seconds: int = 15,
+        max_wait_seconds: int = 600,
     ) -> None:
         """Trigger a rescan and block until the scan finishes."""
 
         await self.rescan_library()
 
         waited = 0
-        is_scan_started = False
 
-        while waited < start_timeout_seconds:
-            if await self.is_scanning_library():
-                is_scan_started = True
-                break
+        while waited < max_wait_seconds:
+            if not await self.is_scanning_library():
+                logger.info("Navidrome library scan complete")
+                return
             await asyncio.sleep(poll_interval_seconds)
             waited += poll_interval_seconds
 
-        if not is_scan_started:
-            logger.warning("Navidrome library scan did not start within expected time")
-        else:
-            logger.info("Navidrome library scan complete")
+        logger.warning(
+            f"Navidrome library scan did not complete within {max_wait_seconds}s"
+        )
 
     async def update_playlist_visibility(
         self, playlist_name: str, username: str, is_public: bool
