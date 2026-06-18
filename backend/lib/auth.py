@@ -3,7 +3,7 @@ from datetime import datetime, timedelta, timezone
 from typing import Annotated
 
 import jwt
-from fastapi import Cookie, HTTPException, Header, status
+from fastapi import Cookie, Depends, HTTPException, Header, status
 from pwdlib import PasswordHash
 
 from db.models.user import User
@@ -134,3 +134,16 @@ def get_or_create_oauth_user(session: SessionDep, oauth_id: str, username: str) 
     )
     create_user(session=session, user=new_user)
     return new_user
+
+
+def require_admin(
+    current_user: Annotated[User | None, Depends(get_current_user)],
+) -> User:
+    """Dependency that requires the current user to be an admin."""
+
+    if current_user is None or not current_user.is_admin:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Admin access required",
+        )
+    return current_user
