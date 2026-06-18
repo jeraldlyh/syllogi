@@ -14,6 +14,7 @@ from db.music_server_user import (
 )
 from db.session import SessionDep
 from lib.auth import require_admin
+from lib.crypto import encrypt
 from lib.providers import get_provider
 
 logger = logging.getLogger(__name__)
@@ -114,7 +115,7 @@ def _create_music_server_user(
     user = MusicServerUser(
         username=item.username,
         provider=provider,
-        password=item.password,
+        password=encrypt(item.password),
     )
     create_music_server_user(session=session, user=user)
     return {"id": str(user.id)}
@@ -159,7 +160,7 @@ def _update_music_server_user(
 
     user.username = item.username
     user.provider = MusicServerProvider(item.provider)
-    user.password = item.password
+    user.password = encrypt(item.password)
 
     update_music_server_user(session=session, user=user)
 
