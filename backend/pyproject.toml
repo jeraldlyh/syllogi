@@ -18,6 +18,7 @@ dependencies = [
     "yt-dlp",
     "spotapi[websocket,redis,pymongo]",
     "pwdlib[argon2]>=0.3.0",
+    "cryptography",
 ]
 
 [tool.uv.sources]
