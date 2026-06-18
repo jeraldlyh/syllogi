@@ -12,7 +12,8 @@ export interface ApiConfig {
     | "settings"
     | "auth"
     | "recommendation"
-    | "charts";
+    | "charts"
+    | "users"
   path?: string;
   query?: Record<string, any>;
   cache?: RequestCache;
