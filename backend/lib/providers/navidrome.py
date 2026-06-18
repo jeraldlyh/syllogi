@@ -541,6 +541,42 @@ class NavidromeProvider(MusicPlaylistProvider):
             is_public,
         )
 
+    async def verify_user_credentials(self, username: str, password: str) -> bool:
+        """Verify that the given username/password pair is valid against Navidrome."""
+
+        url = str(get_environment_variable("NAVIDROME_URL", ignore_error=False))
+        if not url:
+            return False
+
+        salt = secrets.token_urlsafe(8)
+        token = hashlib.md5((password + salt).encode("utf-8")).hexdigest()
+
+        params = {
+            "u": username,
+            "t": token,
+            "s": salt,
+            "v": "1.16.1",
+            "c": "syllogi",
+            "f": "json",
+        }
+
+        request_url = f"{url.rstrip('/')}/rest/ping"
+
+        try:
+            async with httpx.AsyncClient() as client:
+                response = await client.get(request_url, params=params, timeout=10.0)
+
+            response.raise_for_status()
+            body = response.json()
+            subsonic_response = body.get("subsonic-response", {})
+
+            return subsonic_response.get("status") == "ok"
+        except Exception as exc:
+            logger.warning(
+                f"Navidrome credential verification failed for user '{username}': {exc}"
+            )
+            return False
+
     async def ensure_download_library_exists(self) -> None:
         """Check whether the download library exists in Navidrome.
 

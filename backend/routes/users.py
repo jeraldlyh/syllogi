@@ -98,13 +98,11 @@ def _get_music_server_users(session: SessionDep):
         }
     },
 )
-def _create_music_server_user(
+async def _create_music_server_user(
     item: CreateOrUpdateMusicServerUserRequest, session: SessionDep
 ):
-    provider = MusicServerProvider(item.provider)
-
     existing = get_music_server_user_by_username(
-        session=session, username=item.username, provider=provider
+        session=session, username=item.username, provider=item.provider
     )
     if existing:
         raise HTTPException(
@@ -112,9 +110,19 @@ def _create_music_server_user(
             detail=f"Music server user already exists: {item.username} for provider {item.provider}",
         )
 
+    is_valid_password = await get_provider().verify_user_credentials(
+        username=item.username, password=item.password
+    )
+
+    if not is_valid_password:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"Unable to verify credentials for user: {item.username}",
+        )
+
     user = MusicServerUser(
         username=item.username,
-        provider=provider,
+        provider=item.provider,
         password=encrypt(item.password),
     )
     create_music_server_user(session=session, user=user)
@@ -147,7 +155,7 @@ def _create_music_server_user(
         },
     },
 )
-def _update_music_server_user(
+async def _update_music_server_user(
     id: str, item: CreateOrUpdateMusicServerUserRequest, session: SessionDep
 ):
     user = get_music_server_user_by_id(session=session, user_id=id)
@@ -156,6 +164,16 @@ def _update_music_server_user(
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail=f"Unable to find music server user: {id}",
+        )
+
+    is_valid_password = await get_provider().verify_user_credentials(
+        item.username, item.password
+    )
+
+    if not is_valid_password:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"Unable to verify credentials for user: {item.username}",
         )
 
     user.username = item.username

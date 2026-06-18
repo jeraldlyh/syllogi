@@ -105,6 +105,13 @@ class MusicPlaylistProvider(ABC):
         """Update the visibility of an existing playlist. Override in providers that support it."""
         ...
 
+    async def verify_user_credentials(self, username: str, password: str) -> bool:
+        """Verify that the given username/password pair is valid against the music server.
+
+        Override in providers that support credential verification.
+        """
+        return True
+
     @abstractmethod
     async def ensure_download_library_exists(self) -> None:
         """Check whether the download library exists and create it if not."""
