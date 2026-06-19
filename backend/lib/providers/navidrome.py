@@ -28,22 +28,15 @@ class NavidromeProvider(MusicPlaylistProvider):
         self,
         method: str,
         *,
+        username: str,
+        password: str,
         params: dict[str, Any] | None = None,
         http_method: str = "GET",
         timeout: float = 30.0,
     ) -> Any:
-        """HTTP helper for the Subsonic API.
+        """HTTP helper for the Subsonic API (authenticated with explicit user credentials)."""
 
-        Raises:
-            ProviderError: If required environment variables are missing.
-        """
         url = str(get_environment_variable("NAVIDROME_URL", ignore_error=False))
-        username = str(
-            get_environment_variable("NAVIDROME_USERNAME", ignore_error=False)
-        )
-        password = str(
-            get_environment_variable("NAVIDROME_PASSWORD", ignore_error=False)
-        )
 
         if not url or not username or not password:
             raise ProviderError(
@@ -86,6 +79,31 @@ class NavidromeProvider(MusicPlaylistProvider):
         return {
             k: v for k, v in subsonic_response.items() if k not in ("status", "version")
         }
+
+    async def _subsonic_admin(
+        self,
+        method: str,
+        *,
+        params: dict[str, Any] | None = None,
+        http_method: str = "GET",
+        timeout: float = 30.0,
+    ) -> Any:
+        """Subsonic API call using admin credentials from environment variables."""
+
+        username = str(
+            get_environment_variable("NAVIDROME_USERNAME", ignore_error=False)
+        )
+        password = str(
+            get_environment_variable("NAVIDROME_PASSWORD", ignore_error=False)
+        )
+        return await self._subsonic(
+            method,
+            username=username,
+            password=password,
+            params=params,
+            http_method=http_method,
+            timeout=timeout,
+        )
 
     async def _get_bearer_token(self) -> str | None:
         """Obtain a JWT bearer token from Navidrome's auth/login endpoint.
@@ -243,10 +261,17 @@ class NavidromeProvider(MusicPlaylistProvider):
                 return user
         return None
 
-    async def get_playlists(self, user_id: str) -> list[ProviderPlaylist]:
+    async def get_playlists(
+        self,
+        user_id: str,
+        username: str = "",
+        password: str = "",
+    ) -> list[ProviderPlaylist]:
         """Return all playlists visible to the given Navidrome user."""
 
-        data = await self._subsonic("getPlaylists")
+        data = await self._subsonic(
+            "getPlaylists", username=username, password=password
+        )
         playlists = data.get("playlists", {}).get("playlist", [])
 
         if isinstance(playlists, dict):
@@ -262,7 +287,11 @@ class NavidromeProvider(MusicPlaylistProvider):
         ]
 
     async def get_or_create_playlist(
-        self, playlist_name: str, username: str, is_public: bool = False
+        self,
+        playlist_name: str,
+        username: str,
+        is_public: bool = False,
+        password: str = "",
     ) -> tuple[str, str]:
         """Get an existing Navidrome playlist by name or create a new one.
 
@@ -278,7 +307,9 @@ class NavidromeProvider(MusicPlaylistProvider):
         if not user:
             raise ProviderError(f"Unable to find username: {username}")
 
-        playlists = await self.get_playlists(user_id=user.id)
+        playlists = await self.get_playlists(
+            user_id=user.id, username=username, password=password
+        )
 
         existing_playlist = next(
             (
@@ -295,6 +326,8 @@ class NavidromeProvider(MusicPlaylistProvider):
             new_playlist = await self.create_playlist(
                 playlist_name=playlist_name,
                 user_id=user.id,
+                username=username,
+                password=password,
             )
             playlist_id = new_playlist.id
 
@@ -305,12 +338,18 @@ class NavidromeProvider(MusicPlaylistProvider):
             playlist_name=playlist_name,
             username=username,
             is_public=is_public,
+            password=password,
         )
 
         return playlist_id, user.id
 
     async def create_playlist(
-        self, playlist_name: str, user_id: str, is_public: bool = False
+        self,
+        playlist_name: str,
+        user_id: str,
+        is_public: bool = False,
+        username: str = "",
+        password: str = "",
     ) -> ProviderPlaylist:
         """Create a new playlist in Navidrome."""
 
@@ -318,6 +357,8 @@ class NavidromeProvider(MusicPlaylistProvider):
             "createPlaylist",
             params={"name": playlist_name},
             http_method="POST",
+            username=username,
+            password=password,
         )
 
         playlist = data.get("playlist", {})
@@ -328,21 +369,37 @@ class NavidromeProvider(MusicPlaylistProvider):
             owner_id=playlist.get("owner"),
         )
 
-    async def delete_playlist(self, playlist_id: str) -> None:
+    async def delete_playlist(
+        self,
+        playlist_id: str,
+        username: str = "",
+        password: str = "",
+    ) -> None:
         """Delete a Navidrome playlist by its ID."""
 
         await self._subsonic(
             "deletePlaylist",
             params={"id": playlist_id},
             http_method="POST",
+            username=username,
+            password=password,
         )
 
     async def get_playlist_songs(
-        self, playlist_id: str, user_id: str
+        self,
+        playlist_id: str,
+        user_id: str,
+        username: str = "",
+        password: str = "",
     ) -> list[ProviderTrack]:
         """Return all tracks in a Navidrome playlist."""
 
-        data = await self._subsonic("getPlaylist", params={"id": playlist_id})
+        data = await self._subsonic(
+            "getPlaylist",
+            params={"id": playlist_id},
+            username=username,
+            password=password,
+        )
         playlist = data.get("playlist", {})
         entries = playlist.get("entry", [])
 
@@ -364,7 +421,12 @@ class NavidromeProvider(MusicPlaylistProvider):
         ]
 
     async def add_songs_to_playlist(
-        self, playlist_id: str, user_id: str, track_ids: list[str]
+        self,
+        playlist_id: str,
+        user_id: str,
+        track_ids: list[str],
+        username: str = "",
+        password: str = "",
     ) -> None:
         """Append tracks to an existing Navidrome playlist."""
 
@@ -375,17 +437,28 @@ class NavidromeProvider(MusicPlaylistProvider):
                 "songIdToAdd": track_ids,
             },
             http_method="POST",
+            username=username,
+            password=password,
         )
 
     async def delete_songs_from_playlist(
-        self, playlist_id: str, entry_ids: list[str]
+        self,
+        playlist_id: str,
+        entry_ids: list[str],
+        username: str = "",
+        password: str = "",
     ) -> None:
         """Remove tracks from a Navidrome playlist by their track IDs.
 
         Converts track IDs to 0-based playlist indices for the Subsonic API.
         """
 
-        data = await self._subsonic("getPlaylist", params={"id": playlist_id})
+        data = await self._subsonic(
+            "getPlaylist",
+            params={"id": playlist_id},
+            username=username,
+            password=password,
+        )
         playlist = data.get("playlist", {})
         entries = playlist.get("entry", [])
 
@@ -408,6 +481,8 @@ class NavidromeProvider(MusicPlaylistProvider):
                 "songIndexToRemove": [str(idx) for idx in indices_to_remove],
             },
             http_method="POST",
+            username=username,
+            password=password,
         )
 
     async def search_track(
@@ -420,7 +495,7 @@ class NavidromeProvider(MusicPlaylistProvider):
         )
 
         query = f"{artist_name} {title}".strip()
-        data = await self._subsonic(
+        data = await self._subsonic_admin(
             "search3",
             params={"query": query, "songCount": "10"},
         )
@@ -462,12 +537,12 @@ class NavidromeProvider(MusicPlaylistProvider):
     async def rescan_library(self) -> None:
         """Trigger a full library scan in Navidrome."""
 
-        await self._subsonic("startScan")
+        await self._subsonic_admin("startScan")
 
     async def is_scanning_library(self) -> bool:
         """Return True if Navidrome is currently scanning its library."""
 
-        data = await self._subsonic("getScanStatus")
+        data = await self._subsonic_admin("getScanStatus")
         scan_status = data.get("scanStatus", {})
 
         return bool(scan_status.get("scanning", False))
@@ -495,7 +570,11 @@ class NavidromeProvider(MusicPlaylistProvider):
         )
 
     async def update_playlist_visibility(
-        self, playlist_name: str, username: str, is_public: bool
+        self,
+        playlist_name: str,
+        username: str,
+        is_public: bool,
+        password: str = "",
     ) -> None:
         """Update the visibility of an existing Navidrome playlist."""
 
@@ -507,7 +586,9 @@ class NavidromeProvider(MusicPlaylistProvider):
             )
             return
 
-        playlists = await self.get_playlists(user_id=user.id)
+        playlists = await self.get_playlists(
+            user_id=user.id, username=username, password=password
+        )
 
         existing = next(
             (
@@ -533,6 +614,8 @@ class NavidromeProvider(MusicPlaylistProvider):
                 "public": "true" if is_public else "false",
             },
             http_method="POST",
+            username=username,
+            password=password,
         )
 
         logger.info(
