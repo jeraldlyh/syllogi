@@ -18,6 +18,7 @@ class MusicServerUser(TimestampMixin, SerializerMixin, SQLModel, table=True):
     username: str = Field(max_length=128, nullable=False, index=True)
     provider: MusicServerProvider = Field(nullable=False, index=True)
     password: str = Field(default="", max_length=256, nullable=False)
+    lastfm_username: str = Field(default="", max_length=128, nullable=False)
 
     __table_args__ = (
         sa.UniqueConstraint(

@@ -26,6 +26,7 @@ class CreateOrUpdateMusicServerUserRequest(BaseModel):
     username: str = Field(min_length=1, max_length=128)
     provider: MusicServerProvider
     password: str = Field(default="", max_length=256)
+    lastfm_username: str = Field(default="", max_length=128)
 
 
 @router.get(
@@ -124,6 +125,7 @@ async def _create_music_server_user(
         username=item.username,
         provider=item.provider,
         password=encrypt(item.password),
+        lastfm_username=item.lastfm_username,
     )
     create_music_server_user(session=session, user=user)
     return {"id": str(user.id)}
@@ -179,6 +181,7 @@ async def _update_music_server_user(
     user.username = item.username
     user.provider = MusicServerProvider(item.provider)
     user.password = encrypt(item.password)
+    user.lastfm_username = item.lastfm_username
 
     update_music_server_user(session=session, user=user)
 

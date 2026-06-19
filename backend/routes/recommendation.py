@@ -1,8 +1,6 @@
 from fastapi import APIRouter, BackgroundTasks, HTTPException, status
 from pydantic import BaseModel, Field, model_validator
 
-from lib.models.blend import BlendUser
-
 from db.models.recommendation import (
     Recommendation,
     RecommendationProvider,
@@ -33,12 +31,11 @@ router = APIRouter()
 class CreateOrUpdateRecommendationRequest(BaseModel):
     username: str = Field(min_length=1)
     strategy: RecommendationStrategy = Field(min_length=1)
-    lastfm_username: str = Field(default="")
     requested_count: int = Field(default=50, ge=1, le=50)
     cron_expression: str = Field(min_length=1)
     is_public: bool = Field(default=False)
     playlist_name: str = Field(min_length=1, max_length=256)
-    blend_users: list[BlendUser] | None = Field(default=None)
+    blend_users: list[str] | None = Field(default=None)
 
     @model_validator(mode="after")
     def validate_blend_users(self) -> "CreateOrUpdateRecommendationRequest":
@@ -49,16 +46,12 @@ class CreateOrUpdateRecommendationRequest(BaseModel):
                 raise ValueError(
                     "There must be at least 2 blend_users for the 'blend' strategy"
                 )
-            for user in self.blend_users:
-                if not user.name or not user.lastfm_username:
+            for username in self.blend_users:
+                if not username:
                     raise ValueError(
-                        "Each blend user must have 'name' and 'lastfm_username'"
+                        "Each blend user must be a non-empty string"
                     )
         else:
-            if not self.lastfm_username:
-                raise ValueError(
-                    "Last.fm username is required for non-blend strategies"
-                )
             self.blend_users = None
         return self
 
@@ -77,7 +70,6 @@ class CreateOrUpdateRecommendationRequest(BaseModel):
                             "id": "2baf7b6b-87de-4289-bdd8-42f138f8c9e1",
                             "username": "johndoe",
                             "strategy": "mixed",
-                            "lastfm_username": "john_lastfm",
                             "requested_count": 50,
                             "cron_expression": "0 0 * * *",
                         }
@@ -115,14 +107,11 @@ def _create_recommendation(
     recommendation = Recommendation(
         username=item.username,
         strategy=item.strategy,
-        lastfm_username=item.lastfm_username,
         requested_count=item.requested_count,
         cron_expression=item.cron_expression,
         is_public=item.is_public,
         playlist_name=item.playlist_name,
-        blend_users=[u.to_dict() for u in item.blend_users]
-        if item.blend_users
-        else None,
+        blend_users=item.blend_users,
     )
     provider = get_provider()
 
@@ -179,14 +168,11 @@ async def _update_recommendation(
 
     recommendation.username = item.username
     recommendation.strategy = item.strategy
-    recommendation.lastfm_username = item.lastfm_username
     recommendation.requested_count = item.requested_count
     recommendation.cron_expression = item.cron_expression
     recommendation.is_public = item.is_public
     recommendation.playlist_name = item.playlist_name
-    recommendation.blend_users = (
-        [u.to_dict() for u in item.blend_users] if item.blend_users else None
-    )
+    recommendation.blend_users = item.blend_users
 
     update_recommendation(
         session=session,
@@ -278,18 +264,13 @@ def _generate_recommendations(
     started_at = get_now()
     provider = get_provider()
 
-    blend_users = recommendation.get_blend_users()
-    serialized_blend_users = (
-        [user.to_dict() for user in blend_users] if blend_users else None
-    )
-
     recommendation_session = RecommendationSession(
         username=username,
         provider=RecommendationProvider.lastfm,
         strategy=recommendation.strategy,
         requested_count=recommendation.requested_count,
         generated_count=0,
-        blend_users=serialized_blend_users,
+        blend_users=recommendation.blend_users,
         started_at=started_at,
         finished_at=started_at,
         duration_seconds=0,
@@ -303,10 +284,9 @@ def _generate_recommendations(
     background_tasks.add_task(
         generate_recommendations_task,
         provider=provider,
-        lastfm_username=recommendation.lastfm_username,
         recommendation_session_id=recommendation_session.id,
         recommendation_id=recommendation.id,
-        blend_users=recommendation.get_blend_users(),
+        blend_users=recommendation.blend_users,
     )
 
     return {"id": str(recommendation_session.id)}
