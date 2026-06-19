@@ -12,6 +12,7 @@ from db.models.recommendation import (
     RecommendationStrategy,
     RecommendationTrackType,
 )
+from db.music_server_user import get_music_server_user_by_username
 from db.recommendation import get_recommendation_by_id
 from db.recommendation_session import (
     build_recommendation_session_tracks,
@@ -22,6 +23,7 @@ from db.recommendation_session import (
 )
 from db.session import get_isolated_session
 from lib.download import download_missing_tracks
+from lib.providers import get_provider_enum
 from lib.providers.base import MusicPlaylistProvider
 from lib.models.provider import ProviderTrack
 from lib.models.blend import BlendUser
@@ -149,28 +151,40 @@ async def generate_recommendations_task(
     """Get track recommendations for a user based on their listening history in a background task."""
 
     with get_isolated_session() as session:
-        logger.info(
-            f"Generating recommendations for user {lastfm_username} with session ID {recommendation_session_id}"
-        )
-        recommendation = get_recommendation_by_id(
-            session=session, recommendation_id=recommendation_id
-        )
-        if not recommendation:
-            raise ValueError(
-                f"Unable to find recommendation setting: {recommendation_id}",
-            )
-
-        recommendation_session = get_recommendation_session_by_id(
-            session=session, recommendation_session_id=recommendation_session_id
-        )
-        if not recommendation_session:
-            raise ValueError(
-                f"Unable to find recommendation session: {recommendation_session_id}",
-            )
-
-        started_at = recommendation_session.started_at
+        recommendation_session: RecommendationSession | None = None
 
         try:
+            logger.info(
+                f"Generating recommendations for user {lastfm_username} with session ID {recommendation_session_id}"
+            )
+            recommendation = get_recommendation_by_id(
+                session=session, recommendation_id=recommendation_id
+            )
+            if not recommendation:
+                raise ValueError(
+                    f"Unable to find recommendation setting: {recommendation_id}",
+                )
+
+            recommendation_session = get_recommendation_session_by_id(
+                session=session, recommendation_session_id=recommendation_session_id
+            )
+            if not recommendation_session:
+                raise ValueError(
+                    f"Unable to find recommendation session: {recommendation_session_id}",
+                )
+
+            started_at = recommendation_session.started_at
+            music_server_user = get_music_server_user_by_username(
+                session=session,
+                username=recommendation_session.username,
+                provider=get_provider_enum(),
+            )
+
+            if not music_server_user:
+                raise ValueError(
+                    f"Unable to find music_server_user: {recommendation_session.username}"
+                )
+
             recommendation_session.status = RecommendationStatus.pending
             update_recommendation_session(
                 session=session, recommendation_session=recommendation_session
@@ -282,41 +296,50 @@ async def generate_recommendations_task(
 
             playlist_id, provider_user_id = await provider.get_or_create_playlist(
                 playlist_name=recommendation.playlist_name,
-                username=recommendation_session.username,
                 is_public=recommendation.is_public,
+                username=music_server_user.username,
+                password=music_server_user.password,
             )
 
             existing_tracks = await provider.get_playlist_songs(
                 playlist_id=playlist_id,
                 user_id=provider_user_id,
+                username=music_server_user.username,
+                password=music_server_user.password,
             )
 
             if existing_tracks:
                 await provider.delete_songs_from_playlist(
                     playlist_id=playlist_id,
                     entry_ids=[track.id for track in existing_tracks],
+                    username=music_server_user.username,
+                    password=music_server_user.password,
                 )
 
             await provider.add_songs_to_playlist(
                 playlist_id=playlist_id,
                 user_id=provider_user_id,
                 track_ids=provider_track_ids,
+                username=music_server_user.username,
+                password=music_server_user.password,
             )
 
         except Exception as e:
-            finished_at = get_now()
-            recommendation_session.status = RecommendationStatus.failed
-            recommendation_session.finished_at = finished_at
-            recommendation_session.duration_seconds = int(
-                finished_at.timestamp() - started_at.timestamp()
-            )
-            recommendation_session.error_message = truncate(
-                text=str(e), max_length=1024
-            )
-
-            update_recommendation_session(
-                session=session, recommendation_session=recommendation_session
-            )
+            if recommendation_session:
+                finished_at = get_now()
+                recommendation_session.status = RecommendationStatus.failed
+                recommendation_session.finished_at = finished_at
+                recommendation_session.duration_seconds = int(
+                    finished_at.timestamp() - started_at.timestamp()
+                )
+                recommendation_session.error_message = truncate(
+                    text=str(e), max_length=1024
+                )
+        finally:
+            if recommendation_session:
+                update_recommendation_session(
+                    session=session, recommendation_session=recommendation_session
+                )
 
 
 async def generate_recommendations(

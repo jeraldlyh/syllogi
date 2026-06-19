@@ -11,6 +11,7 @@ from db.models.sync import (
     SyncSessionTrackType,
     SyncStatus,
 )
+from db.music_server_user import get_music_server_user_by_username
 from db.sync import get_sync_by_id
 from db.session import get_isolated_session
 from db.sync_session import (
@@ -29,6 +30,7 @@ from lib.models.common import (
 )
 from lib.models.provider import ProviderTrack
 from lib.notification import send_discord_notification
+from lib.providers import get_provider_enum
 from lib.providers.base import MusicPlaylistProvider
 from lib.spotify import get_spotify_playlist, get_spotify_playlist_songs
 from lib.track import reconcile_after_download, resolve_tracks
@@ -105,6 +107,15 @@ async def sync_playlist_task(
                 )
 
             username = internal_sync.username
+            music_server_user = get_music_server_user_by_username(
+                session=session,
+                username=username,
+                provider=get_provider_enum(),
+            )
+
+            if not music_server_user:
+                raise ValueError(f"Unable to find music_server_user: {username}")
+
             started_at = sync_session.started_at
             external_playlist_name = external_playlist.name
 
@@ -121,8 +132,9 @@ async def sync_playlist_task(
                 provider_user_id,
             ) = await provider.get_or_create_playlist(
                 playlist_name=internal_playlist_name,
-                username=username,
                 is_public=internal_sync.is_public,
+                username=music_server_user.username,
+                password=music_server_user.password,
             )
 
             sync_session.provider_playlist_name = external_playlist_name
@@ -163,7 +175,10 @@ async def sync_playlist_task(
                     )
 
             existing_provider_tracks = await provider.get_playlist_songs(
-                playlist_id=existing_playlist_id, user_id=provider_user_id
+                playlist_id=existing_playlist_id,
+                user_id=provider_user_id,
+                username=music_server_user.username,
+                password=music_server_user.password,
             )
 
             diff = _diff_tracks(
@@ -183,7 +198,10 @@ async def sync_playlist_task(
                 )
                 removed_entry_ids = [track.id for track in diff.removed]
                 await provider.delete_songs_from_playlist(
-                    playlist_id=existing_playlist_id, entry_ids=removed_entry_ids
+                    playlist_id=existing_playlist_id,
+                    entry_ids=removed_entry_ids,
+                    username=music_server_user.username,
+                    password=music_server_user.password,
                 )
 
             if num_of_added_tracks > 0:
@@ -200,6 +218,8 @@ async def sync_playlist_task(
                     playlist_id=existing_playlist_id,
                     user_id=provider_user_id,
                     track_ids=added_track_ids,
+                    username=music_server_user.username,
+                    password=music_server_user.password,
                 )
 
             spotify_playlist_thumbnail_url = external_playlist.thumbnail_url
