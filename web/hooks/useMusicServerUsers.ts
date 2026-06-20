@@ -8,6 +8,7 @@ export interface MusicServerUserConfig {
   id: string;
   username: string;
   password: string;
+  lastfm_username: string;
   provider: MusicServerProvider;
   created_at: string;
   updated_at: string;
@@ -16,6 +17,7 @@ export interface MusicServerUserConfig {
 interface MusicServerUserRequest {
   username: string;
   password?: string;
+  lastfm_username: string;
   provider: MusicServerProvider;
 }
 

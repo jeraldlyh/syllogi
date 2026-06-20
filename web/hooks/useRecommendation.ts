@@ -3,21 +3,15 @@ import { ApiResponse } from "@/lib/types";
 import useSWR from "swr";
 import { RecommendationStrategy } from "./useRecommendationSessions";
 
-export interface BlendUser {
-  name: string;
-  lastfm_username: string;
-}
-
 export interface Recommendation {
   id: string;
   username: string;
   strategy: RecommendationStrategy;
-  lastfm_username: string;
   requested_count: number;
   cron_expression: string;
   is_public: boolean;
   playlist_name: string;
-  blend_users?: BlendUser[] | null;
+  blend_users?: string[] | null;
 }
 
 export const useRecommendations = () => {

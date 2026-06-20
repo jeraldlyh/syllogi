@@ -57,6 +57,7 @@ interface FormState {
   provider: string;
   username: string;
   password: string;
+  lastfm_username: string;
 }
 
 interface FormErrors {
@@ -67,6 +68,7 @@ const DEFAULT_FORM: FormState = {
   provider: "",
   username: "",
   password: "",
+  lastfm_username: "",
 };
 
 export const UsersSettings = () => {
@@ -108,6 +110,7 @@ export const UsersSettings = () => {
       provider: userConfig.provider,
       username: userConfig.username,
       password: "",
+      lastfm_username: userConfig.lastfm_username,
     });
     setErrors({});
     setDialogOpen(true);
@@ -136,10 +139,12 @@ export const UsersSettings = () => {
           username: string;
           provider: MusicServerProvider;
           password?: string;
+          lastfm_username: string;
         } = {
           id: editingId,
           username: form.username,
           provider: form.provider as MusicServerProvider,
+          lastfm_username: form.lastfm_username,
         };
 
         if (form.password) body.password = form.password;
@@ -151,9 +156,11 @@ export const UsersSettings = () => {
           username: string;
           provider: MusicServerProvider;
           password?: string;
+          lastfm_username: string;
         } = {
           username: form.username,
           provider: form.provider as MusicServerProvider,
+          lastfm_username: form.lastfm_username,
         };
 
         if (form.password) body.password = form.password;
@@ -205,6 +212,7 @@ export const UsersSettings = () => {
           <TableHeader>
             <TableRow className="hover:bg-transparent text-xs text-muted-foreground">
               <TableHead>Username</TableHead>
+              <TableHead>Last.fm Username</TableHead>
               <TableHead>Provider</TableHead>
               <TableHead>Actions</TableHead>
             </TableRow>
@@ -216,6 +224,9 @@ export const UsersSettings = () => {
                   <Text value={user.username} />
                 </TableCell>
                 <TableCell>
+                  <Text value={user.lastfm_username} />
+                </TableCell>
+                <TableCell>
                   <Badge
                     variant="outline"
                     className={cn("text-xs font-medium", {
@@ -225,8 +236,7 @@ export const UsersSettings = () => {
                         user.provider === "navidrome",
                     })}
                   >
-                    {user.provider.charAt(0).toUpperCase() +
-                      user.provider.slice(1)}
+                    {capitaliseFirstLetter(user.provider)}
                   </Badge>
                 </TableCell>
                 <TableCell>
@@ -359,6 +369,25 @@ export const UsersSettings = () => {
                 />
               </div>
             )}
+            <div className="flex flex-col gap-2">
+              <Label
+                htmlFor="lastfm_username"
+                className="flex justify-between items-center"
+              >
+                <Text muted value="Last.fm Username" />
+              </Label>
+              <Input
+                id="lastfm_username"
+                value={form.lastfm_username}
+                onChange={(e) =>
+                  setForm((prev) => ({
+                    ...prev,
+                    lastfm_username: e.target.value,
+                  }))
+                }
+                placeholder="e.g. john_doe"
+              />
+            </div>
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => setDialogOpen(false)}>
