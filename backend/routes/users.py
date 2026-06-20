@@ -62,7 +62,6 @@ async def _get_users():
     path="/provider",
     summary="Get saved music server users",
     description="Retrieve a list of all saved music server users.",
-    dependencies=[Depends(require_admin)],
     responses={
         200: {
             "description": "Users retrieved successfully",
@@ -76,21 +75,6 @@ async def _get_users():
                                 "username": "jerald",
                             }
                         ],
-                    }
-                }
-            },
-        },
-        403: {
-            "description": "Admin access required",
-            "content": {
-                "application/json": {
-                    "example": {
-                        "success": False,
-                        "error": {
-                            "code": 403,
-                            "name": "Forbidden",
-                            "message": "Admin access required",
-                        },
                     }
                 }
             },
