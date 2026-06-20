@@ -45,12 +45,12 @@ import {
 import {
   createSyncConfigMutation,
   deleteSyncConfigMutation,
+  generateSyncMutation,
   SyncConfig,
   updateSyncConfigMutation,
   useSyncConfigs,
 } from "@/hooks/useSync";
 import { useMusicServerUsers } from "@/hooks/useUsers";
-import { api } from "@/lib/api";
 import { CRON_PRESETS, PROVIDERS } from "@/lib/types";
 import { capitaliseFirstLetter, cn } from "@/lib/utils";
 import { Info, Loader2, Pencil, Play, Plus, Trash2 } from "lucide-react";
@@ -126,6 +126,10 @@ export const SyncSettings = () => {
     error: deletePlaylistError,
     isMutating: isDeleting,
   } = useSWRMutation("/sync", deleteSyncConfigMutation);
+  const { trigger: generateSync } = useSWRMutation(
+    "/sync/generate",
+    generateSyncMutation,
+  );
 
   const handleAddPlaylist = () => {
     setEditingId(null);
@@ -196,24 +200,20 @@ export const SyncSettings = () => {
 
   const handleSyncPlaylist = async (playlist: SyncConfig): Promise<void> => {
     setPlaylistToSync(null);
-    const response = await api({
-      method: "POST",
-      service: "sync",
-      path: "generate",
-      body: playlist,
-    });
+    const toastId = toast.loading("Starting sync...");
 
-    if (response && response.statusCode !== 200) {
-      const errorResponse = response.error;
-
-      toast.error(errorResponse?.name ?? "Error", {
-        description: errorResponse?.message,
+    try {
+      await generateSync(playlist);
+      toast.success("Sync started", {
+        id: toastId,
+        description: "Running sync for the playlist...",
       });
-      return;
+    } catch (error) {
+      toast.error("Failed to start sync", {
+        id: toastId,
+        description: formatErrorMessage(error),
+      });
     }
-    toast.success("Sync started", {
-      description: "Running sync for the playlist...",
-    });
   };
 
   const handleDeletePlaylist = async (id: string): Promise<void> => {
