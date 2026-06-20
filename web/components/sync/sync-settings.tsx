@@ -51,13 +51,14 @@ import {
 } from "@/hooks/useSync";
 import { useMusicServerUsers } from "@/hooks/useUsers";
 import { api } from "@/lib/api";
-import { CRON_PRESETS, ErrorResponse, PROVIDERS } from "@/lib/types";
+import { CRON_PRESETS, PROVIDERS } from "@/lib/types";
 import { capitaliseFirstLetter, cn } from "@/lib/utils";
 import { Info, Loader2, Pencil, Play, Plus, Trash2 } from "lucide-react";
 import React, { useState } from "react";
 import { toast } from "sonner";
 import useSWRMutation from "swr/mutation";
 import { Text } from "../common/text";
+import { formatErrorMessage } from "@/lib/errors";
 
 interface FormState {
   provider: (typeof PROVIDERS)[number]["value"];
@@ -188,7 +189,7 @@ export const SyncSettings = () => {
     } catch (error) {
       toast.error(
         editingId ? "Failed to update playlist" : "Failed to create playlist",
-        { id: toastId },
+        { id: toastId, description: formatErrorMessage(error) },
       );
     }
   };
@@ -203,9 +204,10 @@ export const SyncSettings = () => {
     });
 
     if (response && response.statusCode !== 200) {
-      const errorResponse = response.error as ErrorResponse;
-      toast.error(errorResponse.name, {
-        description: errorResponse.message,
+      const errorResponse = response.error;
+
+      toast.error(errorResponse?.name ?? "Error", {
+        description: errorResponse?.message,
       });
       return;
     }
@@ -592,7 +594,8 @@ export const SyncSettings = () => {
                 <TooltipContent side="right" className="max-w-xs">
                   <p>
                     When enabled, missing tracks are automatically downloaded
-                    via yt-dlp during sync and added to your music server library.
+                    via yt-dlp during sync and added to your music server
+                    library.
                   </p>
                 </TooltipContent>
               </Tooltip>
@@ -632,7 +635,8 @@ export const SyncSettings = () => {
                 </p>
                 <br />
                 <p>
-                  This will fetch the latest tracks and sync them to your music server.
+                  This will fetch the latest tracks and sync them to your music
+                  server.
                 </p>
               </div>
             </AlertDialogDescription>

@@ -87,8 +87,12 @@ export const ChartTrending = () => {
       });
 
       if (response.statusCode !== 200) {
+        const errorMessage =
+          response.error?.message ||
+          `${track.artist_name} - ${track.track_name}`;
+
         toast.error("Failed to start download", {
-          description: `${track.artist_name} - ${track.track_name}`,
+          description: errorMessage,
           id: toastId,
         });
         return;

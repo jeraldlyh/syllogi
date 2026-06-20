@@ -1,5 +1,6 @@
 import { api, fetcher } from "@/lib/api";
 import { ApiResponse } from "@/lib/types";
+import { ApiError } from "@/lib/errors";
 import useSWR from "swr";
 
 export type MusicServerProvider = "jellyfin" | "navidrome";
@@ -49,6 +50,9 @@ const createMusicServerUserConfig = async (
   });
 
   if (response.statusCode !== 200 || !response.data) {
+    if (response.error) {
+      throw new ApiError(response.error);
+    }
     throw new Error(`Failed to create user config: ${response.statusCode}`);
   }
   return response.data.id;
@@ -65,6 +69,9 @@ const updateMusicServerUserConfig = async (
   });
 
   if (response.statusCode !== 200) {
+    if (response.error) {
+      throw new ApiError(response.error);
+    }
     throw new Error(`Failed to update user config: ${response.statusCode}`);
   }
 };
@@ -77,6 +84,9 @@ const deleteMusicServerUserConfig = async (id: string): Promise<void> => {
   });
 
   if (response.statusCode !== 200) {
+    if (response.error) {
+      throw new ApiError(response.error);
+    }
     throw new Error(`Failed to delete user config: ${response.statusCode}`);
   }
 };

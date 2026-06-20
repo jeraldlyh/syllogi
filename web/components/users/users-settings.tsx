@@ -52,6 +52,7 @@ import React, { useState } from "react";
 import { toast } from "sonner";
 import useSWRMutation from "swr/mutation";
 import { Text } from "../common/text";
+import { formatErrorMessage } from "@/lib/errors";
 
 interface FormState {
   provider: string;
@@ -169,10 +170,10 @@ export const UsersSettings = () => {
         toast.success("User created", { id: toastId });
       }
       await fetchConfigs();
-    } catch {
+    } catch (error) {
       toast.error(
         editingId ? "Failed to update user" : "Failed to create user",
-        { id: toastId },
+        { id: toastId, description: formatErrorMessage(error) },
       );
     }
   };
@@ -185,8 +186,11 @@ export const UsersSettings = () => {
       await deleteUser(id);
       toast.success("User deleted", { id: toastId });
       await fetchConfigs();
-    } catch {
-      toast.error("Failed to delete user", { id: toastId });
+    } catch (error) {
+      toast.error("Failed to delete user", {
+        id: toastId,
+        description: formatErrorMessage(error),
+      });
     }
   };
 

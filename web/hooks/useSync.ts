@@ -1,5 +1,6 @@
 import { api, fetcher } from "@/lib/api";
 import { ApiResponse, PROVIDERS } from "@/lib/types";
+import { ApiError } from "@/lib/errors";
 import useSWR from "swr";
 
 export interface SyncConfig {
@@ -38,6 +39,9 @@ const createSyncConfig = async (
   });
 
   if (response.statusCode !== 200 || !response.data) {
+    if (response.error) {
+      throw new ApiError(response.error);
+    }
     throw new Error(`Failed to create sync config: ${response.statusCode}`);
   }
   return response.data.id;
@@ -52,6 +56,9 @@ const updateSyncConfig = async (config: SyncConfig): Promise<string> => {
   });
 
   if (response.statusCode !== 200 || !response.data) {
+    if (response.error) {
+      throw new ApiError(response.error);
+    }
     throw new Error(`Failed to update sync config: ${response.statusCode}`);
   }
   return response.data.id;
@@ -64,7 +71,10 @@ const deleteSyncConfig = async (configId: string): Promise<void> => {
     path: configId,
   });
 
-  if (response.statusCode !== 200 || !response.data) {
+  if (response.statusCode !== 200) {
+    if (response.error) {
+      throw new ApiError(response.error);
+    }
     throw new Error(`Failed to delete sync config: ${response.statusCode}`);
   }
 };

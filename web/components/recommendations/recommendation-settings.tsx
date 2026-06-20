@@ -53,6 +53,7 @@ import { toast } from "sonner";
 import useSWRMutation from "swr/mutation";
 import { RecommendationStrategyBadge } from "./recommendation-strategy-badge";
 import { RecommendationStrategy } from "@/hooks/useRecommendationSessions";
+import { formatErrorMessage } from "@/lib/errors";
 
 interface FormState {
   username: string;
@@ -213,12 +214,12 @@ export const Recommendations = () => {
         toast.success("Recommendation created", { id: toastId });
       }
       await fetchRecommendations();
-    } catch {
+    } catch (error) {
       toast.error(
         editingId
           ? "Failed to update recommendation"
           : "Failed to create recommendation",
-        { id: toastId },
+        { id: toastId, description: formatErrorMessage(error) },
       );
     }
   };
@@ -235,9 +236,10 @@ export const Recommendations = () => {
         description: `Generating recommendations for ${recommendation.username}`,
         id: toastId,
       });
-    } catch {
+    } catch (error) {
       toast.error("Failed to start recommendation generation", {
         id: toastId,
+        description: formatErrorMessage(error),
       });
     }
   };
@@ -250,8 +252,11 @@ export const Recommendations = () => {
       await deleteRecommendation(id);
       toast.success("Recommendation deleted", { id: toastId });
       await fetchRecommendations();
-    } catch {
-      toast.error("Failed to delete recommendation", { id: toastId });
+    } catch (error) {
+      toast.error("Failed to delete recommendation", {
+        id: toastId,
+        description: formatErrorMessage(error),
+      });
     }
   };
 

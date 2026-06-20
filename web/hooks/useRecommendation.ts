@@ -1,5 +1,6 @@
 import { api, fetcher } from "@/lib/api";
 import { ApiResponse } from "@/lib/types";
+import { ApiError } from "@/lib/errors";
 import useSWR from "swr";
 import { RecommendationStrategy } from "./useRecommendationSessions";
 
@@ -37,6 +38,9 @@ const createRecommendation = async (
   });
 
   if (response.statusCode !== 200 || !response.data) {
+    if (response.error) {
+      throw new ApiError(response.error);
+    }
     throw new Error(`Failed to create recommendation: ${response.statusCode}`);
   }
 
@@ -54,6 +58,9 @@ const updateRecommendation = async (
   });
 
   if (response.statusCode !== 200) {
+    if (response.error) {
+      throw new ApiError(response.error);
+    }
     throw new Error(`Failed to update recommendation: ${response.statusCode}`);
   }
 };
@@ -68,6 +75,9 @@ const deleteRecommendation = async (
   });
 
   if (response.statusCode !== 200) {
+    if (response.error) {
+      throw new ApiError(response.error);
+    }
     throw new Error(`Failed to delete recommendation: ${response.statusCode}`);
   }
 };
@@ -83,6 +93,9 @@ const generateRecommendation = async (
   });
 
   if (response.statusCode !== 200 || !response.data) {
+    if (response.error) {
+      throw new ApiError(response.error);
+    }
     throw new Error(
       `Failed to generate recommendations: ${response.statusCode}`,
     );
