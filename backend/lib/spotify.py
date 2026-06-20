@@ -1,21 +1,9 @@
 import logging
-import sys
-from pathlib import Path
 
+from spotapi.playlist import PublicPlaylist
 
 from lib.models.common import ExternalSync, ExternalTrack
 
-BASE_DIR = Path(__file__).resolve().parent.parent
-SPOTAPI_DIR = BASE_DIR / "SpotAPI"
-
-if SPOTAPI_DIR.exists():
-    sys.path.insert(0, str(SPOTAPI_DIR))
-else:
-    raise RuntimeError(
-        f"SpotAPI submodule not found at {SPOTAPI_DIR}. Did you run `git submodule update --init --recursive`?"
-    )
-
-from spotapi.playlist import PublicPlaylist  # noqa: E402
 
 logger = logging.getLogger(__name__)
 
