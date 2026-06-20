@@ -139,8 +139,7 @@ async def verify_lastfm_username(username: str) -> bool:
 
     try:
         data = await _lastfm(
-            method="user.getInfo",
-            params={"user": username},
+            params={"user": username, "method": "user.getInfo"},
         )
         return "user" in data
     except Exception:
