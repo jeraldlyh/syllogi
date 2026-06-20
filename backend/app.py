@@ -8,6 +8,7 @@ from typing import Callable
 from dotenv import load_dotenv
 from fastapi import FastAPI, HTTPException, Request
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.openapi.utils import get_openapi
 from fastapi.responses import JSONResponse, Response
 from starlette.middleware.base import BaseHTTPMiddleware
 
@@ -172,7 +173,26 @@ def create_cron_jobs():
 
 
 def create_app() -> FastAPI:
-    app = FastAPI(openapi_tags=OPENAPI_TAGS)
+    app = FastAPI(
+        openapi_tags=OPENAPI_TAGS,
+        responses={
+            401: {
+                "description": "Invalid authentication credentials",
+                "content": {
+                    "application/json": {
+                        "example": {
+                            "success": False,
+                            "error": {
+                                "code": 401,
+                                "name": "Unauthorized",
+                                "message": "Invalid authentication credentials",
+                            },
+                        }
+                    }
+                },
+            },
+        },
+    )
     app.add_middleware(
         CORSMiddleware,
         allow_origins=["*"],
@@ -231,4 +251,30 @@ def create_app() -> FastAPI:
     return app
 
 
+def custom_openapi():
+    if app.openapi_schema:
+        return app.openapi_schema
+
+    openapi_schema = get_openapi(
+        title=app.title,
+        version=app.version,
+        description=app.description,
+        routes=app.routes,
+    )
+
+    openapi_schema["components"]["securitySchemes"] = {
+        "BearerAuth": {
+            "type": "apiKey",
+            "in": "header",
+            "name": "Authorization",
+            "description": "Bearer token in Authorization header, or access_token cookie",
+        }
+    }
+
+    openapi_schema["security"] = [{"Bearer Auth": []}]
+    app.openapi_schema = openapi_schema
+    return app.openapi_schema
+
+
 app = create_app()
+app.openapi = custom_openapi

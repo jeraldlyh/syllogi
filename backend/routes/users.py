@@ -68,15 +68,33 @@ async def _get_users():
             "description": "Users retrieved successfully",
             "content": {
                 "application/json": {
-                    "example": [
-                        {
-                            "id": "2baf7b6b-87de-4289-bdd8-42f138f8c9e1",
-                            "username": "jerald",
-                        }
-                    ],
+                    "example": {
+                        "success": True,
+                        "data": [
+                            {
+                                "id": "2baf7b6b-87de-4289-bdd8-42f138f8c9e1",
+                                "username": "jerald",
+                            }
+                        ],
+                    }
                 }
             },
-        }
+        },
+        403: {
+            "description": "Admin access required",
+            "content": {
+                "application/json": {
+                    "example": {
+                        "success": False,
+                        "error": {
+                            "code": 403,
+                            "name": "Forbidden",
+                            "message": "Admin access required",
+                        },
+                    }
+                }
+            },
+        },
     },
 )
 def _get_music_server_users(session: SessionDep):
@@ -94,10 +112,58 @@ def _get_music_server_users(session: SessionDep):
             "description": "User created successfully",
             "content": {
                 "application/json": {
-                    "example": {"id": "2baf7b6b-87de-4289-bdd8-42f138f8c9e1"},
+                    "example": {
+                        "success": True,
+                        "data": {"id": "2baf7b6b-87de-4289-bdd8-42f138f8c9e1"},
+                    }
                 }
             },
-        }
+        },
+        400: {
+            "description": "Duplicate user or invalid Last.fm username",
+            "content": {
+                "application/json": {
+                    "example": {
+                        "success": False,
+                        "error": {
+                            "code": 400,
+                            "name": "Bad Request",
+                            "message": "Music server user already exists: <username> for provider <provider>",
+                        },
+                    }
+                }
+            },
+        },
+        403: {
+            "description": "Admin access required",
+            "content": {
+                "application/json": {
+                    "example": {
+                        "success": False,
+                        "error": {
+                            "code": 403,
+                            "name": "Forbidden",
+                            "message": "Admin access required",
+                        },
+                    }
+                }
+            },
+        },
+        404: {
+            "description": "Unable to verify credentials",
+            "content": {
+                "application/json": {
+                    "example": {
+                        "success": False,
+                        "error": {
+                            "code": 404,
+                            "name": "Not Found",
+                            "message": "Unable to verify credentials for user: <username>",
+                        },
+                    }
+                }
+            },
+        },
     },
 )
 async def _create_music_server_user(
@@ -152,16 +218,54 @@ async def _create_music_server_user(
             "description": "User updated successfully",
             "content": {
                 "application/json": {
-                    "example": {"message": "Music server user updated successfully"},
+                    "example": {
+                        "success": True,
+                        "data": {"message": "Music server user updated successfully"},
+                    }
                 }
             },
         },
         400: {
-            "description": "User not found",
+            "description": "User not found or invalid Last.fm username",
             "content": {
                 "application/json": {
                     "example": {
-                        "detail": "Unable to find music server user: <user_id>",
+                        "success": False,
+                        "error": {
+                            "code": 400,
+                            "name": "Bad Request",
+                            "message": "Unable to find music server user: <id>",
+                        },
+                    }
+                }
+            },
+        },
+        403: {
+            "description": "Admin access required",
+            "content": {
+                "application/json": {
+                    "example": {
+                        "success": False,
+                        "error": {
+                            "code": 403,
+                            "name": "Forbidden",
+                            "message": "Admin access required",
+                        },
+                    }
+                }
+            },
+        },
+        404: {
+            "description": "Unable to verify credentials",
+            "content": {
+                "application/json": {
+                    "example": {
+                        "success": False,
+                        "error": {
+                            "code": 404,
+                            "name": "Not Found",
+                            "message": "Unable to verify credentials for user: <username>",
+                        },
                     }
                 }
             },
@@ -219,16 +323,39 @@ async def _update_music_server_user(
             "description": "User deleted successfully",
             "content": {
                 "application/json": {
-                    "example": {"message": "Music server user deleted successfully"},
+                    "example": {
+                        "success": True,
+                        "data": {"message": "Music server user deleted successfully"},
+                    }
                 }
             },
         },
-        400: {
+        403: {
+            "description": "Admin access required",
+            "content": {
+                "application/json": {
+                    "example": {
+                        "success": False,
+                        "error": {
+                            "code": 403,
+                            "name": "Forbidden",
+                            "message": "Admin access required",
+                        },
+                    }
+                }
+            },
+        },
+        404: {
             "description": "User not found",
             "content": {
                 "application/json": {
                     "example": {
-                        "detail": "Unable to find music server user: <user_id>",
+                        "success": False,
+                        "error": {
+                            "code": 404,
+                            "name": "Not Found",
+                            "message": "Unable to find music server user: <id>",
+                        },
                     }
                 }
             },
@@ -240,7 +367,7 @@ def _delete_music_server_user(id: str, session: SessionDep):
 
     if not user:
         raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
+            status_code=status.HTTP_404_NOT_FOUND,
             detail=f"Unable to find music server user: {id}",
         )
 

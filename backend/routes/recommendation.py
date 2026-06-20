@@ -8,6 +8,7 @@ from db.models.recommendation import (
     RecommendationStatus,
     RecommendationStrategy,
 )
+from db.music_server_user import get_music_server_user_by_username
 from db.recommendation import (
     create_recommendation,
     delete_recommendation,
@@ -18,7 +19,7 @@ from db.recommendation import (
 from db.recommendation_session import create_recommendation_session
 from db.session import SessionDep
 from lib.cron import create_job, delete_job, update_job
-from lib.providers import get_provider
+from lib.providers import get_provider, get_provider_enum
 from lib.recommendation import (
     generate_recommendations,
     generate_recommendations_task,
@@ -48,9 +49,7 @@ class CreateOrUpdateRecommendationRequest(BaseModel):
                 )
             for username in self.blend_users:
                 if not username:
-                    raise ValueError(
-                        "Each blend user must be a non-empty string"
-                    )
+                    raise ValueError("Each blend user must be a non-empty string")
         else:
             self.blend_users = None
         return self
@@ -65,15 +64,18 @@ class CreateOrUpdateRecommendationRequest(BaseModel):
             "description": "List of recommendation settings retrieved successfully",
             "content": {
                 "application/json": {
-                    "example": [
-                        {
-                            "id": "2baf7b6b-87de-4289-bdd8-42f138f8c9e1",
-                            "username": "johndoe",
-                            "strategy": "mixed",
-                            "requested_count": 50,
-                            "cron_expression": "0 0 * * *",
-                        }
-                    ]
+                    "example": {
+                        "success": True,
+                        "data": [
+                            {
+                                "id": "2baf7b6b-87de-4289-bdd8-42f138f8c9e1",
+                                "username": "johndoe",
+                                "strategy": "mixed",
+                                "requested_count": 50,
+                                "cron_expression": "0 0 * * *",
+                            }
+                        ],
+                    }
                 }
             },
         },
@@ -94,7 +96,10 @@ def _get_recommendation(session: SessionDep) -> list[dict]:
             "description": "Recommendation created successfully",
             "content": {
                 "application/json": {
-                    "example": {"id": "2baf7b6b-87de-4289-bdd8-42f138f8c9e1"}
+                    "example": {
+                        "success": True,
+                        "data": {"id": "2baf7b6b-87de-4289-bdd8-42f138f8c9e1"},
+                    }
                 }
             },
         },
@@ -135,7 +140,10 @@ def _create_recommendation(
             "description": "Recommendation updated successfully",
             "content": {
                 "application/json": {
-                    "example": {"message": "Recommendation updated successfully"}
+                    "example": {
+                        "success": True,
+                        "data": {"message": "Recommendation updated successfully"},
+                    }
                 }
             },
         },
@@ -144,7 +152,12 @@ def _create_recommendation(
             "content": {
                 "application/json": {
                     "example": {
-                        "detail": "Unable to find recommendation : <recommendation_id>"
+                        "success": False,
+                        "error": {
+                            "code": 400,
+                            "name": "Bad Request",
+                            "message": "Unable to find recommendation: <recommendation_id>",
+                        },
                     }
                 }
             },
@@ -163,7 +176,17 @@ async def _update_recommendation(
     if not recommendation:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail=f"Unable to find recommendation : {recommendation_id}",
+            detail=f"Unable to find recommendation: {recommendation_id}",
+        )
+
+    music_server_user = get_music_server_user_by_username(
+        session=session, provider=get_provider_enum(), username=recommendation.username
+    )
+
+    if not music_server_user:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"Unable to find music server user: {id}",
         )
 
     recommendation.username = item.username
@@ -182,8 +205,9 @@ async def _update_recommendation(
     provider = get_provider()
     await provider.update_playlist_visibility(
         playlist_name=recommendation.playlist_name,
-        username=recommendation.username,
         is_public=recommendation.is_public,
+        username=music_server_user.username,
+        password=music_server_user.password,
     )
     update_job(
         func=generate_recommendations,
@@ -204,7 +228,10 @@ async def _update_recommendation(
             "description": "Recommendation deleted successfully",
             "content": {
                 "application/json": {
-                    "example": {"message": "Recommendation deleted successfully"}
+                    "example": {
+                        "success": True,
+                        "data": {"message": "Recommendation deleted successfully"},
+                    }
                 }
             },
         },
@@ -213,7 +240,12 @@ async def _update_recommendation(
             "content": {
                 "application/json": {
                     "example": {
-                        "detail": "Unable to find recommendation setting: <recommendation_id>"
+                        "success": False,
+                        "error": {
+                            "code": 400,
+                            "name": "Bad Request",
+                            "message": "Unable to find recommendation setting: <recommendation_id>",
+                        },
                     }
                 }
             },
@@ -248,7 +280,8 @@ def _delete_recommendation(
             "content": {
                 "application/json": {
                     "example": {
-                        "id": "2baf7b6b-87de-4289-bdd8-42f138f8c9e1",
+                        "success": True,
+                        "data": {"id": "2baf7b6b-87de-4289-bdd8-42f138f8c9e1"},
                     }
                 }
             },

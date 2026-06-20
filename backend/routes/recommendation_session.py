@@ -13,6 +13,26 @@ router = APIRouter()
     path="",
     summary="Get recommendation sessions",
     description="Retrieve a list of all recommendation sessions.",
+    responses={
+        200: {
+            "description": "Recommendation sessions retrieved successfully",
+            "content": {
+                "application/json": {
+                    "example": {
+                        "success": True,
+                        "data": [
+                            {
+                                "id": "2baf7b6b-87de-4289-bdd8-42f138f8c9e1",
+                                "username": "jerald",
+                                "strategy": "mixed",
+                                "status": "completed",
+                            }
+                        ],
+                    }
+                }
+            },
+        }
+    },
 )
 def _get_recommendation_sessions(session: SessionDep) -> list[dict]:
     recommendation_sessions = get_recommendation_sessions(session=session)
