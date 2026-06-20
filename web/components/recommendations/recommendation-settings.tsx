@@ -45,6 +45,7 @@ import {
   useRecommendations,
 } from "@/hooks/useRecommendation";
 import { useMusicServerUsers } from "@/hooks/useUsers";
+import { useMusicServerUserConfigs } from "@/hooks/useMusicServerUsers";
 import { CRON_PRESETS } from "@/lib/types";
 import { cn } from "@/lib/utils";
 import { X, Pencil, Play, Plus, Trash2 } from "lucide-react";
@@ -104,6 +105,7 @@ export const Recommendations = () => {
     useState<Recommendation | null>(null);
 
   const { data: users } = useMusicServerUsers();
+  const { data: userConfigs } = useMusicServerUserConfigs();
   const {
     data: recommendations,
     isLoading,
@@ -119,6 +121,14 @@ export const Recommendations = () => {
     useSWRMutation("/recommendation", deleteRecommendationMutation);
   const { trigger: generateRecommendation, isMutating: isGenerating } =
     useSWRMutation("/recommendation/generate", generateRecommendationMutation);
+
+  const hasLastfmUsername = (username: string): boolean => {
+    if (!userConfigs) return false;
+
+    return userConfigs.some(
+      (config) => config.username === username && config.lastfm_username,
+    );
+  };
 
   const handleAddRecommendation = () => {
     setEditingId(null);
@@ -347,7 +357,10 @@ export const Recommendations = () => {
                       onClick={() =>
                         setRecommendationToGenerate(recommendation)
                       }
-                      disabled={isGenerating}
+                      disabled={
+                        isGenerating ||
+                        !hasLastfmUsername(recommendation.username)
+                      }
                     >
                       <Play className="h-4 w-4" />
                     </Button>
@@ -393,11 +406,13 @@ export const Recommendations = () => {
         {users.map((user) => {
           const isSelected =
             form.blend_users && form.blend_users.includes(user.name);
+          const isDisabled = !hasLastfmUsername(user.name);
 
           return (
             <button
               key={user.id}
               type="button"
+              disabled={isDisabled}
               onClick={() =>
                 setForm((prev) => {
                   const prevBlendUsers = prev.blend_users ?? [];
@@ -412,9 +427,12 @@ export const Recommendations = () => {
               }
               className={cn(
                 "inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-medium select-none cursor-pointer transition-colors duration-150",
-                isSelected
-                  ? "bg-primary text-primary-foreground"
-                  : "bg-secondary text-secondary-foreground hover:bg-secondary/80",
+                {
+                  "bg-primary text-primary-foreground": isSelected,
+                  "bg-secondary text-secondary-foreground hover:bg-secondary/80":
+                    !isSelected,
+                  "opacity-40 cursor-not-allowed": isDisabled,
+                },
               )}
             >
               {user.name}
@@ -473,6 +491,11 @@ export const Recommendations = () => {
                   {users?.map((user) => (
                     <SelectItem key={user.id} value={user.name}>
                       {user.name}
+                      {!hasLastfmUsername(user.name) && (
+                        <span className="text-muted-foreground ml-1">
+                          (no Last.fm username)
+                        </span>
+                      )}
                     </SelectItem>
                   ))}
                 </SelectContent>
@@ -676,7 +699,11 @@ export const Recommendations = () => {
             </Button>
             <Button
               onClick={handleSaveRecommendation}
-              disabled={isCreating || isUpdating}
+              disabled={
+                isCreating ||
+                isUpdating ||
+                (form.username !== "" && !hasLastfmUsername(form.username))
+              }
             >
               {editingId ? "Update" : "Add"}
             </Button>
@@ -746,7 +773,11 @@ export const Recommendations = () => {
                 recommendationToGenerate &&
                 handleGenerateRecommendation(recommendationToGenerate)
               }
-              disabled={isGenerating}
+              disabled={
+                isGenerating ||
+                (recommendationToGenerate != null &&
+                  !hasLastfmUsername(recommendationToGenerate.username))
+              }
             >
               Start Generation
             </AlertDialogAction>
