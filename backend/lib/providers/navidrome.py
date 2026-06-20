@@ -262,7 +262,7 @@ class NavidromeProvider(MusicPlaylistProvider):
         return None
 
     async def get_playlists(
-        self,
+        self, *,
         user_id: str,
         username: str = "",
         password: str = "",
@@ -288,6 +288,7 @@ class NavidromeProvider(MusicPlaylistProvider):
 
     async def get_or_create_playlist(
         self,
+        *,
         playlist_name: str,
         username: str,
         is_public: bool = False,
@@ -344,7 +345,7 @@ class NavidromeProvider(MusicPlaylistProvider):
         return playlist_id, user.id
 
     async def create_playlist(
-        self,
+        self, *,
         playlist_name: str,
         user_id: str,
         is_public: bool = False,
@@ -370,7 +371,7 @@ class NavidromeProvider(MusicPlaylistProvider):
         )
 
     async def delete_playlist(
-        self,
+        self, *,
         playlist_id: str,
         username: str = "",
         password: str = "",
@@ -386,7 +387,7 @@ class NavidromeProvider(MusicPlaylistProvider):
         )
 
     async def get_playlist_songs(
-        self,
+        self, *,
         playlist_id: str,
         user_id: str,
         username: str = "",
@@ -421,7 +422,7 @@ class NavidromeProvider(MusicPlaylistProvider):
         ]
 
     async def add_songs_to_playlist(
-        self,
+        self, *,
         playlist_id: str,
         user_id: str,
         track_ids: list[str],
@@ -442,7 +443,7 @@ class NavidromeProvider(MusicPlaylistProvider):
         )
 
     async def delete_songs_from_playlist(
-        self,
+        self, *,
         playlist_id: str,
         entry_ids: list[str],
         username: str = "",
@@ -486,7 +487,7 @@ class NavidromeProvider(MusicPlaylistProvider):
         )
 
     async def search_track(
-        self, artist_name: str, title: str, album: str, year: str
+        self, *, artist_name: str, title: str, album: str, year: str
     ) -> list[ProviderTrack]:
         """Search for tracks in Navidrome matching the given metadata."""
 
@@ -521,7 +522,7 @@ class NavidromeProvider(MusicPlaylistProvider):
         ]
 
     async def update_playlist_image(
-        self, playlist_id: str, image_url: str | None
+        self, *, playlist_id: str, image_url: str | None
     ) -> None:
         """Set the cover image for a Navidrome playlist.
 
@@ -548,7 +549,7 @@ class NavidromeProvider(MusicPlaylistProvider):
         return bool(scan_status.get("scanning", False))
 
     async def wait_for_rescan(
-        self,
+        self, *,
         poll_interval_seconds: int = 15,
         max_wait_seconds: int = 600,
     ) -> None:
@@ -571,6 +572,7 @@ class NavidromeProvider(MusicPlaylistProvider):
 
     async def update_playlist_visibility(
         self,
+        *,
         playlist_name: str,
         username: str,
         is_public: bool,

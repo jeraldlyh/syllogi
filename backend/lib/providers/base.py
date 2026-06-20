@@ -19,6 +19,7 @@ class MusicPlaylistProvider(ABC):
     @abstractmethod
     async def get_playlists(
         self,
+        *,
         user_id: str,
         username: str,
         password: str,
@@ -29,6 +30,7 @@ class MusicPlaylistProvider(ABC):
     @abstractmethod
     async def get_or_create_playlist(
         self,
+        *,
         playlist_name: str,
         is_public: bool,
         username: str,
@@ -44,6 +46,7 @@ class MusicPlaylistProvider(ABC):
     @abstractmethod
     async def create_playlist(
         self,
+        *,
         playlist_name: str,
         user_id: str,
         is_public: bool,
@@ -56,6 +59,7 @@ class MusicPlaylistProvider(ABC):
     @abstractmethod
     async def delete_playlist(
         self,
+        *,
         playlist_id: str,
         username: str,
         password: str,
@@ -66,6 +70,7 @@ class MusicPlaylistProvider(ABC):
     @abstractmethod
     async def get_playlist_songs(
         self,
+        *,
         playlist_id: str,
         user_id: str,
         username: str,
@@ -77,6 +82,7 @@ class MusicPlaylistProvider(ABC):
     @abstractmethod
     async def add_songs_to_playlist(
         self,
+        *,
         playlist_id: str,
         user_id: str,
         track_ids: list[str],
@@ -89,6 +95,7 @@ class MusicPlaylistProvider(ABC):
     @abstractmethod
     async def delete_songs_from_playlist(
         self,
+        *,
         playlist_id: str,
         entry_ids: list[str],
         username: str,
@@ -99,14 +106,22 @@ class MusicPlaylistProvider(ABC):
 
     @abstractmethod
     async def search_track(
-        self, artist_name: str, title: str, album: str, year: str
+        self,
+        *,
+        artist_name: str,
+        title: str,
+        album: str,
+        year: str,
     ) -> list[ProviderTrack]:
         """Search for audio tracks matching the given metadata."""
         ...
 
     @abstractmethod
     async def update_playlist_image(
-        self, playlist_id: str, image_url: str | None
+        self,
+        *,
+        playlist_id: str,
+        image_url: str | None,
     ) -> None:
         """Set the primary cover image for a playlist from a remote URL."""
         ...
@@ -124,6 +139,7 @@ class MusicPlaylistProvider(ABC):
     @abstractmethod
     async def wait_for_rescan(
         self,
+        *,
         poll_interval_seconds: int = 15,
         max_wait_seconds: int = 600,
     ) -> None:
@@ -133,9 +149,10 @@ class MusicPlaylistProvider(ABC):
     @abstractmethod
     async def update_playlist_visibility(
         self,
+        *,
         playlist_name: str,
-        is_public: bool,
         username: str,
+        is_public: bool,
         password: str,
     ) -> None:
         """Update the visibility of an existing playlist. Override in providers that support it."""
