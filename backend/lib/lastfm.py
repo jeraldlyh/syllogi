@@ -4,7 +4,12 @@ from typing import Any, TypeVar
 
 import httpx
 
-from lib.models.lastfm import LastFMChartTrack, LastFMRecentTrack, LastFMSimilarTrack, LastFMTopTrack
+from lib.models.lastfm import (
+    LastFMChartTrack,
+    LastFMRecentTrack,
+    LastFMSimilarTrack,
+    LastFMTopTrack,
+)
 from lib.env import get_environment_variable
 
 
@@ -127,6 +132,19 @@ async def _get_lastfm_tracks_paginated(
 
         page += 1
     return tracks
+
+
+async def verify_lastfm_username(username: str) -> bool:
+    """Verify that a Last.fm username exists."""
+
+    try:
+        data = await _lastfm(
+            method="user.getInfo",
+            params={"user": username},
+        )
+        return "user" in data
+    except Exception:
+        return False
 
 
 async def get_lastfm_recent_tracks(

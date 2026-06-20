@@ -15,6 +15,7 @@ from db.music_server_user import (
 from db.session import SessionDep
 from lib.auth import require_admin
 from lib.crypto import encrypt
+from lib.lastfm import verify_lastfm_username
 from lib.providers import get_provider
 
 logger = logging.getLogger(__name__)
@@ -121,6 +122,15 @@ async def _create_music_server_user(
             detail=f"Unable to verify credentials for user: {item.username}",
         )
 
+    if item.lastfm_username:
+        is_valid_lastfm = await verify_lastfm_username(item.lastfm_username)
+
+        if not is_valid_lastfm:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail=f"Invalid Last.fm username: {item.lastfm_username}",
+            )
+
     user = MusicServerUser(
         username=item.username,
         provider=item.provider,
@@ -177,6 +187,15 @@ async def _update_music_server_user(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail=f"Unable to verify credentials for user: {item.username}",
         )
+
+    if item.lastfm_username:
+        is_valid_lastfm = await verify_lastfm_username(item.lastfm_username)
+
+        if not is_valid_lastfm:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail=f"Invalid Last.fm username: {item.lastfm_username}",
+            )
 
     user.username = item.username
     user.provider = MusicServerProvider(item.provider)
