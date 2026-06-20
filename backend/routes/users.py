@@ -16,7 +16,7 @@ from db.session import SessionDep
 from lib.auth import require_admin
 from lib.crypto import encrypt
 from lib.lastfm import verify_lastfm_username
-from lib.providers import get_provider
+from lib.providers import get_provider, get_provider_enum
 
 logger = logging.getLogger(__name__)
 
@@ -112,15 +112,16 @@ async def _create_music_server_user(
             detail=f"Music server user already exists: {item.username} for provider {item.provider}",
         )
 
-    is_valid_password = await get_provider().verify_user_credentials(
-        username=item.username, password=item.password
-    )
-
-    if not is_valid_password:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail=f"Unable to verify credentials for user: {item.username}",
+    if item.provider == get_provider_enum():
+        is_valid_password = await get_provider().verify_user_credentials(
+            username=item.username, password=item.password
         )
+
+        if not is_valid_password:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail=f"Unable to verify credentials for user: {item.username}",
+            )
 
     if item.lastfm_username:
         is_valid_lastfm = await verify_lastfm_username(item.lastfm_username)
@@ -178,15 +179,16 @@ async def _update_music_server_user(
             detail=f"Unable to find music server user: {id}",
         )
 
-    is_valid_password = await get_provider().verify_user_credentials(
-        item.username, item.password
-    )
-
-    if not is_valid_password:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail=f"Unable to verify credentials for user: {item.username}",
+    if item.provider == get_provider_enum():
+        is_valid_password = await get_provider().verify_user_credentials(
+            username=item.username, password=item.password
         )
+
+        if not is_valid_password:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail=f"Unable to verify credentials for user: {item.username}",
+            )
 
     if item.lastfm_username:
         is_valid_lastfm = await verify_lastfm_username(item.lastfm_username)
