@@ -170,13 +170,13 @@ async def generate_recommendations_task(
             started_at = recommendation_session.started_at
             music_server_user = get_music_server_user_by_username(
                 session=session,
-                username=recommendation_session.username,
+                username=recommendation.username,
                 provider=get_provider_enum(),
             )
 
             if not music_server_user:
                 raise ValueError(
-                    f"Unable to find music_server_user: {recommendation_session.username}"
+                    f"Unable to find music_server_user: {recommendation.username}"
                 )
 
             lastfm_username = music_server_user.lastfm_username
@@ -191,18 +191,18 @@ async def generate_recommendations_task(
             if blend_users:
                 resolved_blend_users = []
                 for music_username in blend_users:
-                    music_server_user = get_music_server_user_by_username(
+                    blend_music_server_user = get_music_server_user_by_username(
                         session=session,
                         username=music_username,
                         provider=get_provider_enum(),
                     )
 
-                    if not music_server_user or not music_server_user.lastfm_username:
+                    if not blend_music_server_user or not blend_music_server_user.lastfm_username:
                         raise ValueError(
                             f"Last.fm username not configured for blend user '{music_username}'"
                         )
                     resolved_blend_users.append(
-                        (music_username, music_server_user.lastfm_username)
+                        (music_username, blend_music_server_user.lastfm_username)
                     )
 
             logger.info(
