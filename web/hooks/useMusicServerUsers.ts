@@ -8,7 +8,6 @@ export type MusicServerProvider = "jellyfin" | "navidrome";
 export interface MusicServerUserConfig {
   id: string;
   username: string;
-  password: string;
   lastfm_username: string;
   provider: MusicServerProvider;
   created_at: string;

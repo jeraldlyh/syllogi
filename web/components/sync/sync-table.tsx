@@ -185,7 +185,7 @@ export const SyncSessionTable = () => {
           </DialogHeader>
           <div className="p-4 bg-red-500/5 rounded-md text-red-400">
             <Text value="Stacktrace:" className="text-sm" />
-            <ScrollArea className="max-h-64 mt-2 rounded-md border bg-secondary/50 p-2">
+            <ScrollArea className="max-h-64 mt-2 rounded-md border bg-secondary/50 p-2 overflow-y-scroll">
               <pre className="text-xs text-wrap">
                 {selectedSession.error_message || "No stacktrace available."}
               </pre>
