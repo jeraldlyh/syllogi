@@ -293,34 +293,32 @@ export const UsersSettings = () => {
             </DialogTitle>
           </DialogHeader>
           <div className="flex flex-col gap-4">
-            {settingsData?.musicProviders.length > 1 && (
-              <div className="flex flex-col gap-2">
-                <Label
-                  htmlFor="provider"
-                  className="flex justify-between items-center"
-                >
-                  <Text muted value="Provider" />
-                </Label>
-                <Select
-                  value={form.provider}
-                  onValueChange={(value) =>
-                    setForm((prev) => ({ ...prev, provider: value }))
-                  }
-                  disabled={!!editingId}
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select provider" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {settingsData.musicProviders.map((provider) => (
-                      <SelectItem key={provider} value={provider}>
-                        {capitaliseFirstLetter(provider)}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-            )}
+            <div className="flex flex-col gap-2">
+              <Label
+                htmlFor="provider"
+                className="flex justify-between items-center"
+              >
+                <Text muted value="Provider" />
+              </Label>
+              <Select
+                value={form.provider}
+                onValueChange={(value) =>
+                  setForm((prev) => ({ ...prev, provider: value }))
+                }
+                disabled={!!editingId}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Select provider" />
+                </SelectTrigger>
+                <SelectContent>
+                  {settingsData.musicProviders.map((provider) => (
+                    <SelectItem key={provider} value={provider}>
+                      {capitaliseFirstLetter(provider)}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
             <div className="flex flex-col gap-2">
               <Label
                 htmlFor="username"

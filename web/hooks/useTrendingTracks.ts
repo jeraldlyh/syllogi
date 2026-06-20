@@ -17,7 +17,7 @@ export const useTrendingTracks = () => {
   const { data, error, isLoading, mutate } = useSWR<
     ApiResponse<TrendingTrack[]>
   >("/charts/trending", fetcher, {
-    revalidateOnFocus: false,
+    revalidateOnFocus: true,
     revalidateOnReconnect: false,
   });
 

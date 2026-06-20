@@ -4,7 +4,9 @@
 
 # syllogi
 
-**syllogi** mirrors external playlists into [Jellyfin] or [Navidrome] by matching tracks against your indexed audio. Missing tracks can optionally be downloaded with [yt-dlp] or [slskd].
+**syllogi** is a self-hosted automation tool that keeps your [Jellyfin] or [Navidrome] music library in sync with external playlists from Spotify and YouTube.
+
+It matches tracks against your indexed audio, automatically downloads missing tracks via [yt-dlp] or [slskd], generates personalized recommendations based on your listening history, and lets you browse trending charts, all from a single dashboard.
 
 Supported playlist providers:
 
@@ -31,6 +33,22 @@ Supported music servers:
 - [Quick Start](#quick-start)
 - [Configuration](#configuration)
 - [Credits](#credits)
+
+---
+
+## Screenshots
+
+### Playlist Sync
+
+<p align="center">
+  <img src="assets/sync.jpeg" alt="Sync dashboard" width="800" />
+</p>
+
+### Trending Charts
+
+<p align="center">
+  <img src="assets/charts.jpeg" alt="Charts dashboard" width="800" />
+</p>
 
 ---
 
@@ -100,6 +118,7 @@ Browse Last.fm globally trending tracks, and tracks can be queued for download d
 
 - A running [Jellyfin] or [Navidrome] server.
 - A music library that includes your local music.
+- Last.fm account that contains your music scrobbles.
 - Docker and Docker Compose.
 
 ### Building from source
@@ -109,12 +128,6 @@ If you want to build the image locally instead of using the pre-built one, clone
 ```bash
 git clone --recurse-submodules https://github.com/jeraldlyh/syllogi.git
 cd syllogi
-```
-
-If you already cloned without `--recurse-submodules`, run:
-
-```bash
-git submodule update --init --recursive
 ```
 
 Then use the development compose file which builds from source with hot-reload:

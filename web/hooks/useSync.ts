@@ -16,9 +16,10 @@ export interface SyncConfig {
 }
 
 export const useSyncConfigs = () => {
-  const { data, error, isLoading, mutate } = useSWR<
-    ApiResponse<SyncConfig[]>
-  >("/sync", fetcher);
+  const { data, error, isLoading, mutate } = useSWR<ApiResponse<SyncConfig[]>>(
+    "/sync",
+    fetcher,
+  );
 
   return {
     data: data?.data,
@@ -79,6 +80,24 @@ const deleteSyncConfig = async (configId: string): Promise<void> => {
   }
 };
 
+const generateSync = async (config: SyncConfig): Promise<string> => {
+  const response = await api<{ id: string }>({
+    method: "POST",
+    service: "sync",
+    path: "generate",
+    body: config,
+  });
+
+  if (response.statusCode !== 200 || !response.data) {
+    if (response.error) {
+      throw new ApiError(response.error);
+    }
+    throw new Error(`Failed to generate sync: ${response.statusCode}`);
+  }
+
+  return response.data.id;
+};
+
 export const createSyncConfigMutation = async (
   _key: string,
   { arg }: { arg: Omit<SyncConfig, "id"> },
@@ -98,4 +117,11 @@ export const deleteSyncConfigMutation = async (
   { arg }: { arg: string },
 ) => {
   return await deleteSyncConfig(arg);
+};
+
+export const generateSyncMutation = async (
+  _key: string,
+  { arg }: { arg: SyncConfig },
+) => {
+  return await generateSync(arg);
 };
