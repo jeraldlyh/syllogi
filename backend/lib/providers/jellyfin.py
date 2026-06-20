@@ -85,7 +85,12 @@ class JellyfinProvider(MusicPlaylistProvider):
         users = await self.get_users()
         return next((user for user in users if user.name == username), None)
 
-    async def get_playlists(self, user_id: str) -> list[ProviderPlaylist]:
+    async def get_playlists(
+        self, *,
+        user_id: str,
+        username: str = "",
+        password: str = "",
+    ) -> list[ProviderPlaylist]:
         """Return all playlists visible to the given Jellyfin user."""
 
         response = await self._jellyfin(
@@ -103,7 +108,12 @@ class JellyfinProvider(MusicPlaylistProvider):
         ]
 
     async def get_or_create_playlist(
-        self, playlist_name: str, username: str, is_public: bool = False
+        self,
+        *,
+        playlist_name: str,
+        username: str,
+        is_public: bool = False,
+        password: str = "",
     ) -> tuple[str, str]:
         """Get an existing Jellyfin playlist by name or create a new one.
 
@@ -146,7 +156,12 @@ class JellyfinProvider(MusicPlaylistProvider):
         return playlist_id, user.id
 
     async def create_playlist(
-        self, playlist_name: str, user_id: str, is_public: bool = False
+        self, *,
+        playlist_name: str,
+        user_id: str,
+        is_public: bool = False,
+        username: str = "",
+        password: str = "",
     ) -> ProviderPlaylist:
         """Create a new audio playlist in Jellyfin owned by user."""
 
@@ -169,13 +184,22 @@ class JellyfinProvider(MusicPlaylistProvider):
             owner_id=user_id,
         )
 
-    async def delete_playlist(self, playlist_id: str) -> None:
+    async def delete_playlist(
+        self, *,
+        playlist_id: str,
+        username: str = "",
+        password: str = "",
+    ) -> None:
         """Delete a Jellyfin playlist by its ID."""
 
         await self._jellyfin(f"/Items/{playlist_id}", method="DELETE")
 
     async def get_playlist_songs(
-        self, playlist_id: str, user_id: str
+        self, *,
+        playlist_id: str,
+        user_id: str,
+        username: str = "",
+        password: str = "",
     ) -> list[ProviderTrack]:
         """Return all tracks in a Jellyfin playlist."""
 
@@ -201,7 +225,13 @@ class JellyfinProvider(MusicPlaylistProvider):
         ]
 
     async def add_songs_to_playlist(
-        self, playlist_id: str, user_id: str, track_ids: list[str], batch_size: int = 50
+        self, *,
+        playlist_id: str,
+        user_id: str,
+        track_ids: list[str],
+        username: str = "",
+        password: str = "",
+        batch_size: int = 50,
     ) -> None:
         """Append tracks to an existing Jellyfin playlist.
 
@@ -223,7 +253,11 @@ class JellyfinProvider(MusicPlaylistProvider):
             )
 
     async def delete_songs_from_playlist(
-        self, playlist_id: str, entry_ids: list[str]
+        self, *,
+        playlist_id: str,
+        entry_ids: list[str],
+        username: str = "",
+        password: str = "",
     ) -> None:
         """Remove tracks from a Jellyfin playlist by their playlist entry IDs."""
 
@@ -236,7 +270,7 @@ class JellyfinProvider(MusicPlaylistProvider):
         )
 
     async def search_track(
-        self, artist_name: str, title: str, album: str, year: str
+        self, *, artist_name: str, title: str, album: str, year: str
     ) -> list[ProviderTrack]:
         """Search for audio tracks in Jellyfin matching the given metadata.
 
@@ -282,7 +316,7 @@ class JellyfinProvider(MusicPlaylistProvider):
         ]
 
     async def update_playlist_image(
-        self, playlist_id: str, image_url: str | None
+        self, *, playlist_id: str, image_url: str | None
     ) -> None:
         """Set the primary cover image for a Jellyfin playlist from a remote URL.
 
@@ -323,7 +357,12 @@ class JellyfinProvider(MusicPlaylistProvider):
         )
 
     async def update_playlist_visibility(
-        self, playlist_name: str, username: str, is_public: bool
+        self,
+        *,
+        playlist_name: str,
+        username: str,
+        is_public: bool,
+        password: str = "",
     ) -> None:
         """Update the visibility of an existing Jellyfin playlist by
         recreating it with all existing tracks preserved.
@@ -450,7 +489,7 @@ class JellyfinProvider(MusicPlaylistProvider):
         ]
 
     async def wait_for_rescan(
-        self,
+        self, *,
         poll_interval_seconds: int = 15,
         max_wait_seconds: int = 600,
     ) -> None:

@@ -27,6 +27,11 @@ _oauth_states: dict[str, str] = {}
     path="/authorize",
     summary="Initiate Authentik OAuth login",
     description="Redirect the browser to the Authentik authorization endpoint.",
+    responses={
+        302: {
+            "description": "Redirect to Authentik authorization endpoint",
+        }
+    },
 )
 def oauth_authorize():
     config = _get_authentik_config()
@@ -57,6 +62,41 @@ def oauth_authorize():
         "Exchange the authorization code for tokens, fetch user info from Authentik, "
         "create or retrieve the local user, issue a session cookie, and redirect to the app."
     ),
+    responses={
+        302: {
+            "description": "Redirect to application after successful authentication",
+        },
+        400: {
+            "description": "Invalid OAuth state or missing provider data",
+            "content": {
+                "application/json": {
+                    "example": {
+                        "success": False,
+                        "error": {
+                            "code": 400,
+                            "name": "Bad Request",
+                            "message": "Invalid or expired OAuth state parameter",
+                        },
+                    }
+                }
+            },
+        },
+        401: {
+            "description": "Failed to obtain access token",
+            "content": {
+                "application/json": {
+                    "example": {
+                        "success": False,
+                        "error": {
+                            "code": 401,
+                            "name": "Unauthorized",
+                            "message": "Failed to obtain access token from Authentik",
+                        },
+                    }
+                }
+            },
+        },
+    },
 )
 async def oauth_callback(
     _: Response,

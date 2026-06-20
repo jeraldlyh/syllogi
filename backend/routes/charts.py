@@ -34,18 +34,21 @@ class DownloadTrackRequest(BaseModel):
             "description": "List of trending tracks retrieved successfully",
             "content": {
                 "application/json": {
-                    "example": [
-                        {
-                            "artist_name": "The Weeknd",
-                            "track_name": "Blinding Lights",
-                            "duration": 200,
-                            "listeners": 5000000,
-                            "playcount": 100000000,
-                            "musicbrainz_id": "abc123",
-                            "image_url": "https://lastfm.freetls.fastly.net/i/u/300x300/abc.jpg",
-                            "exists": False,
-                        }
-                    ]
+                    "example": {
+                        "success": True,
+                        "data": [
+                            {
+                                "artist_name": "The Weeknd",
+                                "track_name": "Blinding Lights",
+                                "duration": 200,
+                                "listeners": 5000000,
+                                "playcount": 100000000,
+                                "musicbrainz_id": "abc123",
+                                "image_url": "https://lastfm.freetls.fastly.net/i/u/300x300/abc.jpg",
+                                "exists": False,
+                            }
+                        ],
+                    }
                 }
             },
         }
@@ -76,7 +79,12 @@ async def _get_trending_tracks(
         200: {
             "description": "Download started successfully",
             "content": {
-                "application/json": {"example": {"message": "Download started"}}
+                "application/json": {
+                    "example": {
+                        "success": True,
+                        "data": {"message": "Download started"},
+                    }
+                }
             },
         }
     },
@@ -111,6 +119,26 @@ async def _download_track(
     path="/downloads",
     summary="Get chart downloads",
     description="Retrieve recent chart download requests and their statuses.",
+    responses={
+        200: {
+            "description": "Chart downloads retrieved successfully",
+            "content": {
+                "application/json": {
+                    "example": {
+                        "success": True,
+                        "data": [
+                            {
+                                "id": "2baf7b6b-87de-4289-bdd8-42f138f8c9e1",
+                                "artist_name": "The Weeknd",
+                                "track_name": "Blinding Lights",
+                                "status": "completed",
+                            }
+                        ],
+                    }
+                }
+            },
+        }
+    },
 )
 async def _get_download_sessions(session: SessionDep) -> list[dict]:
     downloads = get_download_sessions(session, limit=20)

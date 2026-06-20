@@ -1,8 +1,6 @@
 from fastapi import APIRouter, BackgroundTasks, HTTPException, status
 from pydantic import BaseModel, Field, model_validator
 
-from lib.models.blend import BlendUser
-
 from db.models.recommendation import (
     Recommendation,
     RecommendationProvider,
@@ -10,6 +8,7 @@ from db.models.recommendation import (
     RecommendationStatus,
     RecommendationStrategy,
 )
+from db.music_server_user import get_music_server_user_by_username
 from db.recommendation import (
     create_recommendation,
     delete_recommendation,
@@ -20,7 +19,7 @@ from db.recommendation import (
 from db.recommendation_session import create_recommendation_session
 from db.session import SessionDep
 from lib.cron import create_job, delete_job, update_job
-from lib.providers import get_provider
+from lib.providers import get_provider, get_provider_enum
 from lib.recommendation import (
     generate_recommendations,
     generate_recommendations_task,
@@ -33,12 +32,11 @@ router = APIRouter()
 class CreateOrUpdateRecommendationRequest(BaseModel):
     username: str = Field(min_length=1)
     strategy: RecommendationStrategy = Field(min_length=1)
-    lastfm_username: str = Field(default="")
     requested_count: int = Field(default=50, ge=1, le=50)
     cron_expression: str = Field(min_length=1)
     is_public: bool = Field(default=False)
     playlist_name: str = Field(min_length=1, max_length=256)
-    blend_users: list[BlendUser] | None = Field(default=None)
+    blend_users: list[str] | None = Field(default=None)
 
     @model_validator(mode="after")
     def validate_blend_users(self) -> "CreateOrUpdateRecommendationRequest":
@@ -49,16 +47,10 @@ class CreateOrUpdateRecommendationRequest(BaseModel):
                 raise ValueError(
                     "There must be at least 2 blend_users for the 'blend' strategy"
                 )
-            for user in self.blend_users:
-                if not user.name or not user.lastfm_username:
-                    raise ValueError(
-                        "Each blend user must have 'name' and 'lastfm_username'"
-                    )
+            for username in self.blend_users:
+                if not username:
+                    raise ValueError("Each blend user must be a non-empty string")
         else:
-            if not self.lastfm_username:
-                raise ValueError(
-                    "Last.fm username is required for non-blend strategies"
-                )
             self.blend_users = None
         return self
 
@@ -72,16 +64,18 @@ class CreateOrUpdateRecommendationRequest(BaseModel):
             "description": "List of recommendation settings retrieved successfully",
             "content": {
                 "application/json": {
-                    "example": [
-                        {
-                            "id": "2baf7b6b-87de-4289-bdd8-42f138f8c9e1",
-                            "username": "johndoe",
-                            "strategy": "mixed",
-                            "lastfm_username": "john_lastfm",
-                            "requested_count": 50,
-                            "cron_expression": "0 0 * * *",
-                        }
-                    ]
+                    "example": {
+                        "success": True,
+                        "data": [
+                            {
+                                "id": "2baf7b6b-87de-4289-bdd8-42f138f8c9e1",
+                                "username": "johndoe",
+                                "strategy": "mixed",
+                                "requested_count": 50,
+                                "cron_expression": "0 0 * * *",
+                            }
+                        ],
+                    }
                 }
             },
         },
@@ -102,7 +96,10 @@ def _get_recommendation(session: SessionDep) -> list[dict]:
             "description": "Recommendation created successfully",
             "content": {
                 "application/json": {
-                    "example": {"id": "2baf7b6b-87de-4289-bdd8-42f138f8c9e1"}
+                    "example": {
+                        "success": True,
+                        "data": {"id": "2baf7b6b-87de-4289-bdd8-42f138f8c9e1"},
+                    }
                 }
             },
         },
@@ -115,14 +112,11 @@ def _create_recommendation(
     recommendation = Recommendation(
         username=item.username,
         strategy=item.strategy,
-        lastfm_username=item.lastfm_username,
         requested_count=item.requested_count,
         cron_expression=item.cron_expression,
         is_public=item.is_public,
         playlist_name=item.playlist_name,
-        blend_users=[u.to_dict() for u in item.blend_users]
-        if item.blend_users
-        else None,
+        blend_users=item.blend_users,
     )
     provider = get_provider()
 
@@ -146,7 +140,10 @@ def _create_recommendation(
             "description": "Recommendation updated successfully",
             "content": {
                 "application/json": {
-                    "example": {"message": "Recommendation updated successfully"}
+                    "example": {
+                        "success": True,
+                        "data": {"message": "Recommendation updated successfully"},
+                    }
                 }
             },
         },
@@ -155,7 +152,12 @@ def _create_recommendation(
             "content": {
                 "application/json": {
                     "example": {
-                        "detail": "Unable to find recommendation : <recommendation_id>"
+                        "success": False,
+                        "error": {
+                            "code": 400,
+                            "name": "Bad Request",
+                            "message": "Unable to find recommendation: <recommendation_id>",
+                        },
                     }
                 }
             },
@@ -174,19 +176,26 @@ async def _update_recommendation(
     if not recommendation:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail=f"Unable to find recommendation : {recommendation_id}",
+            detail=f"Unable to find recommendation: {recommendation_id}",
+        )
+
+    music_server_user = get_music_server_user_by_username(
+        session=session, provider=get_provider_enum(), username=recommendation.username
+    )
+
+    if not music_server_user:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"Unable to find music server user: {id}",
         )
 
     recommendation.username = item.username
     recommendation.strategy = item.strategy
-    recommendation.lastfm_username = item.lastfm_username
     recommendation.requested_count = item.requested_count
     recommendation.cron_expression = item.cron_expression
     recommendation.is_public = item.is_public
     recommendation.playlist_name = item.playlist_name
-    recommendation.blend_users = (
-        [u.to_dict() for u in item.blend_users] if item.blend_users else None
-    )
+    recommendation.blend_users = item.blend_users
 
     update_recommendation(
         session=session,
@@ -196,8 +205,9 @@ async def _update_recommendation(
     provider = get_provider()
     await provider.update_playlist_visibility(
         playlist_name=recommendation.playlist_name,
-        username=recommendation.username,
         is_public=recommendation.is_public,
+        username=music_server_user.username,
+        password=music_server_user.password,
     )
     update_job(
         func=generate_recommendations,
@@ -218,7 +228,10 @@ async def _update_recommendation(
             "description": "Recommendation deleted successfully",
             "content": {
                 "application/json": {
-                    "example": {"message": "Recommendation deleted successfully"}
+                    "example": {
+                        "success": True,
+                        "data": {"message": "Recommendation deleted successfully"},
+                    }
                 }
             },
         },
@@ -227,7 +240,12 @@ async def _update_recommendation(
             "content": {
                 "application/json": {
                     "example": {
-                        "detail": "Unable to find recommendation setting: <recommendation_id>"
+                        "success": False,
+                        "error": {
+                            "code": 400,
+                            "name": "Bad Request",
+                            "message": "Unable to find recommendation setting: <recommendation_id>",
+                        },
                     }
                 }
             },
@@ -262,7 +280,8 @@ def _delete_recommendation(
             "content": {
                 "application/json": {
                     "example": {
-                        "id": "2baf7b6b-87de-4289-bdd8-42f138f8c9e1",
+                        "success": True,
+                        "data": {"id": "2baf7b6b-87de-4289-bdd8-42f138f8c9e1"},
                     }
                 }
             },
@@ -278,18 +297,13 @@ def _generate_recommendations(
     started_at = get_now()
     provider = get_provider()
 
-    blend_users = recommendation.get_blend_users()
-    serialized_blend_users = (
-        [user.to_dict() for user in blend_users] if blend_users else None
-    )
-
     recommendation_session = RecommendationSession(
         username=username,
         provider=RecommendationProvider.lastfm,
         strategy=recommendation.strategy,
         requested_count=recommendation.requested_count,
         generated_count=0,
-        blend_users=serialized_blend_users,
+        blend_users=recommendation.blend_users,
         started_at=started_at,
         finished_at=started_at,
         duration_seconds=0,
@@ -303,10 +317,9 @@ def _generate_recommendations(
     background_tasks.add_task(
         generate_recommendations_task,
         provider=provider,
-        lastfm_username=recommendation.lastfm_username,
         recommendation_session_id=recommendation_session.id,
         recommendation_id=recommendation.id,
-        blend_users=recommendation.get_blend_users(),
+        blend_users=recommendation.blend_users,
     )
 
     return {"id": str(recommendation_session.id)}

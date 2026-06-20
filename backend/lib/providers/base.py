@@ -17,13 +17,24 @@ class MusicPlaylistProvider(ABC):
         ...
 
     @abstractmethod
-    async def get_playlists(self, user_id: str) -> list[ProviderPlaylist]:
+    async def get_playlists(
+        self,
+        *,
+        user_id: str,
+        username: str,
+        password: str,
+    ) -> list[ProviderPlaylist]:
         """Return all playlists visible to the given user."""
         ...
 
     @abstractmethod
     async def get_or_create_playlist(
-        self, playlist_name: str, username: str, is_public: bool = False
+        self,
+        *,
+        playlist_name: str,
+        is_public: bool,
+        username: str,
+        password: str,
     ) -> tuple[str, str]:
         """Get an existing playlist by name or create a new one.
 
@@ -34,47 +45,83 @@ class MusicPlaylistProvider(ABC):
 
     @abstractmethod
     async def create_playlist(
-        self, playlist_name: str, user_id: str, is_public: bool = False
+        self,
+        *,
+        playlist_name: str,
+        user_id: str,
+        is_public: bool,
+        username: str,
+        password: str,
     ) -> ProviderPlaylist:
         """Create a new playlist owned by the given user."""
         ...
 
     @abstractmethod
-    async def delete_playlist(self, playlist_id: str) -> None:
+    async def delete_playlist(
+        self,
+        *,
+        playlist_id: str,
+        username: str,
+        password: str,
+    ) -> None:
         """Delete a playlist by its ID."""
         ...
 
     @abstractmethod
     async def get_playlist_songs(
-        self, playlist_id: str, user_id: str
+        self,
+        *,
+        playlist_id: str,
+        user_id: str,
+        username: str,
+        password: str,
     ) -> list[ProviderTrack]:
         """Return all tracks in a playlist."""
         ...
 
     @abstractmethod
     async def add_songs_to_playlist(
-        self, playlist_id: str, user_id: str, track_ids: list[str]
+        self,
+        *,
+        playlist_id: str,
+        user_id: str,
+        track_ids: list[str],
+        username: str,
+        password: str,
     ) -> None:
         """Append tracks to an existing playlist."""
         ...
 
     @abstractmethod
     async def delete_songs_from_playlist(
-        self, playlist_id: str, entry_ids: list[str]
+        self,
+        *,
+        playlist_id: str,
+        entry_ids: list[str],
+        username: str,
+        password: str,
     ) -> None:
         """Remove tracks from a playlist by their entry IDs."""
         ...
 
     @abstractmethod
     async def search_track(
-        self, artist_name: str, title: str, album: str, year: str
+        self,
+        *,
+        artist_name: str,
+        title: str,
+        album: str,
+        year: str,
     ) -> list[ProviderTrack]:
         """Search for audio tracks matching the given metadata."""
         ...
 
     @abstractmethod
     async def update_playlist_image(
-        self, playlist_id: str, image_url: str | None
+        self,
+        *,
+        playlist_id: str,
+        image_url: str | None,
     ) -> None:
         """Set the primary cover image for a playlist from a remote URL."""
         ...
@@ -92,6 +139,7 @@ class MusicPlaylistProvider(ABC):
     @abstractmethod
     async def wait_for_rescan(
         self,
+        *,
         poll_interval_seconds: int = 15,
         max_wait_seconds: int = 600,
     ) -> None:
@@ -100,10 +148,22 @@ class MusicPlaylistProvider(ABC):
 
     @abstractmethod
     async def update_playlist_visibility(
-        self, playlist_name: str, username: str, is_public: bool
+        self,
+        *,
+        playlist_name: str,
+        username: str,
+        is_public: bool,
+        password: str,
     ) -> None:
         """Update the visibility of an existing playlist. Override in providers that support it."""
         ...
+
+    async def verify_user_credentials(self, username: str, password: str) -> bool:
+        """Verify that the given username/password pair is valid against the music server.
+
+        Override in providers that support credential verification.
+        """
+        return True
 
     @abstractmethod
     async def ensure_download_library_exists(self) -> None:

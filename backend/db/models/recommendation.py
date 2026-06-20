@@ -8,7 +8,6 @@ from sqlmodel import Field, Relationship, SQLModel
 
 from lib.mixin.metadata import TimestampMixin
 from lib.mixin.serializer import SerializerMixin
-from lib.models.blend import BlendUser
 from lib.utils import format_time_with_locale, get_now
 
 
@@ -41,19 +40,13 @@ class Recommendation(TimestampMixin, SerializerMixin, SQLModel, table=True):
 
     username: str = Field(max_length=128, nullable=False, index=True)
     strategy: RecommendationStrategy = Field(nullable=False)
-    lastfm_username: str = Field(max_length=128, nullable=False)
     requested_count: int = Field(default=50, nullable=False)
     cron_expression: str = Field(default="", max_length=128, nullable=False)
     is_public: bool = Field(default=False, nullable=False)
     playlist_name: str = Field(default="", max_length=256, nullable=False)
-    blend_users: list[dict[str, str]] | None = Field(
+    blend_users: list[str] | None = Field(
         default=None, sa_type=sa.JSON, nullable=True
     )
-
-    def get_blend_users(self) -> list[BlendUser] | None:
-        if self.blend_users is None:
-            return None
-        return [BlendUser.from_dict(user) for user in self.blend_users]
 
 
 class RecommendationSession(TimestampMixin, SerializerMixin, SQLModel, table=True):
@@ -65,14 +58,9 @@ class RecommendationSession(TimestampMixin, SerializerMixin, SQLModel, table=Tru
     strategy: RecommendationStrategy = Field(nullable=False)
     requested_count: int = Field(default=50, nullable=False)
     generated_count: int = Field(default=0, nullable=False)
-    blend_users: list[dict[str, str]] | None = Field(
+    blend_users: list[str] | None = Field(
         default=None, sa_type=sa.JSON, nullable=True
     )
-
-    def get_blend_users(self) -> list[BlendUser] | None:
-        if self.blend_users is None:
-            return None
-        return [BlendUser.from_dict(user) for user in self.blend_users]
 
     started_at: datetime = Field(
         default=get_now(),

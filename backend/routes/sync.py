@@ -5,6 +5,7 @@ from pydantic import BaseModel
 
 from db.models.sync import Sync, SyncProvider
 from db.models.sync import SyncSession, SyncStatus
+from db.music_server_user import get_music_server_user_by_username
 from db.sync import (
     create_sync,
     delete_sync,
@@ -16,7 +17,7 @@ from db.session import SessionDep
 from db.sync_session import create_sync_session
 from lib.cron import create_job, delete_job, update_job
 from lib.models.common import ExternalSync, ExternalTrack
-from lib.providers import get_provider
+from lib.providers import get_provider, get_provider_enum
 from lib.sync import sync_playlist, sync_playlist_task
 from lib.spotify import (
     get_spotify_playlist,
@@ -52,19 +53,22 @@ class CreateOrUpdateSyncRequest(BaseModel):
             "description": "Sync configs retrieved successfully",
             "content": {
                 "application/json": {
-                    "example": [
-                        {
-                            "id": "2baf7b6b-87de-4289-bdd8-42f138f8c9e1",
-                            "provider": "spotify",
-                            "playlist_id": "37i9dQZF1DXcBWIGoYBM5M",
-                            "playlist_name": "Today's Top Hits",
-                            "username": "jerald",
-                            "enable_sync": True,
-                            "enable_download": False,
-                            "is_public": False,
-                            "cron_expression": "0 * * * *",
-                        }
-                    ],
+                    "example": {
+                        "success": True,
+                        "data": [
+                            {
+                                "id": "2baf7b6b-87de-4289-bdd8-42f138f8c9e1",
+                                "provider": "spotify",
+                                "playlist_id": "37i9dQZF1DXcBWIGoYBM5M",
+                                "playlist_name": "Today's Top Hits",
+                                "username": "jerald",
+                                "enable_sync": True,
+                                "enable_download": False,
+                                "is_public": False,
+                                "cron_expression": "0 * * * *",
+                            }
+                        ],
+                    }
                 }
             },
         }
@@ -84,7 +88,10 @@ def _get_sync_configs(session: SessionDep):
             "description": "Sync config created successfully",
             "content": {
                 "application/json": {
-                    "example": {"id": "2baf7b6b-87de-4289-bdd8-42f138f8c9e1"},
+                    "example": {
+                        "success": True,
+                        "data": {"id": "2baf7b6b-87de-4289-bdd8-42f138f8c9e1"},
+                    }
                 }
             },
         }
@@ -123,7 +130,10 @@ def _create_sync_config(item: CreateOrUpdateSyncRequest, session: SessionDep):
             "description": "Sync config updated successfully",
             "content": {
                 "application/json": {
-                    "example": {"message": "Sync config updated successfully"},
+                    "example": {
+                        "success": True,
+                        "data": {"message": "Sync config updated successfully"},
+                    }
                 }
             },
         },
@@ -132,7 +142,12 @@ def _create_sync_config(item: CreateOrUpdateSyncRequest, session: SessionDep):
             "content": {
                 "application/json": {
                     "example": {
-                        "detail": "Unable to find sync config: <sync_id>",
+                        "success": False,
+                        "error": {
+                            "code": 400,
+                            "name": "Bad Request",
+                            "message": "Unable to find sync config: <id>",
+                        },
                     }
                 }
             },
@@ -150,6 +165,18 @@ async def _update_sync_config(
             detail=f"Unable to find sync config: {id}",
         )
 
+    music_server_user = get_music_server_user_by_username(
+        session=session,
+        provider=get_provider_enum(),
+        username=item.username,
+    )
+
+    if not music_server_user:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"Unable to find music server user: {id}",
+        )
+
     sync.provider = item.provider
     sync.playlist_id = item.playlist_id
     sync.playlist_name = item.playlist_name
@@ -164,8 +191,9 @@ async def _update_sync_config(
 
     await provider.update_playlist_visibility(
         playlist_name=sync.playlist_name,
-        username=sync.username,
         is_public=sync.is_public,
+        username=music_server_user.username,
+        password=music_server_user.password,
     )
 
     if not sync.enable_sync:
@@ -190,7 +218,10 @@ async def _update_sync_config(
             "description": "Sync config deleted successfully",
             "content": {
                 "application/json": {
-                    "example": {"message": "Sync config deleted successfully"},
+                    "example": {
+                        "success": True,
+                        "data": {"message": "Sync config deleted successfully"},
+                    }
                 }
             },
         },
@@ -199,7 +230,12 @@ async def _update_sync_config(
             "content": {
                 "application/json": {
                     "example": {
-                        "detail": "Unable to find sync config: <sync_id>",
+                        "success": False,
+                        "error": {
+                            "code": 400,
+                            "name": "Bad Request",
+                            "message": "Unable to find sync config: <id>",
+                        },
                     }
                 }
             },
@@ -230,7 +266,10 @@ def _delete_sync_config(id: str, session: SessionDep):
             "description": "Sync session created",
             "content": {
                 "application/json": {
-                    "example": {"id": "2baf7b6b-87de-4289-bdd8-42f138f8c9e1"},
+                    "example": {
+                        "success": True,
+                        "data": {"id": "2baf7b6b-87de-4289-bdd8-42f138f8c9e1"},
+                    }
                 }
             },
         },
@@ -239,7 +278,12 @@ def _delete_sync_config(id: str, session: SessionDep):
             "content": {
                 "application/json": {
                     "example": {
-                        "detail": "Unable to find playlist: <playlist_id>",
+                        "success": False,
+                        "error": {
+                            "code": 404,
+                            "name": "Not Found",
+                            "message": "Unable to find playlist: <playlist_id>",
+                        },
                     }
                 }
             },

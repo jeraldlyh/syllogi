@@ -9,6 +9,8 @@ import { Recommendations } from "@/components/recommendations/recommendation-set
 import { RecommendationTable } from "@/components/recommendations/recommendation-table";
 import { SyncSummary } from "@/components/sync/sync-summary";
 import { SyncSessionTable } from "@/components/sync/sync-table";
+import { UsersSettings } from "@/components/users/users-settings";
+import { useMe } from "@/hooks/useMe";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { api } from "@/lib/api";
 import Image from "next/image";
@@ -18,6 +20,7 @@ import { useEffect, useRef, useState } from "react";
 export default function Page() {
   const router = useRouter();
   const [loading, setLoading] = useState(true);
+  const { data: currentUser } = useMe();
   const timerRef = useRef<NodeJS.Timeout | undefined>(undefined);
 
   useEffect(() => {
@@ -114,6 +117,9 @@ export default function Page() {
                   Recommendations
                 </TabsTrigger>
                 <TabsTrigger value="charts">Charts</TabsTrigger>
+                {currentUser?.is_admin && (
+                  <TabsTrigger value="users">Users</TabsTrigger>
+                )}
               </TabsList>
               <TabsContent value="sync">
                 <div className="flex flex-col gap-6 pt-6">
@@ -135,6 +141,13 @@ export default function Page() {
                   <Charts />
                 </div>
               </TabsContent>
+              {currentUser?.is_admin && (
+                <TabsContent value="users">
+                  <div className="flex flex-col gap-6 pt-6">
+                    <UsersSettings />
+                  </div>
+                </TabsContent>
+              )}
             </Tabs>
           </main>
         </div>

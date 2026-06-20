@@ -1,6 +1,5 @@
 import { fetcher } from "@/lib/api";
 import { ApiResponse } from "@/lib/types";
-import { BlendUser } from "@/hooks/useRecommendation";
 import useSWR from "swr";
 
 export type RecommendationStrategy =
@@ -26,7 +25,7 @@ export interface RecommendationSession {
   duration_seconds: number;
   status: "pending" | "completed" | "failed";
   error_message: string | null;
-  blend_users?: BlendUser[] | null;
+  blend_users?: string[] | null;
 }
 
 export const useRecommendationSessions = () => {

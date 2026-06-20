@@ -12,6 +12,7 @@ from db.models.recommendation import (
     RecommendationStrategy,
     RecommendationTrackType,
 )
+from db.music_server_user import get_music_server_user_by_username
 from db.recommendation import get_recommendation_by_id
 from db.recommendation_session import (
     build_recommendation_session_tracks,
@@ -21,18 +22,19 @@ from db.recommendation_session import (
     update_recommendation_session,
 )
 from db.session import get_isolated_session
+from lib.crypto import decrypt
 from lib.download import download_missing_tracks
-from lib.providers.base import MusicPlaylistProvider
-from lib.models.provider import ProviderTrack
-from lib.models.blend import BlendUser
-from lib.models.lastfm import (
-    LastFMSimilarTrack,
-)
 from lib.lastfm import (
     get_lastfm_recent_tracks,
     get_lastfm_similar_tracks,
     get_lastfm_top_tracks,
 )
+from lib.models.lastfm import (
+    LastFMSimilarTrack,
+)
+from lib.models.provider import ProviderTrack
+from lib.providers import get_provider_enum
+from lib.providers.base import MusicPlaylistProvider
 from lib.track import find_track, reconcile_after_download, resolve_tracks
 from lib.utils import get_now, truncate
 
@@ -44,7 +46,7 @@ async def get_recommendations(
     lastfm_username: str,
     strategy: RecommendationStrategy,
     num_recommendations: int,
-    blend_users: list[BlendUser] | None,
+    blend_users: list[tuple[str, str]] | None,
 ) -> tuple[list[LastFMSimilarTrack], list[LastFMSimilarTrack], list[ProviderTrack]]:
     """Get track recommendations for a user based on their listening history."""
     match strategy:
@@ -84,8 +86,7 @@ async def get_recommendations(
             per_user_limit = max(1, num_recommendations // (2 * len(blend_users)))
             all_tracks = []
 
-            for user in blend_users:
-                lastfm_name = user.lastfm_username
+            for _, lastfm_name in blend_users:
                 recent = await get_lastfm_recent_tracks(
                     user=lastfm_name, limit=per_user_limit
                 )
@@ -141,36 +142,77 @@ async def get_recommendations(
 
 async def generate_recommendations_task(
     provider: MusicPlaylistProvider,
-    lastfm_username: str,
     recommendation_session_id: uuid.UUID,
     recommendation_id: uuid.UUID,
-    blend_users: list[BlendUser] | None,
+    blend_users: list[str] | None,
 ) -> Any:
     """Get track recommendations for a user based on their listening history in a background task."""
 
     with get_isolated_session() as session:
-        logger.info(
-            f"Generating recommendations for user {lastfm_username} with session ID {recommendation_session_id}"
-        )
-        recommendation = get_recommendation_by_id(
-            session=session, recommendation_id=recommendation_id
-        )
-        if not recommendation:
-            raise ValueError(
-                f"Unable to find recommendation setting: {recommendation_id}",
-            )
-
-        recommendation_session = get_recommendation_session_by_id(
-            session=session, recommendation_session_id=recommendation_session_id
-        )
-        if not recommendation_session:
-            raise ValueError(
-                f"Unable to find recommendation session: {recommendation_session_id}",
-            )
-
-        started_at = recommendation_session.started_at
+        recommendation_session: RecommendationSession | None = None
 
         try:
+            recommendation = get_recommendation_by_id(
+                session=session, recommendation_id=recommendation_id
+            )
+            if not recommendation:
+                raise ValueError(
+                    f"Unable to find recommendation setting: {recommendation_id}",
+                )
+
+            recommendation_session = get_recommendation_session_by_id(
+                session=session, recommendation_session_id=recommendation_session_id
+            )
+            if not recommendation_session:
+                raise ValueError(
+                    f"Unable to find recommendation session: {recommendation_session_id}",
+                )
+
+            started_at = recommendation_session.started_at
+            music_server_user = get_music_server_user_by_username(
+                session=session,
+                username=recommendation.username,
+                provider=get_provider_enum(),
+            )
+
+            if not music_server_user:
+                raise ValueError(
+                    f"Unable to find music_server_user: {recommendation.username}"
+                )
+
+            lastfm_username = music_server_user.lastfm_username
+
+            if not lastfm_username:
+                raise ValueError(
+                    f"Last.fm username not configured for user {music_server_user.username}"
+                )
+
+            resolved_blend_users: list[tuple[str, str]] | None = None
+
+            if blend_users:
+                resolved_blend_users = []
+                for music_username in blend_users:
+                    blend_music_server_user = get_music_server_user_by_username(
+                        session=session,
+                        username=music_username,
+                        provider=get_provider_enum(),
+                    )
+
+                    if (
+                        not blend_music_server_user
+                        or not blend_music_server_user.lastfm_username
+                    ):
+                        raise ValueError(
+                            f"Last.fm username not configured for blend user '{music_username}'"
+                        )
+                    resolved_blend_users.append(
+                        (music_username, blend_music_server_user.lastfm_username)
+                    )
+
+            logger.info(
+                f"Generating recommendations for user {lastfm_username} with session ID {recommendation_session_id}"
+            )
+
             recommendation_session.status = RecommendationStatus.pending
             update_recommendation_session(
                 session=session, recommendation_session=recommendation_session
@@ -181,7 +223,7 @@ async def generate_recommendations_task(
                 lastfm_username=lastfm_username,
                 strategy=recommendation_session.strategy,
                 num_recommendations=recommendation_session.requested_count,
-                blend_users=blend_users,
+                blend_users=resolved_blend_users,
             )
             all_tracks = found_tracks + missing_tracks
 
@@ -280,43 +322,54 @@ async def generate_recommendations_task(
                 f"Creating provider playlist with {len(provider_track_ids)} tracks"
             )
 
+            decrypted_password = decrypt(music_server_user.password)
+
             playlist_id, provider_user_id = await provider.get_or_create_playlist(
                 playlist_name=recommendation.playlist_name,
-                username=recommendation_session.username,
                 is_public=recommendation.is_public,
+                username=music_server_user.username,
+                password=decrypted_password,
             )
 
             existing_tracks = await provider.get_playlist_songs(
                 playlist_id=playlist_id,
                 user_id=provider_user_id,
+                username=music_server_user.username,
+                password=decrypted_password,
             )
 
             if existing_tracks:
                 await provider.delete_songs_from_playlist(
                     playlist_id=playlist_id,
                     entry_ids=[track.id for track in existing_tracks],
+                    username=music_server_user.username,
+                    password=decrypted_password,
                 )
 
             await provider.add_songs_to_playlist(
                 playlist_id=playlist_id,
                 user_id=provider_user_id,
                 track_ids=provider_track_ids,
+                username=music_server_user.username,
+                password=decrypted_password,
             )
 
         except Exception as e:
-            finished_at = get_now()
-            recommendation_session.status = RecommendationStatus.failed
-            recommendation_session.finished_at = finished_at
-            recommendation_session.duration_seconds = int(
-                finished_at.timestamp() - started_at.timestamp()
-            )
-            recommendation_session.error_message = truncate(
-                text=str(e), max_length=1024
-            )
-
-            update_recommendation_session(
-                session=session, recommendation_session=recommendation_session
-            )
+            if recommendation_session:
+                finished_at = get_now()
+                recommendation_session.status = RecommendationStatus.failed
+                recommendation_session.finished_at = finished_at
+                recommendation_session.duration_seconds = int(
+                    finished_at.timestamp() - started_at.timestamp()
+                )
+                recommendation_session.error_message = truncate(
+                    text=str(e), max_length=1024
+                )
+        finally:
+            if recommendation_session:
+                update_recommendation_session(
+                    session=session, recommendation_session=recommendation_session
+                )
 
 
 async def generate_recommendations(
@@ -358,9 +411,8 @@ async def generate_recommendations(
         )
         await generate_recommendations_task(
             provider=provider,
-            lastfm_username=internal_recommendation.lastfm_username,
             recommendation_session_id=recommendation_session.id,
             recommendation_id=internal_recommendation.id,
-            blend_users=internal_recommendation.get_blend_users(),
+            blend_users=internal_recommendation.blend_users,
         )
         return {"id": str(recommendation_session.id)}

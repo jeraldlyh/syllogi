@@ -16,6 +16,7 @@ from db.models.notification import Notification  # noqa: E402, F401
 from db.models.user import User  # noqa: E402, F401
 from db.models.recommendation import (RecommendationSession, RecommendationSessionTrack, Recommendation)  # noqa: E402, F401
 from db.models.download_session import DownloadSession  # noqa: E402, F401
+from db.models.music_server_user import MusicServerUser  # noqa: E402, F401
 
 config = context.config
 
