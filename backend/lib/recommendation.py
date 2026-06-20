@@ -22,18 +22,19 @@ from db.recommendation_session import (
     update_recommendation_session,
 )
 from db.session import get_isolated_session
+from lib.crypto import decrypt
 from lib.download import download_missing_tracks
-from lib.providers import get_provider_enum
-from lib.providers.base import MusicPlaylistProvider
-from lib.models.provider import ProviderTrack
-from lib.models.lastfm import (
-    LastFMSimilarTrack,
-)
 from lib.lastfm import (
     get_lastfm_recent_tracks,
     get_lastfm_similar_tracks,
     get_lastfm_top_tracks,
 )
+from lib.models.lastfm import (
+    LastFMSimilarTrack,
+)
+from lib.models.provider import ProviderTrack
+from lib.providers import get_provider_enum
+from lib.providers.base import MusicPlaylistProvider
 from lib.track import find_track, reconcile_after_download, resolve_tracks
 from lib.utils import get_now, truncate
 
@@ -197,7 +198,10 @@ async def generate_recommendations_task(
                         provider=get_provider_enum(),
                     )
 
-                    if not blend_music_server_user or not blend_music_server_user.lastfm_username:
+                    if (
+                        not blend_music_server_user
+                        or not blend_music_server_user.lastfm_username
+                    ):
                         raise ValueError(
                             f"Last.fm username not configured for blend user '{music_username}'"
                         )
@@ -318,18 +322,20 @@ async def generate_recommendations_task(
                 f"Creating provider playlist with {len(provider_track_ids)} tracks"
             )
 
+            decrypted_password = decrypt(music_server_user.password)
+
             playlist_id, provider_user_id = await provider.get_or_create_playlist(
                 playlist_name=recommendation.playlist_name,
                 is_public=recommendation.is_public,
                 username=music_server_user.username,
-                password=music_server_user.password,
+                password=decrypted_password,
             )
 
             existing_tracks = await provider.get_playlist_songs(
                 playlist_id=playlist_id,
                 user_id=provider_user_id,
                 username=music_server_user.username,
-                password=music_server_user.password,
+                password=decrypted_password,
             )
 
             if existing_tracks:
@@ -337,7 +343,7 @@ async def generate_recommendations_task(
                     playlist_id=playlist_id,
                     entry_ids=[track.id for track in existing_tracks],
                     username=music_server_user.username,
-                    password=music_server_user.password,
+                    password=decrypted_password,
                 )
 
             await provider.add_songs_to_playlist(
@@ -345,7 +351,7 @@ async def generate_recommendations_task(
                 user_id=provider_user_id,
                 track_ids=provider_track_ids,
                 username=music_server_user.username,
-                password=music_server_user.password,
+                password=decrypted_password,
             )
 
         except Exception as e:

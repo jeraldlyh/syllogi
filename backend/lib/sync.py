@@ -20,6 +20,7 @@ from db.sync_session import (
     get_sync_session_by_id,
     update_sync_session,
 )
+from lib.crypto import decrypt
 from lib.download import download_missing_tracks
 from lib.env import get_environment_variable
 from lib.models.common import (
@@ -118,6 +119,7 @@ async def sync_playlist_task(
 
             started_at = sync_session.started_at
             external_playlist_name = external_playlist.name
+            decrypted_password = decrypt(music_server_user.password)
 
             found_tracks, missing_tracks = await resolve_tracks(provider, songs)
 
@@ -134,7 +136,7 @@ async def sync_playlist_task(
                 playlist_name=internal_playlist_name,
                 is_public=internal_sync.is_public,
                 username=music_server_user.username,
-                password=music_server_user.password,
+                password=decrypted_password,
             )
 
             sync_session.provider_playlist_name = external_playlist_name
@@ -178,7 +180,7 @@ async def sync_playlist_task(
                 playlist_id=existing_playlist_id,
                 user_id=provider_user_id,
                 username=music_server_user.username,
-                password=music_server_user.password,
+                password=decrypted_password,
             )
 
             diff = _diff_tracks(
