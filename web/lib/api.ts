@@ -3,7 +3,16 @@ import { createLogger } from "./logger";
 
 const logger = createLogger("api");
 
-function getBaseUrl(): string {
+const isAuthPage = (): boolean => {
+  if (typeof window === "undefined") return false;
+
+  return (
+    window.location.pathname === "/login" ||
+    window.location.pathname === "/signup"
+  );
+};
+
+const getBaseUrl = (): string => {
   if (typeof window !== "undefined") {
     return "/api";
   }
@@ -11,7 +20,7 @@ function getBaseUrl(): string {
   return process.env.NEXT_PUBLIC_URL
     ? `${process.env.NEXT_PUBLIC_URL}/api`
     : "http://localhost:8000/api";
-}
+};
 
 export const api = async <T>(config: ApiConfig): Promise<ApiResponse<T>> => {
   let endpoint = getBaseUrl();
@@ -59,6 +68,10 @@ export const api = async <T>(config: ApiConfig): Promise<ApiResponse<T>> => {
 
   const payload = await response.json();
 
+  if (response.status === 401 && !isAuthPage()) {
+    window.location.href = "/login";
+  }
+
   return {
     statusCode: response.status,
     data: payload.data as T,
@@ -79,6 +92,11 @@ export const fetcher = async <T>(
   });
 
   const payload = await response.json();
+
+  if (response.status === 401 && !isAuthPage()) {
+    window.location.href = "/login";
+  }
+
   if (!response.ok) {
     throw new Error(
       `HTTP ${response.status} ${response.statusText}: ${payload.message}`,
