@@ -26,6 +26,7 @@ class RecommendationTrackType(str, enum.Enum):
 
 class RecommendationProvider(str, enum.Enum):
     lastfm = "lastfm"
+    listenbrainz = "listenbrainz"
 
 
 class RecommendationStrategy(str, enum.Enum):
@@ -39,14 +40,14 @@ class Recommendation(TimestampMixin, SerializerMixin, SQLModel, table=True):
     id: uuid.UUID = Field(default_factory=uuid.uuid4, primary_key=True, nullable=False)
 
     username: str = Field(max_length=128, nullable=False, index=True)
+    provider: RecommendationProvider = Field(nullable=False, index=True)
     strategy: RecommendationStrategy = Field(nullable=False)
+
     requested_count: int = Field(default=50, nullable=False)
     cron_expression: str = Field(default="", max_length=128, nullable=False)
     is_public: bool = Field(default=False, nullable=False)
     playlist_name: str = Field(default="", max_length=256, nullable=False)
-    blend_users: list[str] | None = Field(
-        default=None, sa_type=sa.JSON, nullable=True
-    )
+    blend_users: list[str] | None = Field(default=None, sa_type=sa.JSON, nullable=True)
 
 
 class RecommendationSession(TimestampMixin, SerializerMixin, SQLModel, table=True):
@@ -58,9 +59,7 @@ class RecommendationSession(TimestampMixin, SerializerMixin, SQLModel, table=Tru
     strategy: RecommendationStrategy = Field(nullable=False)
     requested_count: int = Field(default=50, nullable=False)
     generated_count: int = Field(default=0, nullable=False)
-    blend_users: list[str] | None = Field(
-        default=None, sa_type=sa.JSON, nullable=True
-    )
+    blend_users: list[str] | None = Field(default=None, sa_type=sa.JSON, nullable=True)
 
     started_at: datetime = Field(
         default=get_now(),
