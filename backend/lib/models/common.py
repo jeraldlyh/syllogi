@@ -72,3 +72,37 @@ class SyncDiff:
     added: list[ResolvedTrack] = field(default_factory=list)
     removed: list[ProviderTrack] = field(default_factory=list)
     unchanged: list[ResolvedTrack] = field(default_factory=list)
+
+
+@dataclass
+class RecommendationTrack:
+    """A track returned by a recommendation source provider."""
+
+    artist_name: str = ""
+    track_name: str = ""
+    musicbrainz_id: str = ""
+    album_name: str = ""
+    duration: int = 0
+    playcount: int = 0
+    similarity_score: float = 0.0
+
+    def __eq__(self, other: object) -> bool:
+        if not isinstance(other, RecommendationTrack):
+            return NotImplemented
+        return (
+            self.artist_name == other.artist_name
+            and self.track_name == other.track_name
+            and self.musicbrainz_id == other.musicbrainz_id
+        )
+
+    def __hash__(self) -> int:
+        return hash((self.artist_name, self.track_name, self.musicbrainz_id))
+
+    def to_external_track(self) -> ExternalTrack:
+        """Convert this recommendation track to an ExternalTrack instance."""
+        return ExternalTrack(
+            artist_name=self.artist_name,
+            track_name=self.track_name,
+            album_name=self.album_name,
+            duration=self.duration,
+        )
