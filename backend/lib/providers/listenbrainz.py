@@ -173,6 +173,7 @@ class ListenBrainzRecommendationProvider(RecommendationSourceProvider):
             params={
                 "artist_name": artist_name,
                 "recording_name": track_name,
+                "count": count,
             },
         )
 
@@ -192,7 +193,7 @@ class ListenBrainzRecommendationProvider(RecommendationSourceProvider):
             f"/1/lb-radio/artist/{artist_mbid}",
             params={
                 "mode": "medium",
-                "max_similar_artists": count,
+                "max_similar_artists": 1,
                 "max_recordings_per_artist": 1,
                 "pop_begin": 0,
                 "pop_end": 100,
