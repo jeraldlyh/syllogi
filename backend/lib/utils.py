@@ -85,21 +85,19 @@ def sanitize_filename(name: str) -> str:
 
     illegal_chars = '\\/:*?"<>|'
     return "".join(
-        char
-        for char in unicodedata.normalize("NFKC", name)
-        if char not in illegal_chars
+        char for char in unicodedata.normalize("NFD", name) if char not in illegal_chars
     ).strip()
 
 
 def get_download_path(artist_name: str, track_name: str, album_name: str = "") -> str:
     """Get the directory path where a song should be downloaded based on artist and album."""
-    sanitized_artist_name = sanitize_filename(artist_name)
-    sanitized_track_name = sanitize_filename(track_name)
+    sanitized_artist_name = sanitize_filename(name=artist_name)
+    sanitized_track_name = sanitize_filename(name=track_name)
 
     download_dir = str(get_environment_variable("DOWNLOAD_DIR"))
 
     if album_name:
-        sanitized_album_name = sanitize_filename(album_name)
+        sanitized_album_name = sanitize_filename(name=album_name)
         return f"{Path(download_dir)}/{sanitized_artist_name}/{sanitized_album_name}/{sanitized_track_name}"
     return f"{Path(download_dir)}/{sanitized_artist_name}/{sanitized_track_name}"
 
@@ -109,7 +107,9 @@ def get_existing_track_path(
 ) -> str | None:
     """Return the full path of an existing track file, or None if not found."""
 
-    download_path = get_download_path(artist_name, track_name, album_name)
+    download_path = get_download_path(
+        artist_name=artist_name, track_name=track_name, album_name=album_name
+    )
     existing_paths = glob.glob(f"{glob.escape(download_path)}.*")
     return existing_paths[0] if existing_paths else None
 

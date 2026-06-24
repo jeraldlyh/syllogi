@@ -19,7 +19,11 @@ from db.recommendation import (
 from db.recommendation_session import create_recommendation_session
 from db.session import SessionDep
 from lib.cron import create_job, delete_job, update_job
-from lib.providers import get_provider, get_provider_enum
+from lib.providers import (
+    get_provider,
+    get_provider_enum,
+    validate_recommendation_provider_username,
+)
 from lib.recommendation import (
     generate_recommendations,
     generate_recommendations_task,
@@ -37,6 +41,7 @@ class CreateOrUpdateRecommendationRequest(BaseModel):
     is_public: bool = Field(default=False)
     playlist_name: str = Field(min_length=1, max_length=256)
     blend_users: list[str] | None = Field(default=None)
+    provider: RecommendationProvider = Field(min_length=1)
 
     @model_validator(mode="after")
     def validate_blend_users(self) -> "CreateOrUpdateRecommendationRequest":
@@ -105,10 +110,19 @@ def _get_recommendation(session: SessionDep) -> list[dict]:
         },
     },
 )
-def _create_recommendation(
+async def _create_recommendation(
     item: CreateOrUpdateRecommendationRequest,
     session: SessionDep,
 ) -> dict[str, str]:
+    if item.blend_users:
+        for blend_user in item.blend_users:
+            is_lastfm = item.provider == RecommendationProvider.lastfm
+
+            await validate_recommendation_provider_username(
+                lastfm=blend_user if is_lastfm else "",
+                listenbrainz="" if is_lastfm else blend_user,
+            )
+
     recommendation = Recommendation(
         username=item.username,
         strategy=item.strategy,
@@ -117,6 +131,7 @@ def _create_recommendation(
         is_public=item.is_public,
         playlist_name=item.playlist_name,
         blend_users=item.blend_users,
+        provider=item.provider,
     )
     provider = get_provider()
 
@@ -196,6 +211,7 @@ async def _update_recommendation(
     recommendation.is_public = item.is_public
     recommendation.playlist_name = item.playlist_name
     recommendation.blend_users = item.blend_users
+    recommendation.provider = item.provider
 
     update_recommendation(
         session=session,
@@ -299,7 +315,7 @@ def _generate_recommendations(
 
     recommendation_session = RecommendationSession(
         username=username,
-        provider=RecommendationProvider.lastfm,
+        provider=recommendation.provider,
         strategy=recommendation.strategy,
         requested_count=recommendation.requested_count,
         generated_count=0,

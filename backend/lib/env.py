@@ -31,6 +31,10 @@ def get_environment_variables() -> dict[str, str | bool | None]:
         "NAVIDROME_USERNAME": os.getenv("NAVIDROME_USERNAME", ""),
         "NAVIDROME_PASSWORD": os.getenv("NAVIDROME_PASSWORD", ""),
         "MUSIC_PROVIDER": os.getenv("MUSIC_PROVIDER", ""),
+        "LISTENBRAINZ_URL": os.getenv(
+            "LISTENBRAINZ_URL", "https://api.listenbrainz.org"
+        ),
+        "LISTENBRAINZ_API_KEY": os.getenv("LISTENBRAINZ_API_KEY", ""),
     }
 
 

@@ -9,7 +9,7 @@ from db.models.recommendation import (
     RecommendationTrackType,
 )
 from db.session import SessionDep
-from lib.models.lastfm import LastFMSimilarTrack
+from lib.models.common import RecommendationTrack
 
 
 def get_recommendation_sessions(session: SessionDep) -> Sequence[RecommendationSession]:
@@ -53,7 +53,7 @@ def update_recommendation_session(
 
 
 def format_recommendation_session_track_names(
-    tracks: list[LastFMSimilarTrack],
+    tracks: list[RecommendationTrack],
 ) -> list[str]:
     return [f"{track.artist_name} - {track.track_name}" for track in tracks]
 

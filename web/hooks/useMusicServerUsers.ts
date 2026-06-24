@@ -9,6 +9,7 @@ export interface MusicServerUserConfig {
   id: string;
   username: string;
   lastfm_username: string;
+  listenbrainz_username: string;
   provider: MusicServerProvider;
   created_at: string;
   updated_at: string;
@@ -18,6 +19,7 @@ interface MusicServerUserRequest {
   username: string;
   password?: string;
   lastfm_username: string;
+  listenbrainz_username: string;
   provider: MusicServerProvider;
 }
 

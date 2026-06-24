@@ -15,8 +15,11 @@ from db.music_server_user import (
 from db.session import SessionDep
 from lib.auth import require_admin
 from lib.crypto import encrypt
-from lib.lastfm import verify_lastfm_username
-from lib.providers import get_provider, get_provider_enum
+from lib.providers import (
+    get_provider,
+    get_provider_enum,
+    validate_recommendation_provider_username,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -25,9 +28,10 @@ router = APIRouter()
 
 class CreateOrUpdateMusicServerUserRequest(BaseModel):
     username: str = Field(min_length=1, max_length=128)
-    provider: MusicServerProvider
+    provider: MusicServerProvider = Field(min_length=1)
     password: str = Field(default="", max_length=256)
     lastfm_username: str = Field(default="", max_length=128)
+    listenbrainz_username: str = Field(default="", max_length=128)
 
 
 @router.get(
@@ -173,20 +177,16 @@ async def _create_music_server_user(
                 detail=f"Unable to verify credentials for user: {item.username}",
             )
 
-    if item.lastfm_username:
-        is_valid_lastfm = await verify_lastfm_username(item.lastfm_username)
-
-        if not is_valid_lastfm:
-            raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST,
-                detail=f"Invalid Last.fm username: {item.lastfm_username}",
-            )
+    await validate_recommendation_provider_username(
+        lastfm=item.lastfm_username, listenbrainz=item.listenbrainz_username
+    )
 
     user = MusicServerUser(
         username=item.username,
         provider=item.provider,
         password=encrypt(item.password),
         lastfm_username=item.lastfm_username,
+        listenbrainz_username=item.listenbrainz_username,
     )
     create_music_server_user(session=session, user=user)
     return {"id": str(user.id)}
@@ -267,7 +267,7 @@ async def _update_music_server_user(
             detail=f"Unable to find music server user: {id}",
         )
 
-    if item.provider == get_provider_enum():
+    if item.password and item.provider == get_provider_enum():
         is_valid_password = await get_provider().verify_user_credentials(
             username=item.username, password=item.password
         )
@@ -277,20 +277,16 @@ async def _update_music_server_user(
                 status_code=status.HTTP_404_NOT_FOUND,
                 detail=f"Unable to verify credentials for user: {item.username}",
             )
+        user.password = encrypt(item.password)
 
-    if item.lastfm_username:
-        is_valid_lastfm = await verify_lastfm_username(item.lastfm_username)
-
-        if not is_valid_lastfm:
-            raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST,
-                detail=f"Invalid Last.fm username: {item.lastfm_username}",
-            )
+    await validate_recommendation_provider_username(
+        lastfm=item.lastfm_username, listenbrainz=item.listenbrainz_username
+    )
 
     user.username = item.username
     user.provider = MusicServerProvider(item.provider)
-    user.password = encrypt(item.password)
     user.lastfm_username = item.lastfm_username
+    user.listenbrainz_username = item.listenbrainz_username
 
     update_music_server_user(session=session, user=user)
 

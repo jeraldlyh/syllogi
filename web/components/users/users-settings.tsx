@@ -59,6 +59,7 @@ interface FormState {
   username: string;
   password: string;
   lastfm_username: string;
+  listenbrainz_username: string;
 }
 
 interface FormErrors {
@@ -70,6 +71,7 @@ const DEFAULT_FORM: FormState = {
   username: "",
   password: "",
   lastfm_username: "",
+  listenbrainz_username: "",
 };
 
 export const UsersSettings = () => {
@@ -112,6 +114,7 @@ export const UsersSettings = () => {
       username: userConfig.username,
       password: "",
       lastfm_username: userConfig.lastfm_username,
+      listenbrainz_username: userConfig.listenbrainz_username,
     });
     setErrors({});
     setDialogOpen(true);
@@ -141,11 +144,13 @@ export const UsersSettings = () => {
           provider: MusicServerProvider;
           password?: string;
           lastfm_username: string;
+          listenbrainz_username: string;
         } = {
           id: editingId,
           username: form.username,
           provider: form.provider as MusicServerProvider,
           lastfm_username: form.lastfm_username,
+          listenbrainz_username: form.listenbrainz_username,
         };
 
         if (form.password) body.password = form.password;
@@ -158,10 +163,12 @@ export const UsersSettings = () => {
           provider: MusicServerProvider;
           password?: string;
           lastfm_username: string;
+          listenbrainz_username: string;
         } = {
           username: form.username,
           provider: form.provider as MusicServerProvider,
           lastfm_username: form.lastfm_username,
+          listenbrainz_username: form.listenbrainz_username,
         };
 
         if (form.password) body.password = form.password;
@@ -216,7 +223,8 @@ export const UsersSettings = () => {
           <TableHeader>
             <TableRow className="hover:bg-transparent text-xs text-muted-foreground">
               <TableHead>Username</TableHead>
-              <TableHead>Last.fm Username</TableHead>
+              <TableHead>Last.fm</TableHead>
+              <TableHead>ListenBrainz</TableHead>
               <TableHead>Provider</TableHead>
               <TableHead>Actions</TableHead>
             </TableRow>
@@ -229,6 +237,9 @@ export const UsersSettings = () => {
                 </TableCell>
                 <TableCell>
                   <Text value={user.lastfm_username} />
+                </TableCell>
+                <TableCell>
+                  <Text value={user.listenbrainz_username} />
                 </TableCell>
                 <TableCell>
                   <Badge
@@ -385,6 +396,25 @@ export const UsersSettings = () => {
                   setForm((prev) => ({
                     ...prev,
                     lastfm_username: e.target.value,
+                  }))
+                }
+                placeholder="e.g. john_doe"
+              />
+            </div>
+            <div className="flex flex-col gap-2">
+              <Label
+                htmlFor="listenbrainz_username"
+                className="flex justify-between items-center"
+              >
+                <Text muted value="ListenBrainz Username" />
+              </Label>
+              <Input
+                id="listenbrainz_username"
+                value={form.listenbrainz_username}
+                onChange={(e) =>
+                  setForm((prev) => ({
+                    ...prev,
+                    listenbrainz_username: e.target.value,
                   }))
                 }
                 placeholder="e.g. john_doe"
