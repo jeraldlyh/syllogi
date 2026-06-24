@@ -10,7 +10,6 @@ from typing import Sequence, Union
 
 from alembic import op
 import sqlalchemy as sa
-import sqlmodel
 
 
 # revision identifiers, used by Alembic.
@@ -26,7 +25,9 @@ def upgrade() -> None:
         "musicserveruser",
         sa.Column("listenbrainz_username", sa.String(length=128), nullable=True),
     )
-    op.execute("UPDATE musicserveruser SET listenbrainz_username = '' WHERE listenbrainz_username IS NULL")
+    op.execute(
+        "UPDATE musicserveruser SET listenbrainz_username = '' WHERE listenbrainz_username IS NULL"
+    )
     op.alter_column(
         "musicserveruser",
         "listenbrainz_username",
