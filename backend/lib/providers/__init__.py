@@ -6,10 +6,10 @@ from lib.env import (
     is_navidrome_configured,
 )
 from lib.models.provider import ProviderError
-from lib.providers.base import MusicPlaylistProvider
+from lib.providers.base import MusicPlaylistProvider, RecommendationSourceProvider
 from lib.providers.jellyfin import JellyfinProvider
+from lib.providers.lastfm import LastFMRecommendationProvider
 from lib.providers.navidrome import NavidromeProvider
-from lib.providers.base import RecommendationSourceProvider
 
 
 def get_provider() -> MusicPlaylistProvider:
@@ -69,7 +69,7 @@ def get_provider_enum() -> "MusicServerProvider":
 
 
 def get_recommendation_provider(
-    provider: "RecommendationSourceProvider",
+    provider: RecommendationProvider,
 ) -> RecommendationSourceProvider:
     """Return the recommendation source provider for the given provider type."""
 
@@ -77,9 +77,4 @@ def get_recommendation_provider(
         from lib.providers.listenbrainz import ListenBrainzRecommendationProvider
 
         return ListenBrainzRecommendationProvider()
-    elif provider == RecommendationProvider.lastfm:
-        from lib.providers.lastfm import LastFMRecommendationProvider
-
-        return LastFMRecommendationProvider()
-    else:
-        raise ProviderError(f"Unsupported recommendation provider: {provider}")
+    return LastFMRecommendationProvider()

@@ -49,6 +49,17 @@ class Recommendation(TimestampMixin, SerializerMixin, SQLModel, table=True):
     playlist_name: str = Field(default="", max_length=256, nullable=False)
     blend_users: list[str] | None = Field(default=None, sa_type=sa.JSON, nullable=True)
 
+    def __str__(self) -> str:
+        return (
+            f"Recommendation("
+            f"id={str(self.id)!r}, "
+            f"username={self.username!r}, "
+            f"provider={self.provider.value!r}, "
+            f"strategy={self.strategy.value!r}, "
+            f"requested_count={self.requested_count!r}, "
+            f"blend_users={self.blend_users!r})"
+        )
+
 
 class RecommendationSession(TimestampMixin, SerializerMixin, SQLModel, table=True):
     id: uuid.UUID = Field(default_factory=uuid.uuid4, primary_key=True, nullable=False)

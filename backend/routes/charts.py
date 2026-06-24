@@ -9,9 +9,9 @@ from db.download_session import create_download_session, get_download_sessions
 from db.models.download_session import DownloadSession, DownloadSessionStatus
 from db.session import SessionDep
 from lib.download import download_single_track
-from lib.lastfm import get_lastfm_chart_top_tracks
 from lib.models.common import ExternalTrack
 from lib.providers import get_provider
+from lib.providers.lastfm import LastFMRecommendationProvider
 from lib.track import is_track_in_provider
 
 logger = logging.getLogger(__name__)
@@ -60,7 +60,7 @@ async def _get_trending_tracks(
     ] = 50,
 ) -> list[dict]:
     provider = get_provider()
-    tracks = await get_lastfm_chart_top_tracks(limit=limit)
+    tracks = await LastFMRecommendationProvider().get_chart_top_tracks(limit=limit)
 
     provider_statuses = await asyncio.gather(
         *[is_track_in_provider(provider, track) for track in tracks]
