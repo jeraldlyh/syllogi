@@ -16,7 +16,7 @@ export interface Recommendation {
   is_public: boolean;
   playlist_name: string;
   blend_users?: string[] | null;
-  recommendation_provider: RecommendationProvider;
+  provider: RecommendationProvider;
 }
 
 export const useRecommendations = () => {

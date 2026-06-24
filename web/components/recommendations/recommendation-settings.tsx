@@ -68,7 +68,7 @@ interface FormState {
   is_public: boolean;
   playlist_name: string;
   blend_users?: string[] | null;
-  recommendation_provider: RecommendationProvider;
+  provider: RecommendationProvider;
 }
 
 interface FormErrors {
@@ -89,7 +89,7 @@ const DEFAULT_FORM: FormState = {
   is_public: false,
   playlist_name: "",
   blend_users: null,
-  recommendation_provider: "lastfm",
+  provider: "lastfm",
 };
 
 const STRATEGIES: { label: string; value: RecommendationStrategy }[] = [
@@ -134,7 +134,7 @@ export const Recommendations = () => {
 
     if (!config) return false;
 
-    if (form.recommendation_provider === "listenbrainz") {
+    if (form.provider === "listenbrainz") {
       return !!config.listenbrainz_username;
     }
     return !!config.lastfm_username;
@@ -163,7 +163,7 @@ export const Recommendations = () => {
       is_public: recommendation.is_public,
       playlist_name: recommendation.playlist_name,
       blend_users: recommendation.blend_users,
-      recommendation_provider: recommendation.recommendation_provider,
+      provider: recommendation.provider,
     });
     setErrors({});
     setDialogOpen(true);
@@ -218,7 +218,7 @@ export const Recommendations = () => {
       is_public: formData.is_public,
       playlist_name: formData.playlist_name,
       blend_users: formData.strategy === "blend" ? formData.blend_users : null,
-      recommendation_provider: form.recommendation_provider,
+      provider: form.provider,
     };
 
     setDialogOpen(false);
@@ -547,11 +547,11 @@ export const Recommendations = () => {
                 Recommendation Source
               </Label>
               <Select
-                value={form.recommendation_provider}
+                value={form.provider}
                 onValueChange={(value) =>
                   setForm((prev) => ({
                     ...prev,
-                    recommendation_provider: value as RecommendationProvider,
+                    provider: value as RecommendationProvider,
                   }))
                 }
               >

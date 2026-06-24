@@ -37,7 +37,7 @@ class CreateOrUpdateRecommendationRequest(BaseModel):
     is_public: bool = Field(default=False)
     playlist_name: str = Field(min_length=1, max_length=256)
     blend_users: list[str] | None = Field(default=None)
-    recommendation_provider: RecommendationProvider = Field(min_length=1)
+    provider: RecommendationProvider = Field(min_length=1)
 
     @model_validator(mode="after")
     def validate_blend_users(self) -> "CreateOrUpdateRecommendationRequest":
@@ -118,7 +118,7 @@ def _create_recommendation(
         is_public=item.is_public,
         playlist_name=item.playlist_name,
         blend_users=item.blend_users,
-        provider=item.recommendation_provider,
+        provider=item.provider,
     )
     provider = get_provider()
 
@@ -198,7 +198,7 @@ async def _update_recommendation(
     recommendation.is_public = item.is_public
     recommendation.playlist_name = item.playlist_name
     recommendation.blend_users = item.blend_users
-    recommendation.provider = item.recommendation_provider
+    recommendation.provider = item.provider
 
     update_recommendation(
         session=session,
