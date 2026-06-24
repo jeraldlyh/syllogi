@@ -127,14 +127,17 @@ export const Recommendations = () => {
   const { trigger: generateRecommendation, isMutating: isGenerating } =
     useSWRMutation("/recommendation/generate", generateRecommendationMutation);
 
-  const hasRequiredUsername = (username: string): boolean => {
+  const hasRequiredUsername = (
+    username: string,
+    provider: RecommendationProvider,
+  ): boolean => {
     if (!userConfigs) return false;
 
     const config = userConfigs.find((c) => c.username === username);
 
     if (!config) return false;
 
-    if (form.provider === "listenbrainz") {
+    if (provider === "listenbrainz") {
       return !!config.listenbrainz_username;
     }
     return !!config.lastfm_username;
@@ -371,7 +374,10 @@ export const Recommendations = () => {
                       }
                       disabled={
                         isGenerating ||
-                        !hasRequiredUsername(recommendation.username)
+                        !hasRequiredUsername(
+                          recommendation.username,
+                          recommendation.provider,
+                        )
                       }
                     >
                       <Play className="h-4 w-4" />
@@ -418,7 +424,7 @@ export const Recommendations = () => {
         {users.map((user) => {
           const isSelected =
             form.blend_users && form.blend_users.includes(user.name);
-          const isDisabled = !hasRequiredUsername(user.name);
+          const isDisabled = !hasRequiredUsername(user.name, form.provider);
 
           return (
             <button
@@ -503,9 +509,13 @@ export const Recommendations = () => {
                   {users?.map((user) => (
                     <SelectItem key={user.id} value={user.name}>
                       {user.name}
-                      {!hasRequiredUsername(user.name) && (
+                      {!hasRequiredUsername(user.name, form.provider) && (
                         <span className="text-muted-foreground ml-1">
-                          (no Last.fm username)
+                          (no&nbps;
+                          {form.provider === "lastfm"
+                            ? "Last.fm"
+                            : "ListenBrainz"}
+                          username)
                         </span>
                       )}
                     </SelectItem>
@@ -736,7 +746,8 @@ export const Recommendations = () => {
               disabled={
                 isCreating ||
                 isUpdating ||
-                (form.username !== "" && !hasRequiredUsername(form.username))
+                (form.username !== "" &&
+                  !hasRequiredUsername(form.username, form.provider))
               }
             >
               {editingId ? "Update" : "Add"}
@@ -810,7 +821,10 @@ export const Recommendations = () => {
               disabled={
                 isGenerating ||
                 (recommendationToGenerate != null &&
-                  !hasRequiredUsername(recommendationToGenerate.username))
+                  !hasRequiredUsername(
+                    recommendationToGenerate.username,
+                    recommendationToGenerate.provider,
+                  ))
               }
             >
               Start Generation
