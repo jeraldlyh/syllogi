@@ -93,7 +93,7 @@ class ListenBrainzRecommendationProvider(RecommendationSourceProvider):
             mbid = track_info.get("mbid_mapping", {}).get("recording_mbid", "")
             key = (artist, name)
 
-            if key in seen or not mbid:
+            if key in seen or not name:
                 continue
 
             seen.add(key)
@@ -144,7 +144,7 @@ class ListenBrainzRecommendationProvider(RecommendationSourceProvider):
                 similarity_score=0.0,
             )
             for track in tracks
-            if track.get("recording_mbid")
+            if track.get("track_name") and track.get("artist_name")
         ]
 
     async def get_similar_tracks(
