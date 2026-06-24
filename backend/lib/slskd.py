@@ -186,12 +186,29 @@ async def _get_downloads() -> list[SlskdDownloadResult]:
             slskd_files: list[SlskdDownloadFile] = []
 
             for file in files:
+                filename = file.get("filename", "")
+                local_relative = filename.replace("\\", "/")
+                parts = local_relative.split("/")
+
+                dir_root = directory.get("directory", "")
+                remote_root = dir_root.replace("\\", "/").split("/")[0]
+
+                if parts and parts[0] == remote_root:
+                    parts = parts[1:]
+
+                download_dir = str(get_environment_variable("DOWNLOAD_DIR"))
+
+                if len(parts) >= 2:
+                    local_path = os.path.join(download_dir, parts[-2], parts[-1])
+                else:
+                    local_path = os.path.join(download_dir, parts[-1])
+
                 slskd_files.append(
                     SlskdDownloadFile(
                         id=file.get("id"),
                         username=file.get("username"),
                         direction=file.get("direction"),
-                        filename=file.get("filename"),
+                        filename=filename,
                         size=file.get("size"),
                         start_offset=file.get("startOffset"),
                         state=file.get("state"),
@@ -206,6 +223,7 @@ async def _get_downloads() -> list[SlskdDownloadResult]:
                         elapsed_time=file.get("elapsedTime"),
                         percent_complete=file.get("percentComplete"),
                         remaining_time=file.get("remainingTime"),
+                        local_path=local_path,
                     )
                 )
             slskd_directories.append(
@@ -313,11 +331,14 @@ async def _rename_slskd_download(
         )
         return True
 
-    local_path = find_downloaded_file(filename=downloaded_file.filename)
+    local_path = downloaded_file.local_path if downloaded_file.local_path else None
+
+    if not local_path or not os.path.isfile(local_path):
+        local_path = find_downloaded_file(filename=downloaded_file.filename)
 
     if not local_path:
         logger.warning(
-            f"Could not locate downloaded slskd file: {downloaded_file.filename}"
+            f"Could not locate downloaded slskd file: {downloaded_file.local_path}"
         )
         return False
 
@@ -345,8 +366,6 @@ async def _rename_slskd_download(
                     f"[{attempt}/{MOVE_FILE_MAX_RETRIES}] File busy, retrying move in {MOVE_FILE_RETRY_INTERVAL}s: {local_path}"
                 )
                 await asyncio.sleep(MOVE_FILE_RETRY_INTERVAL)
-            else:
-                raise
 
     set_media_permissions(target_path)
     logger.info(f"Renamed slskd download: {local_path} -> {target_path}")
@@ -354,7 +373,9 @@ async def _rename_slskd_download(
     download_dir = Path(str(get_environment_variable("DOWNLOAD_DIR")))
     _cleanup_empty_dirs(src=old_dir, dest=download_dir)
 
-    return is_track_exists(artist_name, track_name, album_name)
+    return is_track_exists(
+        artist_name=artist_name, track_name=track_name, album_name=album_name
+    )
 
 
 def _get_ranked_candidates(
@@ -392,13 +413,17 @@ def _get_ranked_candidates(
     )
 
 
-def _delete_downloaded_file(filename: str) -> None:
-    """Delete a downloaded file from disk by its slskd filename.
+def _delete_downloaded_file(downloaded_file: SlskdDownloadFile) -> None:
+    """Delete a downloaded file from disk.
 
     Used to clean up files that were successfully downloaded but could not be
     renamed to the standard path, so they do not live in an improper location.
     """
-    local_path = find_downloaded_file(filename=filename)
+    local_path = downloaded_file.local_path if downloaded_file.local_path else None
+
+    if not local_path or not os.path.isfile(local_path):
+        local_path = find_downloaded_file(filename=downloaded_file.local_path)
+
     if local_path:
         try:
             os.remove(local_path)
@@ -514,15 +539,6 @@ async def download_track_slskd(
                     candidate.username, candidate.file.filename
                 )
 
-                if is_download_completed and not downloaded_file:
-                    for _ in range(3):
-                        await asyncio.sleep(5)
-                        downloaded_file = await _get_downloaded_file(
-                            candidate.username, candidate.file.filename
-                        )
-                        if downloaded_file:
-                            break
-
                 if is_download_completed and downloaded_file:
                     rename_success = await _rename_slskd_download(
                         downloaded_file=downloaded_file,
@@ -537,7 +553,7 @@ async def download_track_slskd(
                     logger.error(
                         f"[{i}/{len(candidates)}] Download succeeded but failed to rename track, deleting candidate"
                     )
-                    _delete_downloaded_file(filename=downloaded_file.filename)
+                    _delete_downloaded_file(downloaded_file)
                 else:
                     logger.warning(
                         f"[{i}/{len(candidates)}] Download failed or incomplete, skipping candidate"

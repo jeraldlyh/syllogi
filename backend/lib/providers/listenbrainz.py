@@ -109,7 +109,7 @@ class ListenBrainzRecommendationProvider(RecommendationSourceProvider):
         return result
 
     async def get_top_tracks(
-        self, *, username: str, period: str = "6month", limit: int = 30
+        self, *, username: str, period: str = "7day", limit: int = 30
     ) -> list[RecommendationTrack]:
         range_map = {
             "7day": "week",

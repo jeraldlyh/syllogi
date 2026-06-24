@@ -190,6 +190,7 @@ class SlskdDownloadFile:
         elapsed_time: str,
         percent_complete: int,
         remaining_time: str,
+        local_path: str,
     ):
         self.id = id
         self.username = username
@@ -209,6 +210,7 @@ class SlskdDownloadFile:
         self.elapsed_time = elapsed_time
         self.percent_complete = percent_complete
         self.remaining_time = remaining_time
+        self.local_path = local_path
 
     def is_downloaded(self) -> bool:
         return self.state == "Completed, Succeeded" or self.percent_complete == 100
@@ -233,6 +235,7 @@ class SlskdDownloadFile:
             "elapsed_time": self.elapsed_time,
             "percent_complete": self.percent_complete,
             "remaining_time": self.remaining_time,
+            "local_path": self.local_path,
         }
 
 
