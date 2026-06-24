@@ -19,7 +19,12 @@ from db.recommendation import (
 from db.recommendation_session import create_recommendation_session
 from db.session import SessionDep
 from lib.cron import create_job, delete_job, update_job
-from lib.providers import get_provider, get_provider_enum
+from lib.providers import (
+    get_provider,
+    get_provider_enum,
+    validate_recommendation_provider_username,
+)
+from lib.providers.lastfm import LastFMRecommendationProvider
 from lib.recommendation import (
     generate_recommendations,
     generate_recommendations_task,
@@ -106,10 +111,19 @@ def _get_recommendation(session: SessionDep) -> list[dict]:
         },
     },
 )
-def _create_recommendation(
+async def _create_recommendation(
     item: CreateOrUpdateRecommendationRequest,
     session: SessionDep,
 ) -> dict[str, str]:
+    if item.blend_users:
+        for blend_user in item.blend_users:
+            is_lastfm = item.provider == RecommendationProvider.lastfm
+
+            await validate_recommendation_provider_username(
+                lastfm=blend_user if is_lastfm else "",
+                listenbrainz="" if is_lastfm else blend_user,
+            )
+
     recommendation = Recommendation(
         username=item.username,
         strategy=item.strategy,
