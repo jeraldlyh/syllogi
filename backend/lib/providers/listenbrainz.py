@@ -99,6 +99,11 @@ class ListenBrainzRecommendationProvider(RecommendationSourceProvider):
                     artist_name=artist,
                     track_name=name,
                     musicbrainz_id=mbid,
+                    album_name=track_info.get("release_name", ""),
+                    duration=track_info.get("additional_info", {}).get("duration_ms", 0)
+                    / 1000,
+                    playcount=0,
+                    similarity_score=0.0,
                 )
             )
         return result
@@ -130,7 +135,10 @@ class ListenBrainzRecommendationProvider(RecommendationSourceProvider):
                 artist_name=track.get("artist_name", ""),
                 track_name=track.get("track_name", ""),
                 musicbrainz_id=track.get("recording_mbid", ""),
+                album_name=track.get("release_name", ""),
+                duration=0,
                 playcount=track.get("listen_count", 0),
+                similarity_score=0.0,
             )
             for track in tracks
             if track.get("recording_mbid")
@@ -184,13 +192,32 @@ class ListenBrainzRecommendationProvider(RecommendationSourceProvider):
         results = []
 
         for artist_mbid, artist_data in tracks.items():
+            recording_mbid = artist_data.get("recording_mbid", "")
+
+            if not recording_mbid:
+                continue
+
+            track = await self._listenbrainz(
+                "/1/metadata/recording/",
+                params={"recording_mbids": recording_mbid, "inc": "release"},
+            )
+            track_metadata = next(iter(track.values()), None) if track else None
+
+            if not track_metadata:
+                continue
+
+            release = track_metadata.get("release", {})
+
             results.append(
                 RecommendationTrack(
-                    artist_name=artist_data.get("similar_artist_name", ""),
-                    track_name=artist_data.get(
-                        "similar_artist_name", ""
-                    ),  # TODO: find from api
-                    musicbrainz_id=artist_data.get("recording_mbid", ""),
+                    artist_name=release.get("album_artist_name", ""),
+                    track_name=release.get("title", ""),
+                    musicbrainz_id=release.get("mbid", ""),
+                    album_name=release.get("name", ""),
+                    duration=track_metadata.get("recording", {}).get("length", 0)
+                    / 1000,
+                    playcount=0,
+                    similarity_score=0.0,
                 )
             )
         return results

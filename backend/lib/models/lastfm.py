@@ -19,7 +19,10 @@ class LastFMRecentTrack:
         self.album_name = album_name
         self.musicbrainz_id = musicbrainz_id
 
-    def __eq__(self, other) -> bool:
+    def __eq__(self, other: object) -> bool:
+        if not isinstance(other, LastFMRecentTrack):
+            return NotImplemented
+
         return (
             self.artist_name == other.artist_name
             and self.track_name == other.track_name
@@ -57,7 +60,10 @@ class LastFMTopTrack:
         self.musicbrainz_id = musicbrainz_id
         self.playcount = playcount
 
-    def __eq__(self, other) -> bool:
+    def __eq__(self, other: object) -> bool:
+        if not isinstance(other, LastFMTopTrack):
+            return NotImplemented
+
         return (
             self.artist_name == other.artist_name
             and self.track_name == other.track_name
@@ -98,7 +104,10 @@ class LastFMSimilarTrack:
         self.playcount = playcount
         self.similarity_score = similarity_score
 
-    def __eq__(self, other) -> bool:
+    def __eq__(self, other: object) -> bool:
+        if not isinstance(other, LastFMSimilarTrack):
+            return NotImplemented
+
         return (
             self.artist_name == other.artist_name
             and self.track_name == other.track_name
@@ -151,7 +160,10 @@ class LastFMChartTrack:
         self.musicbrainz_id = musicbrainz_id
         self.image_url = image_url
 
-    def __eq__(self, other) -> bool:
+    def __eq__(self, other: object) -> bool:
+        if not isinstance(other, LastFMChartTrack):
+            return NotImplemented
+
         return (
             self.artist_name == other.artist_name
             and self.track_name == other.track_name

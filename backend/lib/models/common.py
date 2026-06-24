@@ -78,17 +78,18 @@ class SyncDiff:
 class RecommendationTrack:
     """A track returned by a recommendation source provider."""
 
-    artist_name: str = ""
-    track_name: str = ""
-    musicbrainz_id: str = ""
-    album_name: str = ""
-    duration: int = 0
-    playcount: int = 0
-    similarity_score: float = 0.0
+    artist_name: str
+    track_name: str
+    musicbrainz_id: str
+    album_name: str
+    duration: int
+    playcount: int
+    similarity_score: float
 
     def __eq__(self, other: object) -> bool:
         if not isinstance(other, RecommendationTrack):
             return NotImplemented
+
         return (
             self.artist_name == other.artist_name
             and self.track_name == other.track_name
