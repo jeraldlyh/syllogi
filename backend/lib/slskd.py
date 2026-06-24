@@ -368,7 +368,7 @@ async def _rename_slskd_download(
                 await asyncio.sleep(MOVE_FILE_RETRY_INTERVAL)
 
     set_media_permissions(target_path)
-    logger.info(f"Renamed slskd download: {local_path} -> {target_path}")
+    logger.debug(f"Renamed download: {local_path} -> {target_path}")
 
     download_dir = Path(str(get_environment_variable("DOWNLOAD_DIR")))
     _cleanup_empty_dirs(src=old_dir, dest=download_dir)

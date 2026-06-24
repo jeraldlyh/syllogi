@@ -283,7 +283,7 @@ async def generate_recommendations_task(
                         if resolved_track.provider_track_id
                     ]
                     provider_tracks.extend(downloaded_provider_tracks)
-                    logger.info(
+                    logger.debug(
                         f"Extended provider_tracks with {len(downloaded_provider_tracks)} newly downloaded tracks"
                     )
 
