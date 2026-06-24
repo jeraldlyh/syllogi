@@ -28,7 +28,7 @@ router = APIRouter()
 
 class CreateOrUpdateMusicServerUserRequest(BaseModel):
     username: str = Field(min_length=1, max_length=128)
-    provider: MusicServerProvider
+    provider: MusicServerProvider = Field(min_length=1)
     password: str = Field(default="", max_length=256)
     lastfm_username: str = Field(default="", max_length=128)
     listenbrainz_username: str = Field(default="", max_length=128)
@@ -267,7 +267,7 @@ async def _update_music_server_user(
             detail=f"Unable to find music server user: {id}",
         )
 
-    if item.provider == get_provider_enum():
+    if item.password and item.provider == get_provider_enum():
         is_valid_password = await get_provider().verify_user_credentials(
             username=item.username, password=item.password
         )
@@ -277,6 +277,7 @@ async def _update_music_server_user(
                 status_code=status.HTTP_404_NOT_FOUND,
                 detail=f"Unable to verify credentials for user: {item.username}",
             )
+        user.password = encrypt(item.password)
 
     await validate_recommendation_provider_username(
         lastfm=item.lastfm_username, listenbrainz=item.listenbrainz_username
@@ -284,7 +285,6 @@ async def _update_music_server_user(
 
     user.username = item.username
     user.provider = MusicServerProvider(item.provider)
-    user.password = encrypt(item.password)
     user.lastfm_username = item.lastfm_username
     user.listenbrainz_username = item.listenbrainz_username
 
