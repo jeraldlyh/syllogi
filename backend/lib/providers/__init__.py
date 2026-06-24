@@ -1,4 +1,5 @@
 from db.models.music_server_user import MusicServerProvider
+from db.models.recommendation import RecommendationProvider
 from lib.env import (
     get_environment_variable,
     is_jellyfin_configured,
@@ -8,6 +9,7 @@ from lib.models.provider import ProviderError
 from lib.providers.base import MusicPlaylistProvider
 from lib.providers.jellyfin import JellyfinProvider
 from lib.providers.navidrome import NavidromeProvider
+from lib.providers.base import RecommendationSourceProvider
 
 
 def get_provider() -> MusicPlaylistProvider:
@@ -64,3 +66,20 @@ def get_provider_enum() -> "MusicServerProvider":
         return MusicServerProvider.jellyfin
 
     raise ProviderError("Unable to determine music server provider")
+
+
+def get_recommendation_provider(
+    provider: "RecommendationSourceProvider",
+) -> RecommendationSourceProvider:
+    """Return the recommendation source provider for the given provider type."""
+
+    if provider == RecommendationProvider.listenbrainz:
+        from lib.providers.listenbrainz import ListenBrainzRecommendationProvider
+
+        return ListenBrainzRecommendationProvider()
+    elif provider == RecommendationProvider.lastfm:
+        from lib.providers.lastfm import LastFMRecommendationProvider
+
+        return LastFMRecommendationProvider()
+    else:
+        raise ProviderError(f"Unsupported recommendation provider: {provider}")

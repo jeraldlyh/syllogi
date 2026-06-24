@@ -1,0 +1,196 @@
+import logging
+from typing import Any
+
+import httpx
+
+from lib.env import get_environment_variable
+from lib.models.common import RecommendationTrack
+from lib.providers.base import (
+    RecommendationSourceProvider,
+)
+
+logger = logging.getLogger(__name__)
+
+
+class ListenBrainzRecommendationProvider(RecommendationSourceProvider):
+    """Recommendation source backed by the ListenBrainz API."""
+
+    async def _listenbrainz(
+        self,
+        path: str,
+        *,
+        method: str = "GET",
+        params: dict[str, Any] | None = None,
+        json: dict[str, Any] | None = None,
+        timeout: float = 30.0,
+    ) -> Any:
+        """HTTP helper for the ListenBrainz API."""
+
+        api_url = str(get_environment_variable("LISTENBRAINZ_URL", ignore_error=False))
+        api_key = str(
+            get_environment_variable("LISTENBRAINZ_API_KEY", ignore_error=False)
+        )
+
+        headers: dict[str, str] = {}
+        if api_key:
+            headers["Authorization"] = f"Token {api_key}"
+
+        request_url = f"{api_url.rstrip('/')}{path}"
+
+        async with httpx.AsyncClient() as client:
+            response = await client.request(
+                method=method.upper(),
+                url=request_url,
+                headers=headers,
+                params=params,
+                json=json,
+                timeout=timeout,
+            )
+
+        if response.status_code == 404:
+            return None
+        response.raise_for_status()
+
+        if response.status_code == 204 or not response.content:
+            return None
+        return response.json()
+
+    async def verify_username(self, username: str) -> bool:
+        """Verify that a ListenBrainz username exists.
+
+        Uses the listen-count endpoint: 200 = valid, 404 = invalid.
+        """
+        try:
+            data = await self._listenbrainz(
+                f"/1/user/{username}/listen-count",
+            )
+            return data is not None and "payload" in data
+        except Exception:
+            return False
+
+    async def get_recent_tracks(
+        self, *, username: str, limit: int = 30
+    ) -> list[RecommendationTrack]:
+        data = await self._listenbrainz(
+            f"/1/user/{username}/listens",
+            params={"count": limit},
+        )
+
+        if not data or "payload" not in data:
+            return []
+
+        tracks = data["payload"].get("listens", [])
+        seen: set[tuple[str, str]] = set()
+        result: list[RecommendationTrack] = []
+
+        for track in tracks:
+            track_info = track.get("track_metadata", {})
+            artist = track_info.get("artist_name", "")
+            name = track_info.get("track_name", "")
+            mbid = track_info.get("mbid_mapping", {}).get("recording_mbid", "")
+            key = (artist, name)
+
+            if key in seen or not mbid:
+                continue
+
+            seen.add(key)
+            result.append(
+                RecommendationTrack(
+                    artist_name=artist,
+                    track_name=name,
+                    musicbrainz_id=mbid,
+                )
+            )
+        return result
+
+    async def get_top_tracks(
+        self, *, username: str, period: str = "6month", limit: int = 30
+    ) -> list[RecommendationTrack]:
+        range_map = {
+            "7day": "week",
+            "1month": "month",
+            "3month": "quarter",
+            "6month": "half_yearly",
+            "1year": "year",
+        }
+        time_range = range_map.get(period, "all_time")
+
+        data = await self._listenbrainz(
+            f"/1/stats/user/{username}/recordings",
+            params={"count": limit, "range": time_range},
+        )
+
+        if not data or "payload" not in data:
+            return []
+
+        tracks = data["payload"].get("recordings", [])
+
+        return [
+            RecommendationTrack(
+                artist_name=track.get("artist_name", ""),
+                track_name=track.get("track_name", ""),
+                musicbrainz_id=track.get("recording_mbid", ""),
+                playcount=track.get("listen_count", 0),
+            )
+            for track in tracks
+            if track.get("recording_mbid")
+        ]
+
+    async def get_similar_tracks(
+        self,
+        *,
+        artist_name: str,
+        track_name: str,
+        musicbrainz_id: str = "",
+        count: int = 10,
+    ) -> list[RecommendationTrack]:
+        """Get tracks similar to a given track using ListenBrainz LB Radio.
+
+        Uses the similar-artist endpoint to discover tracks from artists
+        similar to the seed track's artist. Requires resolving the artist
+        MBID first via the metadata lookup endpoint.
+        """
+
+        lookup_data = await self._listenbrainz(
+            "/1/metadata/lookup/",
+            params={
+                "artist_name": artist_name,
+                "recording_name": track_name,
+            },
+        )
+
+        if not lookup_data:
+            return []
+
+        artist_mbid = lookup_data.get("artist_mbid", "")
+
+        if not artist_mbid:
+            return []
+
+        tracks = await self._listenbrainz(
+            f"/1/lb-radio/artist/{artist_mbid}",
+            params={
+                "mode": "medium",
+                "max_similar_artists": count,
+                "max_recordings_per_artist": 1,
+                "pop_begin": 0,
+                "pop_end": 100,
+            },
+        )
+
+        if not tracks:
+            return []
+
+        results = []
+
+        for artist_mbid, artist_data in tracks.items():
+            results.append(
+                RecommendationTrack(
+                    artist_name=artist_data.get("similar_artist_name", ""),
+                    track_name=artist_data.get(
+                        "similar_artist_name", ""
+                    ),  # TODO: find from api
+                    musicbrainz_id=artist_data.get("recording_mbid", ""),
+                )
+            )
+        return results
