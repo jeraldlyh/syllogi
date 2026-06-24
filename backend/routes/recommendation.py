@@ -24,7 +24,6 @@ from lib.providers import (
     get_provider_enum,
     validate_recommendation_provider_username,
 )
-from lib.providers.lastfm import LastFMRecommendationProvider
 from lib.recommendation import (
     generate_recommendations,
     generate_recommendations_task,

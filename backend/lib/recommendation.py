@@ -189,24 +189,24 @@ async def generate_recommendations_task(
                 resolved_blend_users = []
 
                 for blend_username in blend_users:
-                    music_server_user = get_music_server_user_by_username(
+                    blend_music_server_user = get_music_server_user_by_username(
                         session=session,
                         username=blend_username,
                         provider=get_provider_enum(),
                     )
 
-                    if not music_server_user:
+                    if not blend_music_server_user:
                         raise ValueError(
                             f"Unable to find music server user '{blend_username}'"
                         )
 
                     if recommendation.provider == RecommendationProvider.listenbrainz:
                         blend_recommendation_provider_username = (
-                            music_server_user.listenbrainz_username
+                            blend_music_server_user.listenbrainz_username
                         )
                     else:
                         blend_recommendation_provider_username = (
-                            music_server_user.lastfm_username
+                            blend_music_server_user.lastfm_username
                         )
 
                     if not blend_recommendation_provider_username:
@@ -215,7 +215,7 @@ async def generate_recommendations_task(
                         )
 
                     blend_user_mapping = (
-                        music_server_user.username,
+                        blend_music_server_user.username,
                         blend_recommendation_provider_username,
                     )
                     resolved_blend_users.append(blend_user_mapping)

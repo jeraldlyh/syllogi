@@ -422,7 +422,7 @@ def _delete_downloaded_file(downloaded_file: SlskdDownloadFile) -> None:
     local_path = downloaded_file.local_path if downloaded_file.local_path else None
 
     if not local_path or not os.path.isfile(local_path):
-        local_path = find_downloaded_file(filename=downloaded_file.local_path)
+        local_path = find_downloaded_file(filename=downloaded_file.filename)
 
     if local_path:
         try:
