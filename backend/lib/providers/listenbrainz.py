@@ -31,9 +31,9 @@ class ListenBrainzRecommendationProvider(RecommendationSourceProvider):
             get_environment_variable("LISTENBRAINZ_API_KEY", ignore_error=False)
         )
 
-        headers: dict[str, str] = {}
-        if api_key:
-            headers["Authorization"] = f"Token {api_key}"
+        headers: dict[str, str] = {
+            "Authorization": f"Token {api_key}",
+        }
 
         request_url = f"{api_url.rstrip('/')}{path}"
 
@@ -170,7 +170,11 @@ class ListenBrainzRecommendationProvider(RecommendationSourceProvider):
         if not lookup_data:
             return []
 
-        artist_mbid = lookup_data.get("artist_mbid", "")
+        artist_mbid = (
+            lookup_data.get("artist_mbids", [])[0]
+            if lookup_data.get("artist_mbids")
+            else None
+        )
 
         if not artist_mbid:
             return []
@@ -191,33 +195,34 @@ class ListenBrainzRecommendationProvider(RecommendationSourceProvider):
 
         results = []
 
-        for artist_mbid, artist_data in tracks.items():
-            recording_mbid = artist_data.get("recording_mbid", "")
+        for artist_mbid in tracks:
+            for artist_data in tracks[artist_mbid]:
+                recording_mbid = artist_data.get("recording_mbid", "")
 
-            if not recording_mbid:
-                continue
+                if not recording_mbid:
+                    continue
 
-            track = await self._listenbrainz(
-                "/1/metadata/recording/",
-                params={"recording_mbids": recording_mbid, "inc": "release"},
-            )
-            track_metadata = next(iter(track.values()), None) if track else None
-
-            if not track_metadata:
-                continue
-
-            release = track_metadata.get("release", {})
-
-            results.append(
-                RecommendationTrack(
-                    artist_name=release.get("album_artist_name", ""),
-                    track_name=release.get("title", ""),
-                    musicbrainz_id=release.get("mbid", ""),
-                    album_name=release.get("name", ""),
-                    duration=track_metadata.get("recording", {}).get("length", 0)
-                    / 1000,
-                    playcount=0,
-                    similarity_score=0.0,
+                track = await self._listenbrainz(
+                    "/1/metadata/recording/",
+                    params={"recording_mbids": recording_mbid, "inc": "release"},
                 )
-            )
+                track_metadata = next(iter(track.values()), None) if track else None
+
+                if not track_metadata:
+                    continue
+
+                release = track_metadata.get("release", {})
+
+                results.append(
+                    RecommendationTrack(
+                        artist_name=release.get("album_artist_name", ""),
+                        track_name=track_metadata.get("recording", {}).get("name", ""),
+                        musicbrainz_id=recording_mbid,
+                        album_name=release.get("name", ""),
+                        duration=track_metadata.get("recording", {}).get("length", 0)
+                        / 1000,
+                        playcount=0,
+                        similarity_score=0.0,
+                    )
+                )
         return results
