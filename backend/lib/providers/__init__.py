@@ -1,3 +1,4 @@
+from fastapi import HTTPException, status
 from db.models.music_server_user import MusicServerProvider
 from db.models.recommendation import RecommendationProvider
 from lib.env import (
@@ -9,6 +10,7 @@ from lib.models.provider import ProviderError
 from lib.providers.base import MusicPlaylistProvider, RecommendationSourceProvider
 from lib.providers.jellyfin import JellyfinProvider
 from lib.providers.lastfm import LastFMRecommendationProvider
+from lib.providers.listenbrainz import ListenBrainzRecommendationProvider
 from lib.providers.navidrome import NavidromeProvider
 
 
@@ -78,3 +80,29 @@ def get_recommendation_provider(
 
         return ListenBrainzRecommendationProvider()
     return LastFMRecommendationProvider()
+
+
+async def validate_recommendation_provider_username(
+    lastfm: str, listenbrainz: str
+) -> None:
+    """Validate that the provided usernames is valid."""
+
+    if lastfm:
+        is_valid = await LastFMRecommendationProvider().verify_username(username=lastfm)
+
+        if not is_valid:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail=f"Invalid Last.fm username: {lastfm}",
+            )
+
+    if listenbrainz:
+        is_valid = await ListenBrainzRecommendationProvider().verify_username(
+            username=listenbrainz
+        )
+
+        if not is_valid:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail=f"Invalid ListenBrainz username: {listenbrainz}",
+            )
