@@ -7,7 +7,7 @@ export type RecommendationStrategy =
   | "recent_tracks"
   | "mixed"
   | "blend";
-export type RecommendationProvider = "lastfm";
+export type RecommendationProvider = "lastfm" | "listenbrainz";
 
 export interface RecommendationSession {
   id: string;

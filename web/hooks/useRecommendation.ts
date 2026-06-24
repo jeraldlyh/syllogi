@@ -2,7 +2,10 @@ import { api, fetcher } from "@/lib/api";
 import { ApiResponse } from "@/lib/types";
 import { ApiError } from "@/lib/errors";
 import useSWR from "swr";
-import { RecommendationStrategy } from "./useRecommendationSessions";
+import {
+  RecommendationProvider,
+  RecommendationStrategy,
+} from "./useRecommendationSessions";
 
 export interface Recommendation {
   id: string;
@@ -13,6 +16,7 @@ export interface Recommendation {
   is_public: boolean;
   playlist_name: string;
   blend_users?: string[] | null;
+  recommendation_provider: RecommendationProvider;
 }
 
 export const useRecommendations = () => {

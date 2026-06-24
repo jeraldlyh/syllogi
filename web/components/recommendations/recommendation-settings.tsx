@@ -53,7 +53,10 @@ import React, { useState } from "react";
 import { toast } from "sonner";
 import useSWRMutation from "swr/mutation";
 import { RecommendationStrategyBadge } from "./recommendation-strategy-badge";
-import { RecommendationStrategy } from "@/hooks/useRecommendationSessions";
+import {
+  RecommendationProvider,
+  RecommendationStrategy,
+} from "@/hooks/useRecommendationSessions";
 import { formatErrorMessage } from "@/lib/errors";
 
 interface FormState {
@@ -65,6 +68,7 @@ interface FormState {
   is_public: boolean;
   playlist_name: string;
   blend_users?: string[] | null;
+  recommendation_provider: RecommendationProvider;
 }
 
 interface FormErrors {
@@ -85,6 +89,7 @@ const DEFAULT_FORM: FormState = {
   is_public: false,
   playlist_name: "",
   blend_users: null,
+  recommendation_provider: "lastfm",
 };
 
 const STRATEGIES: { label: string; value: RecommendationStrategy }[] = [
@@ -122,12 +127,17 @@ export const Recommendations = () => {
   const { trigger: generateRecommendation, isMutating: isGenerating } =
     useSWRMutation("/recommendation/generate", generateRecommendationMutation);
 
-  const hasLastfmUsername = (username: string): boolean => {
+  const hasRequiredUsername = (username: string): boolean => {
     if (!userConfigs) return false;
 
-    return userConfigs.some(
-      (config) => config.username === username && config.lastfm_username,
-    );
+    const config = userConfigs.find((c) => c.username === username);
+
+    if (!config) return false;
+
+    if (form.recommendation_provider === "listenbrainz") {
+      return !!config.listenbrainz_username;
+    }
+    return !!config.lastfm_username;
   };
 
   const handleAddRecommendation = () => {
@@ -153,6 +163,7 @@ export const Recommendations = () => {
       is_public: recommendation.is_public,
       playlist_name: recommendation.playlist_name,
       blend_users: recommendation.blend_users,
+      recommendation_provider: recommendation.recommendation_provider,
     });
     setErrors({});
     setDialogOpen(true);
@@ -207,6 +218,7 @@ export const Recommendations = () => {
       is_public: formData.is_public,
       playlist_name: formData.playlist_name,
       blend_users: formData.strategy === "blend" ? formData.blend_users : null,
+      recommendation_provider: form.recommendation_provider,
     };
 
     setDialogOpen(false);
@@ -359,7 +371,7 @@ export const Recommendations = () => {
                       }
                       disabled={
                         isGenerating ||
-                        !hasLastfmUsername(recommendation.username)
+                        !hasRequiredUsername(recommendation.username)
                       }
                     >
                       <Play className="h-4 w-4" />
@@ -406,7 +418,7 @@ export const Recommendations = () => {
         {users.map((user) => {
           const isSelected =
             form.blend_users && form.blend_users.includes(user.name);
-          const isDisabled = !hasLastfmUsername(user.name);
+          const isDisabled = !hasRequiredUsername(user.name);
 
           return (
             <button
@@ -491,7 +503,7 @@ export const Recommendations = () => {
                   {users?.map((user) => (
                     <SelectItem key={user.id} value={user.name}>
                       {user.name}
-                      {!hasLastfmUsername(user.name) && (
+                      {!hasRequiredUsername(user.name) && (
                         <span className="text-muted-foreground ml-1">
                           (no Last.fm username)
                         </span>
@@ -530,6 +542,28 @@ export const Recommendations = () => {
                 {renderBlendUserChips()}
               </div>
             )}
+            <div className="flex flex-col gap-2">
+              <Label className="text-xs text-muted-foreground">
+                Recommendation Source
+              </Label>
+              <Select
+                value={form.recommendation_provider}
+                onValueChange={(value) =>
+                  setForm((prev) => ({
+                    ...prev,
+                    recommendation_provider: value as RecommendationProvider,
+                  }))
+                }
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Select source" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="lastfm">Last.fm</SelectItem>
+                  <SelectItem value="listenbrainz">ListenBrainz</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
             <div className="flex flex-col gap-2">
               <Label className="text-xs text-muted-foreground">Strategy</Label>
               <Select
@@ -702,7 +736,7 @@ export const Recommendations = () => {
               disabled={
                 isCreating ||
                 isUpdating ||
-                (form.username !== "" && !hasLastfmUsername(form.username))
+                (form.username !== "" && !hasRequiredUsername(form.username))
               }
             >
               {editingId ? "Update" : "Add"}
@@ -760,8 +794,8 @@ export const Recommendations = () => {
                 </p>
                 <br />
                 <p>
-                  This will fetch tracks from Last.fm and add them to your music
-                  server.
+                  This will fetch tracks from the selected recommendation source
+                  and add them to your music server.
                 </p>
               </div>
             </AlertDialogDescription>
@@ -776,7 +810,7 @@ export const Recommendations = () => {
               disabled={
                 isGenerating ||
                 (recommendationToGenerate != null &&
-                  !hasLastfmUsername(recommendationToGenerate.username))
+                  !hasRequiredUsername(recommendationToGenerate.username))
               }
             >
               Start Generation
