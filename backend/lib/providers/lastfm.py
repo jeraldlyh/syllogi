@@ -146,9 +146,19 @@ class LastFMRecommendationProvider(RecommendationSourceProvider):
             data = await self._http(
                 params={"user": username, "method": "user.getInfo"},
             )
+            if data is None:
+                return False
             return "user" in data
-        except Exception:
-            return False
+        except httpx.HTTPStatusError as e:
+            if e.response.status_code == 404:
+                logger.debug("Username not found")
+                return False
+            logger.warning("Unexpected HTTP error occurred")
+        except httpx.RequestError as e:
+            logger.warning(f"Request failed: {e}")
+        except Exception as e:
+            logger.error(f"Unexpected error: {e}")
+        return False
 
     async def get_recent_tracks(
         self,

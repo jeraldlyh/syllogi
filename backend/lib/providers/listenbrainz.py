@@ -56,17 +56,20 @@ class ListenBrainzRecommendationProvider(RecommendationSourceProvider):
         return response.json()
 
     async def verify_username(self, username: str) -> bool:
-        """Verify that a ListenBrainz username exists.
+        """Verify that a ListenBrainz username exists."""
 
-        Uses the listen-count endpoint: 200 = valid, 404 = invalid.
-        """
         try:
             data = await self._listenbrainz(
                 f"/1/user/{username}/listen-count",
             )
             return data is not None and "payload" in data
-        except Exception:
-            return False
+        except httpx.HTTPStatusError as e:
+            logger.debug(f"HTTP error: {e}")
+        except httpx.RequestError as e:
+            logger.warning(f"Request failed: {e}")
+        except Exception as e:
+            logger.error(f"Unexpected error: {e}")
+        return False
 
     async def get_recent_tracks(
         self, *, username: str, limit: int = 30
