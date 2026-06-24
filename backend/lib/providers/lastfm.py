@@ -8,9 +8,6 @@ from lib.env import get_environment_variable
 from lib.models.common import RecommendationTrack
 from lib.models.lastfm import (
     LastFMChartTrack,
-    LastFMRecentTrack,
-    LastFMSimilarTrack,
-    LastFMTopTrack,
 )
 from lib.providers.base import (
     RecommendationSourceProvider,
@@ -159,7 +156,7 @@ class LastFMRecommendationProvider(RecommendationSourceProvider):
         username: str,
         limit: int = 30,
     ) -> list[RecommendationTrack]:
-        tracks = await self._get_tracks_paginated(
+        return await self._get_tracks_paginated(
             params={
                 "user": username,
                 "method": "user.getRecentTracks",
@@ -167,23 +164,16 @@ class LastFMRecommendationProvider(RecommendationSourceProvider):
             limit=limit,
             response_path="recenttracks.track",
             track_filter=lambda track: track.get("mbid", "") != "",
-            track_factory=lambda track: LastFMRecentTrack(
+            track_factory=lambda track: RecommendationTrack(
                 artist_name=track.get("artist", {}).get("#text", ""),
                 track_name=track.get("name", ""),
-                album_name=track.get("album", {}).get("#text", ""),
                 musicbrainz_id=track.get("mbid", ""),
+                album_name=track.get("album", {}).get("#text", ""),
+                duration=0,
+                playcount=0,
+                similarity_score=0.0,
             ),
         )
-
-        return [
-            RecommendationTrack(
-                artist_name=track.artist_name,
-                track_name=track.track_name,
-                musicbrainz_id=track.musicbrainz_id,
-                album_name=track.album_name,
-            )
-            for track in tracks
-        ]
 
     async def get_top_tracks(
         self,
@@ -192,7 +182,7 @@ class LastFMRecommendationProvider(RecommendationSourceProvider):
         period: str = "6month",
         limit: int = 30,
     ) -> list[RecommendationTrack]:
-        tracks = await self._get_tracks_paginated(
+        return await self._get_tracks_paginated(
             params={
                 "user": username,
                 "method": "user.getTopTracks",
@@ -201,24 +191,16 @@ class LastFMRecommendationProvider(RecommendationSourceProvider):
             limit=limit,
             response_path="toptracks.track",
             track_filter=lambda track: track.get("mbid", "") != "",
-            track_factory=lambda track: LastFMTopTrack(
+            track_factory=lambda track: RecommendationTrack(
                 artist_name=track.get("artist", {}).get("name", ""),
                 track_name=track.get("name", ""),
                 duration=track.get("duration", 0),
                 musicbrainz_id=track.get("mbid", ""),
-                playcount=track.get("playcount", 0),
+                album_name="",
+                playcount=int(track.get("playcount", 0)),
+                similarity_score=0.0,
             ),
         )
-        return [
-            RecommendationTrack(
-                artist_name=track.artist_name,
-                track_name=track.track_name,
-                musicbrainz_id=track.musicbrainz_id,
-                duration=track.duration,
-                playcount=track.playcount,
-            )
-            for track in tracks
-        ]
 
     async def get_similar_tracks(
         self,
@@ -236,33 +218,27 @@ class LastFMRecommendationProvider(RecommendationSourceProvider):
             },
         )
         raw_tracks = self._get_nested_value(data, "similartracks.track") or []
-        tracks: list[LastFMSimilarTrack] = []
+        tracks: list[RecommendationTrack] = []
 
         for raw_track in raw_tracks:
             if raw_track.get("mbid", "") == "":
                 continue
 
+            if len(tracks) >= count:
+                break
+
             tracks.append(
-                LastFMSimilarTrack(
+                RecommendationTrack(
                     artist_name=raw_track.get("artist", {}).get("name", ""),
                     track_name=raw_track.get("name", ""),
                     duration=raw_track.get("duration", 0),
                     musicbrainz_id=raw_track.get("mbid", ""),
+                    album_name="",
                     playcount=raw_track.get("playcount", 0),
                     similarity_score=raw_track.get("match", 0.0),
                 )
             )
-        return [
-            RecommendationTrack(
-                artist_name=track.artist_name,
-                track_name=track.track_name,
-                musicbrainz_id=track.musicbrainz_id,
-                duration=track.duration,
-                playcount=track.playcount,
-                similarity_score=track.similarity_score,
-            )
-            for track in tracks[:count]
-        ]
+        return tracks
 
     async def get_chart_top_tracks(self, limit: int = 50) -> list[LastFMChartTrack]:
         data = await self._http(

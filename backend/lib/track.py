@@ -186,7 +186,7 @@ def reconcile_after_download(
     - Moves newly resolved tracks into found_tracks.
     - Rebuilds missing_tracks from tracks that still could not be found.
 
-    Works generically over any track type T (e.g. ResolvedTrack, LastFMSimilarTrack)
+    Works generically over any track type T (e.g. ResolvedTrack)
     via the get_key callable, which extracts the (artist_name, track_name) pair from T.
     """
 
