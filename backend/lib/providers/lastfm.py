@@ -2,6 +2,7 @@ import logging
 from collections.abc import Callable, Hashable
 from typing import Any, TypeVar
 
+from fastapi import HTTPException, status
 import httpx
 
 from lib.env import get_environment_variable
@@ -192,6 +193,14 @@ class LastFMRecommendationProvider(RecommendationSourceProvider):
         period: str = "6month",
         limit: int = 30,
     ) -> list[RecommendationTrack]:
+        range_set = ("7day", "1month", "3month", "6month", "12month")
+
+        if period not in range_set:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Invalid period",
+            )
+
         return await self._get_tracks_paginated(
             params={
                 "user": username,

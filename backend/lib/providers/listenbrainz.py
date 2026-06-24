@@ -1,6 +1,7 @@
 import logging
 from typing import Any
 
+from fastapi import HTTPException, status
 import httpx
 
 from lib.env import get_environment_variable
@@ -121,11 +122,16 @@ class ListenBrainzRecommendationProvider(RecommendationSourceProvider):
             "6month": "half_yearly",
             "1year": "year",
         }
-        time_range = range_map.get(period, "all_time")
+
+        if period not in range_map:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Invalid period",
+            )
 
         data = await self._listenbrainz(
             f"/1/stats/user/{username}/recordings",
-            params={"count": limit, "range": time_range},
+            params={"count": limit, "range": period},
         )
 
         if not data or "payload" not in data:
