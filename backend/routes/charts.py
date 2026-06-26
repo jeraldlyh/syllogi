@@ -11,6 +11,7 @@ from db.session import SessionDep
 from lib.download import download_single_track
 from lib.models.common import ExternalTrack
 from lib.providers import get_provider
+from lib.providers.metadata.musicbrainz import MusicBrainzMetadataProvider
 from lib.providers.recommendation.lastfm import LastFMRecommendationProvider
 from lib.track import is_track_in_provider
 
@@ -143,3 +144,64 @@ async def _download_track(
 async def _get_download_sessions(session: SessionDep) -> list[dict]:
     downloads = get_download_sessions(session, limit=20)
     return [download.to_dict() for download in downloads]
+
+
+@router.get(
+    path="/artist/{artist_name}",
+    summary="Get artist metadata",
+    description="Retrieve artist metadata and recordings from MusicBrainz by artist name.",
+    responses={
+        200: {
+            "description": "Artist metadata retrieved successfully",
+            "content": {
+                "application/json": {
+                    "example": {
+                        "artist": {
+                            "id": "a74b1b7f-71a5-4028-9831-c43e3266b76e",
+                            "name": "Radiohead",
+                            "type": "Group",
+                            "country": "GB",
+                            "gender": "",
+                            "life_span": {
+                                "begin": "1985",
+                                "end": None,
+                            },
+                            "area": "United Kingdom",
+                            "begin_area": "Abingdon",
+                            "tags": ["alternative rock", "art rock", "electronic"],
+                            "aliases": ["On a Friday"],
+                            "recordings": [
+                                {
+                                    "title": "Creep",
+                                    "duration_ms": 238000,
+                                    "disambiguation": "",
+                                },
+                                {
+                                    "title": "Karma Police",
+                                    "duration_ms": 264000,
+                                    "disambiguation": "",
+                                },
+                            ],
+                        },
+                    },
+                }
+            },
+        },
+        404: {
+            "description": "Artist not found",
+            "content": {
+                "application/json": {
+                    "example": {"artist": None},
+                }
+            },
+        },
+    },
+)
+async def _get_artist_info(artist_name: str) -> dict:
+    provider = MusicBrainzMetadataProvider()
+
+    artist_info = await provider.get_artist_info(artist_name)
+
+    return {
+        "artist": artist_info.to_dict() if artist_info else None,
+    }

@@ -18,7 +18,7 @@ from lib.models.slskd import (
     SlskdTrackCandidate,
 )
 from lib.env import get_environment_variable
-from lib.musicbrainz import get_artist_alias
+from lib.providers.metadata.musicbrainz import MusicBrainzMetadataProvider
 from lib.utils import (
     find_downloaded_file,
     get_download_path,
@@ -480,7 +480,8 @@ async def download_track_slskd(
         if not results:
             await _delete_slskd_search(search_id)
 
-            artist_alias = await get_artist_alias(artist_name)
+            musicbrainz = MusicBrainzMetadataProvider()
+            artist_alias = await musicbrainz.get_artist_alias(artist_name)
 
             if not artist_alias or artist_alias.lower() == artist_name.lower():
                 logger.warning(f"No artist alias found for {artist_name}")
