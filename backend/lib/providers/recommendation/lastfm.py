@@ -10,9 +10,7 @@ from lib.models.common import RecommendationTrack
 from lib.models.lastfm import (
     LastFMChartTrack,
 )
-from lib.providers.base import (
-    RecommendationSourceProvider,
-)
+from lib.providers.recommendation.base import RecommendationSourceProvider
 
 
 logger = logging.getLogger(__name__)

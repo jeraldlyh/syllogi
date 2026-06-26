@@ -7,13 +7,13 @@ from typing import Any
 import httpx
 
 from lib.env import get_environment_variable
-from lib.providers.base import MusicPlaylistProvider
 from lib.models.provider import (
     ProviderError,
     ProviderPlaylist,
     ProviderTrack,
     ProviderUser,
 )
+from lib.providers.playlist.base import MusicPlaylistProvider
 
 logger = logging.getLogger(__name__)
 

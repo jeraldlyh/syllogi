@@ -5,7 +5,7 @@ from typing import Any
 import httpx
 
 from lib.env import get_environment_variable
-from lib.providers.base import MusicPlaylistProvider
+from lib.providers.playlist.base import MusicPlaylistProvider
 from lib.utils import sanitize_filename
 from lib.models.provider import (
     ProviderError,

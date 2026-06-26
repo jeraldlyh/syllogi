@@ -6,9 +6,7 @@ import httpx
 
 from lib.env import get_environment_variable
 from lib.models.common import RecommendationTrack
-from lib.providers.base import (
-    RecommendationSourceProvider,
-)
+from lib.providers.recommendation.base import RecommendationSourceProvider
 
 logger = logging.getLogger(__name__)
 
