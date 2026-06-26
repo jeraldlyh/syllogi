@@ -174,12 +174,12 @@ async def _get_download_sessions(session: SessionDep) -> list[dict]:
                         "recordings": [
                             {
                                 "title": "Creep",
-                                "duration_ms": 238000,
+                                "duration": 238,
                                 "disambiguation": "",
                             },
                             {
                                 "title": "Karma Police",
-                                "duration_ms": 264000,
+                                "duration": 264,
                                 "disambiguation": "",
                             },
                         ],

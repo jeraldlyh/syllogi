@@ -12,7 +12,7 @@ class ArtistRecording:
     def to_dict(self) -> dict[str, str | int | None]:
         return {
             "title": self.title,
-            "duration_ms": self.duration_ms,
+            "duration": self.duration_ms // 1000 if self.duration_ms else 0,
             "disambiguation": self.disambiguation,
         }
 
