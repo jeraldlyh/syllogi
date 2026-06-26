@@ -86,7 +86,8 @@ class JellyfinProvider(MusicPlaylistProvider):
         return next((user for user in users if user.name == username), None)
 
     async def get_playlists(
-        self, *,
+        self,
+        *,
         user_id: str,
         username: str = "",
         password: str = "",
@@ -156,7 +157,8 @@ class JellyfinProvider(MusicPlaylistProvider):
         return playlist_id, user.id
 
     async def create_playlist(
-        self, *,
+        self,
+        *,
         playlist_name: str,
         user_id: str,
         is_public: bool = False,
@@ -185,7 +187,8 @@ class JellyfinProvider(MusicPlaylistProvider):
         )
 
     async def delete_playlist(
-        self, *,
+        self,
+        *,
         playlist_id: str,
         username: str = "",
         password: str = "",
@@ -195,7 +198,8 @@ class JellyfinProvider(MusicPlaylistProvider):
         await self._jellyfin(f"/Items/{playlist_id}", method="DELETE")
 
     async def get_playlist_songs(
-        self, *,
+        self,
+        *,
         playlist_id: str,
         user_id: str,
         username: str = "",
@@ -225,7 +229,8 @@ class JellyfinProvider(MusicPlaylistProvider):
         ]
 
     async def add_songs_to_playlist(
-        self, *,
+        self,
+        *,
         playlist_id: str,
         user_id: str,
         track_ids: list[str],
@@ -253,7 +258,8 @@ class JellyfinProvider(MusicPlaylistProvider):
             )
 
     async def delete_songs_from_playlist(
-        self, *,
+        self,
+        *,
         playlist_id: str,
         entry_ids: list[str],
         username: str = "",
@@ -489,7 +495,8 @@ class JellyfinProvider(MusicPlaylistProvider):
         ]
 
     async def wait_for_rescan(
-        self, *,
+        self,
+        *,
         poll_interval_seconds: int = 15,
         max_wait_seconds: int = 600,
     ) -> None:

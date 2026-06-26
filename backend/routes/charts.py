@@ -11,7 +11,7 @@ from db.session import SessionDep
 from lib.download import download_single_track
 from lib.models.common import ExternalTrack
 from lib.providers import get_provider
-from lib.providers.lastfm import LastFMRecommendationProvider
+from lib.providers.recommendation.lastfm import LastFMRecommendationProvider
 from lib.track import is_track_in_provider
 
 logger = logging.getLogger(__name__)

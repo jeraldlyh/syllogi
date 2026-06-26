@@ -8,7 +8,7 @@ from lib.models.common import (
 )
 from lib.models.lastfm import LastFMChartTrack
 from lib.models.provider import ProviderTrack
-from lib.providers.base import MusicPlaylistProvider
+from lib.providers.playlist.base import MusicPlaylistProvider
 from lib.utils import get_clean_name
 
 logger = logging.getLogger(__name__)

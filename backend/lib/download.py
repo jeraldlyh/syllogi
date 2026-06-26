@@ -9,8 +9,8 @@ from db.models.download_session import DownloadSession, DownloadSessionStatus
 from db.session import get_isolated_session
 from lib.env import is_slskd_configured
 from lib.models.common import ExternalTrack
-from lib.providers.base import MusicPlaylistProvider
 from lib.models.provider import ProviderTrack
+from lib.providers.playlist.base import MusicPlaylistProvider
 from lib.slskd import download_track_slskd
 from lib.utils import (
     get_existing_track_path,

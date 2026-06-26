@@ -1,4 +1,5 @@
 from fastapi import HTTPException, status
+
 from db.models.music_server_user import MusicServerProvider
 from db.models.recommendation import RecommendationProvider
 from lib.env import (
@@ -7,11 +8,12 @@ from lib.env import (
     is_navidrome_configured,
 )
 from lib.models.provider import ProviderError
-from lib.providers.base import MusicPlaylistProvider, RecommendationSourceProvider
-from lib.providers.jellyfin import JellyfinProvider
-from lib.providers.lastfm import LastFMRecommendationProvider
-from lib.providers.listenbrainz import ListenBrainzRecommendationProvider
-from lib.providers.navidrome import NavidromeProvider
+from lib.providers.playlist.base import MusicPlaylistProvider
+from lib.providers.playlist.jellyfin import JellyfinProvider
+from lib.providers.playlist.navidrome import NavidromeProvider
+from lib.providers.recommendation.base import RecommendationSourceProvider
+from lib.providers.recommendation.lastfm import LastFMRecommendationProvider
+from lib.providers.recommendation.listenbrainz import ListenBrainzRecommendationProvider
 
 
 def get_provider() -> MusicPlaylistProvider:
@@ -27,12 +29,12 @@ def get_provider() -> MusicPlaylistProvider:
         )
 
     if override == "jellyfin":
-        from lib.providers.jellyfin import JellyfinProvider
+        from lib.providers.playlist.jellyfin import JellyfinProvider
 
         return JellyfinProvider()
 
     if override == "navidrome":
-        from lib.providers.navidrome import NavidromeProvider
+        from lib.providers.playlist.navidrome import NavidromeProvider
 
         return NavidromeProvider()
 
@@ -43,12 +45,12 @@ def get_provider() -> MusicPlaylistProvider:
         )
 
     if is_jellyfin_enabled:
-        from lib.providers.jellyfin import JellyfinProvider
+        from lib.providers.playlist.jellyfin import JellyfinProvider
 
         return JellyfinProvider()
 
     if is_navidrome_enabled:
-        from lib.providers.navidrome import NavidromeProvider
+        from lib.providers.playlist.navidrome import NavidromeProvider
 
         return NavidromeProvider()
 
@@ -76,7 +78,9 @@ def get_recommendation_provider(
     """Return the recommendation source provider for the given provider type."""
 
     if provider == RecommendationProvider.listenbrainz:
-        from lib.providers.listenbrainz import ListenBrainzRecommendationProvider
+        from lib.providers.recommendation.listenbrainz import (
+            ListenBrainzRecommendationProvider,
+        )
 
         return ListenBrainzRecommendationProvider()
     return LastFMRecommendationProvider()

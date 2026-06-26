@@ -12,8 +12,8 @@ from db.models.sync import (
     SyncStatus,
 )
 from db.music_server_user import get_music_server_user_by_username
-from db.sync import get_sync_by_id
 from db.session import get_isolated_session
+from db.sync import get_sync_by_id
 from db.sync_session import (
     build_sync_session_tracks,
     create_sync_session,
@@ -26,13 +26,13 @@ from lib.env import get_environment_variable
 from lib.models.common import (
     ExternalSync,
     ExternalTrack,
-    SyncDiff,
     ResolvedTrack,
+    SyncDiff,
 )
 from lib.models.provider import ProviderTrack
 from lib.notification import send_discord_notification
 from lib.providers import get_provider_enum
-from lib.providers.base import MusicPlaylistProvider
+from lib.providers.playlist.base import MusicPlaylistProvider
 from lib.spotify import get_spotify_playlist, get_spotify_playlist_songs
 from lib.track import reconcile_after_download, resolve_tracks
 from lib.utils import convert_seconds_to_readable_time, get_now, truncate

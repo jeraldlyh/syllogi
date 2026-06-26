@@ -24,11 +24,11 @@ from db.recommendation_session import (
 from db.session import get_isolated_session
 from lib.crypto import decrypt
 from lib.download import download_missing_tracks
+from lib.models.common import RecommendationTrack
 from lib.models.provider import ProviderTrack
 from lib.providers import get_provider_enum, get_recommendation_provider
-from lib.providers.base import MusicPlaylistProvider
-from lib.models.common import RecommendationTrack
-from lib.providers.base import RecommendationSourceProvider
+from lib.providers.playlist.base import MusicPlaylistProvider
+from lib.providers.recommendation.base import RecommendationSourceProvider
 from lib.track import find_track, reconcile_after_download, resolve_tracks
 from lib.utils import get_now, truncate
 

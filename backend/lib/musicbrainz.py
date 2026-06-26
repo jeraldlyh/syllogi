@@ -125,3 +125,33 @@ async def get_artist_alias(artist_name: str) -> str | None:
 
         await asyncio.sleep(SEARCH_POLL_INTERVAL)
     return None
+
+
+async def get_artist_metadata(artist_name: str) -> dict[str, Any] | None:
+    """Get artist metadata from MusicBrainz.
+
+    Returns a dict with id, name, type, country, gender, life_span,
+    area name, begin_area name, and tags, or None if not found.
+    """
+
+    try:
+        artists = await _search_artist(artist_name=artist_name)
+
+        if not artists:
+            return None
+
+        artist = artists[0]
+        return {
+            "id": artist.id,
+            "name": artist.name,
+            "type": artist.type,
+            "country": artist.country,
+            "gender": artist.gender,
+            "life_span": artist.life_span,
+            "area": artist.area.name if artist.area else None,
+            "begin_area": artist.begin_area.name if artist.begin_area else None,
+            "tags": [tag.name for tag in artist.tags],
+        }
+    except Exception as e:
+        logger.error(f"Failed to fetch artist metadata for '{artist_name}': {e}")
+        return None

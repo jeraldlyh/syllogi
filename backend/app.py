@@ -12,18 +12,18 @@ from fastapi.openapi.utils import get_openapi
 from fastapi.responses import JSONResponse, Response
 from starlette.middleware.base import BaseHTTPMiddleware
 
-from db.sync import get_syncs
-from db.recommendation import get_recommendations
 from db.models.music_server_user import MusicServerProvider, MusicServerUser
 from db.music_server_user import (
     create_music_server_user,
     get_music_server_user_by_username,
 )
+from db.recommendation import get_recommendations
 from db.session import get_isolated_session
+from db.sync import get_syncs
 from lib.cron import create_job, scheduler
 from lib.env import get_environment_variable
 from lib.providers import get_provider
-from lib.providers.navidrome import NavidromeProvider
+from lib.providers.playlist.navidrome import NavidromeProvider
 from lib.recommendation import generate_recommendations
 from lib.sync import sync_playlist
 from routes import OPENAPI_TAGS, register_routes
