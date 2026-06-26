@@ -22,10 +22,12 @@ import { Download, RefreshCw, Search } from "lucide-react";
 import Image from "next/image";
 import { useState } from "react";
 import { toast } from "sonner";
+import { ChartArtistDrawer } from "./chart-artist-drawer";
 import { ChartBadge } from "./chart-badge";
 
 export const ChartTrending = () => {
   const [search, setSearch] = useState("");
+  const [selectedArtist, setSelectedArtist] = useState<string | null>(null);
   const [downloadingTracks, setDownloadingTracks] = useState<Set<string>>(
     new Set(),
   );
@@ -209,14 +211,18 @@ export const ChartTrending = () => {
                     </div>
                   </TableCell>
                   <TableCell>
-                    <Text
-                      className="text-muted-foreground"
-                      value={track.artist_name}
-                    />
+                    <Button
+                      onClick={() => setSelectedArtist(track.artist_name)}
+                      variant="link"
+                      className="text-muted-foreground hover:text-primary transition-colors text-left"
+                    >
+                      <Text value={track.artist_name} />
+                    </Button>
                   </TableCell>
                   <TableCell className="hidden md:table-cell">
                     <Text
                       className="text-muted-foreground"
+                      noWrap
                       value={formatDuration(track.duration)}
                     />
                   </TableCell>
@@ -253,20 +259,26 @@ export const ChartTrending = () => {
   };
 
   return (
-    <Card>
-      <CardHeader className="flex flex-row items-center justify-between">
-        <CardTitle className="text-base font-medium text-foreground">
-          Trending Tracks
-        </CardTitle>
-        <Button size="sm" onClick={() => fetchTrendingTracks()}>
-          <RefreshCw className="w-4 h-4" />
-          Refresh
-        </Button>
-      </CardHeader>
-      <CardContent>
-        {renderTableHeader()}
-        {renderTable()}
-      </CardContent>
-    </Card>
+    <>
+      <Card>
+        <CardHeader className="flex flex-row items-center justify-between">
+          <CardTitle className="text-base font-medium text-foreground">
+            Trending Tracks
+          </CardTitle>
+          <Button size="sm" onClick={() => fetchTrendingTracks()}>
+            <RefreshCw className="w-4 h-4" />
+            Refresh
+          </Button>
+        </CardHeader>
+        <CardContent>
+          {renderTableHeader()}
+          {renderTable()}
+        </CardContent>
+      </Card>
+      <ChartArtistDrawer
+        artistName={selectedArtist}
+        onClose={() => setSelectedArtist(null)}
+      />
+    </>
   );
 };
