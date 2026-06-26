@@ -1,14 +1,12 @@
-FROM node:25-alpine AS web-deps
+FROM node:25 AS web-deps
 
-RUN apk add --no-cache libc6-compat
 WORKDIR /web
 
 COPY web/package.json web/pnpm-lock.yaml ./
 RUN npm install -g pnpm@9 && pnpm install --frozen-lockfile
 
-FROM node:25-alpine AS web-builder
+FROM node:25 AS web-builder
 
-RUN apk add --no-cache libc6-compat
 WORKDIR /web
 
 COPY --from=web-deps /web/node_modules ./node_modules
