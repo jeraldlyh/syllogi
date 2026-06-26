@@ -8,7 +8,7 @@ export const ChartBadge = ({
   isExist: boolean;
   isDownloading: boolean;
 }): React.JSX.Element | undefined => {
-  const style = "text-xs whitespace-nowrap px-1.5 py-0";
+  const style = "text-xs whitespace-nowrap px-1.5 py-0 w-fit";
 
   if (isDownloading) {
     return (
