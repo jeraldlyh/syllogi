@@ -1,6 +1,6 @@
 from abc import ABC, abstractmethod
 
-from lib.models.metadata import ArtistInfo
+from lib.models.metadata import ArtistInfo, ArtistRecording
 
 
 class MetadataSourceProvider(ABC):
@@ -18,5 +18,20 @@ class MetadataSourceProvider(ABC):
 
         Returns:
             An ArtistMetadata instance, or None if not found.
+        """
+        ...
+
+    @abstractmethod
+    async def get_artist_recordings(
+        self, artist_mbid: str, limit: int
+    ) -> list[ArtistRecording]:
+        """Get artist recordings by MusicBrainz ID.
+
+        Args:
+            artist_mbid: MusicBrainz ID to search for.
+            limit: Maximum number of recordings to return.
+
+        Returns:
+            List of ArtistRecording.
         """
         ...

@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 
-from lib.models.metadata import ArtistInfo, ArtistRecording
+from lib.models.metadata import ArtistInfo
 
 
 @dataclass
@@ -57,22 +57,9 @@ class MusicbrainzArtist:
     life_span: dict[str, str | None]
     aliases: list[MusicbrainzArtistAlias]
     tags: list[MusicbrainzArtistTag]
-    recordings: list[MusicbrainzRecording]
-
-    def to_artist_recording(self) -> list[ArtistRecording]:
-        """Convert recordings to ArtistRecording list."""
-
-        return [
-            ArtistRecording(
-                title=recording.title,
-                duration_ms=recording.length,
-                disambiguation=recording.disambiguation,
-            )
-            for recording in self.recordings
-        ]
 
     def to_artist_info(self) -> ArtistInfo:
-        """Convert to ArtistInfo."""
+        """Convert to ArtistInfo"""
         return ArtistInfo(
             id=self.id,
             name=self.name,
@@ -84,5 +71,4 @@ class MusicbrainzArtist:
             begin_area=self.begin_area.name if self.begin_area else None,
             tags=[tag.name for tag in self.tags],
             aliases=[alias.name for alias in self.aliases],
-            recordings=self.to_artist_recording(),
         )

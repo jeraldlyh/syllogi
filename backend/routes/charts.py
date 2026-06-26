@@ -170,19 +170,19 @@ async def _get_download_sessions(session: SessionDep) -> list[dict]:
                             "begin_area": "Abingdon",
                             "tags": ["alternative rock", "art rock", "electronic"],
                             "aliases": ["On a Friday"],
-                            "recordings": [
-                                {
-                                    "title": "Creep",
-                                    "duration_ms": 238000,
-                                    "disambiguation": "",
-                                },
-                                {
-                                    "title": "Karma Police",
-                                    "duration_ms": 264000,
-                                    "disambiguation": "",
-                                },
-                            ],
                         },
+                        "recordings": [
+                            {
+                                "title": "Creep",
+                                "duration_ms": 238000,
+                                "disambiguation": "",
+                            },
+                            {
+                                "title": "Karma Police",
+                                "duration_ms": 264000,
+                                "disambiguation": "",
+                            },
+                        ],
                     },
                 }
             },
@@ -191,7 +191,7 @@ async def _get_download_sessions(session: SessionDep) -> list[dict]:
             "description": "Artist not found",
             "content": {
                 "application/json": {
-                    "example": {"artist": None},
+                    "example": {"artist": None, "recordings": []},
                 }
             },
         },
@@ -202,6 +202,12 @@ async def _get_artist_info(artist_name: str) -> dict:
 
     artist_info = await provider.get_artist_info(artist_name)
 
+    if not artist_info:
+        return {"artist": None, "recordings": []}
+
+    recordings = await provider.get_artist_recordings(artist_info.id, limit=20)
+
     return {
-        "artist": artist_info.to_dict() if artist_info else None,
+        "artist": artist_info.to_dict(),
+        "recordings": [recording.to_dict() for recording in recordings],
     }

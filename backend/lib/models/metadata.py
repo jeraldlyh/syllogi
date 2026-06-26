@@ -31,7 +31,6 @@ class ArtistInfo:
     begin_area: str | None
     tags: list[str]
     aliases: list[str]
-    recordings: list[ArtistRecording]
 
     def to_dict(self) -> dict[str, str | dict | list | None]:
         return {
@@ -45,5 +44,4 @@ class ArtistInfo:
             "begin_area": self.begin_area,
             "tags": self.tags,
             "aliases": self.aliases,
-            "recordings": [recording.to_dict() for recording in self.recordings],
         }

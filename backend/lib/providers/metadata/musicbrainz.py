@@ -12,8 +12,8 @@ from lib.models.musicbrainz import (
     MusicbrainzArtistAlias,
     MusicbrainzArtistArea,
     MusicbrainzArtistTag,
-    MusicbrainzRecording,
 )
+from lib.models.metadata import ArtistRecording
 from lib.providers.metadata.base import (
     ArtistInfo,
     MetadataSourceProvider,
@@ -27,11 +27,6 @@ class MusicBrainzMetadataProvider(MetadataSourceProvider):
 
     SEARCH_MAX_RETRIES = 3
     SEARCH_POLL_INTERVAL = 10
-
-    SUB_QUERIES: dict[str, str] = {
-        "enableRecordings": "recordings",
-        "enableAliases": "aliases",
-    }
 
     async def _http(
         self,
@@ -60,23 +55,12 @@ class MusicBrainzMetadataProvider(MetadataSourceProvider):
         self,
         artist_name: str,
         limit: int = 10,
-        options: dict[str, bool] | None = None,
     ) -> list[MusicbrainzArtist]:
         """Search MusicBrainz for artists by name. Returns a list of artist matches."""
 
-        params = {"query": artist_name, "limit": limit}
-        result = await self._http("/artist", params=params)
-
-        paths: list[str] = []
-        if options:
-            for key, enabled in options.items():
-                if enabled and key in self.SUB_QUERIES:
-                    paths.append(self.SUB_QUERIES[key])
-
-            if paths:
-                params["inc"] = "+".join(paths)
-
-        result = await self._http("/artist", params=params)
+        result = await self._http(
+            "/artist", params={"query": artist_name, "limit": limit, "inc": "aliases"}
+        )
 
         return [
             MusicbrainzArtist(
@@ -127,19 +111,44 @@ class MusicBrainzMetadataProvider(MetadataSourceProvider):
                     )
                     for tag in artist.get("tags", [])
                 ],
-                recordings=[
-                    MusicbrainzRecording(
-                        id=recording.get("id", ""),
-                        title=recording.get("title", ""),
-                        length=recording.get("length"),
-                        disambiguation=recording.get("disambiguation", ""),
-                        video=recording.get("video", False),
-                    )
-                    for recording in artist.get("recordings", [])
-                ],
             )
             for artist in result.get("artists", [])
         ]
+
+    async def get_artist_recordings(
+        self,
+        artist_mbid: str,
+        limit: int,
+    ) -> list[ArtistRecording]:
+        """Fetch recordings by artist MusicBrainz ID."""
+
+        result = await self._http(
+            f"/artist/{artist_mbid}", params={"inc": "recordings", "limit": limit}
+        )
+
+        if not result:
+            return []
+
+        return [
+            ArtistRecording(
+                title=recording.get("title", ""),
+                duration_ms=recording.get("length"),
+                disambiguation=recording.get("disambiguation", ""),
+            )
+            for recording in result.get("recordings", [])
+        ]
+
+    async def get_artist_info(
+        self,
+        artist_name: str,
+    ) -> ArtistInfo | None:
+        """Search MusicBrainz for artist by name."""
+
+        results = await self._get_artists(artist_name=artist_name, limit=1)
+
+        if not results:
+            return None
+        return results[0].to_artist_info()
 
     async def get_artist_alias(self, artist_name: str) -> str | None:
         """Get artist actual name using MusicBrainz.
@@ -166,24 +175,3 @@ class MusicBrainzMetadataProvider(MetadataSourceProvider):
 
             await asyncio.sleep(self.SEARCH_POLL_INTERVAL)
         return None
-
-    async def get_artist_info(
-        self,
-        artist_name: str,
-    ) -> ArtistInfo | None:
-        """Get artist metadata, optionally with related data."""
-        try:
-            artists = await self._get_artists(
-                artist_name,
-                options={"enableRecordings": True, "enableAliases": True},
-            )
-
-            if not artists:
-                return None
-
-            return artists[0].to_artist_info()
-        except Exception as e:
-            logger.error(
-                f"Failed to fetch MusicBrainz artist info for '{artist_name}': {e}"
-            )
-            return None
