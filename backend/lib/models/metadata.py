@@ -31,8 +31,10 @@ class ArtistInfo:
     begin_area: str | None
     tags: list[str]
     aliases: list[str]
+    image_url: str | None = None
+    num_of_fans: int | None = None
 
-    def to_dict(self) -> dict[str, str | dict | list | None]:
+    def to_dict(self) -> dict[str, str | dict | list | int | None]:
         return {
             "id": self.id,
             "name": self.name,
@@ -44,4 +46,6 @@ class ArtistInfo:
             "begin_area": self.begin_area,
             "tags": self.tags,
             "aliases": self.aliases,
+            "image_url": self.image_url,
+            "num_of_fans": self.num_of_fans,
         }

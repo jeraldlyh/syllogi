@@ -1,5 +1,3 @@
-from __future__ import annotations
-
 import asyncio
 import logging
 from typing import Any
@@ -34,7 +32,7 @@ class MusicBrainzMetadataProvider(MetadataSourceProvider):
         *,
         params: dict[str, Any] | None = None,
     ) -> Any:
-        """Make a request to the MusicBrainz API."""
+        """HTTP helper for MusicBrainz API."""
 
         url = str(get_environment_variable("MUSICBRAINZ_URL")) + path
         headers = {

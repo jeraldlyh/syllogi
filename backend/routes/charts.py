@@ -11,6 +11,7 @@ from db.session import SessionDep
 from lib.download import download_single_track
 from lib.models.common import ExternalTrack
 from lib.providers import get_provider
+from lib.providers.metadata.deezer import DeezerMetadataProvider
 from lib.providers.metadata.musicbrainz import MusicBrainzMetadataProvider
 from lib.providers.recommendation.lastfm import LastFMRecommendationProvider
 from lib.track import is_track_in_provider
@@ -198,14 +199,20 @@ async def _get_download_sessions(session: SessionDep) -> list[dict]:
     },
 )
 async def _get_artist_info(artist_name: str) -> dict:
-    provider = MusicBrainzMetadataProvider()
+    mb_provider = MusicBrainzMetadataProvider()
+    deezer_provider = DeezerMetadataProvider()
 
-    artist_info = await provider.get_artist_info(artist_name)
+    artist_info = await mb_provider.get_artist_info(artist_name)
 
     if not artist_info:
         return {"artist": None, "recordings": []}
 
-    recordings = await provider.get_artist_recordings(artist_info.id, limit=20)
+    recordings = await mb_provider.get_artist_recordings(artist_info.id, limit=20)
+
+    deezer_info = await deezer_provider.get_artist_info(artist_name)
+    if deezer_info:
+        artist_info.image_url = deezer_info.image_url
+        artist_info.num_of_fans = deezer_info.num_of_fans
 
     return {
         "artist": artist_info.to_dict(),
