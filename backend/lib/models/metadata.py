@@ -16,10 +16,20 @@ class ArtistRecording:
             "disambiguation": self.disambiguation,
         }
 
+    def __eq__(self, other):
+        if not isinstance(other, ArtistRecording):
+            return NotImplemented
+        return self.title == other.title
+
+    def __hash__(self):
+        return hash(self.title)
+
 
 @dataclass
 class ArtistInfo:
     """Full artist metadata, including optional related data."""
+
+    MAX_ALIASES = 5
 
     id: str
     name: str
@@ -45,7 +55,7 @@ class ArtistInfo:
             "area": self.area,
             "begin_area": self.begin_area,
             "tags": self.tags,
-            "aliases": self.aliases,
+            "aliases": self.aliases[: self.MAX_ALIASES],
             "image_url": self.image_url,
             "num_of_fans": self.num_of_fans,
         }

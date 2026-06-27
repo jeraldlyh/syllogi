@@ -127,14 +127,16 @@ class MusicBrainzMetadataProvider(MetadataSourceProvider):
         if not result:
             return []
 
-        return [
-            ArtistRecording(
-                title=recording.get("title", ""),
-                duration_ms=recording.get("length"),
-                disambiguation=recording.get("disambiguation", ""),
+        unique = set()
+        for recording in result.get("recordings", []):
+            unique.add(
+                ArtistRecording(
+                    title=recording.get("title", ""),
+                    duration_ms=recording.get("length"),
+                    disambiguation=recording.get("disambiguation", ""),
+                )
             )
-            for recording in result.get("recordings", [])
-        ]
+        return list(unique)
 
     async def get_artist_info(
         self,

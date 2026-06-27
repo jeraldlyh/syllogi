@@ -179,10 +179,7 @@ const HeroSection = ({ data }: { data: ArtistInfo }): React.JSX.Element => {
 };
 
 const RecordingsSection = ({ data }: { data: ArtistInfo }) => {
-  const recordings = data.recordings.filter(
-    (artist, index, arr) =>
-      arr.findIndex((recording) => recording.title === artist.title) === index,
-  );
+  const recordings = data.recordings ?? [];
   const artistName = data.artist ? data.artist.name : "";
 
   const { data: downloadSessions, mutate: refreshDownloads } =
