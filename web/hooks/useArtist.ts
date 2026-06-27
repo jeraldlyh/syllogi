@@ -22,6 +22,8 @@ export interface ArtistMetadata {
   begin_area: string | null;
   tags: string[];
   aliases: string[];
+  image_url: string | null;
+  num_of_fans: number | null;
 }
 
 export interface ArtistInfo {

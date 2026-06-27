@@ -12,19 +12,19 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { ArtistRecording, useArtist, type ArtistInfo } from "@/hooks/useArtist";
-import { api } from "@/lib/api";
-import { Dot, Download, Loader2 } from "lucide-react";
-import { motion, useReducedMotion } from "motion/react";
-import React from "react";
-import { toast } from "sonner";
 import {
   DownloadSession,
   useDownloadSessions,
 } from "@/hooks/useDownloadSessions";
-import { StatusBadge } from "../common/status-badge";
-import { ChartBadge } from "./chart-badge";
+import { api } from "@/lib/api";
+import { formatDuration } from "@/lib/utils";
+import { Dot, Download, Loader2 } from "lucide-react";
+import { motion, useReducedMotion } from "motion/react";
+import Image from "next/image";
+import React from "react";
+import { toast } from "sonner";
 import { Button } from "../ui/button";
-import { cn } from "@/lib/utils";
+import { ChartBadge } from "./chart-badge";
 
 const containerVariants = {
   hidden: { opacity: 0 },
@@ -109,6 +109,10 @@ const HeroSection = ({ data }: { data: ArtistInfo }): React.JSX.Element => {
   if (artist.country) metadataItems.push(artist.country);
   if (artist.type) metadataItems.push(artist.type);
   if (artist.gender) metadataItems.push(artist.gender);
+  if (artist.num_of_fans)
+    metadataItems.push(`${artist.num_of_fans.toLocaleString()} fans`);
+  // if (artist.area) metadataItems.push(artist.area);
+  // if (artist.begin_area) metadataItems.push(artist.begin_area);
 
   const activeYears = artist.life_span?.begin
     ? `${artist.life_span.begin} till ${artist.life_span.end ? `${artist.life_span.end}` : "present"}`
@@ -121,15 +125,33 @@ const HeroSection = ({ data }: { data: ArtistInfo }): React.JSX.Element => {
       transition={{ duration: 0.6, ease: "easeOut" as const }}
     >
       <div className="shrink-0">
-        <div className="flex h-64 w-64 items-center justify-center rounded-2xl bg-secondary">
-          <span className="text-6xl font-bold text-muted-foreground">
-            {artist.name.charAt(0).toUpperCase()}
-          </span>
-        </div>
+        {artist.image_url ? (
+          <Image
+            src={artist.image_url}
+            alt={artist.name}
+            width={256}
+            height={256}
+            className="h-64 w-64 rounded-2xl object-cover"
+            priority
+          />
+        ) : (
+          <div className="flex h-64 w-64 items-center justify-center rounded-2xl bg-secondary">
+            <span className="text-6xl font-bold text-muted-foreground">
+              {artist.name.charAt(0).toUpperCase()}
+            </span>
+          </div>
+        )}
       </div>
       <div className="flex flex-1 flex-col justify-center gap-4">
         <div>
-          <h1 className="text-4xl font-bold tracking-tight">{artist.name}</h1>
+          <div className="flex flex-wrap items-baseline gap-x-3">
+            <h1 className="text-4xl font-bold tracking-tight">{artist.name}</h1>
+            {artist.aliases && artist.aliases.length > 0 && (
+              <span className="text-sm text-muted-foreground/60 truncate max-w-[200px] sm:max-w-none">
+                (aka {artist.aliases.join(", ")})
+              </span>
+            )}
+          </div>
           {metadataItems.length > 0 && (
             <div className="flex mt-1 text-sm text-muted-foreground">
               {metadataItems.map((item) => (
@@ -151,30 +173,17 @@ const HeroSection = ({ data }: { data: ArtistInfo }): React.JSX.Element => {
             ))}
           </div>
         )}
-        {artist.aliases && artist.aliases.length > 0 && (
-          <p className="text-sm text-muted-foreground">
-            Also known as: {artist.aliases.slice(0, 5).join(", ")}
-          </p>
-        )}
-        {artist.area && (
-          <div className="flex text-sm text-muted-foreground">
-            <p>Area: {artist.area}</p>
-            {artist.begin_area && (
-              <>
-                <Dot className="-mx-1" />
-                <p>Began in: {artist.begin_area}</p>
-              </>
-            )}
-          </div>
-        )}
       </div>
     </motion.div>
   );
 };
 
 const RecordingsSection = ({ data }: { data: ArtistInfo }) => {
-  const recordings = data.recordings ?? [];
-  const artistName = data.artist?.name ?? "";
+  const recordings = data.recordings.filter(
+    (artist, index, arr) =>
+      arr.findIndex((recording) => recording.title === artist.title) === index,
+  );
+  const artistName = data.artist ? data.artist.name : "";
 
   const { data: downloadSessions, mutate: refreshDownloads } =
     useDownloadSessions();
@@ -185,9 +194,9 @@ const RecordingsSection = ({ data }: { data: ArtistInfo }) => {
     if (!downloadSessions || !data.artist) return null;
 
     const session = downloadSessions.find(
-      (s: DownloadSession) =>
-        s.artist_name.toLowerCase() === artistName.toLowerCase() &&
-        s.track_name.toLowerCase() === recording.title.toLowerCase(),
+      (session: DownloadSession) =>
+        session.artist_name.toLowerCase() === artistName.toLowerCase() &&
+        session.track_name.toLowerCase() === recording.title.toLowerCase(),
     );
 
     return session ? session.status : null;
@@ -292,7 +301,7 @@ const RecordingsSection = ({ data }: { data: ArtistInfo }) => {
                       </div>
                     </TableCell>
                     <TableCell className="text-right font-mono text-xs text-muted-foreground">
-                      {recording.duration}
+                      {formatDuration(recording.duration)}
                     </TableCell>
                     <TableCell>{renderAction(recording)}</TableCell>
                   </TableRow>

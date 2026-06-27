@@ -29,8 +29,8 @@ export const convertSnakeCaseToTitleCase = (value: string): string => {
     .map((word) => capitaliseFirstLetter(word))
     .join(" ");
 };
-export const formatDuration = (seconds: number): string => {
-  if (seconds < 0) seconds = 0;
+export const formatDuration = (seconds: number | null): string => {
+  if (!seconds || seconds < 0) seconds = 0;
 
   const hour = Math.floor(seconds / 3600);
   const minute = Math.floor((seconds % 3600) / 60);
