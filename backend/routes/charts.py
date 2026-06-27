@@ -23,7 +23,7 @@ router = APIRouter()
 class DownloadTrackRequest(BaseModel):
     artist_name: str = Field(min_length=1)
     track_name: str = Field(min_length=1)
-    image_url: str = Field(min_length=1, max_length=2048)
+    image_url: str = Field(default="", max_length=2048)
 
 
 @router.get(
