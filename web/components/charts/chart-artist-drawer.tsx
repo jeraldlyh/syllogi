@@ -18,7 +18,7 @@ import {
 } from "@/hooks/useDownloadSessions";
 import { api } from "@/lib/api";
 import { formatDuration } from "@/lib/utils";
-import { Dot, Download, Loader2 } from "lucide-react";
+import { Dot, Download, Loader2, RotateCcw } from "lucide-react";
 import { motion, useReducedMotion } from "motion/react";
 import Image from "next/image";
 import React from "react";
@@ -154,11 +154,11 @@ const HeroSection = ({ data }: { data: ArtistInfo }): React.JSX.Element => {
           </div>
           {metadataItems.length > 0 && (
             <div className="flex mt-1 text-sm text-muted-foreground">
-              {metadataItems.map((item) => (
-                <>
+              {metadataItems.map((item, i) => (
+                <div key={`${item}-${i}`}>
                   <p>{item}</p>
                   <Dot className="-mx-1" />
-                </>
+                </div>
               ))}
               {activeYears && <span>{activeYears}</span>}
             </div>
@@ -247,17 +247,23 @@ const RecordingsSection = ({ data }: { data: ArtistInfo }) => {
       return <Loader2 className="h-4 w-4 animate-spin text-amber-400" />;
     }
 
-    if (status === "completed") {
-      return <ChartBadge isDownloading={false} isExist />;
+    if (recording.exists) {
+      return null;
     }
+
+    const isFailed = status === "failed";
 
     return (
       <Button
         type="button"
         onClick={() => handleDownload(recording)}
-        variant={status === "failed" ? "destructive" : "default"}
+        variant={isFailed ? "destructive" : "ghost"}
       >
-        <Download className="h-4 w-4" />
+        {isFailed ? (
+          <RotateCcw className="h-4 w-4" />
+        ) : (
+          <Download className="h-4 w-4" />
+        )}
       </Button>
     );
   };
@@ -280,29 +286,34 @@ const RecordingsSection = ({ data }: { data: ArtistInfo }) => {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {recordings.map((recording, i) => (
-                  <TableRow key={`${recording.title}-${i}`}>
-                    <TableCell className="font-mono text-xs text-muted-foreground">
-                      {i + 1}
-                    </TableCell>
-                    <TableCell>
-                      <div className="flex flex-col">
-                        <span className="truncate text-sm font-medium">
-                          {recording.title}
-                        </span>
-                        {recording.disambiguation && (
-                          <span className="truncate text-xs text-muted-foreground">
-                            {recording.disambiguation}
+                {recordings.map((recording, i) => {
+                  const status = getRecordingStatus(recording);
+
+                  return (
+                    <TableRow key={`${recording.title}-${i}`}>
+                      <TableCell className="font-mono text-xs text-muted-foreground">
+                        {i + 1}
+                      </TableCell>
+                      <TableCell>
+                        <div className="flex flex-col gap-1">
+                          <span className="truncate text-sm font-medium">
+                            {recording.title}
                           </span>
-                        )}
-                      </div>
-                    </TableCell>
-                    <TableCell className="text-right font-mono text-xs text-muted-foreground">
-                      {formatDuration(recording.duration)}
-                    </TableCell>
-                    <TableCell>{renderAction(recording)}</TableCell>
-                  </TableRow>
-                ))}
+                          <ChartBadge
+                            isExist={recording.exists}
+                            isDownloading={
+                              status === "pending" || status === "downloading"
+                            }
+                          />
+                        </div>
+                      </TableCell>
+                      <TableCell className="text-right font-mono text-xs text-muted-foreground">
+                        {formatDuration(recording.duration)}
+                      </TableCell>
+                      <TableCell>{renderAction(recording)}</TableCell>
+                    </TableRow>
+                  );
+                })}
               </TableBody>
             </Table>
           </div>

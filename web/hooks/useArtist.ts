@@ -5,7 +5,7 @@ import useSWR from "swr";
 export interface ArtistRecording {
   title: string;
   duration: number | null;
-  disambiguation: string;
+  exists: boolean;
 }
 
 export interface ArtistMetadata {

@@ -9,6 +9,11 @@ class ArtistRecording:
     duration_ms: int | None
     disambiguation: str
 
+    def get_duration(self) -> int:
+        if not self.duration_ms:
+            return 0
+        return self.duration_ms // 1000
+
     def to_dict(self) -> dict[str, str | int | None]:
         return {
             "title": self.title,
@@ -19,10 +24,10 @@ class ArtistRecording:
     def __eq__(self, other):
         if not isinstance(other, ArtistRecording):
             return NotImplemented
-        return self.title == other.title
+        return self.title.casefold() == other.title.casefold()
 
     def __hash__(self):
-        return hash(self.title)
+        return hash(self.title.casefold())
 
 
 @dataclass

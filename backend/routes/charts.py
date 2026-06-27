@@ -14,7 +14,7 @@ from lib.providers import get_provider
 from lib.providers.metadata.deezer import DeezerMetadataProvider
 from lib.providers.metadata.musicbrainz import MusicBrainzMetadataProvider
 from lib.providers.recommendation.lastfm import LastFMRecommendationProvider
-from lib.track import is_track_in_provider
+from lib.track import find_track, is_track_in_provider
 
 logger = logging.getLogger(__name__)
 
@@ -176,12 +176,12 @@ async def _get_download_sessions(session: SessionDep) -> list[dict]:
                             {
                                 "title": "Creep",
                                 "duration": 238,
-                                "disambiguation": "",
+                                "exists": False,
                             },
                             {
                                 "title": "Karma Police",
                                 "duration": 264,
-                                "disambiguation": "",
+                                "exists": True,
                             },
                         ],
                     },
@@ -202,19 +202,49 @@ async def _get_artist_info(artist_name: str) -> dict:
     mb_provider = MusicBrainzMetadataProvider()
     deezer_provider = DeezerMetadataProvider()
 
-    artist_info = await mb_provider.get_artist_info(artist_name)
+    artist_info = await mb_provider.get_artist_info(artist_name=artist_name)
 
     if not artist_info:
         return {"artist": None, "recordings": []}
 
-    recordings = await mb_provider.get_artist_recordings(artist_info.id, limit=20)
+    recordings = await mb_provider.get_artist_recordings(
+        artist_mbid=artist_info.id, limit=20
+    )
+    provider = get_provider()
+
+    track_existence = await asyncio.gather(
+        *[
+            find_track(
+                provider=provider,
+                artist_name=artist_name,
+                track_name=recording.title,
+                album_name="",
+                year="",
+                duration=recording.get_duration(),
+            )
+            for recording in recordings
+        ],
+        return_exceptions=True,
+    )
 
     deezer_info = await deezer_provider.get_artist_info(artist_name)
+
     if deezer_info:
         artist_info.image_url = deezer_info.image_url
         artist_info.num_of_fans = deezer_info.num_of_fans
 
     return {
         "artist": artist_info.to_dict(),
-        "recordings": [recording.to_dict() for recording in recordings],
+        "recordings": [
+            {
+                "title": recording.title,
+                "duration": recording.get_duration(),
+                "exists": (
+                    not provider_track.is_not_found()
+                    if not isinstance(provider_track, BaseException)
+                    else False
+                ),
+            }
+            for recording, provider_track in zip(recordings, track_existence)
+        ],
     }
