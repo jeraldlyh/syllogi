@@ -147,7 +147,7 @@ const HeroSection = ({ data }: { data: ArtistInfo }): React.JSX.Element => {
           <div className="flex flex-wrap items-baseline gap-x-3">
             <h1 className="text-4xl font-bold tracking-tight">{artist.name}</h1>
             {artist.aliases && artist.aliases.length > 0 && (
-              <span className="text-sm text-muted-foreground/60 truncate max-w-[200px] sm:max-w-none">
+              <span className="text-sm text-muted-foreground/60 truncate max-w-[200px] md:max-w-none">
                 (aka {artist.aliases.join(", ")})
               </span>
             )}
@@ -155,7 +155,7 @@ const HeroSection = ({ data }: { data: ArtistInfo }): React.JSX.Element => {
           {metadataItems.length > 0 && (
             <div className="flex mt-1 text-sm text-muted-foreground">
               {metadataItems.map((item, i) => (
-                <div key={`${item}-${i}`}>
+                <div className="flex" key={`${item}-${i}`}>
                   <p>{item}</p>
                   <Dot className="-mx-1" />
                 </div>
