@@ -116,12 +116,14 @@ class MusicBrainzMetadataProvider(MetadataSourceProvider):
     async def get_artist_recordings(
         self,
         artist_mbid: str,
-        limit: int,
     ) -> list[ArtistRecording]:
         """Fetch recordings by artist MusicBrainz ID."""
 
         result = await self._http(
-            f"/artist/{artist_mbid}", params={"inc": "recordings", "limit": limit}
+            f"/artist/{artist_mbid}",
+            params={
+                "inc": "recordings",
+            },
         )
 
         if not result:
@@ -129,6 +131,8 @@ class MusicBrainzMetadataProvider(MetadataSourceProvider):
 
         unique = set()
         for recording in result.get("recordings", []):
+            if not recording.get("length"):
+                continue
             unique.add(
                 ArtistRecording(
                     title=recording.get("title", ""),

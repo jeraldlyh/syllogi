@@ -207,9 +207,7 @@ async def _get_artist_info(artist_name: str) -> dict:
     if not artist_info:
         return {"artist": None, "recordings": []}
 
-    recordings = await mb_provider.get_artist_recordings(
-        artist_mbid=artist_info.id, limit=20
-    )
+    recordings = await mb_provider.get_artist_recordings(artist_mbid=artist_info.id)
     provider = get_provider()
 
     track_existence = await asyncio.gather(
