@@ -51,6 +51,5 @@ async def slskd_health():
     try:
         await _slskd("/health")
         return {"configured": True, "connected": True}
-    except Exception as e:
-        raise e
+    except Exception:
         return {"configured": True, "connected": False}
