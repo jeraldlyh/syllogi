@@ -58,8 +58,10 @@ class MusicbrainzArtist:
     aliases: list[MusicbrainzArtistAlias]
     tags: list[MusicbrainzArtistTag]
 
-    def to_artist_info(self) -> ArtistInfo:
-        """Convert to ArtistInfo"""
+    def to_artist_info(self, locale: str | None = None) -> ArtistInfo:
+        """Convert to ArtistInfo."""
+
+        aliases = self._get_aliases_by_locale(locale)
         return ArtistInfo(
             id=self.id,
             name=self.name,
@@ -70,5 +72,26 @@ class MusicbrainzArtist:
             area=self.area.name if self.area else None,
             begin_area=self.begin_area.name if self.begin_area else None,
             tags=[tag.name for tag in self.tags],
-            aliases=[alias.name for alias in self.aliases],
+            aliases=aliases,
         )
+
+    def _get_aliases_by_locale(self, locale: str | None = None) -> list[str]:
+        """Filter aliases by locale, falling back to all aliases."""
+
+        if not locale:
+            return [alias.name for alias in self.aliases]
+
+        lang = locale.split("-")[0]
+        matches = [
+            alias.name
+            for alias in self.aliases
+            if alias.locale
+            and (
+                alias.locale.casefold() != locale.casefold()
+                or lang.casefold() != locale.casefold()
+            )
+        ]
+
+        if matches:
+            return matches
+        return [alias.name for alias in self.aliases]

@@ -10,6 +10,7 @@ class MetadataSourceProvider(ABC):
     async def get_artist_info(
         self,
         artist_name: str,
+        locale: str | None = None,
     ) -> ArtistInfo | None:
         """Get artist metadata by name.
 

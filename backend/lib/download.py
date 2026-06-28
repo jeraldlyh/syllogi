@@ -197,21 +197,14 @@ async def download_single_track(
             download_session.status = DownloadSessionStatus.downloading
             update_download_session(session, download_session)
 
-            found, missing = await download_missing_tracks([track])
-            is_exist = len(found) == 0 and len(missing) == 0
+            found, _ = await download_missing_tracks([track])
 
-            if found or is_exist:
+            if found:
                 await provider.rescan_library()
-
-            if not found and not is_exist:
-                raise HTTPException(
-                    status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-                    detail="Failed to download track",
-                )
 
             download_session.status = (
                 DownloadSessionStatus.completed
-                if (found or is_exist)
+                if found
                 else DownloadSessionStatus.failed
             )
             download_session.finished_at = get_now()

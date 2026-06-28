@@ -198,11 +198,16 @@ async def _get_download_sessions(session: SessionDep) -> list[dict]:
         },
     },
 )
-async def _get_artist_info(artist_name: str) -> dict:
+async def _get_artist_info(
+    artist_name: str,
+    locale: str | None = Query(default=None, description="Browser locale for alias filtering"),
+) -> dict:
     mb_provider = MusicBrainzMetadataProvider()
     deezer_provider = DeezerMetadataProvider()
 
-    artist_info = await mb_provider.get_artist_info(artist_name=artist_name)
+    artist_info = await mb_provider.get_artist_info(
+        artist_name=artist_name, locale=locale
+    )
 
     if not artist_info:
         return {"artist": None, "recordings": []}

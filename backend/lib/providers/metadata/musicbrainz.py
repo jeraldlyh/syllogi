@@ -145,6 +145,7 @@ class MusicBrainzMetadataProvider(MetadataSourceProvider):
     async def get_artist_info(
         self,
         artist_name: str,
+        locale: str | None = None,
     ) -> ArtistInfo | None:
         """Search MusicBrainz for artist by name."""
 
@@ -152,7 +153,7 @@ class MusicBrainzMetadataProvider(MetadataSourceProvider):
 
         if not results:
             return None
-        return results[0].to_artist_info()
+        return results[0].to_artist_info(locale=locale)
 
     async def get_artist_alias(self, artist_name: str) -> str | None:
         """Get artist actual name using MusicBrainz.

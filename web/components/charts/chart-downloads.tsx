@@ -1,6 +1,4 @@
 "use client";
-import { Music2 } from "lucide-react";
-import Image from "next/image";
 import { Text } from "@/components/common/text";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -17,6 +15,7 @@ import {
   useDownloadSessions,
 } from "@/hooks/useDownloadSessions";
 import { cn, formatDateTime } from "@/lib/utils";
+import { Music2 } from "lucide-react";
 
 const DownloadStatusBadge = ({
   status,

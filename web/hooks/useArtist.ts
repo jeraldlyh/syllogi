@@ -31,9 +31,9 @@ export interface ArtistInfo {
   recordings: ArtistRecording[];
 }
 
-export const useArtist = (artistName: string) => {
+export const useArtist = (artistName: string, locale?: string) => {
   const { data, error, isLoading } = useSWR<ApiResponse<ArtistInfo>>(
-    `/charts/artist/${encodeURIComponent(artistName)}`,
+    `/charts/artist/${encodeURIComponent(artistName)}${locale ? `?locale=${encodeURIComponent(locale)}` : ""}`,
     fetcher,
     {
       revalidateOnFocus: false,

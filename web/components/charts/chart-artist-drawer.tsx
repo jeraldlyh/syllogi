@@ -332,7 +332,9 @@ const RecordingsSection = ({ data }: { data: ArtistInfo }) => {
 };
 
 const ArtistContent = ({ artistName }: { artistName: string }) => {
-  const { data, isLoading, isError } = useArtist(artistName);
+  const locale =
+    typeof navigator !== "undefined" ? navigator.language : undefined;
+  const { data, isLoading, isError } = useArtist(artistName, locale);
   const shouldReduceMotion = useReducedMotion();
 
   if (isLoading) {
