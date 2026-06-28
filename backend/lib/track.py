@@ -8,7 +8,7 @@ from lib.models.common import (
 )
 from lib.models.lastfm import LastFMChartTrack
 from lib.models.provider import ProviderTrack
-from lib.providers.base import MusicPlaylistProvider
+from lib.providers.playlist.base import MusicPlaylistProvider
 from lib.utils import get_clean_name
 
 logger = logging.getLogger(__name__)
@@ -81,6 +81,9 @@ def _score_track(
     )
 
 
+MIN_MATCH_SCORE = 0.5
+
+
 async def find_track(
     provider: MusicPlaylistProvider,
     artist_name: str,
@@ -106,6 +109,7 @@ async def find_track(
             logger.warning(
                 f"Skipping track with missing name: {artist_name} {album_name})"
             )
+            continue
 
         score = _score_track(
             track=provider_track,
@@ -119,7 +123,7 @@ async def find_track(
             best_score = score
             best_match = provider_track
 
-    if best_match:
+    if best_match and best_score >= MIN_MATCH_SCORE:
         return best_match
     return ProviderTrack(
         id="",

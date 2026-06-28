@@ -11,8 +11,10 @@ from db.session import SessionDep
 from lib.download import download_single_track
 from lib.models.common import ExternalTrack
 from lib.providers import get_provider
-from lib.providers.lastfm import LastFMRecommendationProvider
-from lib.track import is_track_in_provider
+from lib.providers.metadata.deezer import DeezerMetadataProvider
+from lib.providers.metadata.musicbrainz import MusicBrainzMetadataProvider
+from lib.providers.recommendation.lastfm import LastFMRecommendationProvider
+from lib.track import find_track, is_track_in_provider
 
 logger = logging.getLogger(__name__)
 
@@ -22,7 +24,7 @@ router = APIRouter()
 class DownloadTrackRequest(BaseModel):
     artist_name: str = Field(min_length=1)
     track_name: str = Field(min_length=1)
-    image_url: str = Field(min_length=1, max_length=2048)
+    image_url: str = Field(default="", max_length=2048)
 
 
 @router.get(
@@ -143,3 +145,110 @@ async def _download_track(
 async def _get_download_sessions(session: SessionDep) -> list[dict]:
     downloads = get_download_sessions(session, limit=20)
     return [download.to_dict() for download in downloads]
+
+
+@router.get(
+    path="/artist/{artist_name}",
+    summary="Get artist metadata",
+    description="Retrieve artist metadata and recordings from MusicBrainz by artist name. Returns artist: null when not found.",
+    responses={
+        200: {
+            "description": "Artist metadata (or null if not found)",
+            "content": {
+                "application/json": {
+                    "examples": {
+                        "found": {
+                            "summary": "Artist found",
+                            "value": {
+                                "artist": {
+                                    "id": "a74b1b7f-71a5-4028-9831-c43e3266b76e",
+                                    "name": "Radiohead",
+                                    "type": "Group",
+                                    "country": "GB",
+                                    "gender": "",
+                                    "life_span": {
+                                        "begin": "1985",
+                                        "end": None,
+                                    },
+                                    "area": "United Kingdom",
+                                    "begin_area": "Abingdon",
+                                    "tags": ["alternative rock", "art rock", "electronic"],
+                                    "aliases": ["On a Friday"],
+                                },
+                                "recordings": [
+                                    {
+                                        "title": "Creep",
+                                        "duration": 238,
+                                        "exists": False,
+                                    },
+                                    {
+                                        "title": "Karma Police",
+                                        "duration": 264,
+                                        "exists": True,
+                                    },
+                                ],
+                            },
+                        },
+                        "not_found": {
+                            "summary": "Artist not found",
+                            "value": {"artist": None, "recordings": []},
+                        },
+                    },
+                }
+            },
+        },
+    },
+)
+async def _get_artist_info(
+    artist_name: str,
+    locale: str | None = Query(default=None, description="Browser locale (e.g. en-US, ja). Excludes aliases matching the user's language."),
+) -> dict:
+    mb_provider = MusicBrainzMetadataProvider()
+    deezer_provider = DeezerMetadataProvider()
+
+    artist_info = await mb_provider.get_artist_info(
+        artist_name=artist_name, locale=locale
+    )
+
+    if not artist_info:
+        return {"artist": None, "recordings": []}
+
+    recordings = await mb_provider.get_artist_recordings(artist_mbid=artist_info.id)
+    provider = get_provider()
+
+    track_existence = await asyncio.gather(
+        *[
+            find_track(
+                provider=provider,
+                artist_name=artist_name,
+                track_name=recording.title,
+                album_name="",
+                year="",
+                duration=recording.get_duration(),
+            )
+            for recording in recordings
+        ],
+        return_exceptions=True,
+    )
+
+    deezer_info = await deezer_provider.get_artist_info(artist_name)
+
+    if deezer_info:
+        artist_info.image_url = deezer_info.image_url
+        artist_info.num_of_fans = deezer_info.num_of_fans
+
+    return {
+        "artist": artist_info.to_dict(),
+        "recordings": [
+            {
+                "title": recording.title,
+                "duration": recording.get_duration(),
+                "exists": (
+                    not provider_track.is_not_found()
+                    if not isinstance(provider_track, BaseException)
+                    else False
+                ),
+            }
+            for recording, provider_track in zip(recordings, track_existence)
+        ],
+    }

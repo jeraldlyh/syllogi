@@ -18,11 +18,11 @@ from lib.models.slskd import (
     SlskdTrackCandidate,
 )
 from lib.env import get_environment_variable
-from lib.musicbrainz import get_artist_alias
+from lib.providers.metadata.musicbrainz import MusicBrainzMetadataProvider
 from lib.utils import (
     find_downloaded_file,
     get_download_path,
-    is_track_exists,
+    is_track_exists_in_path,
     set_media_permissions,
 )
 
@@ -64,9 +64,14 @@ async def _slskd(
         )
         response.raise_for_status()
 
-        if response.content:
+        if not response.content:
+            return None
+
+        content_type = response.headers.get("content-type", "")
+
+        if "application/json" in content_type:
             return response.json()
-        return None
+        return response.text
 
 
 async def _search_slskd_track(search_text: str) -> str:
@@ -323,7 +328,7 @@ async def _rename_slskd_download(
 
     Returns True if the file exists at the correct location after the operation.
     """
-    if is_track_exists(
+    if is_track_exists_in_path(
         artist_name=artist_name, track_name=track_name, album_name=album_name
     ):
         logger.info(
@@ -373,7 +378,7 @@ async def _rename_slskd_download(
     download_dir = Path(str(get_environment_variable("DOWNLOAD_DIR")))
     _cleanup_empty_dirs(src=old_dir, dest=download_dir)
 
-    return is_track_exists(
+    return is_track_exists_in_path(
         artist_name=artist_name, track_name=track_name, album_name=album_name
     )
 
@@ -480,7 +485,8 @@ async def download_track_slskd(
         if not results:
             await _delete_slskd_search(search_id)
 
-            artist_alias = await get_artist_alias(artist_name)
+            musicbrainz = MusicBrainzMetadataProvider()
+            artist_alias = await musicbrainz.get_artist_alias(artist_name)
 
             if not artist_alias or artist_alias.lower() == artist_name.lower():
                 logger.warning(f"No artist alias found for {artist_name}")

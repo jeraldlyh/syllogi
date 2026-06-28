@@ -1,6 +1,4 @@
 "use client";
-import { Music2 } from "lucide-react";
-import Image from "next/image";
 import { Text } from "@/components/common/text";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -17,6 +15,7 @@ import {
   useDownloadSessions,
 } from "@/hooks/useDownloadSessions";
 import { cn, formatDateTime } from "@/lib/utils";
+import { Music2 } from "lucide-react";
 
 const DownloadStatusBadge = ({
   status,
@@ -28,6 +27,7 @@ const DownloadStatusBadge = ({
     downloading: "Downloading",
     completed: "Completed",
     failed: "Failed",
+    existed: "Existed",
   };
 
   return (
@@ -41,6 +41,8 @@ const DownloadStatusBadge = ({
         "border-red-500/30 bg-red-500/10 text-red-400": status === "failed",
         "border-muted/30 bg-muted/10 text-muted-foreground":
           status === "pending",
+        "border-sky-500/30 bg-sky-500/10 text-sky-400":
+          status === "existed",
       })}
     >
       {labels[status]}
@@ -107,13 +109,6 @@ export const ChartDownloads = () => {
               <TableRow key={download.id}>
                 <TableCell>
                   <div className="flex items-center gap-3">
-                    <Image
-                      src={download.image_url}
-                      alt={download.track_name}
-                      width={36}
-                      height={36}
-                      className="rounded object-cover shrink-0 hidden md:block"
-                    />
                     <Text
                       value={download.track_name}
                       className="truncate max-w-[160px]"

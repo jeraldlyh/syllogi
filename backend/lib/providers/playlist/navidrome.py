@@ -7,13 +7,13 @@ from typing import Any
 import httpx
 
 from lib.env import get_environment_variable
-from lib.providers.base import MusicPlaylistProvider
 from lib.models.provider import (
     ProviderError,
     ProviderPlaylist,
     ProviderTrack,
     ProviderUser,
 )
+from lib.providers.playlist.base import MusicPlaylistProvider
 
 logger = logging.getLogger(__name__)
 
@@ -262,7 +262,8 @@ class NavidromeProvider(MusicPlaylistProvider):
         return None
 
     async def get_playlists(
-        self, *,
+        self,
+        *,
         user_id: str,
         username: str = "",
         password: str = "",
@@ -345,7 +346,8 @@ class NavidromeProvider(MusicPlaylistProvider):
         return playlist_id, user.id
 
     async def create_playlist(
-        self, *,
+        self,
+        *,
         playlist_name: str,
         user_id: str,
         is_public: bool = False,
@@ -371,7 +373,8 @@ class NavidromeProvider(MusicPlaylistProvider):
         )
 
     async def delete_playlist(
-        self, *,
+        self,
+        *,
         playlist_id: str,
         username: str = "",
         password: str = "",
@@ -387,7 +390,8 @@ class NavidromeProvider(MusicPlaylistProvider):
         )
 
     async def get_playlist_songs(
-        self, *,
+        self,
+        *,
         playlist_id: str,
         user_id: str,
         username: str = "",
@@ -422,7 +426,8 @@ class NavidromeProvider(MusicPlaylistProvider):
         ]
 
     async def add_songs_to_playlist(
-        self, *,
+        self,
+        *,
         playlist_id: str,
         user_id: str,
         track_ids: list[str],
@@ -443,7 +448,8 @@ class NavidromeProvider(MusicPlaylistProvider):
         )
 
     async def delete_songs_from_playlist(
-        self, *,
+        self,
+        *,
         playlist_id: str,
         entry_ids: list[str],
         username: str = "",
@@ -549,7 +555,8 @@ class NavidromeProvider(MusicPlaylistProvider):
         return bool(scan_status.get("scanning", False))
 
     async def wait_for_rescan(
-        self, *,
+        self,
+        *,
         poll_interval_seconds: int = 15,
         max_wait_seconds: int = 600,
     ) -> None:

@@ -16,6 +16,7 @@ class DownloadSessionStatus(str, enum.Enum):
     downloading = "downloading"
     completed = "completed"
     failed = "failed"
+    existed = "existed"
 
 
 class DownloadSession(TimestampMixin, SerializerMixin, SQLModel, table=True):
