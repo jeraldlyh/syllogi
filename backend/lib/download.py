@@ -15,10 +15,11 @@ from lib.slskd import download_track_slskd
 from lib.utils import (
     get_existing_track_path,
     get_now,
-    is_track_exists,
+    is_track_exists_in_path,
     is_track_lossless,
     truncate,
 )
+from lib.track import find_track
 from lib.youtube import download_track_youtube
 
 logger = logging.getLogger(__name__)
@@ -52,7 +53,7 @@ async def download_missing_tracks(
         else:
             formatted_name = f"{artist_name} {album_name}: {track_name}"
 
-        if is_track_exists(
+        if is_track_exists_in_path(
             artist_name=artist_name, track_name=track_name, album_name=album_name
         ):
             logger.info(f"{formatted_name}: ALREADY EXISTS")
@@ -131,7 +132,7 @@ async def upgrade_non_lossless_tracks(
         duration = int(track.duration_ticks / 10_000_000) if track.duration_ticks else 0
         formatted_name = f"{artist_name} - {album_name}: {track_name}"
 
-        if not is_track_exists(
+        if not is_track_exists_in_path(
             artist_name=artist_name, track_name=track_name, album_name=album_name
         ):
             continue
@@ -197,16 +198,35 @@ async def download_single_track(
             download_session.status = DownloadSessionStatus.downloading
             update_download_session(session, download_session)
 
-            found, _ = await download_missing_tracks([track])
-
-            if found:
-                await provider.rescan_library()
-
-            download_session.status = (
-                DownloadSessionStatus.completed
-                if found
-                else DownloadSessionStatus.failed
+            is_exist_locally = is_track_exists_in_path(
+                artist_name=track.artist_name,
+                track_name=track.track_name,
+                album_name=track.album_name,
             )
+
+            if is_exist_locally:
+                provider_track = await find_track(
+                    provider=provider,
+                    artist_name=track.artist_name,
+                    track_name=track.track_name,
+                    album_name=track.album_name,
+                    year=track.year,
+                    duration=track.duration,
+                )
+                if provider_track.is_not_found():
+                    await provider.rescan_library()
+                download_session.status = DownloadSessionStatus.existed
+            else:
+                found, _ = await download_missing_tracks([track])
+                if found:
+                    await provider.rescan_library()
+
+                download_session.status = (
+                    DownloadSessionStatus.completed
+                    if found
+                    else DownloadSessionStatus.failed
+                )
+
             download_session.finished_at = get_now()
 
         except Exception as e:

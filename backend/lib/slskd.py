@@ -22,7 +22,7 @@ from lib.providers.metadata.musicbrainz import MusicBrainzMetadataProvider
 from lib.utils import (
     find_downloaded_file,
     get_download_path,
-    is_track_exists,
+    is_track_exists_in_path,
     set_media_permissions,
 )
 
@@ -328,7 +328,7 @@ async def _rename_slskd_download(
 
     Returns True if the file exists at the correct location after the operation.
     """
-    if is_track_exists(
+    if is_track_exists_in_path(
         artist_name=artist_name, track_name=track_name, album_name=album_name
     ):
         logger.info(
@@ -378,7 +378,7 @@ async def _rename_slskd_download(
     download_dir = Path(str(get_environment_variable("DOWNLOAD_DIR")))
     _cleanup_empty_dirs(src=old_dir, dest=download_dir)
 
-    return is_track_exists(
+    return is_track_exists_in_path(
         artist_name=artist_name, track_name=track_name, album_name=album_name
     )
 

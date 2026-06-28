@@ -88,7 +88,7 @@ class MusicbrainzArtist:
             if alias.locale
             and (
                 alias.locale.casefold() != locale.casefold()
-                or lang.casefold() != locale.casefold()
+                or alias.locale.casefold() != lang.casefold()
             )
         ]
 

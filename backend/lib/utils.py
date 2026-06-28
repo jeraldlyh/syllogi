@@ -114,7 +114,9 @@ def get_existing_track_path(
     return existing_paths[0] if existing_paths else None
 
 
-def is_track_exists(artist_name: str, track_name: str, album_name: str = "") -> bool:
+def is_track_exists_in_path(
+    artist_name: str, track_name: str, album_name: str = ""
+) -> bool:
     """Check if a track already exists at the download path."""
 
     existing_path = get_existing_track_path(

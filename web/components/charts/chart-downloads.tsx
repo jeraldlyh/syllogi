@@ -27,6 +27,7 @@ const DownloadStatusBadge = ({
     downloading: "Downloading",
     completed: "Completed",
     failed: "Failed",
+    existed: "Existed",
   };
 
   return (
@@ -40,6 +41,8 @@ const DownloadStatusBadge = ({
         "border-red-500/30 bg-red-500/10 text-red-400": status === "failed",
         "border-muted/30 bg-muted/10 text-muted-foreground":
           status === "pending",
+        "border-sky-500/30 bg-sky-500/10 text-sky-400":
+          status === "existed",
       })}
     >
       {labels[status]}
