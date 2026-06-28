@@ -244,7 +244,11 @@ const RecordingsSection = ({ data }: { data: ArtistInfo }) => {
     const status = getRecordingStatus(recording);
 
     if (status === "pending" || status === "downloading") {
-      return <Loader2 className="h-4 w-4 animate-spin text-amber-400" />;
+      return (
+        <Button disabled variant="ghost">
+          <Loader2 className="h-4 w-4 animate-spin text-amber-400" />
+        </Button>
+      );
     }
 
     if (recording.exists) {

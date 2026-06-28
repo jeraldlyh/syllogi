@@ -107,13 +107,6 @@ export const ChartDownloads = () => {
               <TableRow key={download.id}>
                 <TableCell>
                   <div className="flex items-center gap-3">
-                    <Image
-                      src={download.image_url}
-                      alt={download.track_name}
-                      width={36}
-                      height={36}
-                      className="rounded object-cover shrink-0 hidden md:block"
-                    />
                     <Text
                       value={download.track_name}
                       className="truncate max-w-[160px]"
