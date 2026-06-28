@@ -214,7 +214,7 @@ export const ChartTrending = () => {
                     <Button
                       onClick={() => setSelectedArtist(track.artist_name)}
                       variant="link"
-                      className="text-muted-foreground hover:text-primary transition-colors text-left"
+                      className="text-muted-foreground hover:text-primary transition-colors text-left px-0"
                     >
                       <Text value={track.artist_name} />
                     </Button>
