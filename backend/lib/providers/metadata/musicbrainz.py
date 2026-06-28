@@ -178,5 +178,6 @@ class MusicBrainzMetadataProvider(MetadataSourceProvider):
                     f"[{attempt}/{self.SEARCH_MAX_RETRIES}] Failed to search for artist '{artist_name}': {e}"
                 )
 
-            await asyncio.sleep(self.SEARCH_POLL_INTERVAL)
+            if attempt < self.SEARCH_MAX_RETRIES:
+                await asyncio.sleep(self.SEARCH_POLL_INTERVAL)
         return None

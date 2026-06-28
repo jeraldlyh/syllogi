@@ -150,49 +150,50 @@ async def _get_download_sessions(session: SessionDep) -> list[dict]:
 @router.get(
     path="/artist/{artist_name}",
     summary="Get artist metadata",
-    description="Retrieve artist metadata and recordings from MusicBrainz by artist name.",
+    description="Retrieve artist metadata and recordings from MusicBrainz by artist name. Returns artist: null when not found.",
     responses={
         200: {
-            "description": "Artist metadata retrieved successfully",
+            "description": "Artist metadata (or null if not found)",
             "content": {
                 "application/json": {
-                    "example": {
-                        "artist": {
-                            "id": "a74b1b7f-71a5-4028-9831-c43e3266b76e",
-                            "name": "Radiohead",
-                            "type": "Group",
-                            "country": "GB",
-                            "gender": "",
-                            "life_span": {
-                                "begin": "1985",
-                                "end": None,
+                    "examples": {
+                        "found": {
+                            "summary": "Artist found",
+                            "value": {
+                                "artist": {
+                                    "id": "a74b1b7f-71a5-4028-9831-c43e3266b76e",
+                                    "name": "Radiohead",
+                                    "type": "Group",
+                                    "country": "GB",
+                                    "gender": "",
+                                    "life_span": {
+                                        "begin": "1985",
+                                        "end": None,
+                                    },
+                                    "area": "United Kingdom",
+                                    "begin_area": "Abingdon",
+                                    "tags": ["alternative rock", "art rock", "electronic"],
+                                    "aliases": ["On a Friday"],
+                                },
+                                "recordings": [
+                                    {
+                                        "title": "Creep",
+                                        "duration": 238,
+                                        "exists": False,
+                                    },
+                                    {
+                                        "title": "Karma Police",
+                                        "duration": 264,
+                                        "exists": True,
+                                    },
+                                ],
                             },
-                            "area": "United Kingdom",
-                            "begin_area": "Abingdon",
-                            "tags": ["alternative rock", "art rock", "electronic"],
-                            "aliases": ["On a Friday"],
                         },
-                        "recordings": [
-                            {
-                                "title": "Creep",
-                                "duration": 238,
-                                "exists": False,
-                            },
-                            {
-                                "title": "Karma Police",
-                                "duration": 264,
-                                "exists": True,
-                            },
-                        ],
+                        "not_found": {
+                            "summary": "Artist not found",
+                            "value": {"artist": None, "recordings": []},
+                        },
                     },
-                }
-            },
-        },
-        404: {
-            "description": "Artist not found",
-            "content": {
-                "application/json": {
-                    "example": {"artist": None, "recordings": []},
                 }
             },
         },
@@ -200,7 +201,7 @@ async def _get_download_sessions(session: SessionDep) -> list[dict]:
 )
 async def _get_artist_info(
     artist_name: str,
-    locale: str | None = Query(default=None, description="Browser locale for alias filtering"),
+    locale: str | None = Query(default=None, description="Browser locale (e.g. en-US, ja). Excludes aliases matching the user's language."),
 ) -> dict:
     mb_provider = MusicBrainzMetadataProvider()
     deezer_provider = DeezerMetadataProvider()
