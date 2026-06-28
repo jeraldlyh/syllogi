@@ -21,7 +21,7 @@ import { formatDuration } from "@/lib/utils";
 import { Dot, Download, Loader2, RotateCcw } from "lucide-react";
 import { motion, useReducedMotion } from "motion/react";
 import Image from "next/image";
-import React from "react";
+import React, { useState } from "react";
 import { toast } from "sonner";
 import { Button } from "../ui/button";
 import { ChartBadge } from "./chart-badge";
@@ -183,9 +183,15 @@ const HeroSection = ({ data }: { data: ArtistInfo }): React.JSX.Element => {
 const RecordingsSection = ({ data }: { data: ArtistInfo }) => {
   const recordings = data.recordings ?? [];
   const artistName = data.artist ? data.artist.name : "";
+  const [downloadingTracks, setDownloadingTracks] = useState<Set<string>>(
+    new Set(),
+  );
 
   const { data: downloadSessions, mutate: refreshDownloads } =
     useDownloadSessions();
+
+  const getRecordingKey = (recording: ArtistRecording): string =>
+    `${artistName.toLowerCase()}:${recording.title.toLowerCase()}`;
 
   const getRecordingStatus = (
     recording: ArtistRecording,
@@ -202,6 +208,12 @@ const RecordingsSection = ({ data }: { data: ArtistInfo }) => {
   };
 
   const handleDownload = async (recording: ArtistRecording): Promise<void> => {
+    const key = getRecordingKey(recording);
+
+    if (downloadingTracks.has(key)) return;
+
+    setDownloadingTracks((prev) => new Set(prev).add(key));
+
     const toastId = toast.loading(
       `Downloading ${artistName} - ${recording.title}...`,
     );
@@ -239,13 +251,21 @@ const RecordingsSection = ({ data }: { data: ArtistInfo }) => {
         description: `${artistName} - ${recording.title}`,
         id: toastId,
       });
+    } finally {
+      setDownloadingTracks((prev) => {
+        const remaining = new Set(prev);
+        remaining.delete(key);
+
+        return remaining;
+      });
     }
   };
 
   const renderAction = (recording: ArtistRecording) => {
     const status = getRecordingStatus(recording);
+    const isStarting = downloadingTracks.has(getRecordingKey(recording));
 
-    if (status === "pending" || status === "downloading") {
+    if (isStarting || status === "pending" || status === "downloading") {
       return (
         <Button disabled variant="ghost">
           <Loader2 className="h-4 w-4 animate-spin text-amber-400" />
