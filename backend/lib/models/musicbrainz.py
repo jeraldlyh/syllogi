@@ -76,20 +76,17 @@ class MusicbrainzArtist:
         )
 
     def _get_aliases_by_locale(self, locale: str | None = None) -> list[str]:
-        """Filter aliases by locale, falling back to all aliases."""
+        """Filter aliases by removing user's browser locale, falling back to all aliases."""
 
         if not locale:
             return [alias.name for alias in self.aliases]
 
-        lang = locale.split("-")[0]
+        lang = locale.split("-")[0].split("_")[0].lower()
         matches = [
             alias.name
             for alias in self.aliases
             if alias.locale
-            and (
-                alias.locale.casefold() != locale.casefold()
-                or alias.locale.casefold() != lang.casefold()
-            )
+            and not alias.locale.lower().replace("_", "-").startswith(lang)
         ]
 
         if matches:
