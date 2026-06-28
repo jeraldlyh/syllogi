@@ -64,9 +64,14 @@ async def _slskd(
         )
         response.raise_for_status()
 
-        if response.content:
+        if not response.content:
+            return None
+
+        content_type = response.headers.get("content-type", "")
+
+        if "application/json" in content_type:
             return response.json()
-        return None
+        return response.text
 
 
 async def _search_slskd_track(search_text: str) -> str:
