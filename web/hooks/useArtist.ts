@@ -6,6 +6,7 @@ export interface ArtistRecording {
   title: string;
   duration: number | null;
   exists: boolean;
+  album_name: string;
 }
 
 export interface ArtistMetadata {

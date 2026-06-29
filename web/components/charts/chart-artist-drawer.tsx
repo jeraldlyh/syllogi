@@ -23,8 +23,9 @@ import { motion, useReducedMotion } from "motion/react";
 import Image from "next/image";
 import React, { useState } from "react";
 import { toast } from "sonner";
-import { Button } from "../ui/button";
+import { Button } from "@/components/ui/button";
 import { ChartBadge } from "./chart-badge";
+import { Text } from "@/components/common/text";
 
 const containerVariants = {
   hidden: { opacity: 0 },
@@ -307,6 +308,7 @@ const RecordingsSection = ({ data }: { data: ArtistInfo }) => {
                 <TableRow className="hover:bg-transparent text-xs text-muted-foreground">
                   <TableHead className="w-10">#</TableHead>
                   <TableHead>Title</TableHead>
+                  <TableHead className="hidden md:table-cell">Album</TableHead>
                   <TableHead className="w-16 text-right">Duration</TableHead>
                   <TableHead className="w-10"></TableHead>
                 </TableRow>
@@ -333,8 +335,15 @@ const RecordingsSection = ({ data }: { data: ArtistInfo }) => {
                           />
                         </div>
                       </TableCell>
-                      <TableCell className="text-right font-mono text-xs text-muted-foreground">
-                        {formatDuration(recording.duration)}
+                      <TableCell className="hidden md:table-cell">
+                        <Text value={recording.album_name || ""} muted />
+                      </TableCell>
+                      <TableCell>
+                        <Text
+                          value={formatDuration(recording.duration)}
+                          muted
+                          noWrap
+                        />
                       </TableCell>
                       <TableCell>{renderAction(recording)}</TableCell>
                     </TableRow>
