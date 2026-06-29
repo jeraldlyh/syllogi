@@ -16,7 +16,7 @@ export const ChartBadge = ({
         variant="outline"
         className={cn(
           style,
-          "border-amber-500/30 bg-amber-500/10 text-amber-400",
+          "border-amber-500/50 bg-amber-500/80 text-amber-100",
         )}
       >
         Downloading
@@ -30,7 +30,7 @@ export const ChartBadge = ({
         variant="outline"
         className={cn(
           style,
-          "border-emerald-500/30 bg-emerald-500/10 text-emerald-400",
+          "border-emerald-500/50 bg-emerald-500/80 text-emerald-100",
         )}
       >
         In Library
