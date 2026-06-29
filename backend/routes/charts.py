@@ -62,7 +62,22 @@ async def _get_trending_tracks(
     ] = 50,
 ) -> list[dict]:
     provider = get_provider()
+    deezer_provider = DeezerMetadataProvider()
     tracks = await LastFMRecommendationProvider().get_chart_top_tracks(limit=limit)
+
+    deezer_images = await asyncio.gather(
+        *[
+            deezer_provider.get_track_image(
+                artist_name=track.artist_name,
+                track_name=track.track_name,
+            )
+            for track in tracks
+        ]
+    )
+
+    for track, image_url in zip(tracks, deezer_images):
+        if image_url:
+            track.image_url = image_url
 
     provider_statuses = await asyncio.gather(
         *[is_track_in_provider(provider, track) for track in tracks]
@@ -172,7 +187,11 @@ async def _get_download_sessions(session: SessionDep) -> list[dict]:
                                     },
                                     "area": "United Kingdom",
                                     "begin_area": "Abingdon",
-                                    "tags": ["alternative rock", "art rock", "electronic"],
+                                    "tags": [
+                                        "alternative rock",
+                                        "art rock",
+                                        "electronic",
+                                    ],
                                     "aliases": ["On a Friday"],
                                 },
                                 "recordings": [
@@ -201,7 +220,10 @@ async def _get_download_sessions(session: SessionDep) -> list[dict]:
 )
 async def _get_artist_info(
     artist_name: str,
-    locale: str | None = Query(default=None, description="Browser locale (e.g. en-US, ja). Excludes aliases matching the user's language."),
+    locale: str | None = Query(
+        default=None,
+        description="Browser locale (e.g. en-US, ja). Excludes aliases matching the user's language.",
+    ),
 ) -> dict:
     mb_provider = MusicBrainzMetadataProvider()
     deezer_provider = DeezerMetadataProvider()

@@ -93,3 +93,28 @@ class DeezerMetadataProvider(MetadataSourceProvider):
                 f"Failed to fetch Deezer recordings for artist '{artist_id}': {e}"
             )
             return []
+
+    async def get_track_image(
+        self,
+        artist_name: str,
+        track_name: str,
+    ) -> str | None:
+        """Search Deezer for a track and return its album cover URL."""
+
+        try:
+            result = await self._http(
+                "/search/track",
+                params={"q": f"{artist_name} {track_name}", "limit": 1},
+            )
+
+            if not result or not result.get("data"):
+                return None
+
+            album = result["data"][0].get("album", {})
+
+            return album.get("cover_big") or album.get("cover_medium")
+        except Exception as e:
+            logger.warning(
+                f"Failed to fetch Deezer track image for '{artist_name} - {track_name}': {e}"
+            )
+            return None
