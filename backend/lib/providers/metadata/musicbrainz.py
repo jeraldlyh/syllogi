@@ -138,6 +138,7 @@ class MusicBrainzMetadataProvider(MetadataSourceProvider):
                     title=recording.get("title", ""),
                     duration_ms=recording.get("length"),
                     disambiguation=recording.get("disambiguation", ""),
+                    album_name="",
                 )
             )
         return list(unique)

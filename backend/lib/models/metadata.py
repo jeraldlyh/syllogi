@@ -8,6 +8,7 @@ class ArtistRecording:
     title: str
     duration_ms: int | None
     disambiguation: str
+    album_name: str
 
     def get_duration(self) -> int:
         if not self.duration_ms:
@@ -19,6 +20,7 @@ class ArtistRecording:
             "title": self.title,
             "duration": self.duration_ms // 1000 if self.duration_ms else 0,
             "disambiguation": self.disambiguation,
+            "album_name": self.album_name,
         }
 
     def __eq__(self, other):

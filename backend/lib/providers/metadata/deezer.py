@@ -4,6 +4,7 @@ from typing import Any
 import httpx
 
 from lib.env import get_environment_variable
+from lib.models.deezer import DeezerTrack
 from lib.models.metadata import ArtistInfo, ArtistRecording
 from lib.providers.metadata.base import MetadataSourceProvider
 
@@ -85,6 +86,7 @@ class DeezerMetadataProvider(MetadataSourceProvider):
                     title=track.get("title", ""),
                     duration_ms=track.get("duration", 0) * 1000,
                     disambiguation="",
+                    album_name=track.get("album", {}).get("title", ""),
                 )
                 for track in result["data"]
             ]
@@ -94,12 +96,12 @@ class DeezerMetadataProvider(MetadataSourceProvider):
             )
             return []
 
-    async def get_track_image(
+    async def get_track(
         self,
         artist_name: str,
         track_name: str,
-    ) -> str | None:
-        """Search Deezer for a track and return its album cover URL."""
+    ) -> DeezerTrack | None:
+        """Search Deezer for a track and return its metadata."""
 
         try:
             result = await self._http(
@@ -110,11 +112,17 @@ class DeezerMetadataProvider(MetadataSourceProvider):
             if not result or not result.get("data"):
                 return None
 
-            album = result["data"][0].get("album", {})
+            track = result["data"][0]
+            album = track.get("album", {})
 
-            return album.get("cover_big") or album.get("cover_medium")
+            return DeezerTrack(
+                title=track.get("title", ""),
+                album_name=album.get("title", ""),
+                image_url=album.get("cover_big") or album.get("cover_medium"),
+                duration=track.get("duration", 0),
+            )
         except Exception as e:
             logger.warning(
-                f"Failed to fetch Deezer track image for '{artist_name} - {track_name}': {e}"
+                f"Failed to fetch Deezer track for '{artist_name} - {track_name}': {e}"
             )
             return None

@@ -65,9 +65,9 @@ async def _get_trending_tracks(
     deezer_provider = DeezerMetadataProvider()
     tracks = await LastFMRecommendationProvider().get_chart_top_tracks(limit=limit)
 
-    deezer_images = await asyncio.gather(
+    deezer_tracks = await asyncio.gather(
         *[
-            deezer_provider.get_track_image(
+            deezer_provider.get_track(
                 artist_name=track.artist_name,
                 track_name=track.track_name,
             )
@@ -75,9 +75,9 @@ async def _get_trending_tracks(
         ]
     )
 
-    for track, image_url in zip(tracks, deezer_images):
-        if image_url:
-            track.image_url = image_url
+    for track, deezer_track in zip(tracks, deezer_tracks):
+        if deezer_track and deezer_track.image_url:
+            track.image_url = deezer_track.image_url
 
     provider_statuses = await asyncio.gather(
         *[is_track_in_provider(provider, track) for track in tracks]
@@ -235,7 +235,27 @@ async def _get_artist_info(
     if not artist_info:
         return {"artist": None, "recordings": []}
 
-    recordings = await mb_provider.get_artist_recordings(artist_mbid=artist_info.id)
+    mb_recordings = await mb_provider.get_artist_recordings(artist_mbid=artist_info.id)
+    deezer_info = await deezer_provider.get_artist_info(artist_name=artist_name)
+
+    if deezer_info:
+        artist_info.image_url = deezer_info.image_url
+        artist_info.num_of_fans = deezer_info.num_of_fans
+
+    deezer_tracks = await asyncio.gather(
+        *[
+            deezer_provider.get_track(
+                artist_name=artist_name,
+                track_name=recording.title,
+            )
+            for recording in mb_recordings
+        ]
+    )
+
+    for recording, deezer_track in zip(mb_recordings, deezer_tracks):
+        if deezer_track:
+            recording.album_name = deezer_track.album_name
+
     provider = get_provider()
 
     track_existence = await asyncio.gather(
@@ -248,16 +268,10 @@ async def _get_artist_info(
                 year="",
                 duration=recording.get_duration(),
             )
-            for recording in recordings
+            for recording in mb_recordings
         ],
         return_exceptions=True,
     )
-
-    deezer_info = await deezer_provider.get_artist_info(artist_name)
-
-    if deezer_info:
-        artist_info.image_url = deezer_info.image_url
-        artist_info.num_of_fans = deezer_info.num_of_fans
 
     return {
         "artist": artist_info.to_dict(),
@@ -270,7 +284,8 @@ async def _get_artist_info(
                     if not isinstance(provider_track, BaseException)
                     else False
                 ),
+                "album_name": recording.album_name,
             }
-            for recording, provider_track in zip(recordings, track_existence)
+            for recording, provider_track in zip(mb_recordings, track_existence)
         ],
     }
