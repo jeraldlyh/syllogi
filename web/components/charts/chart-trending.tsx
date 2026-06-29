@@ -18,12 +18,14 @@ import {
 import { TrendingTrack, useTrendingTracks } from "@/hooks/useTrendingTracks";
 import { api } from "@/lib/api";
 import { formatDuration } from "@/lib/utils";
-import { Download, RefreshCw, Search } from "lucide-react";
+import { Download, LayoutGrid, List, RefreshCw, Search } from "lucide-react";
 import Image from "next/image";
 import { useState } from "react";
 import { toast } from "sonner";
 import { ChartArtistDrawer } from "./chart-artist-drawer";
 import { ChartBadge } from "./chart-badge";
+
+type ViewMode = "list" | "grid";
 
 export const ChartTrending = () => {
   const [search, setSearch] = useState("");
@@ -31,6 +33,7 @@ export const ChartTrending = () => {
   const [downloadingTracks, setDownloadingTracks] = useState<Set<string>>(
     new Set(),
   );
+  const [viewMode, setViewMode] = useState<ViewMode>("grid");
 
   const {
     data,
@@ -127,6 +130,134 @@ export const ChartTrending = () => {
             disabled={isLoading || !!isError}
           />
         </div>
+        <div className="flex items-center gap-1 rounded-md border border-border p-1">
+          <Button
+            variant={viewMode === "list" ? "secondary" : "ghost"}
+            size="icon"
+            className="h-7 w-7"
+            onClick={() => setViewMode("list")}
+          >
+            <List />
+          </Button>
+          <Button
+            variant={viewMode === "grid" ? "secondary" : "ghost"}
+            size="icon"
+            className="h-7 w-7"
+            onClick={() => setViewMode("grid")}
+          >
+            <LayoutGrid />
+          </Button>
+        </div>
+      </div>
+    );
+  };
+
+  const renderGrid = (): React.JSX.Element => {
+    if (isLoading) {
+      return (
+        <div className="flex items-center justify-center py-6">
+          <Text className="text-muted-foreground italic" value="Loading..." />
+        </div>
+      );
+    }
+
+    if (isError) {
+      return (
+        <div className="flex items-center justify-center py-6">
+          <Text
+            className="text-muted-foreground italic text-red-400"
+            value="Failed to load trending tracks"
+          />
+        </div>
+      );
+    }
+
+    if (getFilteredTracks().length === 0) {
+      return (
+        <div className="flex items-center justify-center py-6">
+          <Text
+            className="text-muted-foreground italic"
+            value={
+              data && data.length === 0
+                ? "No trending tracks available"
+                : "No tracks match your search"
+            }
+          />
+        </div>
+      );
+    }
+
+    return (
+      <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 max-h-96 overflow-auto pr-1">
+        {getFilteredTracks().map((track) => {
+          const key = getTrackKey(track);
+          const isDownloading =
+            downloadingTracks.has(key) || isTrackDownloading(track);
+          const isExist = track.exists;
+
+          return (
+            <div
+              key={key}
+              className="group relative flex flex-col overflow-hidden rounded-lg border border-border bg-card transition-colors hover:border-foreground/20"
+            >
+              <div className="relative aspect-square overflow-hidden bg-secondary">
+                {track.image_url ? (
+                  <Image
+                    src={track.image_url}
+                    alt={track.track_name}
+                    fill
+                    className="object-cover transition-transform duration-300 group-hover:scale-105"
+                  />
+                ) : (
+                  <div className="flex h-full items-center justify-center">
+                    <Text
+                      className="text-3xl font-bold text-muted-foreground/30"
+                      value={track.track_name.charAt(0).toUpperCase()}
+                    />
+                  </div>
+                )}
+                <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/70 to-transparent p-2.5">
+                  <Text
+                    className="text-xs text-white/90 truncate"
+                    value={formatDuration(track.duration)}
+                  />
+                </div>
+                <div className="absolute top-2 right-2">
+                  <ChartBadge isExist={isExist} isDownloading={isDownloading} />
+                </div>
+              </div>
+              <div className="flex flex-1 flex-col gap-1 p-3">
+                <Text
+                  className="truncate font-semibold"
+                  value={track.track_name}
+                />
+                <Button
+                  onClick={() => setSelectedArtist(track.artist_name)}
+                  variant="link"
+                  className="h-auto p-0 text-xs text-muted-foreground hover:text-primary justify-start"
+                >
+                  {track.artist_name}
+                </Button>
+                <div className="mt-auto flex items-center justify-between pt-2">
+                  <Text
+                    muted
+                    className="leading-tight"
+                    value={`${track.listeners.toLocaleString()} listeners`}
+                  />
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="h-6 w-6 text-muted-foreground hover:text-foreground"
+                    onClick={() => handleDownload(track)}
+                    disabled={isDownloading || isExist}
+                  >
+                    <Download />
+                  </Button>
+                </div>
+              </div>
+            </div>
+          );
+        })}
       </div>
     );
   };
@@ -272,7 +403,7 @@ export const ChartTrending = () => {
         </CardHeader>
         <CardContent>
           {renderTableHeader()}
-          {renderTable()}
+          {viewMode === "list" ? renderTable() : renderGrid()}
         </CardContent>
       </Card>
       <ChartArtistDrawer
