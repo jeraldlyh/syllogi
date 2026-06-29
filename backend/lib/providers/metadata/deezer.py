@@ -5,7 +5,7 @@ import httpx
 
 from lib.env import get_environment_variable
 from lib.models.deezer import DeezerTrack
-from lib.models.metadata import ArtistInfo, ArtistRecording
+from lib.models.metadata import ArtistInfo, ArtistTrack
 from lib.providers.metadata.base import MetadataSourceProvider
 
 logger = logging.getLogger(__name__)
@@ -70,7 +70,7 @@ class DeezerMetadataProvider(MetadataSourceProvider):
         self,
         artist_id: str,
         limit: int = 20,
-    ) -> list[ArtistRecording]:
+    ) -> list[ArtistTrack]:
         """Get top tracks for an artist from Deezer."""
 
         try:
@@ -82,7 +82,7 @@ class DeezerMetadataProvider(MetadataSourceProvider):
                 return []
 
             return [
-                ArtistRecording(
+                ArtistTrack(
                     title=track.get("title", ""),
                     duration_ms=track.get("duration", 0) * 1000,
                     disambiguation="",

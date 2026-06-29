@@ -11,7 +11,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { ArtistRecording, useArtist, type ArtistInfo } from "@/hooks/useArtist";
+import { ArtistTrack, useArtist, type ArtistInfo } from "@/hooks/useArtist";
 import {
   DownloadSession,
   useDownloadSessions,
@@ -191,11 +191,11 @@ const RecordingsSection = ({ data }: { data: ArtistInfo }) => {
   const { data: downloadSessions, mutate: refreshDownloads } =
     useDownloadSessions();
 
-  const getRecordingKey = (recording: ArtistRecording): string =>
+  const getRecordingKey = (recording: ArtistTrack): string =>
     `${artistName.toLowerCase()}:${recording.title.toLowerCase()}`;
 
   const getRecordingStatus = (
-    recording: ArtistRecording,
+    recording: ArtistTrack,
   ): DownloadSession["status"] | null => {
     if (!downloadSessions || !data.artist) return null;
 
@@ -208,7 +208,7 @@ const RecordingsSection = ({ data }: { data: ArtistInfo }) => {
     return session ? session.status : null;
   };
 
-  const handleDownload = async (recording: ArtistRecording): Promise<void> => {
+  const handleDownload = async (recording: ArtistTrack): Promise<void> => {
     const key = getRecordingKey(recording);
 
     if (downloadingTracks.has(key)) return;
@@ -262,7 +262,7 @@ const RecordingsSection = ({ data }: { data: ArtistInfo }) => {
     }
   };
 
-  const renderAction = (recording: ArtistRecording) => {
+  const renderAction = (recording: ArtistTrack) => {
     const status = getRecordingStatus(recording);
     const isStarting = downloadingTracks.has(getRecordingKey(recording));
 

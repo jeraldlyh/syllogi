@@ -11,7 +11,7 @@ from lib.models.musicbrainz import (
     MusicbrainzArtistArea,
     MusicbrainzArtistTag,
 )
-from lib.models.metadata import ArtistRecording
+from lib.models.metadata import ArtistTrack
 from lib.providers.metadata.base import (
     ArtistInfo,
     MetadataSourceProvider,
@@ -116,7 +116,7 @@ class MusicBrainzMetadataProvider(MetadataSourceProvider):
     async def get_artist_recordings(
         self,
         artist_mbid: str,
-    ) -> list[ArtistRecording]:
+    ) -> list[ArtistTrack]:
         """Fetch recordings by artist MusicBrainz ID."""
 
         result = await self._http(
@@ -134,7 +134,7 @@ class MusicBrainzMetadataProvider(MetadataSourceProvider):
             if not recording.get("length"):
                 continue
             unique.add(
-                ArtistRecording(
+                ArtistTrack(
                     title=recording.get("title", ""),
                     duration_ms=recording.get("length"),
                     disambiguation=recording.get("disambiguation", ""),

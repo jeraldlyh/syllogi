@@ -2,8 +2,8 @@ from dataclasses import dataclass
 
 
 @dataclass
-class ArtistRecording:
-    """A recording (track) by an artist."""
+class ArtistTrack:
+    """A track by an artist."""
 
     title: str
     duration_ms: int | None
@@ -24,7 +24,7 @@ class ArtistRecording:
         }
 
     def __eq__(self, other):
-        if not isinstance(other, ArtistRecording):
+        if not isinstance(other, ArtistTrack):
             return NotImplemented
         return self.title.casefold() == other.title.casefold()
 

@@ -2,7 +2,7 @@ import { fetcher } from "@/lib/api";
 import { ApiResponse } from "@/lib/types";
 import useSWR from "swr";
 
-export interface ArtistRecording {
+export interface ArtistTrack {
   title: string;
   duration: number | null;
   exists: boolean;
@@ -29,7 +29,7 @@ export interface ArtistMetadata {
 
 export interface ArtistInfo {
   artist: ArtistMetadata | null;
-  recordings: ArtistRecording[];
+  recordings: ArtistTrack[];
 }
 
 export const useArtist = (artistName: string, locale?: string) => {
