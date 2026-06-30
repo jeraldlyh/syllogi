@@ -12,6 +12,7 @@ from lib.models.common import ExternalTrack
 from lib.models.provider import ProviderTrack
 from lib.providers.playlist.base import MusicPlaylistProvider
 from lib.slskd import download_track_slskd
+from lib.tagger import tag_audio_file
 from lib.utils import (
     get_existing_track_path,
     get_now,
@@ -84,6 +85,18 @@ async def download_missing_tracks(
 
         if is_download_success:
             found_tracks_after_download.append(song)
+            existing_path = get_existing_track_path(
+                artist_name=artist_name, track_name=track_name, album_name=album_name
+            )
+            if existing_path:
+                tag_audio_file(
+                    file_path=existing_path,
+                    artist_name=artist_name,
+                    track_name=track_name,
+                    album_name=album_name or "",
+                    year=song.year,
+                    genres=song.genres,
+                )
             logger.info(f"{formatted_name}: DOWNLOADED")
         else:
             missing_tracks_after_download.append(song)
