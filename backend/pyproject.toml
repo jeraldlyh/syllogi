@@ -7,6 +7,7 @@ dependencies = [
     "apscheduler",
     "fastapi[standard]",
     "httpx",
+    "mutagen",
     "psycopg[binary,pool]",
     "pytz",
     "pyjwt",
