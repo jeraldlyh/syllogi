@@ -119,7 +119,7 @@ class MusicBrainzMetadataProvider(MetadataProvider):
 
         result = await self._http(
             f"/artist/{artist_mbid}",
-            params={"inc": "recordings%2Bgenres"},
+            params={"inc": "recordings+genres"},
         )
 
         if not result:

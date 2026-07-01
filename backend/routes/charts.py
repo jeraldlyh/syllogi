@@ -115,6 +115,9 @@ async def _download_track(
     track = ExternalTrack(
         artist_name=item.artist_name,
         track_name=item.track_name,
+        album_name="",
+        year="",
+        duration=0,
     )
     download_session = DownloadSession(
         artist_name=item.artist_name,
