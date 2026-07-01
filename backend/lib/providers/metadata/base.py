@@ -3,12 +3,13 @@ from abc import ABC, abstractmethod
 from lib.models.metadata import ArtistInfo, ArtistTrack
 
 
-class MetadataSourceProvider(ABC):
+class MetadataProvider(ABC):
     """Abstract base class for artist metadata providers."""
 
     @abstractmethod
     async def get_artist_info(
         self,
+        *,
         artist_name: str,
         locale: str | None = None,
     ) -> ArtistInfo | None:
@@ -24,7 +25,7 @@ class MetadataSourceProvider(ABC):
 
     @abstractmethod
     async def get_artist_recordings(
-        self, artist_mbid: str, limit: int
+        self, *, artist_mbid: str, limit: int
     ) -> list[ArtistTrack]:
         """Get artist recordings by MusicBrainz ID.
 

@@ -6,12 +6,12 @@ import httpx
 from lib.env import get_environment_variable
 from lib.models.deezer import DeezerTrack
 from lib.models.metadata import ArtistInfo, ArtistTrack
-from lib.providers.metadata.base import MetadataSourceProvider
+from lib.providers.metadata.base import MetadataProvider
 
 logger = logging.getLogger(__name__)
 
 
-class DeezerMetadataProvider(MetadataSourceProvider):
+class DeezerMetadataProvider(MetadataProvider):
     """Metadata provider backed by the Deezer API."""
 
     async def _http(
@@ -34,6 +34,7 @@ class DeezerMetadataProvider(MetadataSourceProvider):
 
     async def get_artist_info(
         self,
+        *,
         artist_name: str,
     ) -> ArtistInfo | None:
         """Search Deezer for artist by name."""
@@ -68,6 +69,7 @@ class DeezerMetadataProvider(MetadataSourceProvider):
 
     async def get_artist_recordings(
         self,
+        *,
         artist_id: str,
         limit: int = 20,
     ) -> list[ArtistTrack]:
@@ -98,6 +100,7 @@ class DeezerMetadataProvider(MetadataSourceProvider):
 
     async def get_track(
         self,
+        *,
         artist_name: str,
         track_name: str,
     ) -> DeezerTrack | None:

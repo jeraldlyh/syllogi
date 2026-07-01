@@ -14,13 +14,13 @@ from lib.models.musicbrainz import (
 from lib.models.metadata import ArtistTrack
 from lib.providers.metadata.base import (
     ArtistInfo,
-    MetadataSourceProvider,
+    MetadataProvider,
 )
 
 logger = logging.getLogger(__name__)
 
 
-class MusicBrainzMetadataProvider(MetadataSourceProvider):
+class MusicBrainzMetadataProvider(MetadataProvider):
     """Metadata provider backed by the MusicBrainz API."""
 
     SEARCH_MAX_RETRIES = 3
@@ -51,6 +51,7 @@ class MusicBrainzMetadataProvider(MetadataSourceProvider):
 
     async def _get_artists(
         self,
+        *,
         artist_name: str,
         limit: int = 10,
     ) -> list[MusicbrainzArtist]:
@@ -115,6 +116,7 @@ class MusicBrainzMetadataProvider(MetadataSourceProvider):
 
     async def get_artist_recordings(
         self,
+        *,
         artist_mbid: str,
     ) -> list[ArtistTrack]:
         """Fetch recordings by artist MusicBrainz ID."""
@@ -145,6 +147,7 @@ class MusicBrainzMetadataProvider(MetadataSourceProvider):
 
     async def get_artist_info(
         self,
+        *,
         artist_name: str,
         locale: str | None = None,
     ) -> ArtistInfo | None:
@@ -156,7 +159,7 @@ class MusicBrainzMetadataProvider(MetadataSourceProvider):
             return None
         return results[0].to_artist_info(locale=locale)
 
-    async def get_artist_alias(self, artist_name: str) -> str | None:
+    async def get_artist_alias(self, *, artist_name: str) -> str | None:
         """Get artist actual name using MusicBrainz.
 
         This is useful for artists with non-Latin names, but has an English name as an alias.
