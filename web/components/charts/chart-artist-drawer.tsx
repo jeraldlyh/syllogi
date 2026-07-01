@@ -192,7 +192,7 @@ const RecordingsSection = ({ data }: { data: ArtistInfo }) => {
     useDownloadSessions();
 
   const getRecordingKey = (recording: ArtistTrack): string =>
-    `${artistName.toLowerCase()}:${recording.title.toLowerCase()}`;
+    `${artistName.toLowerCase()}:${recording.track_name.toLowerCase()}`;
 
   const getRecordingStatus = (
     recording: ArtistTrack,
@@ -202,7 +202,7 @@ const RecordingsSection = ({ data }: { data: ArtistInfo }) => {
     const session = downloadSessions.find(
       (session: DownloadSession) =>
         session.artist_name.toLowerCase() === artistName.toLowerCase() &&
-        session.track_name.toLowerCase() === recording.title.toLowerCase(),
+        session.track_name.toLowerCase() === recording.track_name.toLowerCase(),
     );
 
     return session ? session.status : null;
@@ -216,7 +216,7 @@ const RecordingsSection = ({ data }: { data: ArtistInfo }) => {
     setDownloadingTracks((prev) => new Set(prev).add(key));
 
     const toastId = toast.loading(
-      `Downloading ${artistName} - ${recording.title}...`,
+      `Downloading ${artistName} - ${recording.track_name}...`,
     );
 
     try {
@@ -226,14 +226,14 @@ const RecordingsSection = ({ data }: { data: ArtistInfo }) => {
         path: "track",
         body: {
           artist_name: artistName,
-          track_name: recording.title,
+          track_name: recording.track_name,
           image_url: "",
         },
       });
 
       if (response.statusCode !== 200) {
         const errorMessage =
-          response.error?.message || `${artistName} - ${recording.title}`;
+          response.error?.message || `${artistName} - ${recording.track_name}`;
 
         toast.error("Failed to start download", {
           description: errorMessage,
@@ -243,13 +243,13 @@ const RecordingsSection = ({ data }: { data: ArtistInfo }) => {
       }
 
       toast.success("Download started", {
-        description: `${artistName} - ${recording.title}`,
+        description: `${artistName} - ${recording.track_name}`,
         id: toastId,
       });
       refreshDownloads();
     } catch {
       toast.error("Failed to start download", {
-        description: `${artistName} - ${recording.title}`,
+        description: `${artistName} - ${recording.track_name}`,
         id: toastId,
       });
     } finally {
@@ -318,14 +318,14 @@ const RecordingsSection = ({ data }: { data: ArtistInfo }) => {
                   const status = getRecordingStatus(recording);
 
                   return (
-                    <TableRow key={`${recording.title}-${i}`}>
+                    <TableRow key={`${recording.track_name}-${i}`}>
                       <TableCell className="font-mono text-xs text-muted-foreground">
                         {i + 1}
                       </TableCell>
                       <TableCell>
                         <div className="flex flex-col gap-1">
                           <span className="truncate text-sm font-medium">
-                            {recording.title}
+                            {recording.track_name}
                           </span>
                           <ChartBadge
                             isExist={recording.exists}

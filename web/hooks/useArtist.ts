@@ -3,7 +3,7 @@ import { ApiResponse } from "@/lib/types";
 import useSWR from "swr";
 
 export interface ArtistTrack {
-  title: string;
+  track_name: string;
   duration: number | null;
   exists: boolean;
   album_name: string;

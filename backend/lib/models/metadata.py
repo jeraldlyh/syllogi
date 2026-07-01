@@ -5,7 +5,7 @@ from dataclasses import dataclass
 class ArtistTrack:
     """A track by an artist."""
 
-    title: str
+    track_name: str
     duration_ms: int | None
     disambiguation: str
     album_name: str
@@ -19,7 +19,7 @@ class ArtistTrack:
 
     def to_dict(self) -> dict[str, str | int | None]:
         return {
-            "title": self.title,
+            "track_name": self.track_name,
             "duration": self.duration_ms // 1000 if self.duration_ms else 0,
             "disambiguation": self.disambiguation,
             "album_name": self.album_name,
@@ -28,10 +28,10 @@ class ArtistTrack:
     def __eq__(self, other):
         if not isinstance(other, ArtistTrack):
             return NotImplemented
-        return self.title.casefold() == other.title.casefold()
+        return self.track_name.casefold() == other.track_name.casefold()
 
     def __hash__(self):
-        return hash(self.title.casefold())
+        return hash(self.track_name.casefold())
 
 
 @dataclass

@@ -246,7 +246,7 @@ async def _get_artist_info(
         *[
             deezer_provider.get_artist_recording(
                 artist_name=artist_name,
-                track_name=recording.title,
+                track_name=recording.track_name,
             )
             for recording in mb_recordings
         ]
@@ -263,7 +263,7 @@ async def _get_artist_info(
             find_track(
                 provider=provider,
                 artist_name=artist_name,
-                track_name=recording.title,
+                track_name=recording.track_name,
                 album_name="",
                 year="",
                 duration=recording.get_duration(),
@@ -277,7 +277,7 @@ async def _get_artist_info(
         "artist": artist_info.to_dict(),
         "recordings": [
             {
-                "title": recording.title,
+                "track_name": recording.track_name,
                 "duration": recording.get_duration(),
                 "exists": (
                     not provider_track.is_not_found()

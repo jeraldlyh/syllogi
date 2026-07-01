@@ -99,7 +99,7 @@ async def download_missing_tracks(
                 tag_audio_file(
                     file_path=existing_path,
                     artist_name=artist_name,
-                    track_name=mb_track.title if mb_track else track_name,
+                    track_name=mb_track.track_name if mb_track else track_name,
                     album_name=mb_track.album_name if mb_track else album_name,
                     year=song.year,
                     genres=mb_track.genres if mb_track else [],
