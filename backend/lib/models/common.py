@@ -11,9 +11,9 @@ class ExternalTrack:
         self,
         artist_name: str,
         track_name: str,
-        album_name: str = "",
-        year: str = "",
-        duration: int = 0,
+        album_name: str,
+        year: str,
+        duration: int,
     ):
         self.artist_name = artist_name
         self.track_name = track_name

@@ -10,6 +10,7 @@ from db.session import get_isolated_session
 from lib.env import is_slskd_configured
 from lib.models.common import ExternalTrack
 from lib.models.provider import ProviderTrack
+from lib.providers.metadata.musicbrainz import MusicBrainzMetadataProvider
 from lib.providers.playlist.base import MusicPlaylistProvider
 from lib.slskd import download_track_slskd
 from lib.tagger import tag_audio_file
@@ -91,12 +92,17 @@ async def download_missing_tracks(
             )
 
             if existing_path:
+                provider = MusicBrainzMetadataProvider()
+                mb_track = await provider.get_artist_recording(
+                    artist_name=artist_name, track_name=track_name
+                )
                 tag_audio_file(
                     file_path=existing_path,
                     artist_name=artist_name,
-                    track_name=track_name,
-                    album_name=album_name or "",
+                    track_name=mb_track.title if mb_track else track_name,
+                    album_name=mb_track.album_name if mb_track else album_name,
                     year=song.year,
+                    genres=mb_track.genres if mb_track else [],
                 )
             logger.info(f"{formatted_name}: DOWNLOADED")
         else:

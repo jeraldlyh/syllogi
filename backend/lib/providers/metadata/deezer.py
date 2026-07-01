@@ -4,7 +4,6 @@ from typing import Any
 import httpx
 
 from lib.env import get_environment_variable
-from lib.models.deezer import DeezerTrack
 from lib.models.metadata import ArtistInfo, ArtistTrack
 from lib.providers.metadata.base import MetadataProvider
 
@@ -70,7 +69,7 @@ class DeezerMetadataProvider(MetadataProvider):
     async def get_artist_recordings(
         self,
         *,
-        artist_id: str,
+        artist_mbid: str,
         limit: int = 20,
     ) -> list[ArtistTrack]:
         raise NotImplementedError(
