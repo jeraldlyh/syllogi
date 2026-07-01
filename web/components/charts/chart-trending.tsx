@@ -188,7 +188,7 @@ export const ChartTrending = () => {
     }
 
     return (
-      <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 max-h-96 overflow-auto pr-1">
+      <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 max-h-[60vh] overflow-auto pr-1">
         {getFilteredTracks().map((track) => {
           const key = getTrackKey(track);
           const isDownloading =
@@ -298,7 +298,7 @@ export const ChartTrending = () => {
     }
 
     return (
-      <div className="overflow-x-auto rounded-md border border-border max-h-96">
+      <div className="overflow-x-auto rounded-md border border-border max-h-[40vh]">
         <Table>
           <TableHeader>
             <TableRow className="hover:bg-transparent text-xs text-muted-foreground">
