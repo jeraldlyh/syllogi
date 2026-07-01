@@ -94,7 +94,7 @@ const HeroSection = ({ data }: { data: ArtistInfo }): React.JSX.Element => {
   if (!artist) {
     return (
       <motion.div
-        className="flex flex-col items-center gap-4 text-center"
+        className="flex flex-col items-center gap-4 text-center my-4"
         {...animationProps}
         transition={{ duration: 0.6, ease: "easeOut" as const }}
       >
