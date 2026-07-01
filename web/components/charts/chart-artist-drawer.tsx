@@ -17,7 +17,7 @@ import {
   useDownloadSessions,
 } from "@/hooks/useDownloadSessions";
 import { api } from "@/lib/api";
-import { formatDuration } from "@/lib/utils";
+import { cn, formatDuration } from "@/lib/utils";
 import { Dot, Download, Loader2, RotateCcw } from "lucide-react";
 import { motion, useReducedMotion } from "motion/react";
 import Image from "next/image";
@@ -306,10 +306,12 @@ const RecordingsSection = ({ data }: { data: ArtistInfo }) => {
             <Table>
               <TableHeader>
                 <TableRow className="hover:bg-transparent text-xs text-muted-foreground">
-                  <TableHead className="w-10">#</TableHead>
+                  <TableHead className="hidden md:table-cell w-10">#</TableHead>
                   <TableHead>Title</TableHead>
                   <TableHead className="hidden md:table-cell">Album</TableHead>
-                  <TableHead className="w-16 text-right">Duration</TableHead>
+                  <TableHead className="hidden md:table-cell w-16 text-right">
+                    Duration
+                  </TableHead>
                   <TableHead className="w-10"></TableHead>
                 </TableRow>
               </TableHeader>
@@ -318,27 +320,43 @@ const RecordingsSection = ({ data }: { data: ArtistInfo }) => {
                   const status = getRecordingStatus(recording);
 
                   return (
-                    <TableRow key={`${recording.track_name}-${i}`}>
-                      <TableCell className="font-mono text-xs text-muted-foreground">
+                    <TableRow
+                      key={`${recording.track_name}-${i}`}
+                      className={cn({
+                        "md:bg-inherit bg-amber-500/10":
+                          status === "pending" || status === "downloading",
+                        "md:bg-inherit bg-emerald-500/10": recording.exists,
+                      })}
+                    >
+                      <TableCell className="hidden md:table-cell font-mono text-xs text-muted-foreground">
                         {i + 1}
                       </TableCell>
                       <TableCell>
                         <div className="flex flex-col gap-1">
-                          <span className="truncate text-sm font-medium">
-                            {recording.track_name}
-                          </span>
-                          <ChartBadge
-                            isExist={recording.exists}
-                            isDownloading={
-                              status === "pending" || status === "downloading"
-                            }
-                          />
+                          <div className="flex flex-col gap-1">
+                            <span className="truncate text-sm font-medium max-w-48 lg:max-w-none">
+                              {recording.track_name}
+                              <Text
+                                className="md:hidden truncate max-w-48"
+                                value={recording.album_name || ""}
+                                muted
+                              />
+                            </span>
+                          </div>
+                          <div className="hidden md:block">
+                            <ChartBadge
+                              isExist={recording.exists}
+                              isDownloading={
+                                status === "pending" || status === "downloading"
+                              }
+                            />
+                          </div>
                         </div>
                       </TableCell>
                       <TableCell className="hidden md:table-cell">
                         <Text value={recording.album_name || ""} muted />
                       </TableCell>
-                      <TableCell>
+                      <TableCell className="hidden md:table-cell">
                         <Text
                           value={formatDuration(recording.duration)}
                           muted
