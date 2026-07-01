@@ -89,6 +89,7 @@ class DeezerMetadataProvider(MetadataProvider):
                     duration_ms=track.get("duration", 0) * 1000,
                     disambiguation="",
                     album_name=track.get("album", {}).get("title", ""),
+                    genres=[],
                 )
                 for track in result["data"]
             ]

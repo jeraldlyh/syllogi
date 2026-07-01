@@ -123,9 +123,7 @@ class MusicBrainzMetadataProvider(MetadataProvider):
 
         result = await self._http(
             f"/artist/{artist_mbid}",
-            params={
-                "inc": "recordings",
-            },
+            params={"inc": "recordings%2Bgenres"},
         )
 
         if not result:
@@ -135,12 +133,14 @@ class MusicBrainzMetadataProvider(MetadataProvider):
         for recording in result.get("recordings", []):
             if not recording.get("length"):
                 continue
+
             unique.add(
                 ArtistTrack(
                     title=recording.get("title", ""),
                     duration_ms=recording.get("length"),
                     disambiguation=recording.get("disambiguation", ""),
                     album_name="",
+                    genres=[genre.get("name") for genre in recording.get("genres", [])],
                 )
             )
         return list(unique)

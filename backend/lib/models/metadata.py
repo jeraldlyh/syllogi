@@ -9,6 +9,7 @@ class ArtistTrack:
     duration_ms: int | None
     disambiguation: str
     album_name: str
+    genres: list[str]
 
     def get_duration(self) -> int:
         if not self.duration_ms:

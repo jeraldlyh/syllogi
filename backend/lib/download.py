@@ -97,7 +97,6 @@ async def download_missing_tracks(
                     track_name=track_name,
                     album_name=album_name or "",
                     year=song.year,
-                    genres=song.genres,
                 )
             logger.info(f"{formatted_name}: DOWNLOADED")
         else:

@@ -14,23 +14,20 @@ class ExternalTrack:
         album_name: str = "",
         year: str = "",
         duration: int = 0,
-        genres: list[str] = [],
     ):
         self.artist_name = artist_name
         self.track_name = track_name
         self.album_name = album_name
         self.year = year
         self.duration = duration
-        self.genres = genres
 
-    def to_dict(self) -> dict[str, str | int | list[str]]:
+    def to_dict(self) -> dict[str, str | int]:
         return {
             "artist_name": self.artist_name,
             "track_name": self.track_name,
             "album_name": self.album_name,
             "year": self.year,
             "duration": self.duration,
-            "genres": self.genres,
         }
 
 

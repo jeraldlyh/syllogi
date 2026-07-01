@@ -62,7 +62,7 @@ def _tag_flac(
     track_name: str,
     album_name: str,
     year: str,
-    genres: list[str] | None = None,
+    genres: list[str],
 ) -> None:
     audio = FLAC(file_path)
 
@@ -90,7 +90,7 @@ def _tag_mp3(
     track_name: str,
     album_name: str,
     year: str,
-    genres: list[str] | None = None,
+    genres: list[str],
 ) -> None:
     audio = MP3(file_path)
 
@@ -127,7 +127,7 @@ def _tag_opus(
     track_name: str,
     album_name: str,
     year: str,
-    genres: list[str] | None = None,
+    genres: list[str],
 ) -> None:
     audio = OggOpus(file_path)
 
