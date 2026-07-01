@@ -298,7 +298,19 @@ const RecordingsSection = ({ data }: { data: ArtistInfo }) => {
   return (
     <Card>
       <CardHeader>
-        <CardTitle className="text-base font-semibold">Recordings</CardTitle>
+        <CardTitle className="flex justify-between items-center">
+          <span className="text-base font-semibold">Recordings</span>
+          <div className="flex items-center gap-2 md:hidden">
+            <div className="flex items-center gap-1">
+              <span className="inline-block h-2 w-2 rounded-full bg-emerald-500/60" />
+              <Text value="In Library" muted />
+            </div>
+            <div className="flex items-center gap-1">
+              <span className="inline-block h-2 w-2 rounded-full bg-amber-500/60" />
+              <Text value="Downloading" muted />
+            </div>
+          </div>
+        </CardTitle>
       </CardHeader>
       <CardContent>
         {recordings.length > 0 ? (
