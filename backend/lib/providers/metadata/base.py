@@ -37,3 +37,17 @@ class MetadataProvider(ABC):
             List of ArtistTrack.
         """
         ...
+
+    @abstractmethod
+    async def get_artist_recording(
+        self, *, artist_name: str, track_name: str
+    ) -> list[ArtistTrack]:
+        """Get artist recording by name
+
+        Args:
+            artist_name: Artist name to search for.
+            track_name: Track name to search for.
+
+        Returns:
+            List of ArtistTrack.
+        """

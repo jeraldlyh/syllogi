@@ -73,38 +73,16 @@ class DeezerMetadataProvider(MetadataProvider):
         artist_id: str,
         limit: int = 20,
     ) -> list[ArtistTrack]:
-        """Get top tracks for an artist from Deezer."""
+        raise NotImplementedError(
+            "Deezer does not support fetching recordings by MusicBrainz ID. Use artist_id instead."
+        )
 
-        try:
-            result = await self._http(
-                f"/artist/{artist_id}/top", params={"limit": limit}
-            )
-
-            if not result or not result.get("data"):
-                return []
-
-            return [
-                ArtistTrack(
-                    title=track.get("title", ""),
-                    duration_ms=track.get("duration", 0) * 1000,
-                    disambiguation="",
-                    album_name=track.get("album", {}).get("title", ""),
-                    genres=[],
-                )
-                for track in result["data"]
-            ]
-        except Exception as e:
-            logger.error(
-                f"Failed to fetch Deezer recordings for artist '{artist_id}': {e}"
-            )
-            return []
-
-    async def get_track(
+    async def get_artist_recording(
         self,
         *,
         artist_name: str,
         track_name: str,
-    ) -> DeezerTrack | None:
+    ) -> ArtistTrack | None:
         """Search Deezer for a track and return its metadata."""
 
         try:
@@ -119,11 +97,13 @@ class DeezerMetadataProvider(MetadataProvider):
             track = result["data"][0]
             album = track.get("album", {})
 
-            return DeezerTrack(
+            return ArtistTrack(
                 title=track.get("title", ""),
+                duration_ms=track.get("duration", 0) * 1000,
+                disambiguation="",
                 album_name=album.get("title", ""),
+                genres=[],
                 image_url=album.get("cover_big") or album.get("cover_medium"),
-                duration=track.get("duration", 0),
             )
         except Exception as e:
             logger.warning(

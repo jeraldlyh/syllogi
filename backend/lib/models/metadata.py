@@ -10,6 +10,7 @@ class ArtistTrack:
     disambiguation: str
     album_name: str
     genres: list[str]
+    image_url: str
 
     def get_duration(self) -> int:
         if not self.duration_ms:

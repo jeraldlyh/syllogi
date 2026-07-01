@@ -67,7 +67,7 @@ async def _get_trending_tracks(
 
     deezer_tracks = await asyncio.gather(
         *[
-            deezer_provider.get_track(
+            deezer_provider.get_artist_recording(
                 artist_name=track.artist_name,
                 track_name=track.track_name,
             )
@@ -244,7 +244,7 @@ async def _get_artist_info(
 
     deezer_tracks = await asyncio.gather(
         *[
-            deezer_provider.get_track(
+            deezer_provider.get_artist_recording(
                 artist_name=artist_name,
                 track_name=recording.title,
             )

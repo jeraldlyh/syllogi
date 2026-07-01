@@ -1,4 +1,3 @@
-import asyncio
 import logging
 from typing import Any
 
@@ -22,9 +21,6 @@ logger = logging.getLogger(__name__)
 
 class MusicBrainzMetadataProvider(MetadataProvider):
     """Metadata provider backed by the MusicBrainz API."""
-
-    SEARCH_MAX_RETRIES = 3
-    SEARCH_POLL_INTERVAL = 10
 
     async def _http(
         self,
@@ -141,9 +137,40 @@ class MusicBrainzMetadataProvider(MetadataProvider):
                     disambiguation=recording.get("disambiguation", ""),
                     album_name="",
                     genres=[genre.get("name") for genre in recording.get("genres", [])],
+                    image_url="",
                 )
             )
         return list(unique)
+
+    async def get_artist_recording(
+        self,
+        *,
+        artist_name: str,
+        track_name: str,
+    ) -> ArtistTrack | None:
+        """Search MusicBrainz for a recording by artist and track name."""
+
+        query = f'recording:"{track_name}" AND artist:"{artist_name}"'
+        result = await self._http(
+            "/recording",
+            params={"query": query, "inc": "genres", "limit": 1},
+        )
+
+        if not result or not result.get("recordings"):
+            return
+
+        recording = result.get("recordings")[0]
+
+        return ArtistTrack(
+            title=recording.get("title", ""),
+            duration_ms=recording.get("length"),
+            disambiguation=recording.get("disambiguation", ""),
+            album_name=recording.get("releases", [{}])
+            .get("release-group", {})
+            .get("title", ""),
+            genres=[genre.get("name") for genre in recording.get("genres", [])],
+            image_url="",
+        )
 
     async def get_artist_info(
         self,
@@ -167,21 +194,8 @@ class MusicBrainzMetadataProvider(MetadataProvider):
         For example, Spotify returns "Joker Xue" as an alias for "薛之谦".
         """
 
-        for attempt in range(1, self.SEARCH_MAX_RETRIES + 1):
-            try:
-                artists = await self._get_artists(artist_name=artist_name)
+        artists = await self._get_artists(artist_name=artist_name)
 
-                if artists:
-                    return artists[0].name
-
-                logger.warning(
-                    f"[{attempt}/{self.SEARCH_MAX_RETRIES}] Retry search for artist '{artist_name}' but got no results."
-                )
-            except Exception as e:
-                logger.error(
-                    f"[{attempt}/{self.SEARCH_MAX_RETRIES}] Failed to search for artist '{artist_name}': {e}"
-                )
-
-            if attempt < self.SEARCH_MAX_RETRIES:
-                await asyncio.sleep(self.SEARCH_POLL_INTERVAL)
+        if artists:
+            return artists[0].name
         return None
