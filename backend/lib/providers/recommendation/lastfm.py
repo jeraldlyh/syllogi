@@ -6,7 +6,6 @@ from fastapi import HTTPException, status
 import httpx
 
 from lib.env import get_environment_variable
-from lib.models.chart import ChartTrendingTrack
 from lib.models.common import RecommendationTrack
 from lib.providers.recommendation.base import RecommendationSourceProvider
 
@@ -251,31 +250,6 @@ class LastFMRecommendationProvider(RecommendationSourceProvider):
                     album_name="",
                     playcount=raw_track.get("playcount", 0),
                     similarity_score=raw_track.get("match", 0.0),
-                )
-            )
-        return tracks
-
-    async def get_chart_top_tracks(self, limit: int = 50) -> list[ChartTrendingTrack]:
-        data = await self._http(
-            params={
-                "method": "chart.getTopTracks",
-                "limit": limit,
-            },
-        )
-        raw_tracks = self._get_nested_value(data, "tracks.track") or []
-        tracks: list[ChartTrendingTrack] = []
-
-        for raw_track in raw_tracks:
-            tracks.append(
-                ChartTrendingTrack(
-                    artist_name=raw_track.get("artist", {}).get("name", ""),
-                    track_name=raw_track.get("name", ""),
-                    album_name="",
-                    duration=int(raw_track.get("duration", 0) or 0),
-                    listeners=int(raw_track.get("listeners", 0) or 0),
-                    playcount=int(raw_track.get("playcount", 0) or 0),
-                    musicbrainz_id=raw_track.get("mbid", ""),
-                    image_url="",
                 )
             )
         return tracks

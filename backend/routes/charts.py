@@ -12,6 +12,7 @@ from lib.download import download_single_track
 from lib.models.common import ExternalTrack
 from lib.providers import get_provider
 from lib.providers.metadata.deezer import DeezerMetadataProvider
+from lib.providers.metadata.lastfm import LastFMMetadataProvider
 from lib.providers.metadata.musicbrainz import MusicBrainzMetadataProvider
 from lib.track import find_track, is_track_in_provider
 
@@ -61,8 +62,7 @@ async def _get_trending_tracks(
     ] = 50,
 ) -> list[dict]:
     provider = get_provider()
-    deezer_provider = DeezerMetadataProvider()
-    tracks = await deezer_provider.get_chart_top_tracks(limit=limit)
+    tracks = await DeezerMetadataProvider().get_chart_top_tracks(limit=limit)
 
     provider_statuses = await asyncio.gather(
         *[is_track_in_provider(provider, track) for track in tracks]

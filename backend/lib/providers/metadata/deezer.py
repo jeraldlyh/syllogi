@@ -4,7 +4,7 @@ from typing import Any
 import httpx
 
 from lib.env import get_environment_variable
-from lib.models.chart import ChartTrendingTrack, ChartTrendingTrack
+from lib.models.chart import ChartTrendingTrack
 from lib.models.metadata import ArtistInfo, ArtistTrack
 from lib.providers.metadata.base import MetadataProvider
 
