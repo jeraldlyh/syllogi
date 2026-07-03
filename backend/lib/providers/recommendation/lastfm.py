@@ -6,10 +6,8 @@ from fastapi import HTTPException, status
 import httpx
 
 from lib.env import get_environment_variable
+from lib.models.chart import ChartTrendingTrack
 from lib.models.common import RecommendationTrack
-from lib.models.lastfm import (
-    LastFMChartTrack,
-)
 from lib.providers.recommendation.base import RecommendationSourceProvider
 
 
@@ -257,7 +255,7 @@ class LastFMRecommendationProvider(RecommendationSourceProvider):
             )
         return tracks
 
-    async def get_chart_top_tracks(self, limit: int = 50) -> list[LastFMChartTrack]:
+    async def get_chart_top_tracks(self, limit: int = 50) -> list[ChartTrendingTrack]:
         data = await self._http(
             params={
                 "method": "chart.getTopTracks",
@@ -265,23 +263,19 @@ class LastFMRecommendationProvider(RecommendationSourceProvider):
             },
         )
         raw_tracks = self._get_nested_value(data, "tracks.track") or []
-        tracks: list[LastFMChartTrack] = []
+        tracks: list[ChartTrendingTrack] = []
 
         for raw_track in raw_tracks:
-            images = raw_track.get("image", [])
-            image_url = next(
-                (img["#text"] for img in reversed(images) if img.get("#text")),
-                "",
-            )
             tracks.append(
-                LastFMChartTrack(
+                ChartTrendingTrack(
                     artist_name=raw_track.get("artist", {}).get("name", ""),
                     track_name=raw_track.get("name", ""),
+                    album_name="",
                     duration=int(raw_track.get("duration", 0) or 0),
                     listeners=int(raw_track.get("listeners", 0) or 0),
                     playcount=int(raw_track.get("playcount", 0) or 0),
                     musicbrainz_id=raw_track.get("mbid", ""),
-                    image_url=image_url,
+                    image_url="",
                 )
             )
         return tracks

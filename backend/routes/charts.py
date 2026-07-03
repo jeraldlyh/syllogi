@@ -13,7 +13,6 @@ from lib.models.common import ExternalTrack
 from lib.providers import get_provider
 from lib.providers.metadata.deezer import DeezerMetadataProvider
 from lib.providers.metadata.musicbrainz import MusicBrainzMetadataProvider
-from lib.providers.recommendation.lastfm import LastFMRecommendationProvider
 from lib.track import find_track, is_track_in_provider
 
 logger = logging.getLogger(__name__)
@@ -30,7 +29,7 @@ class DownloadTrackRequest(BaseModel):
 @router.get(
     path="/trending",
     summary="Get trending tracks",
-    description="Retrieve the current top trending tracks from Last.fm charts.",
+    description="Retrieve the current top trending tracks.",
     responses={
         200: {
             "description": "List of trending tracks retrieved successfully",
@@ -46,7 +45,7 @@ class DownloadTrackRequest(BaseModel):
                                 "listeners": 5000000,
                                 "playcount": 100000000,
                                 "musicbrainz_id": "abc123",
-                                "image_url": "https://lastfm.freetls.fastly.net/i/u/300x300/abc.jpg",
+                                "image_url": "https://cdn-images.dzcdn.net/images/cover/abc/500x500-000000-80-0-0.jpg",
                                 "exists": False,
                             }
                         ],
@@ -63,21 +62,7 @@ async def _get_trending_tracks(
 ) -> list[dict]:
     provider = get_provider()
     deezer_provider = DeezerMetadataProvider()
-    tracks = await LastFMRecommendationProvider().get_chart_top_tracks(limit=limit)
-
-    deezer_tracks = await asyncio.gather(
-        *[
-            deezer_provider.get_artist_recording(
-                artist_name=track.artist_name,
-                track_name=track.track_name,
-            )
-            for track in tracks
-        ]
-    )
-
-    for track, deezer_track in zip(tracks, deezer_tracks):
-        if deezer_track and deezer_track.image_url:
-            track.image_url = deezer_track.image_url
+    tracks = await deezer_provider.get_chart_top_tracks(limit=limit)
 
     provider_statuses = await asyncio.gather(
         *[is_track_in_provider(provider, track) for track in tracks]

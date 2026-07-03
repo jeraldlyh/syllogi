@@ -4,6 +4,7 @@ from typing import Any
 import httpx
 
 from lib.env import get_environment_variable
+from lib.models.chart import ChartTrendingTrack, ChartTrendingTrack
 from lib.models.metadata import ArtistInfo, ArtistTrack
 from lib.providers.metadata.base import MetadataProvider
 
@@ -109,3 +110,32 @@ class DeezerMetadataProvider(MetadataProvider):
                 f"Failed to fetch Deezer track for '{artist_name} - {track_name}': {e}"
             )
             return None
+
+    async def get_chart_top_tracks(self, limit: int = 50) -> list[ChartTrendingTrack]:
+        """Fetch the current top chart tracks from Deezer."""
+
+        try:
+            result = await self._http("/chart/0/tracks", params={"limit": limit})
+
+            if not result or not result.get("data"):
+                return []
+
+            tracks: list[ChartTrendingTrack] = []
+
+            for track in result.get("data"):
+                tracks.append(
+                    ChartTrendingTrack(
+                        artist_name=track.get("artist", {}).get("name", ""),
+                        track_name=track.get("title", ""),
+                        album_name=track.get("album", {}).get("title", ""),
+                        duration=int(track.get("duration", 0)),
+                        listeners=0,
+                        playcount=0,
+                        musicbrainz_id="",
+                        image_url=track.get("album", {}).get("cover_big", ""),
+                    )
+                )
+            return tracks
+        except Exception as e:
+            logger.error(f"Failed to fetch Deezer chart top tracks: {e}")
+            return []

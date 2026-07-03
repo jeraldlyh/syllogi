@@ -2,13 +2,14 @@ from dataclasses import dataclass
 
 
 @dataclass
-class LastFMChartTrack:
-    """A globally trending chart track from LastFM."""
+class ChartTrendingTrack:
+    """A globally trending chart track."""
 
     def __init__(
         self,
         artist_name: str,
         track_name: str,
+        album_name: str,
         duration: int,
         listeners: int,
         playcount: int,
@@ -17,6 +18,7 @@ class LastFMChartTrack:
     ):
         self.artist_name = artist_name
         self.track_name = track_name
+        self.album_name = album_name
         self.duration = duration
         self.listeners = listeners
         self.playcount = playcount
@@ -24,7 +26,7 @@ class LastFMChartTrack:
         self.image_url = image_url
 
     def __eq__(self, other: object) -> bool:
-        if not isinstance(other, LastFMChartTrack):
+        if not isinstance(other, ChartTrendingTrack):
             return NotImplemented
 
         return (
@@ -40,6 +42,7 @@ class LastFMChartTrack:
         return {
             "artist_name": self.artist_name,
             "track_name": self.track_name,
+            "album_name": self.album_name,
             "duration": self.duration,
             "listeners": self.listeners,
             "playcount": self.playcount,

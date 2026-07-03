@@ -6,7 +6,7 @@ from lib.models.common import (
     ExternalTrack,
     ResolvedTrack,
 )
-from lib.models.lastfm import LastFMChartTrack
+from lib.models.chart import ChartTrendingTrack
 from lib.models.provider import ProviderTrack
 from lib.providers.playlist.base import MusicPlaylistProvider
 from lib.utils import get_clean_name
@@ -227,7 +227,7 @@ def reconcile_after_download(
 
 
 async def is_track_in_provider(
-    provider: MusicPlaylistProvider, track: LastFMChartTrack
+    provider: MusicPlaylistProvider, track: ChartTrendingTrack
 ) -> bool:
     """Return True if the track exists in the provider library, False otherwise."""
 
