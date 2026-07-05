@@ -98,6 +98,7 @@ class DeezerMetadataProvider(MetadataProvider):
             album = track.get("album", {})
 
             return ArtistTrack(
+                artist_name=artist_name,
                 track_name=track.get("title", ""),
                 duration_ms=track.get("duration", 0) * 1000,
                 disambiguation="",

@@ -132,6 +132,7 @@ class MusicBrainzMetadataProvider(MetadataProvider):
 
             unique.add(
                 ArtistTrack(
+                    artist_name=result.get("name", ""),
                     track_name=recording.get("title", ""),
                     duration_ms=recording.get("length"),
                     disambiguation=recording.get("disambiguation", ""),
@@ -162,6 +163,7 @@ class MusicBrainzMetadataProvider(MetadataProvider):
         recording = result.get("recordings")[0]
 
         return ArtistTrack(
+            artist_name=artist_name,
             track_name=recording.get("title", ""),
             duration_ms=recording.get("length"),
             disambiguation=recording.get("disambiguation", ""),
