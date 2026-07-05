@@ -5,6 +5,7 @@ import useSWR from "swr";
 export interface TrendingTrack {
   artist_name: string;
   track_name: string;
+  album_name: string;
   duration: number;
   listeners: number;
   playcount: number;

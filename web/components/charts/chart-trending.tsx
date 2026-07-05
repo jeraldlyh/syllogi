@@ -66,7 +66,8 @@ export const ChartTrending = () => {
       const query = search.toLowerCase();
       return (
         track.track_name.toLowerCase().includes(query) ||
-        track.artist_name.toLowerCase().includes(query)
+        track.artist_name.toLowerCase().includes(query) ||
+        track.album_name.toLowerCase().includes(query)
       );
     });
   };
@@ -123,7 +124,7 @@ export const ChartTrending = () => {
         <div className="relative flex-1">
           <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
           <Input
-            placeholder="Search by track or artist..."
+            placeholder="Search by track, artist, or album..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             className="pl-9"
@@ -231,19 +232,19 @@ export const ChartTrending = () => {
                   className="truncate font-semibold"
                   value={track.track_name}
                 />
-                <Button
-                  onClick={() => setSelectedArtist(track.artist_name)}
-                  variant="link"
-                  className="h-auto p-0 text-xs text-muted-foreground hover:text-primary justify-start"
-                >
-                  {track.artist_name}
-                </Button>
+                <Text
+                  className="truncate !text-xs"
+                  muted
+                  value={track.album_name}
+                />
                 <div className="mt-auto flex items-center justify-between pt-2">
-                  <Text
-                    muted
-                    className="leading-tight"
-                    value={`${track.listeners.toLocaleString()} listeners`}
-                  />
+                  <Button
+                    onClick={() => setSelectedArtist(track.artist_name)}
+                    variant="link"
+                    className="h-auto p-0 text-muted-foreground hover:text-primary justify-start"
+                  >
+                    {track.artist_name}
+                  </Button>
                   <Button
                     variant="ghost"
                     size="icon"
@@ -303,9 +304,9 @@ export const ChartTrending = () => {
           <TableHeader>
             <TableRow className="hover:bg-transparent text-xs text-muted-foreground">
               <TableHead>Track</TableHead>
-              <TableHead>Artist</TableHead>
+              <TableHead>Album</TableHead>
               <TableHead className="hidden md:table-cell">Duration</TableHead>
-              <TableHead className="hidden lg:table-cell">Listeners</TableHead>
+              <TableHead className="hidden lg:table-cell">Artist</TableHead>
               <TableHead className="hidden lg:table-cell">Playcount</TableHead>
               <TableHead>Actions</TableHead>
             </TableRow>
@@ -347,7 +348,7 @@ export const ChartTrending = () => {
                       variant="link"
                       className="text-muted-foreground hover:text-primary transition-colors text-left px-0"
                     >
-                      <Text value={track.artist_name} />
+                      <Text value={track.album_name} />
                     </Button>
                   </TableCell>
                   <TableCell className="hidden md:table-cell">
@@ -360,7 +361,7 @@ export const ChartTrending = () => {
                   <TableCell className="hidden lg:table-cell">
                     <Text
                       className="text-muted-foreground"
-                      value={track.listeners.toLocaleString()}
+                      value={track.artist_name}
                     />
                   </TableCell>
                   <TableCell className="hidden lg:table-cell">
