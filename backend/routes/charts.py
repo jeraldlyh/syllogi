@@ -231,6 +231,7 @@ async def _get_artist_info(
     await artist_info.ensure_metadata()
 
     mb_recordings = await mb_provider.get_artist_recordings(artist_mbid=artist_info.id)
+    mb_recordings = list(set(mb_recordings))
     await asyncio.gather(*[recording.ensure_metadata() for recording in mb_recordings])
 
     music_playlist_provider = get_provider()
@@ -252,16 +253,13 @@ async def _get_artist_info(
     return {
         "artist": artist_info.to_dict(),
         "recordings": [
-            {
-                "track_name": recording.track_name,
-                "duration": recording.get_duration(),
-                "exists": (
+            recording.to_dict(
+                exists=(
                     not provider_track.is_not_found()
                     if not isinstance(provider_track, BaseException)
                     else False
-                ),
-                "album_name": recording.album_name,
-            }
+                )
+            )
             for recording, provider_track in zip(mb_recordings, track_existence)
         ],
     }

@@ -40,14 +40,17 @@ class ArtistTrack:
             return 0
         return self.duration_ms // 1000
 
-    def to_dict(self) -> dict[str, str | int | None]:
+    def to_dict(self, exists: bool) -> dict[str, str | int | bool | list]:
         """Convert the ArtistTrack to a dictionary representation."""
 
         return {
             "track_name": self.track_name,
-            "duration": self.duration_ms // 1000 if self.duration_ms else 0,
+            "duration": self.get_duration(),
             "disambiguation": self.disambiguation,
             "album_name": self.album_name,
+            "genres": self.genres,
+            "image_url": self.image_url,
+            "exists": exists,
         }
 
     def __eq__(self, other):
