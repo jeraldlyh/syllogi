@@ -18,14 +18,23 @@ import {
 } from "@/hooks/useDownloadSessions";
 import { api } from "@/lib/api";
 import { cn, formatDuration } from "@/lib/utils";
-import { Dot, Download, Loader2, RotateCcw } from "lucide-react";
+import {
+  Dot,
+  Download,
+  LayoutGrid,
+  List,
+  Loader2,
+  RotateCcw,
+} from "lucide-react";
 import { motion, useReducedMotion } from "motion/react";
 import Image from "next/image";
 import React, { useState } from "react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { ChartBadge } from "./chart-badge";
+import { ChartGridCard } from "./chart-grid-card";
 import { Text } from "@/components/common/text";
+import { ViewMode } from "./types";
 
 const containerVariants = {
   hidden: { opacity: 0 },
@@ -182,7 +191,7 @@ const HeroSection = ({ data }: { data: ArtistInfo }): React.JSX.Element => {
 };
 
 const RecordingsSection = ({ data }: { data: ArtistInfo }) => {
-  const recordings = data.recordings ?? [];
+  const recordings = data.recordings;
   const artistName = data.artist ? data.artist.name : "";
   const [downloadingTracks, setDownloadingTracks] = useState<Set<string>>(
     new Set(),
@@ -190,6 +199,8 @@ const RecordingsSection = ({ data }: { data: ArtistInfo }) => {
 
   const { data: downloadSessions, mutate: refreshDownloads } =
     useDownloadSessions();
+
+  const [viewMode, setViewMode] = useState<ViewMode>("list");
 
   const getRecordingKey = (recording: ArtistTrack): string =>
     `${artistName.toLowerCase()}:${recording.track_name.toLowerCase()}`;
@@ -274,17 +285,16 @@ const RecordingsSection = ({ data }: { data: ArtistInfo }) => {
       );
     }
 
-    if (recording.exists) {
-      return null;
-    }
-
     const isFailed = status === "failed";
 
     return (
       <Button
         type="button"
+        className="w-full"
         onClick={() => handleDownload(recording)}
-        variant={isFailed ? "destructive" : "ghost"}
+        variant={isFailed ? "destructive" : "outline"}
+        disabled={recording.exists}
+        size="sm"
       >
         {isFailed ? (
           <RotateCcw className="h-4 w-4" />
@@ -300,88 +310,144 @@ const RecordingsSection = ({ data }: { data: ArtistInfo }) => {
       <CardHeader>
         <CardTitle className="flex justify-between items-center">
           <span className="text-base font-semibold">Recordings</span>
-          <div className="flex items-center gap-2 md:hidden">
-            <div className="flex items-center gap-1">
-              <span className="inline-block h-2 w-2 rounded-full bg-emerald-500/60" />
-              <Text value="In Library" muted />
+          <div className="flex items-center gap-2">
+            <div className="hidden md:flex items-center gap-1 rounded-md border border-border p-1">
+              <Button
+                variant={viewMode === "list" ? "secondary" : "ghost"}
+                size="icon"
+                className="h-7 w-7"
+                onClick={() => setViewMode("list")}
+              >
+                <List />
+              </Button>
+              <Button
+                variant={viewMode === "grid" ? "secondary" : "ghost"}
+                size="icon"
+                className="h-7 w-7"
+                onClick={() => setViewMode("grid")}
+              >
+                <LayoutGrid />
+              </Button>
             </div>
-            <div className="flex items-center gap-1">
-              <span className="inline-block h-2 w-2 rounded-full bg-amber-500/60" />
-              <Text value="Downloading" muted />
+            <div className="flex items-center gap-2 md:hidden">
+              <div className="flex items-center gap-1">
+                <span className="inline-block h-2 w-2 rounded-full bg-emerald-500/60" />
+                <Text value="In Library" muted />
+              </div>
+              <div className="flex items-center gap-1">
+                <span className="inline-block h-2 w-2 rounded-full bg-amber-500/60" />
+                <Text value="Downloading" muted />
+              </div>
             </div>
           </div>
         </CardTitle>
       </CardHeader>
       <CardContent>
         {recordings.length > 0 ? (
-          <div className="max-h-96 overflow-auto rounded-md border">
-            <Table>
-              <TableHeader>
-                <TableRow className="hover:bg-transparent text-xs text-muted-foreground">
-                  <TableHead className="hidden md:table-cell w-10">#</TableHead>
-                  <TableHead>Title</TableHead>
-                  <TableHead className="hidden md:table-cell">Album</TableHead>
-                  <TableHead className="hidden md:table-cell w-16 text-right">
-                    Duration
-                  </TableHead>
-                  <TableHead className="w-10"></TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {recordings.map((recording, i) => {
-                  const status = getRecordingStatus(recording);
+          viewMode === "grid" ? (
+            <div className="grid grid-cols-2 gap-3 md:grid-cols-5 max-h-[60vh] overflow-auto">
+              {recordings.map((recording, i) => {
+                const status = getRecordingStatus(recording);
+                const isStarting = downloadingTracks.has(
+                  getRecordingKey(recording),
+                );
+                const isDownloading =
+                  isStarting ||
+                  status === "pending" ||
+                  status === "downloading";
 
-                  return (
-                    <TableRow
-                      key={`${recording.track_name}-${i}`}
-                      className={cn({
-                        "md:bg-inherit bg-amber-500/10":
-                          status === "pending" || status === "downloading",
-                        "md:bg-inherit bg-emerald-500/10": recording.exists,
-                      })}
-                    >
-                      <TableCell className="hidden md:table-cell font-mono text-xs text-muted-foreground">
-                        {i + 1}
-                      </TableCell>
-                      <TableCell>
-                        <div className="flex flex-col gap-1">
+                return (
+                  <ChartGridCard
+                    key={`${recording.track_name}-${i}`}
+                    trackName={recording.track_name}
+                    albumName={recording.album_name}
+                    duration={recording.duration}
+                    imageUrl={recording.image_url}
+                    isExist={recording.exists}
+                    isDownloading={isDownloading}
+                  >
+                    <div className="flex items-center justify-center w-full">
+                      {renderAction(recording)}
+                    </div>
+                  </ChartGridCard>
+                );
+              })}
+            </div>
+          ) : (
+            <div className="max-h-[60vh] overflow-auto rounded-md border">
+              <Table>
+                <TableHeader>
+                  <TableRow className="hover:bg-transparent text-xs text-muted-foreground">
+                    <TableHead className="hidden md:table-cell w-10">
+                      #
+                    </TableHead>
+                    <TableHead>Title</TableHead>
+                    <TableHead className="hidden md:table-cell">
+                      Album
+                    </TableHead>
+                    <TableHead className="hidden md:table-cell w-16 text-right">
+                      Duration
+                    </TableHead>
+                    <TableHead className="w-10"></TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {recordings.map((recording, i) => {
+                    const status = getRecordingStatus(recording);
+
+                    return (
+                      <TableRow
+                        key={`${recording.track_name}-${i}`}
+                        className={cn({
+                          "md:bg-inherit bg-amber-500/10":
+                            status === "pending" || status === "downloading",
+                          "md:bg-inherit bg-emerald-500/10": recording.exists,
+                        })}
+                      >
+                        <TableCell className="hidden md:table-cell font-mono text-xs text-muted-foreground">
+                          {i + 1}
+                        </TableCell>
+                        <TableCell>
                           <div className="flex flex-col gap-1">
-                            <span className="truncate text-sm font-medium max-w-48 lg:max-w-none">
-                              {recording.track_name}
-                              <Text
-                                className="md:hidden truncate max-w-48"
-                                value={recording.album_name || ""}
-                                muted
+                            <div className="flex flex-col gap-1">
+                              <span className="truncate text-sm font-medium max-w-48 lg:max-w-none">
+                                {recording.track_name}
+                                <Text
+                                  className="md:hidden truncate max-w-48"
+                                  value={recording.album_name}
+                                  muted
+                                />
+                              </span>
+                            </div>
+                            <div className="hidden md:block">
+                              <ChartBadge
+                                isExist={recording.exists}
+                                isDownloading={
+                                  status === "pending" ||
+                                  status === "downloading"
+                                }
                               />
-                            </span>
+                            </div>
                           </div>
-                          <div className="hidden md:block">
-                            <ChartBadge
-                              isExist={recording.exists}
-                              isDownloading={
-                                status === "pending" || status === "downloading"
-                              }
-                            />
-                          </div>
-                        </div>
-                      </TableCell>
-                      <TableCell className="hidden md:table-cell">
-                        <Text value={recording.album_name || ""} muted />
-                      </TableCell>
-                      <TableCell className="hidden md:table-cell">
-                        <Text
-                          value={formatDuration(recording.duration)}
-                          muted
-                          noWrap
-                        />
-                      </TableCell>
-                      <TableCell>{renderAction(recording)}</TableCell>
-                    </TableRow>
-                  );
-                })}
-              </TableBody>
-            </Table>
-          </div>
+                        </TableCell>
+                        <TableCell className="hidden md:table-cell">
+                          <Text value={recording.album_name} muted />
+                        </TableCell>
+                        <TableCell className="hidden md:table-cell">
+                          <Text
+                            value={formatDuration(recording.duration)}
+                            muted
+                            noWrap
+                          />
+                        </TableCell>
+                        <TableCell>{renderAction(recording)}</TableCell>
+                      </TableRow>
+                    );
+                  })}
+                </TableBody>
+              </Table>
+            </div>
+          )
         ) : (
           <p className="text-sm italic text-muted-foreground">
             No recordings available for this artist.

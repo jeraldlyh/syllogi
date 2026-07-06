@@ -4,9 +4,10 @@ import useSWR from "swr";
 
 export interface ArtistTrack {
   track_name: string;
-  duration: number | null;
+  duration: number;
   exists: boolean;
   album_name: string;
+  image_url: string;
 }
 
 export interface ArtistMetadata {

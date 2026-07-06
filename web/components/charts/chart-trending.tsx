@@ -24,8 +24,8 @@ import { useState } from "react";
 import { toast } from "sonner";
 import { ChartArtistDrawer } from "./chart-artist-drawer";
 import { ChartBadge } from "./chart-badge";
-
-type ViewMode = "list" | "grid";
+import { ChartGridCard } from "./chart-grid-card";
+import { ViewMode } from "./types";
 
 export const ChartTrending = () => {
   const [search, setSearch] = useState("");
@@ -197,66 +197,32 @@ export const ChartTrending = () => {
           const isExist = track.exists;
 
           return (
-            <div
+            <ChartGridCard
               key={key}
-              className="group relative flex flex-col overflow-hidden rounded-lg border border-border bg-card transition-colors hover:border-foreground/20"
+              trackName={track.track_name}
+              albumName={track.album_name}
+              duration={track.duration}
+              imageUrl={track.image_url}
+              isExist={isExist}
+              isDownloading={isDownloading}
             >
-              <div className="relative aspect-square overflow-hidden bg-secondary">
-                {track.image_url ? (
-                  <Image
-                    src={track.image_url}
-                    alt={track.track_name}
-                    fill
-                    className="object-cover transition-transform duration-300 group-hover:scale-105"
-                  />
-                ) : (
-                  <div className="flex h-full items-center justify-center">
-                    <Text
-                      className="text-3xl font-bold text-muted-foreground/30"
-                      value={track.track_name.charAt(0).toUpperCase()}
-                    />
-                  </div>
-                )}
-                <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/70 to-transparent p-2.5">
-                  <Text
-                    className="text-xs text-white/90 truncate"
-                    value={formatDuration(track.duration)}
-                  />
-                </div>
-                <div className="absolute top-2 right-2">
-                  <ChartBadge isExist={isExist} isDownloading={isDownloading} />
-                </div>
-              </div>
-              <div className="flex flex-1 flex-col gap-1 p-3">
-                <Text
-                  className="truncate font-semibold"
-                  value={track.track_name}
-                />
-                <Text
-                  className="truncate !text-xs"
-                  muted
-                  value={track.album_name}
-                />
-                <div className="mt-auto flex items-center justify-between pt-2">
-                  <Button
-                    onClick={() => setSelectedArtist(track.artist_name)}
-                    variant="link"
-                    className="h-auto p-0 text-muted-foreground hover:text-primary justify-start"
-                  >
-                    {track.artist_name}
-                  </Button>
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    className="h-6 w-6 text-muted-foreground hover:text-foreground"
-                    onClick={() => handleDownload(track)}
-                    disabled={isDownloading || isExist}
-                  >
-                    <Download />
-                  </Button>
-                </div>
-              </div>
-            </div>
+              <Button
+                onClick={() => setSelectedArtist(track.artist_name)}
+                variant="link"
+                className="h-auto p-0 text-muted-foreground hover:text-primary justify-start"
+              >
+                {track.artist_name}
+              </Button>
+              <Button
+                variant="ghost"
+                size="icon"
+                className="h-6 w-6 text-muted-foreground hover:text-foreground"
+                onClick={() => handleDownload(track)}
+                disabled={isDownloading || isExist}
+              >
+                <Download />
+              </Button>
+            </ChartGridCard>
           );
         })}
       </div>
