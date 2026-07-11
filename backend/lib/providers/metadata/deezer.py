@@ -117,6 +117,7 @@ class DeezerMetadataProvider(MetadataProvider):
         *,
         artist_name: str,
         album_name: str,
+        exclude_tracks: bool = False,
     ) -> AlbumInfo | None:
         """Search Deezer for an album and return its metadata with tracks."""
 
@@ -130,23 +131,28 @@ class DeezerMetadataProvider(MetadataProvider):
                 return None
 
             album = result["data"][0]
-            album_id = album.get("id")
+            tracks = []
 
-            tracks_result = await self._http(f"/album/{album_id}/tracks")
-            raw_tracks = tracks_result.get("data", []) if tracks_result else []
+            if not exclude_tracks:
+                album_id = album.get("id")
 
-            tracks = [
-                ArtistTrack(
-                    artist_name=track.get("artist", {}).get("name", artist_name),
-                    track_name=track.get("title", ""),
-                    duration_ms=int(track.get("duration", 0) or 0) * 1000,
-                    disambiguation="",
-                    album_name=album.get("title", ""),
-                    genres=[],
-                    image_url="",
-                )
-                for track in raw_tracks
-            ]
+                tracks_result = await self._http(f"/album/{album_id}/tracks")
+                raw_tracks = tracks_result.get("data", []) if tracks_result else []
+
+                for track in raw_tracks:
+                    tracks.append(
+                        ArtistTrack(
+                            artist_name=track.get("artist", {}).get(
+                                "name", artist_name
+                            ),
+                            track_name=track.get("title", ""),
+                            duration_ms=int(track.get("duration", 0) or 0) * 1000,
+                            disambiguation="",
+                            album_name=album.get("title", ""),
+                            genres=[],
+                            image_url="",
+                        )
+                    )
 
             return AlbumInfo(
                 album_name=album.get("title", ""),

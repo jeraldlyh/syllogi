@@ -158,7 +158,9 @@ class AlbumInfo:
 
         deezer_provider = DeezerMetadataProvider()
         deezer_album = await deezer_provider.get_album_info(
-            artist_name=self.artist_name, album_name=self.album_name
+            artist_name=self.artist_name,
+            album_name=self.album_name,
+            exclude_tracks=True,
         )
 
         if not deezer_album:
