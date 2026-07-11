@@ -15,7 +15,7 @@ from lib.providers import get_provider
 from lib.providers.metadata.deezer import DeezerMetadataProvider
 from lib.providers.metadata.lastfm import LastFMMetadataProvider
 from lib.providers.metadata.musicbrainz import MusicBrainzMetadataProvider
-from lib.track import find_track, is_track_in_provider
+from lib.track import is_track_in_provider
 
 logger = logging.getLogger(__name__)
 
@@ -232,34 +232,36 @@ async def _get_artist_info(
 
     mb_recordings = await mb_provider.get_artist_recordings(artist_mbid=artist_info.id)
     mb_recordings = list(set(mb_recordings))
-    await asyncio.gather(*[recording.ensure_metadata() for recording in mb_recordings])
 
-    music_playlist_provider = get_provider()
-    track_existence = await asyncio.gather(
-        *[
-            find_track(
-                provider=music_playlist_provider,
-                artist_name=artist_name,
-                track_name=recording.track_name,
-                album_name="",
-                year="",
-                duration=recording.get_duration(),
-            )
-            for recording in mb_recordings
-        ],
-        return_exceptions=True,
-    )
+    await asyncio.gather(*[recording.ensure_metadata() for recording in mb_recordings])
 
     return {
         "artist": artist_info.to_dict(),
-        "recordings": [
-            recording.to_dict(
-                exists=(
-                    not provider_track.is_not_found()
-                    if not isinstance(provider_track, BaseException)
-                    else False
-                )
-            )
-            for recording, provider_track in zip(mb_recordings, track_existence)
-        ],
+        "recordings": [await recording.to_dict() for recording in mb_recordings],
     }
+
+
+@router.get(
+    path="/album",
+    summary="Get album info",
+    description="Retrieve album metadata and tracklist by artist and album name.",
+    responses={
+        200: {
+            "description": "Album metadata retrieved successfully",
+        }
+    },
+)
+async def _get_album_info(
+    artist_name: str = Query(description="Artist name"),
+    album_name: str = Query(description="Album name"),
+) -> dict:
+    mb_provider = MusicBrainzMetadataProvider()
+    album_info = await mb_provider.get_album_info(
+        artist_name=artist_name, album_name=album_name
+    )
+
+    if not album_info:
+        return {"album": None, "tracks": []}
+
+    await album_info.ensure_metadata()
+    return await album_info.to_dict()
