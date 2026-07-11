@@ -122,3 +122,30 @@ class ArtistInfo:
             "image_url": self.image_url,
             "num_of_fans": self.num_of_fans,
         }
+
+
+@dataclass
+class AlbumInfo:
+    """Album metadata with tracklist."""
+
+    title: str
+    artist_name: str
+    image_url: str
+    release_date: str
+    tracks: list[ArtistTrack]
+
+    def to_dict(self) -> dict[str, str | int | list[dict]]:
+        return {
+            "title": self.title,
+            "artist_name": self.artist_name,
+            "image_url": self.image_url,
+            "release_date": self.release_date,
+            "tracks": [
+                {
+                    "track_name": track.track_name,
+                    "artist_name": track.artist_name,
+                    "duration": track.get_duration(),
+                }
+                for track in self.tracks
+            ],
+        }

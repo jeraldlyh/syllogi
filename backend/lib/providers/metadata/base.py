@@ -1,6 +1,6 @@
 from abc import ABC, abstractmethod
 
-from lib.models.metadata import ArtistInfo, ArtistTrack
+from lib.models.metadata import AlbumInfo, ArtistInfo, ArtistTrack
 
 
 class MetadataProvider(ABC):
@@ -51,3 +51,21 @@ class MetadataProvider(ABC):
         Returns:
             List of ArtistTrack.
         """
+
+    @abstractmethod
+    async def get_album_info(
+        self,
+        *,
+        artist_name: str,
+        album_name: str,
+    ) -> AlbumInfo | None:
+        """Get album metadata and tracklist by artist and album name.
+
+        Args:
+            artist_name: Artist name.
+            album_name: Album name.
+
+        Returns:
+            An AlbumInfo instance with tracks, or None if not found.
+        """
+        ...
