@@ -233,7 +233,7 @@ class LastFMMetadataProvider(MetadataProvider):
         )
 
         return AlbumInfo(
-            title=album.get("name", album_name),
+            album_name=album.get("name", album_name),
             artist_name=artist_name,
             image_url=image_url,
             release_date="",

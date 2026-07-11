@@ -149,9 +149,9 @@ class DeezerMetadataProvider(MetadataProvider):
             ]
 
             return AlbumInfo(
-                title=album.get("title", ""),
+                album_name=album.get("title", ""),
                 artist_name=album.get("artist", {}).get("name", artist_name),
-                image_url=album.get("cover_big") or album.get("cover_medium") or "",
+                image_url=album.get("cover_xl") or album.get("cover_big") or "",
                 release_date="",
                 tracks=tracks,
             )

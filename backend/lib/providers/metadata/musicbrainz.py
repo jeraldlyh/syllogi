@@ -211,7 +211,7 @@ class MusicBrainzMetadataProvider(MetadataProvider):
         if not releases:
             return None
 
-        release = releases.get("releases")[0]
+        release = releases[0]
         release_id = release.get("id")
 
         release_detail = await self._http(
@@ -244,7 +244,7 @@ class MusicBrainzMetadataProvider(MetadataProvider):
             )
 
         return AlbumInfo(
-            title=release_group.get("title", album_name),
+            album_name=release_group.get("title", album_name),
             artist_name=artist_name,
             image_url="",
             release_date=release_group.get("first-release-date", ""),

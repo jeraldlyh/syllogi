@@ -1,3 +1,4 @@
+import asyncio
 from dataclasses import dataclass
 
 
@@ -40,8 +41,23 @@ class ArtistTrack:
             return 0
         return self.duration_ms // 1000
 
-    def to_dict(self, exists: bool) -> dict[str, str | int | bool | list]:
+    async def to_dict(
+        self,
+    ) -> dict[str, str | int | bool | list]:
         """Convert the ArtistTrack to a dictionary representation."""
+
+        from lib.providers import get_provider
+        from lib.track import find_track
+
+        provider = get_provider()
+        provider_track = await find_track(
+            provider=provider,
+            artist_name=self.artist_name,
+            track_name=self.track_name,
+            album_name=self.album_name,
+            year="",
+            duration=self.get_duration(),
+        )
 
         return {
             "track_name": self.track_name,
@@ -50,7 +66,7 @@ class ArtistTrack:
             "album_name": self.album_name,
             "genres": self.genres,
             "image_url": self.image_url,
-            "exists": exists,
+            "exists": not provider_track.is_not_found(),
         }
 
     def __eq__(self, other):
@@ -128,24 +144,34 @@ class ArtistInfo:
 class AlbumInfo:
     """Album metadata with tracklist."""
 
-    title: str
+    album_name: str
     artist_name: str
     image_url: str
     release_date: str
     tracks: list[ArtistTrack]
 
-    def to_dict(self) -> dict[str, str | int | list[dict]]:
+    async def ensure_metadata(self) -> None:
+        from lib.providers.metadata.deezer import DeezerMetadataProvider
+
+        if self.image_url:
+            return
+
+        deezer_provider = DeezerMetadataProvider()
+        deezer_album = await deezer_provider.get_album_info(
+            artist_name=self.artist_name, album_name=self.album_name
+        )
+
+        if not deezer_album:
+            return
+        self.image_url = deezer_album.image_url
+
+    async def to_dict(self) -> dict[str, str | int | list[dict]]:
+        await asyncio.gather(*[track.ensure_metadata() for track in self.tracks])
+
         return {
-            "title": self.title,
+            "title": self.album_name,
             "artist_name": self.artist_name,
             "image_url": self.image_url,
             "release_date": self.release_date,
-            "tracks": [
-                {
-                    "track_name": track.track_name,
-                    "artist_name": track.artist_name,
-                    "duration": track.get_duration(),
-                }
-                for track in self.tracks
-            ],
+            "tracks": [await track.to_dict() for track in self.tracks],
         }
