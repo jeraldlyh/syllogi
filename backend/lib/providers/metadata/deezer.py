@@ -5,7 +5,7 @@ import httpx
 
 from lib.env import get_environment_variable
 from lib.models.chart import ChartTrendingTrack
-from lib.models.metadata import ArtistInfo, ArtistTrack
+from lib.models.metadata import AlbumInfo, ArtistInfo, ArtistTrack
 from lib.providers.metadata.base import MetadataProvider
 
 logger = logging.getLogger(__name__)
@@ -109,6 +109,55 @@ class DeezerMetadataProvider(MetadataProvider):
         except Exception as e:
             logger.warning(
                 f"Failed to fetch Deezer track for '{artist_name} - {track_name}': {e}"
+            )
+            return None
+
+    async def get_album_info(
+        self,
+        *,
+        artist_name: str,
+        album_name: str,
+    ) -> AlbumInfo | None:
+        """Search Deezer for an album and return its metadata with tracks."""
+
+        try:
+            result = await self._http(
+                "/search/album",
+                params={"q": f"{artist_name} {album_name}", "limit": 1},
+            )
+
+            if not result or not result.get("data"):
+                return None
+
+            album = result["data"][0]
+            album_id = album.get("id")
+
+            tracks_result = await self._http(f"/album/{album_id}/tracks")
+            raw_tracks = tracks_result.get("data", []) if tracks_result else []
+
+            tracks = [
+                ArtistTrack(
+                    artist_name=track.get("artist", {}).get("name", artist_name),
+                    track_name=track.get("title", ""),
+                    duration_ms=int(track.get("duration", 0) or 0) * 1000,
+                    disambiguation="",
+                    album_name=album.get("title", ""),
+                    genres=[],
+                    image_url="",
+                )
+                for track in raw_tracks
+            ]
+
+            return AlbumInfo(
+                title=album.get("title", ""),
+                artist_name=album.get("artist", {}).get("name", artist_name),
+                image_url=album.get("cover_big") or album.get("cover_medium") or "",
+                release_date="",
+                tracks=tracks,
+            )
+        except Exception as e:
+            logger.warning(
+                f"Failed to fetch Deezer album info for '{artist_name} - {album_name}': {e}"
             )
             return None
 

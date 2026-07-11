@@ -10,7 +10,7 @@ from lib.models.musicbrainz import (
     MusicbrainzArtistArea,
     MusicbrainzArtistTag,
 )
-from lib.models.metadata import ArtistTrack
+from lib.models.metadata import AlbumInfo, ArtistTrack
 from lib.providers.metadata.base import (
     ArtistInfo,
     MetadataProvider,
@@ -187,6 +187,69 @@ class MusicBrainzMetadataProvider(MetadataProvider):
         if not results:
             return None
         return results[0].to_artist_info(locale=locale)
+
+    async def get_album_info(
+        self,
+        *,
+        artist_name: str,
+        album_name: str,
+    ) -> AlbumInfo | None:
+        """Search MusicBrainz for a release group and return its metadata with tracks."""
+
+        query = f'release-group:"{album_name}" AND artist:"{artist_name}"'
+        result = await self._http(
+            "/release-group",
+            params={"query": query, "limit": 1},
+        )
+
+        if not result or not result.get("release-groups"):
+            return None
+
+        release_group = result["release-groups"][0]
+        releases = release_group.get("releases", [])
+
+        if not releases:
+            return None
+
+        release = releases.get("releases")[0]
+        release_id = release.get("id")
+
+        release_detail = await self._http(
+            f"/release/{release_id}",
+            params={"inc": "recordings"},
+        )
+
+        if not release_detail:
+            return None
+
+        tracks: list[ArtistTrack] = []
+        release_media = release_detail.get("media", [])
+
+        if not release_media:
+            return None
+
+        for track in release_media[0].get("tracks", []):
+            recording = track.get("recording", {})
+
+            tracks.append(
+                ArtistTrack(
+                    artist_name=artist_name,
+                    track_name=recording.get("title", track.get("title", "")),
+                    duration_ms=recording.get("length", 0),
+                    disambiguation=recording.get("disambiguation", ""),
+                    album_name=album_name,
+                    genres=[],
+                    image_url="",
+                )
+            )
+
+        return AlbumInfo(
+            title=release_group.get("title", album_name),
+            artist_name=artist_name,
+            image_url="",
+            release_date=release_group.get("first-release-date", ""),
+            tracks=tracks,
+        )
 
     async def get_artist_alias(self, *, artist_name: str) -> str | None:
         """Get artist actual name using MusicBrainz.

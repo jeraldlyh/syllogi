@@ -5,7 +5,7 @@ import httpx
 
 from lib.env import get_environment_variable
 from lib.models.chart import ChartTrendingTrack
-from lib.models.metadata import ArtistInfo, ArtistTrack
+from lib.models.metadata import AlbumInfo, ArtistInfo, ArtistTrack
 from lib.providers.metadata.base import MetadataProvider
 
 logger = logging.getLogger(__name__)
@@ -132,16 +132,13 @@ class LastFMMetadataProvider(MetadataProvider):
         )
         raw_tracks = self._get_nested_value(data, "toptracks.track") or []
         tracks: list[ArtistTrack] = []
-        for raw_track in raw_tracks:
-            duration = int(raw_track.get("duration", 0) or 0)
 
-            if not duration:
-                continue
-
+        for track in raw_tracks:
             tracks.append(
                 ArtistTrack(
-                    track_name=raw_track.get("name", ""),
-                    duration_ms=duration * 1000,
+                    artist_name=track.get("artist", {}).get("name", artist_name),
+                    track_name=track.get("name", ""),
+                    duration_ms=track.get("duration", 0) * 1000,
                     disambiguation="",
                     album_name="",
                     genres=[],
@@ -158,7 +155,7 @@ class LastFMMetadataProvider(MetadataProvider):
     ) -> ArtistTrack | None:
         data = await self._http(
             params={
-                "method": "artist.search",
+                "method": "track.search",
                 "track": track_name,
                 "artist": artist_name,
                 "limit": 5,
@@ -177,17 +174,71 @@ class LastFMMetadataProvider(MetadataProvider):
                 lower_artist_name == artist_name.casefold()
                 and track_name.casefold() in lower_track_title
             ):
-                duration = int(track.get("duration", 0) or 0)
-
                 return ArtistTrack(
+                    artist_name=track.get("artist", ""),
                     track_name=track.get("name", ""),
-                    duration_ms=duration * 1000 if duration else None,
+                    duration_ms=track.get("duration", 0) * 1000,
                     disambiguation="",
                     album_name="",
                     genres=[],
                     image_url="",
                 )
         return None
+
+    async def get_album_info(
+        self,
+        *,
+        artist_name: str,
+        album_name: str,
+    ) -> AlbumInfo | None:
+        """Search LastFM for an album and return its metadata with tracks."""
+
+        data = await self._http(
+            params={
+                "method": "album.getInfo",
+                "artist": artist_name,
+                "album": album_name,
+            },
+        )
+
+        if not data:
+            return None
+
+        album = data.get("album")
+
+        if not album:
+            return None
+
+        raw_tracks = self._get_nested_value(album, "tracks.track") or []
+
+        tracks = []
+
+        for track in raw_tracks:
+            tracks.append(
+                ArtistTrack(
+                    artist_name=track.get("artist", {}).get("name", artist_name),
+                    track_name=track.get("name", ""),
+                    duration_ms=track.get("duration", 0) * 1000,
+                    disambiguation="",
+                    album_name=album.get("name", album_name),
+                    genres=[],
+                    image_url="",
+                )
+            )
+
+        images = album.get("image", [])
+        image_url = next(
+            (img["#text"] for img in reversed(images) if img.get("#text")),
+            "",
+        )
+
+        return AlbumInfo(
+            title=album.get("name", album_name),
+            artist_name=artist_name,
+            image_url=image_url,
+            release_date="",
+            tracks=tracks,
+        )
 
     async def get_chart_top_tracks(self, limit: int = 50) -> list[ChartTrendingTrack]:
         data = await self._http(
