@@ -32,6 +32,7 @@ import React, { useState } from "react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { ChartBadge } from "./chart-badge";
+import { useChartDrawer } from "./chart-drawer-context";
 import { ChartGridCard } from "./chart-grid-card";
 import { Text } from "@/components/common/text";
 import { ViewMode } from "./types";
@@ -201,6 +202,7 @@ const RecordingsSection = ({ data }: { data: ArtistInfo }) => {
     useDownloadSessions();
 
   const [viewMode, setViewMode] = useState<ViewMode>("list");
+  const { setSelectedAlbum } = useChartDrawer();
 
   const getRecordingKey = (recording: ArtistTrack): string =>
     `${artistName.toLowerCase()}:${recording.track_name.toLowerCase()}`;
@@ -365,10 +367,17 @@ const RecordingsSection = ({ data }: { data: ArtistInfo }) => {
                     imageUrl={recording.image_url}
                     isExist={recording.exists}
                     isDownloading={isDownloading}
+                    onAlbumClick={
+                      recording.album_name
+                        ? () =>
+                            setSelectedAlbum({
+                              artistName,
+                              albumName: recording.album_name,
+                            })
+                        : undefined
+                    }
                   >
-                    <div className="flex items-center justify-center w-full">
-                      {renderAction(recording)}
-                    </div>
+                    {renderAction(recording)}
                   </ChartGridCard>
                 );
               })}
@@ -431,7 +440,19 @@ const RecordingsSection = ({ data }: { data: ArtistInfo }) => {
                           </div>
                         </TableCell>
                         <TableCell className="hidden md:table-cell">
-                          <Text value={recording.album_name} muted />
+                          <Button
+                            onClick={() =>
+                              setSelectedAlbum({
+                                artistName,
+                                albumName: recording.album_name,
+                              })
+                            }
+                            variant="link"
+                            className="text-muted-foreground hover:text-primary transition-colors text-left px-0"
+                            disabled={!recording.album_name}
+                          >
+                            <Text value={recording.album_name} />
+                          </Button>
                         </TableCell>
                         <TableCell className="hidden md:table-cell">
                           <Text
@@ -481,7 +502,7 @@ const ArtistContent = ({ artistName }: { artistName: string }) => {
     return (
       <div className="flex flex-1 flex-col items-center justify-center px-6 pb-8">
         <div className="flex flex-col items-center gap-4 text-center">
-          <h1 className="text-2xl font-bold">Artist not found</h1>
+          <h1 className="text-2xl font-bold mt-4">Artist not found</h1>
           <p className="text-sm text-muted-foreground">
             We couldn&apos;t find information for &quot;{artistName}&quot;.
           </p>

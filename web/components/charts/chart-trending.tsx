@@ -22,14 +22,14 @@ import { Download, LayoutGrid, List, RefreshCw, Search } from "lucide-react";
 import Image from "next/image";
 import { useState } from "react";
 import { toast } from "sonner";
-import { ChartArtistDrawer } from "./chart-artist-drawer";
 import { ChartBadge } from "./chart-badge";
+import { useChartDrawer } from "./chart-drawer-context";
 import { ChartGridCard } from "./chart-grid-card";
 import { ViewMode } from "./types";
 
 export const ChartTrending = () => {
+  const { setSelectedArtist, setSelectedAlbum } = useChartDrawer();
   const [search, setSearch] = useState("");
-  const [selectedArtist, setSelectedArtist] = useState<string | null>(null);
   const [downloadingTracks, setDownloadingTracks] = useState<Set<string>>(
     new Set(),
   );
@@ -201,18 +201,13 @@ export const ChartTrending = () => {
               key={key}
               trackName={track.track_name}
               albumName={track.album_name}
+              artistName={track.artist_name}
               duration={track.duration}
               imageUrl={track.image_url}
               isExist={isExist}
               isDownloading={isDownloading}
+              onArtistClick={() => setSelectedArtist(track.artist_name)}
             >
-              <Button
-                onClick={() => setSelectedArtist(track.artist_name)}
-                variant="link"
-                className="h-auto p-0 text-muted-foreground hover:text-primary justify-start"
-              >
-                {track.artist_name}
-              </Button>
               <Button
                 variant="ghost"
                 size="icon"
@@ -308,14 +303,6 @@ export const ChartTrending = () => {
                       </div>
                     </div>
                   </TableCell>
-                  <TableCell>
-                    <Button
-                      onClick={() => setSelectedArtist(track.artist_name)}
-                      variant="link"
-                      className="text-muted-foreground hover:text-primary transition-colors text-left px-0"
-                    >
-                      <Text value={track.album_name} />
-                    </Button>
                   </TableCell>
                   <TableCell className="hidden md:table-cell">
                     <Text
