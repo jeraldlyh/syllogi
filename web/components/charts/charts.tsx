@@ -1,4 +1,5 @@
 "use client";
+import { ChartAlbumDrawer } from "./chart-album-drawer";
 import { ChartArtistDrawer } from "./chart-artist-drawer";
 import { ChartDrawerProvider, useChartDrawer } from "./chart-drawer-context";
 import { ChartTrending } from "./chart-trending";
@@ -13,6 +14,11 @@ const ChartsContent = () => {
       <ChartArtistDrawer
         artistName={selectedArtist}
         onClose={() => setSelectedArtist(null)}
+      />
+      <ChartAlbumDrawer
+        artistName={selectedAlbum?.artistName ?? null}
+        albumName={selectedAlbum?.albumName ?? null}
+        onClose={() => setSelectedAlbum(null)}
       />
     </div>
   );

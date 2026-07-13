@@ -206,6 +206,15 @@ export const ChartTrending = () => {
               imageUrl={track.image_url}
               isExist={isExist}
               isDownloading={isDownloading}
+              onAlbumClick={
+                track.album_name
+                  ? () =>
+                      setSelectedAlbum({
+                        artistName: track.artist_name,
+                        albumName: track.album_name,
+                      })
+                  : undefined
+              }
               onArtistClick={() => setSelectedArtist(track.artist_name)}
             >
               <Button
@@ -303,6 +312,23 @@ export const ChartTrending = () => {
                       </div>
                     </div>
                   </TableCell>
+                  <TableCell className="hidden md:table-cell">
+                    {track.album_name ? (
+                      <Button
+                        onClick={() =>
+                          setSelectedAlbum({
+                            artistName: track.artist_name,
+                            albumName: track.album_name,
+                          })
+                        }
+                        variant="link"
+                        className="text-muted-foreground hover:text-primary transition-colors text-left px-0"
+                      >
+                        <Text value={track.album_name} />
+                      </Button>
+                    ) : (
+                      <Text value="" muted />
+                    )}
                   </TableCell>
                   <TableCell className="hidden md:table-cell">
                     <Text
@@ -360,10 +386,6 @@ export const ChartTrending = () => {
           {viewMode === "list" ? renderTable() : renderGrid()}
         </CardContent>
       </Card>
-      <ChartArtistDrawer
-        artistName={selectedArtist}
-        onClose={() => setSelectedArtist(null)}
-      />
     </>
   );
 };
