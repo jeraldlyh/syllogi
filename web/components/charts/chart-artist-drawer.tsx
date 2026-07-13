@@ -17,7 +17,12 @@ import {
   useDownloadSessions,
 } from "@/hooks/useDownloadSessions";
 import { api } from "@/lib/api";
-import { cn, formatDuration } from "@/lib/utils";
+import {
+  capitaliseFirstLetter,
+  cn,
+  formatDuration,
+  getCapitalisedFirstLetter,
+} from "@/lib/utils";
 import {
   Dot,
   Download,
@@ -36,6 +41,7 @@ import { useChartDrawer } from "./chart-drawer-context";
 import { ChartGridCard } from "./chart-grid-card";
 import { Text } from "@/components/common/text";
 import { ViewMode } from "./types";
+import { ChartImage } from "./chart-image";
 
 const containerVariants = {
   hidden: { opacity: 0 },
@@ -135,24 +141,7 @@ const HeroSection = ({ data }: { data: ArtistInfo }): React.JSX.Element => {
       {...animationProps}
       transition={{ duration: 0.6, ease: "easeOut" as const }}
     >
-      <div className="shrink-0">
-        {artist.image_url ? (
-          <Image
-            src={artist.image_url}
-            alt={artist.name}
-            width={256}
-            height={256}
-            className="h-64 w-64 rounded-2xl object-cover"
-            priority
-          />
-        ) : (
-          <div className="flex h-64 w-64 items-center justify-center rounded-2xl bg-secondary">
-            <span className="text-6xl font-bold text-muted-foreground">
-              {artist.name.charAt(0).toUpperCase()}
-            </span>
-          </div>
-        )}
-      </div>
+      <ChartImage imageUrl={artist.image_url} alt={artist.name} />
       <div className="flex flex-1 flex-col justify-center gap-4">
         <div>
           <div className="flex flex-wrap items-baseline gap-x-3">

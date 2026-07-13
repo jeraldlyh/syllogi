@@ -17,13 +17,19 @@ import {
 } from "@/hooks/useDownloadSessions";
 import { useAlbum } from "@/hooks/useAlbum";
 import { api } from "@/lib/api";
-import { cn, formatDuration } from "@/lib/utils";
+import {
+  capitaliseFirstLetter,
+  cn,
+  formatDuration,
+  getCapitalisedFirstLetter,
+} from "@/lib/utils";
 import { Download, Loader2, RotateCcw } from "lucide-react";
 import Image from "next/image";
 import { useState } from "react";
 import { toast } from "sonner";
 import { ChartBadge } from "./chart-badge";
 import { ArtistTrack } from "@/hooks/useArtist";
+import { ChartImage } from "./chart-image";
 
 interface IProps {
   artistName: string;
@@ -169,24 +175,7 @@ const AlbumContent = ({ artistName, albumName }: IProps) => {
     <div className="flex-1 overflow-y-auto px-4 pb-8">
       <div className="py-6">
         <div className="flex flex-col gap-6 md:flex-row md:items-start">
-          <div className="shrink-0">
-            {data.image_url ? (
-              <Image
-                src={data.image_url}
-                alt={data.title}
-                width={192}
-                height={192}
-                className="h-48 w-48 rounded-xl object-cover"
-                priority
-              />
-            ) : (
-              <div className="flex h-48 w-48 items-center justify-center rounded-xl bg-secondary">
-                <span className="text-5xl font-bold text-muted-foreground">
-                  {data.title.charAt(0).toUpperCase()}
-                </span>
-              </div>
-            )}
-          </div>
+          <ChartImage imageUrl={data.image_url} alt={data.title} />
           <div className="flex flex-1 flex-col justify-center gap-2">
             <h1 className="text-3xl font-bold tracking-tight">{data.title}</h1>
             <p className="text-sm text-muted-foreground">{data.artist_name}</p>
