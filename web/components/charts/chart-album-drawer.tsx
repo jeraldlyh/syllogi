@@ -17,19 +17,14 @@ import {
 } from "@/hooks/useDownloadSessions";
 import { useAlbum } from "@/hooks/useAlbum";
 import { api } from "@/lib/api";
-import {
-  capitaliseFirstLetter,
-  cn,
-  formatDuration,
-  getCapitalisedFirstLetter,
-} from "@/lib/utils";
-import { Download, Loader2, RotateCcw } from "lucide-react";
-import Image from "next/image";
+import { cn, formatDuration } from "@/lib/utils";
+import { Dot, Download, Loader2, RotateCcw } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
 import { ChartBadge } from "./chart-badge";
 import { ArtistTrack } from "@/hooks/useArtist";
 import { ChartImage } from "./chart-image";
+import { Badge } from "../ui/badge";
 
 interface IProps {
   artistName: string;
@@ -178,10 +173,14 @@ const AlbumContent = ({ artistName, albumName }: IProps) => {
           <ChartImage imageUrl={data.image_url} alt={data.title} />
           <div className="flex flex-1 flex-col justify-center gap-2">
             <h1 className="text-3xl font-bold tracking-tight">{data.title}</h1>
-            <p className="text-sm text-muted-foreground">{data.artist_name}</p>
-            <div className="flex gap-3 text-xs text-muted-foreground">
-              {data.release_date && <span>{data.release_date}</span>}
-              {tracks.length > 0 && <span>{tracks.length} tracks</span>}
+            <Text className="font-semibold" value={data.artist_name} />
+            <div className="flex gap-2">
+              {data.release_date && (
+                <Badge variant="secondary">{data.release_date}</Badge>
+              )}
+              {tracks.length > 0 && (
+                <Badge variant="secondary">{tracks.length} tracks</Badge>
+              )}
             </div>
           </div>
         </div>

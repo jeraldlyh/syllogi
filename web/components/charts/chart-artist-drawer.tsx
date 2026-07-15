@@ -125,9 +125,10 @@ const HeroSection = ({ data }: { data: ArtistInfo }): React.JSX.Element => {
   // if (artist.area) metadataItems.push(artist.area);
   // if (artist.begin_area) metadataItems.push(artist.begin_area);
 
-  const activeYears = artist.life_span?.begin
-    ? `${artist.life_span.begin} till ${artist.life_span.end ? `${artist.life_span.end}` : "present"}`
-    : null;
+  if (artist.life_span?.begin)
+    metadataItems.push(
+      `${artist.life_span.begin} till ${artist.life_span.end ? `${artist.life_span.end}` : "present"}`,
+    );
 
   return (
     <motion.div
@@ -136,7 +137,7 @@ const HeroSection = ({ data }: { data: ArtistInfo }): React.JSX.Element => {
       transition={{ duration: 0.6, ease: "easeOut" as const }}
     >
       <ChartImage imageUrl={artist.image_url} alt={artist.name} />
-      <div className="flex flex-1 flex-col justify-center gap-4">
+      <div className="flex flex-1 flex-col justify-center gap-2">
         <div>
           <div className="flex flex-wrap items-baseline gap-x-3">
             <h1 className="text-4xl font-bold tracking-tight">{artist.name}</h1>
@@ -147,16 +148,12 @@ const HeroSection = ({ data }: { data: ArtistInfo }): React.JSX.Element => {
             )}
           </div>
           {metadataItems.length > 0 && (
-            <div className="flex mt-1 text-sm text-muted-foreground">
+            <div className="flex mt-2 items-center text-sm text-muted-foreground">
               {metadataItems.map((item, i) => (
-                <div className="flex" key={`${item}-${i}`}>
-                  <p>{item}</p>
-                  <Dot className="-mx-1" />
-                </div>
+                <Badge key={`${item}-${i}`} variant="outline">
+                  {item}
+                </Badge>
               ))}
-              {activeYears && (
-                <span className="hidden md:block">{activeYears}</span>
-              )}
             </div>
           )}
         </div>
