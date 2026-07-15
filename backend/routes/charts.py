@@ -160,7 +160,7 @@ async def _get_download_sessions(session: SessionDep) -> list[dict]:
 @router.get(
     path="/artist/{artist_name}",
     summary="Get artist metadata",
-    description="Retrieve artist metadata and recordings from MusicBrainz by artist name. Returns artist: null when not found.",
+    description="Retrieve artist metadata and tracks from MusicBrainz by artist name. Returns artist: null when not found.",
     responses={
         200: {
             "description": "Artist metadata (or null if not found)",
@@ -189,7 +189,7 @@ async def _get_download_sessions(session: SessionDep) -> list[dict]:
                                     ],
                                     "aliases": ["On a Friday"],
                                 },
-                                "recordings": [
+                                "tracks": [
                                     {
                                         "title": "Creep",
                                         "duration": 238,
@@ -205,7 +205,7 @@ async def _get_download_sessions(session: SessionDep) -> list[dict]:
                         },
                         "not_found": {
                             "summary": "Artist not found",
-                            "value": {"artist": None, "recordings": []},
+                            "value": {"artist": None, "tracks": []},
                         },
                     },
                 }
@@ -226,18 +226,18 @@ async def _get_artist_info(
     )
 
     if not artist_info:
-        return {"artist": None, "recordings": []}
+        return {"artist": None, "tracks": []}
 
     await artist_info.ensure_metadata()
 
-    mb_recordings = await mb_provider.get_artist_recordings(artist_mbid=artist_info.id)
-    mb_recordings = list(set(mb_recordings))
+    mb_tracks = await mb_provider.get_artist_tracks(artist_mbid=artist_info.id)
+    mb_tracks = list(set(mb_tracks))
 
-    await asyncio.gather(*[recording.ensure_metadata() for recording in mb_recordings])
+    await asyncio.gather(*[track.ensure_metadata() for track in mb_tracks])
 
     return {
         "artist": artist_info.to_dict(),
-        "recordings": [await recording.to_dict() for recording in mb_recordings],
+        "tracks": [await track.to_dict() for track in mb_tracks],
     }
 
 

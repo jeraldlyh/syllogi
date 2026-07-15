@@ -110,12 +110,12 @@ class MusicBrainzMetadataProvider(MetadataProvider):
             for artist in result.get("artists", [])
         ]
 
-    async def get_artist_recordings(
+    async def get_artist_tracks(
         self,
         *,
         artist_mbid: str,
     ) -> list[ArtistTrack]:
-        """Fetch recordings by artist MusicBrainz ID."""
+        """Fetch tracks by artist MusicBrainz ID."""
 
         result = await self._http(
             f"/artist/{artist_mbid}",
@@ -126,30 +126,30 @@ class MusicBrainzMetadataProvider(MetadataProvider):
             return []
 
         unique = set()
-        for recording in result.get("recordings", []):
-            if not recording.get("length"):
+        for track in result.get("recordings", []):
+            if not track.get("length"):
                 continue
 
             unique.add(
                 ArtistTrack(
                     artist_name=result.get("name", ""),
-                    track_name=recording.get("title", ""),
-                    duration_ms=recording.get("length"),
-                    disambiguation=recording.get("disambiguation", ""),
+                    track_name=track.get("title", ""),
+                    duration_ms=track.get("length"),
+                    disambiguation=track.get("disambiguation", ""),
                     album_name="",
-                    genres=[genre.get("name") for genre in recording.get("genres", [])],
+                    genres=[genre.get("name") for genre in track.get("genres", [])],
                     image_url="",
                 )
             )
         return list(unique)
 
-    async def get_artist_recording(
+    async def get_artist_track(
         self,
         *,
         artist_name: str,
         track_name: str,
     ) -> ArtistTrack | None:
-        """Search MusicBrainz for a recording by artist and track name."""
+        """Search MusicBrainz for a track by artist and track name."""
 
         query = f'recording:"{track_name}" AND artist:"{artist_name}"'
         result = await self._http(
@@ -160,17 +160,17 @@ class MusicBrainzMetadataProvider(MetadataProvider):
         if not result or not result.get("recordings"):
             return
 
-        recording = result.get("recordings")[0]
+        track = result.get("recordings")[0]
 
         return ArtistTrack(
             artist_name=artist_name,
-            track_name=recording.get("title", ""),
-            duration_ms=recording.get("length"),
-            disambiguation=recording.get("disambiguation", ""),
-            album_name=recording.get("releases", [{}])
+            track_name=track.get("title", ""),
+            duration_ms=track.get("length"),
+            disambiguation=track.get("disambiguation", ""),
+            album_name=track.get("releases", [{}])
             .get("release-group", {})
             .get("title", ""),
-            genres=[genre.get("name") for genre in recording.get("genres", [])],
+            genres=[genre.get("name") for genre in track.get("genres", [])],
             image_url="",
         )
 

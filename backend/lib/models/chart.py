@@ -31,7 +31,7 @@ class ChartTrendingTrack:
         from lib.providers.metadata.deezer import DeezerMetadataProvider
 
         deezer_provider = DeezerMetadataProvider()
-        deezer_track = await deezer_provider.get_artist_recording(
+        deezer_track = await deezer_provider.get_artist_track(
             artist_name=self.artist_name,
             track_name=self.track_name,
         )

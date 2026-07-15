@@ -24,14 +24,14 @@ class MetadataProvider(ABC):
         ...
 
     @abstractmethod
-    async def get_artist_recordings(
+    async def get_artist_tracks(
         self, *, artist_mbid: str, limit: int
     ) -> list[ArtistTrack]:
-        """Get artist recordings by MusicBrainz ID.
+        """Get artist tracks by MusicBrainz ID.
 
         Args:
             artist_mbid: MusicBrainz ID to search for.
-            limit: Maximum number of recordings to return.
+            limit: Maximum number of tracks to return.
 
         Returns:
             List of ArtistTrack.
@@ -39,10 +39,10 @@ class MetadataProvider(ABC):
         ...
 
     @abstractmethod
-    async def get_artist_recording(
+    async def get_artist_track(
         self, *, artist_name: str, track_name: str
     ) -> list[ArtistTrack]:
-        """Get artist recording by name
+        """Get artist track by name
 
         Args:
             artist_name: Artist name to search for.

@@ -17,12 +17,7 @@ import {
   useDownloadSessions,
 } from "@/hooks/useDownloadSessions";
 import { api } from "@/lib/api";
-import {
-  capitaliseFirstLetter,
-  cn,
-  formatDuration,
-  getCapitalisedFirstLetter,
-} from "@/lib/utils";
+import { capitaliseFirstLetter, cn, formatDuration } from "@/lib/utils";
 import {
   Dot,
   Download,
@@ -32,7 +27,6 @@ import {
   RotateCcw,
 } from "lucide-react";
 import { motion, useReducedMotion } from "motion/react";
-import Image from "next/image";
 import React, { useState } from "react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
@@ -125,7 +119,7 @@ const HeroSection = ({ data }: { data: ArtistInfo }): React.JSX.Element => {
   const metadataItems: string[] = [];
   if (artist.country) metadataItems.push(artist.country);
   if (artist.type) metadataItems.push(artist.type);
-  if (artist.gender) metadataItems.push(artist.gender);
+  if (artist.gender) metadataItems.push(capitaliseFirstLetter(artist.gender));
   if (artist.num_of_fans)
     metadataItems.push(`${artist.num_of_fans.toLocaleString()} fans`);
   // if (artist.area) metadataItems.push(artist.area);
@@ -180,8 +174,8 @@ const HeroSection = ({ data }: { data: ArtistInfo }): React.JSX.Element => {
   );
 };
 
-const RecordingsSection = ({ data }: { data: ArtistInfo }) => {
-  const recordings = data.recordings;
+const TracksSection = ({ data }: { data: ArtistInfo }) => {
+  const tracks = data.tracks;
   const artistName = data.artist ? data.artist.name : "";
   const [downloadingTracks, setDownloadingTracks] = useState<Set<string>>(
     new Set(),
@@ -193,32 +187,32 @@ const RecordingsSection = ({ data }: { data: ArtistInfo }) => {
   const [viewMode, setViewMode] = useState<ViewMode>("list");
   const { setSelectedAlbum } = useChartDrawer();
 
-  const getRecordingKey = (recording: ArtistTrack): string =>
-    `${artistName.toLowerCase()}:${recording.track_name.toLowerCase()}`;
+  const getTrackKey = (track: ArtistTrack): string =>
+    `${artistName.toLowerCase()}:${track.track_name.toLowerCase()}`;
 
-  const getRecordingStatus = (
-    recording: ArtistTrack,
+  const getTrackStatus = (
+    track: ArtistTrack,
   ): DownloadSession["status"] | null => {
     if (!downloadSessions || !data.artist) return null;
 
     const session = downloadSessions.find(
       (session: DownloadSession) =>
         session.artist_name.toLowerCase() === artistName.toLowerCase() &&
-        session.track_name.toLowerCase() === recording.track_name.toLowerCase(),
+        session.track_name.toLowerCase() === track.track_name.toLowerCase(),
     );
 
     return session ? session.status : null;
   };
 
-  const handleDownload = async (recording: ArtistTrack): Promise<void> => {
-    const key = getRecordingKey(recording);
+  const handleDownload = async (track: ArtistTrack): Promise<void> => {
+    const key = getTrackKey(track);
 
     if (downloadingTracks.has(key)) return;
 
     setDownloadingTracks((prev) => new Set(prev).add(key));
 
     const toastId = toast.loading(
-      `Downloading ${artistName} - ${recording.track_name}...`,
+      `Downloading ${artistName} - ${track.track_name}...`,
     );
 
     try {
@@ -228,14 +222,14 @@ const RecordingsSection = ({ data }: { data: ArtistInfo }) => {
         path: "track",
         body: {
           artist_name: artistName,
-          track_name: recording.track_name,
+          track_name: track.track_name,
           image_url: "",
         },
       });
 
       if (response.statusCode !== 200) {
         const errorMessage =
-          response.error?.message || `${artistName} - ${recording.track_name}`;
+          response.error?.message || `${artistName} - ${track.track_name}`;
 
         toast.error("Failed to start download", {
           description: errorMessage,
@@ -245,13 +239,13 @@ const RecordingsSection = ({ data }: { data: ArtistInfo }) => {
       }
 
       toast.success("Download started", {
-        description: `${artistName} - ${recording.track_name}`,
+        description: `${artistName} - ${track.track_name}`,
         id: toastId,
       });
       refreshDownloads();
     } catch {
       toast.error("Failed to start download", {
-        description: `${artistName} - ${recording.track_name}`,
+        description: `${artistName} - ${track.track_name}`,
         id: toastId,
       });
     } finally {
@@ -264,9 +258,9 @@ const RecordingsSection = ({ data }: { data: ArtistInfo }) => {
     }
   };
 
-  const renderAction = (recording: ArtistTrack) => {
-    const status = getRecordingStatus(recording);
-    const isStarting = downloadingTracks.has(getRecordingKey(recording));
+  const renderAction = (track: ArtistTrack) => {
+    const status = getTrackStatus(track);
+    const isStarting = downloadingTracks.has(getTrackKey(track));
 
     if (isStarting || status === "pending" || status === "downloading") {
       return (
@@ -282,9 +276,9 @@ const RecordingsSection = ({ data }: { data: ArtistInfo }) => {
       <Button
         type="button"
         className="w-full"
-        onClick={() => handleDownload(recording)}
+        onClick={() => handleDownload(track)}
         variant={isFailed ? "destructive" : "outline"}
-        disabled={recording.exists}
+        disabled={track.exists}
         size="sm"
       >
         {isFailed ? (
@@ -300,7 +294,7 @@ const RecordingsSection = ({ data }: { data: ArtistInfo }) => {
     <Card>
       <CardHeader>
         <CardTitle className="flex justify-between items-center">
-          <span className="text-base font-semibold">Recordings</span>
+          <span className="text-base font-semibold">Tracks</span>
           <div className="flex items-center gap-2">
             <div className="hidden md:flex items-center gap-1 rounded-md border border-border p-1">
               <Button
@@ -334,14 +328,12 @@ const RecordingsSection = ({ data }: { data: ArtistInfo }) => {
         </CardTitle>
       </CardHeader>
       <CardContent>
-        {recordings.length > 0 ? (
+        {tracks.length > 0 ? (
           viewMode === "grid" ? (
             <div className="grid grid-cols-2 gap-3 md:grid-cols-5 max-h-[60vh] overflow-auto">
-              {recordings.map((recording, i) => {
-                const status = getRecordingStatus(recording);
-                const isStarting = downloadingTracks.has(
-                  getRecordingKey(recording),
-                );
+              {tracks.map((track, i) => {
+                const status = getTrackStatus(track);
+                const isStarting = downloadingTracks.has(getTrackKey(track));
                 const isDownloading =
                   isStarting ||
                   status === "pending" ||
@@ -349,24 +341,24 @@ const RecordingsSection = ({ data }: { data: ArtistInfo }) => {
 
                 return (
                   <ChartGridCard
-                    key={`${recording.track_name}-${i}`}
-                    trackName={recording.track_name}
-                    albumName={recording.album_name}
-                    duration={recording.duration}
-                    imageUrl={recording.image_url}
-                    isExist={recording.exists}
+                    key={`${track.track_name}-${i}`}
+                    trackName={track.track_name}
+                    albumName={track.album_name}
+                    duration={track.duration}
+                    imageUrl={track.image_url}
+                    isExist={track.exists}
                     isDownloading={isDownloading}
                     onAlbumClick={
-                      recording.album_name
+                      track.album_name
                         ? () =>
                             setSelectedAlbum({
                               artistName,
-                              albumName: recording.album_name,
+                              albumName: track.album_name,
                             })
                         : undefined
                     }
                   >
-                    {renderAction(recording)}
+                    {renderAction(track)}
                   </ChartGridCard>
                 );
               })}
@@ -390,16 +382,16 @@ const RecordingsSection = ({ data }: { data: ArtistInfo }) => {
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {recordings.map((recording, i) => {
-                    const status = getRecordingStatus(recording);
+                  {tracks.map((track, i) => {
+                    const status = getTrackStatus(track);
 
                     return (
                       <TableRow
-                        key={`${recording.track_name}-${i}`}
+                        key={`${track.track_name}-${i}`}
                         className={cn({
                           "md:bg-inherit bg-amber-500/10":
                             status === "pending" || status === "downloading",
-                          "md:bg-inherit bg-emerald-500/10": recording.exists,
+                          "md:bg-inherit bg-emerald-500/10": track.exists,
                         })}
                       >
                         <TableCell className="hidden md:table-cell font-mono text-xs text-muted-foreground">
@@ -409,17 +401,17 @@ const RecordingsSection = ({ data }: { data: ArtistInfo }) => {
                           <div className="flex flex-col gap-1">
                             <div className="flex flex-col gap-1">
                               <span className="truncate text-sm font-medium max-w-48 lg:max-w-none">
-                                {recording.track_name}
+                                {track.track_name}
                                 <Text
                                   className="md:hidden truncate max-w-48"
-                                  value={recording.album_name}
+                                  value={track.album_name}
                                   muted
                                 />
                               </span>
                             </div>
                             <div className="hidden md:block">
                               <ChartBadge
-                                isExist={recording.exists}
+                                isExist={track.exists}
                                 isDownloading={
                                   status === "pending" ||
                                   status === "downloading"
@@ -433,24 +425,24 @@ const RecordingsSection = ({ data }: { data: ArtistInfo }) => {
                             onClick={() =>
                               setSelectedAlbum({
                                 artistName,
-                                albumName: recording.album_name,
+                                albumName: track.album_name,
                               })
                             }
                             variant="link"
                             className="text-muted-foreground hover:text-primary transition-colors text-left px-0"
-                            disabled={!recording.album_name}
+                            disabled={!track.album_name}
                           >
-                            <Text value={recording.album_name} />
+                            <Text value={track.album_name} />
                           </Button>
                         </TableCell>
                         <TableCell className="hidden md:table-cell">
                           <Text
-                            value={formatDuration(recording.duration)}
+                            value={formatDuration(track.duration)}
                             muted
                             noWrap
                           />
                         </TableCell>
-                        <TableCell>{renderAction(recording)}</TableCell>
+                        <TableCell>{renderAction(track)}</TableCell>
                       </TableRow>
                     );
                   })}
@@ -460,7 +452,7 @@ const RecordingsSection = ({ data }: { data: ArtistInfo }) => {
           )
         ) : (
           <p className="text-sm italic text-muted-foreground">
-            No recordings available for this artist.
+            No tracks available for this artist.
           </p>
         )}
       </CardContent>
@@ -535,7 +527,7 @@ const ArtistContent = ({ artistName }: { artistName: string }) => {
           animate={shouldReduceMotion ? {} : "visible"}
         >
           <motion.div variants={shouldReduceMotion ? undefined : itemVariants}>
-            <RecordingsSection data={data} />
+            <TracksSection data={data} />
           </motion.div>
         </motion.div>
       </div>

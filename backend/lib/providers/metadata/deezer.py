@@ -67,17 +67,17 @@ class DeezerMetadataProvider(MetadataProvider):
             logger.error(f"Failed to fetch Deezer artist info for '{artist_name}': {e}")
             return None
 
-    async def get_artist_recordings(
+    async def get_artist_tracks(
         self,
         *,
         artist_mbid: str,
         limit: int = 20,
     ) -> list[ArtistTrack]:
         raise NotImplementedError(
-            "Deezer does not support fetching recordings by MusicBrainz ID. Use artist_id instead."
+            "Deezer does not support fetching tracks by MusicBrainz ID. Use artist_id instead."
         )
 
-    async def get_artist_recording(
+    async def get_artist_track(
         self,
         *,
         artist_name: str,

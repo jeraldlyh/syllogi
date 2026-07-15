@@ -98,7 +98,7 @@ class LastFMMetadataProvider(MetadataProvider):
             aliases=[],
         )
 
-    async def get_artist_recordings(
+    async def get_artist_tracks(
         self,
         *,
         artist_mbid: str,
@@ -147,7 +147,7 @@ class LastFMMetadataProvider(MetadataProvider):
             )
         return tracks
 
-    async def get_artist_recording(
+    async def get_artist_track(
         self,
         *,
         artist_name: str,

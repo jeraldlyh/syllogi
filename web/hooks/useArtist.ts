@@ -30,7 +30,7 @@ export interface ArtistMetadata {
 
 export interface ArtistInfo {
   artist: ArtistMetadata | null;
-  recordings: ArtistTrack[];
+  tracks: ArtistTrack[];
 }
 
 export const useArtist = (artistName: string, locale?: string) => {

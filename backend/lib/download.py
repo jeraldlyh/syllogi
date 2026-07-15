@@ -93,7 +93,7 @@ async def download_missing_tracks(
 
             if existing_path:
                 provider = MusicBrainzMetadataProvider()
-                mb_track = await provider.get_artist_recording(
+                mb_track = await provider.get_artist_track(
                     artist_name=artist_name, track_name=track_name
                 )
                 tag_audio_file(
