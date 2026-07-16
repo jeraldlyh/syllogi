@@ -162,15 +162,15 @@ class MusicBrainzMetadataProvider(MetadataProvider):
             return
 
         track = result.get("recordings")[0]
+        releases = track.get("releases", [])
+        release_group = releases[0].get("release-group", {}) if releases else {}
 
         return ArtistTrack(
             artist_name=artist_name,
             track_name=track.get("title", ""),
             duration_ms=track.get("length"),
             disambiguation=track.get("disambiguation", ""),
-            album_name=track.get("releases", [{}])
-            .get("release-group", {})
-            .get("title", ""),
+            album_name=release_group.get("title", ""),
             genres=[genre.get("name") for genre in track.get("genres", [])],
             image_url="",
         )
