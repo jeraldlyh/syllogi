@@ -128,7 +128,7 @@ class MusicBrainzMetadataProvider(MetadataProvider):
 
         unique = set()
         for track in result.get("recordings", []):
-            if not track.get("length"):
+            if not track.get("length") or track.get("length") == 0:
                 continue
 
             unique.add(
