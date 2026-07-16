@@ -1,33 +1,85 @@
+import asyncio
 from dataclasses import dataclass
 
 
 @dataclass
-class ArtistRecording:
-    """A recording (track) by an artist."""
+class ArtistTrack:
+    """A track by an artist."""
 
-    title: str
+    artist_name: str
+    track_name: str
     duration_ms: int | None
     disambiguation: str
+    album_name: str
+    genres: list[str]
+    image_url: str
+
+    async def ensure_metadata(self) -> None:
+        """Ensure that metadata is set, by falling back to Deezer API"""
+
+        from lib.providers.metadata.deezer import DeezerMetadataProvider
+
+        deezer_provider = DeezerMetadataProvider()
+        deezer_track = await deezer_provider.get_artist_track(
+            artist_name=self.artist_name,
+            track_name=self.track_name,
+        )
+
+        if not deezer_track:
+            return
+
+        if not self.image_url and deezer_track.image_url:
+            self.image_url = deezer_track.image_url
+
+        if not self.album_name and deezer_track.album_name:
+            self.album_name = deezer_track.album_name
 
     def get_duration(self) -> int:
+        """Get the duration of the track in seconds."""
+
         if not self.duration_ms:
             return 0
         return self.duration_ms // 1000
 
-    def to_dict(self) -> dict[str, str | int | None]:
+    async def to_dict(
+        self,
+    ) -> dict[str, str | int | bool | list]:
+        """Convert the ArtistTrack to a dictionary representation."""
+
+        from lib.providers import get_provider
+        from lib.track import find_track
+
+        provider = get_provider()
+        provider_track = await find_track(
+            provider=provider,
+            artist_name=self.artist_name,
+            track_name=self.track_name,
+            album_name=self.album_name,
+            year="",
+            duration=self.get_duration(),
+        )
+
         return {
-            "title": self.title,
-            "duration": self.duration_ms // 1000 if self.duration_ms else 0,
+            "track_name": self.track_name,
+            "duration": self.get_duration(),
             "disambiguation": self.disambiguation,
+            "album_name": self.album_name,
+            "genres": self.genres,
+            "image_url": self.image_url,
+            "exists": not provider_track.is_not_found(),
         }
 
     def __eq__(self, other):
-        if not isinstance(other, ArtistRecording):
+        """Check equality based on track name, case-insensitive."""
+
+        if not isinstance(other, ArtistTrack):
             return NotImplemented
-        return self.title.casefold() == other.title.casefold()
+        return self.track_name.casefold() == other.track_name.casefold()
 
     def __hash__(self):
-        return hash(self.title.casefold())
+        """Hash based on track name, case-insensitive."""
+
+        return hash(self.track_name.casefold())
 
 
 @dataclass
@@ -49,7 +101,29 @@ class ArtistInfo:
     image_url: str | None = None
     num_of_fans: int | None = None
 
+    async def ensure_metadata(self) -> None:
+        """Ensure that metadata is set, by falling back to Deezer API"""
+
+        from lib.providers.metadata.deezer import DeezerMetadataProvider
+
+        if self.image_url is not None and self.num_of_fans is not None:
+            return
+
+        deezer_provider = DeezerMetadataProvider()
+        deezer_artist = await deezer_provider.get_artist_info(artist_name=self.name)
+
+        if not deezer_artist:
+            return
+
+        if deezer_artist.image_url is not None:
+            self.image_url = deezer_artist.image_url
+
+        if deezer_artist.num_of_fans is not None:
+            self.num_of_fans = deezer_artist.num_of_fans
+
     def to_dict(self) -> dict[str, str | dict | list | int | None]:
+        """Convert the ArtistInfo to a dictionary representation."""
+
         return {
             "id": self.id,
             "name": self.name,
@@ -63,4 +137,43 @@ class ArtistInfo:
             "aliases": self.aliases[: self.MAX_ALIASES],
             "image_url": self.image_url,
             "num_of_fans": self.num_of_fans,
+        }
+
+
+@dataclass
+class AlbumInfo:
+    """Album metadata with tracklist."""
+
+    album_name: str
+    artist_name: str
+    image_url: str
+    release_date: str
+    tracks: list[ArtistTrack]
+
+    async def ensure_metadata(self) -> None:
+        from lib.providers.metadata.deezer import DeezerMetadataProvider
+
+        if self.image_url:
+            return
+
+        deezer_provider = DeezerMetadataProvider()
+        deezer_album = await deezer_provider.get_album_info(
+            artist_name=self.artist_name,
+            album_name=self.album_name,
+            exclude_tracks=True,
+        )
+
+        if not deezer_album:
+            return
+        self.image_url = deezer_album.image_url
+
+    async def to_dict(self) -> dict[str, str | int | list[dict]]:
+        await asyncio.gather(*[track.ensure_metadata() for track in self.tracks])
+
+        return {
+            "title": self.album_name,
+            "artist_name": self.artist_name,
+            "image_url": self.image_url,
+            "release_date": self.release_date,
+            "tracks": [await track.to_dict() for track in self.tracks],
         }

@@ -11,6 +11,10 @@ const nextConfig = {
         protocol: "https",
         hostname: "lastfm.freetls.fastly.net",
       },
+      {
+        protocol: "https",
+        hostname: "cdns-images.dzcdn.net",
+      },
     ],
   },
 };

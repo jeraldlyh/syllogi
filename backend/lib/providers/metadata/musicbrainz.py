@@ -1,4 +1,3 @@
-import asyncio
 import logging
 from typing import Any
 
@@ -11,20 +10,17 @@ from lib.models.musicbrainz import (
     MusicbrainzArtistArea,
     MusicbrainzArtistTag,
 )
-from lib.models.metadata import ArtistRecording
+from lib.models.metadata import AlbumInfo, ArtistTrack
 from lib.providers.metadata.base import (
     ArtistInfo,
-    MetadataSourceProvider,
+    MetadataProvider,
 )
 
 logger = logging.getLogger(__name__)
 
 
-class MusicBrainzMetadataProvider(MetadataSourceProvider):
+class MusicBrainzMetadataProvider(MetadataProvider):
     """Metadata provider backed by the MusicBrainz API."""
-
-    SEARCH_MAX_RETRIES = 3
-    SEARCH_POLL_INTERVAL = 10
 
     async def _http(
         self,
@@ -51,6 +47,7 @@ class MusicBrainzMetadataProvider(MetadataSourceProvider):
 
     async def _get_artists(
         self,
+        *,
         artist_name: str,
         limit: int = 10,
     ) -> list[MusicbrainzArtist]:
@@ -113,37 +110,74 @@ class MusicBrainzMetadataProvider(MetadataSourceProvider):
             for artist in result.get("artists", [])
         ]
 
-    async def get_artist_recordings(
+    async def get_artist_tracks(
         self,
+        *,
         artist_mbid: str,
-    ) -> list[ArtistRecording]:
-        """Fetch recordings by artist MusicBrainz ID."""
+        limit: int,
+    ) -> list[ArtistTrack]:
+        """Fetch tracks by artist MusicBrainz ID."""
 
         result = await self._http(
             f"/artist/{artist_mbid}",
-            params={
-                "inc": "recordings",
-            },
+            params={"inc": "recordings+genres", "limit": limit},
         )
 
         if not result:
             return []
 
         unique = set()
-        for recording in result.get("recordings", []):
-            if not recording.get("length"):
+        for track in result.get("recordings", []):
+            if not track.get("length") or track.get("length") == 0:
                 continue
+
             unique.add(
-                ArtistRecording(
-                    title=recording.get("title", ""),
-                    duration_ms=recording.get("length"),
-                    disambiguation=recording.get("disambiguation", ""),
+                ArtistTrack(
+                    artist_name=result.get("name", ""),
+                    track_name=track.get("title", ""),
+                    duration_ms=track.get("length"),
+                    disambiguation=track.get("disambiguation", ""),
+                    album_name="",
+                    genres=[genre.get("name") for genre in track.get("genres", [])],
+                    image_url="",
                 )
             )
         return list(unique)
 
+    async def get_artist_track(
+        self,
+        *,
+        artist_name: str,
+        track_name: str,
+    ) -> ArtistTrack | None:
+        """Search MusicBrainz for a track by artist and track name."""
+
+        query = f'recording:"{track_name}" AND artist:"{artist_name}"'
+        result = await self._http(
+            "/recording",
+            params={"query": query, "inc": "genres", "limit": 1},
+        )
+
+        if not result or not result.get("recordings"):
+            return
+
+        track = result.get("recordings")[0]
+        releases = track.get("releases", [])
+        release_group = releases[0].get("release-group", {}) if releases else {}
+
+        return ArtistTrack(
+            artist_name=artist_name,
+            track_name=track.get("title", ""),
+            duration_ms=track.get("length"),
+            disambiguation=track.get("disambiguation", ""),
+            album_name=release_group.get("title", ""),
+            genres=[genre.get("name") for genre in track.get("genres", [])],
+            image_url="",
+        )
+
     async def get_artist_info(
         self,
+        *,
         artist_name: str,
         locale: str | None = None,
     ) -> ArtistInfo | None:
@@ -155,7 +189,70 @@ class MusicBrainzMetadataProvider(MetadataSourceProvider):
             return None
         return results[0].to_artist_info(locale=locale)
 
-    async def get_artist_alias(self, artist_name: str) -> str | None:
+    async def get_album_info(
+        self,
+        *,
+        artist_name: str,
+        album_name: str,
+    ) -> AlbumInfo | None:
+        """Search MusicBrainz for a release group and return its metadata with tracks."""
+
+        query = f'release-group:"{album_name}" AND artist:"{artist_name}"'
+        result = await self._http(
+            "/release-group",
+            params={"query": query, "limit": 1},
+        )
+
+        if not result or not result.get("release-groups"):
+            return None
+
+        release_group = result["release-groups"][0]
+        releases = release_group.get("releases", [])
+
+        if not releases:
+            return None
+
+        release = releases[0]
+        release_id = release.get("id")
+
+        release_detail = await self._http(
+            f"/release/{release_id}",
+            params={"inc": "recordings"},
+        )
+
+        if not release_detail:
+            return None
+
+        tracks: list[ArtistTrack] = []
+        release_media = release_detail.get("media", [])
+
+        if not release_media:
+            return None
+
+        for track in release_media[0].get("tracks", []):
+            recording = track.get("recording", {})
+
+            tracks.append(
+                ArtistTrack(
+                    artist_name=artist_name,
+                    track_name=recording.get("title", track.get("title", "")),
+                    duration_ms=recording.get("length", 0),
+                    disambiguation=recording.get("disambiguation", ""),
+                    album_name=album_name,
+                    genres=[],
+                    image_url="",
+                )
+            )
+
+        return AlbumInfo(
+            album_name=release_group.get("title", album_name),
+            artist_name=artist_name,
+            image_url="",
+            release_date=release_group.get("first-release-date", ""),
+            tracks=tracks,
+        )
+
+    async def get_artist_alias(self, *, artist_name: str) -> str | None:
         """Get artist actual name using MusicBrainz.
 
         This is useful for artists with non-Latin names, but has an English name as an alias.
@@ -163,21 +260,8 @@ class MusicBrainzMetadataProvider(MetadataSourceProvider):
         For example, Spotify returns "Joker Xue" as an alias for "薛之谦".
         """
 
-        for attempt in range(1, self.SEARCH_MAX_RETRIES + 1):
-            try:
-                artists = await self._get_artists(artist_name=artist_name)
+        artists = await self._get_artists(artist_name=artist_name)
 
-                if artists:
-                    return artists[0].name
-
-                logger.warning(
-                    f"[{attempt}/{self.SEARCH_MAX_RETRIES}] Retry search for artist '{artist_name}' but got no results."
-                )
-            except Exception as e:
-                logger.error(
-                    f"[{attempt}/{self.SEARCH_MAX_RETRIES}] Failed to search for artist '{artist_name}': {e}"
-                )
-
-            if attempt < self.SEARCH_MAX_RETRIES:
-                await asyncio.sleep(self.SEARCH_POLL_INTERVAL)
+        if artists:
+            return artists[0].name
         return None

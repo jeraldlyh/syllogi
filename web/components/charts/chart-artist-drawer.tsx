@@ -11,20 +11,31 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { ArtistRecording, useArtist, type ArtistInfo } from "@/hooks/useArtist";
+import { ArtistTrack, useArtist, type ArtistInfo } from "@/hooks/useArtist";
 import {
   DownloadSession,
   useDownloadSessions,
 } from "@/hooks/useDownloadSessions";
 import { api } from "@/lib/api";
-import { formatDuration } from "@/lib/utils";
-import { Dot, Download, Loader2, RotateCcw } from "lucide-react";
+import { capitaliseFirstLetter, cn, formatDuration } from "@/lib/utils";
+import {
+  Dot,
+  Download,
+  LayoutGrid,
+  List,
+  Loader2,
+  RotateCcw,
+} from "lucide-react";
 import { motion, useReducedMotion } from "motion/react";
-import Image from "next/image";
 import React, { useState } from "react";
 import { toast } from "sonner";
-import { Button } from "../ui/button";
+import { Button } from "@/components/ui/button";
 import { ChartBadge } from "./chart-badge";
+import { useChartDrawer } from "./chart-drawer-context";
+import { ChartGridCard } from "./chart-grid-card";
+import { Text } from "@/components/common/text";
+import { ViewMode } from "./types";
+import { ChartImage } from "./chart-image";
 
 const containerVariants = {
   hidden: { opacity: 0 },
@@ -93,7 +104,7 @@ const HeroSection = ({ data }: { data: ArtistInfo }): React.JSX.Element => {
   if (!artist) {
     return (
       <motion.div
-        className="flex flex-col items-center gap-4 text-center"
+        className="flex flex-col items-center gap-4 text-center my-4"
         {...animationProps}
         transition={{ duration: 0.6, ease: "easeOut" as const }}
       >
@@ -108,15 +119,16 @@ const HeroSection = ({ data }: { data: ArtistInfo }): React.JSX.Element => {
   const metadataItems: string[] = [];
   if (artist.country) metadataItems.push(artist.country);
   if (artist.type) metadataItems.push(artist.type);
-  if (artist.gender) metadataItems.push(artist.gender);
+  if (artist.gender) metadataItems.push(capitaliseFirstLetter(artist.gender));
   if (artist.num_of_fans)
     metadataItems.push(`${artist.num_of_fans.toLocaleString()} fans`);
   // if (artist.area) metadataItems.push(artist.area);
   // if (artist.begin_area) metadataItems.push(artist.begin_area);
 
-  const activeYears = artist.life_span?.begin
-    ? `${artist.life_span.begin} till ${artist.life_span.end ? `${artist.life_span.end}` : "present"}`
-    : null;
+  if (artist.life_span?.begin)
+    metadataItems.push(
+      `${artist.life_span.begin} till ${artist.life_span.end ? `${artist.life_span.end}` : "present"}`,
+    );
 
   return (
     <motion.div
@@ -124,25 +136,8 @@ const HeroSection = ({ data }: { data: ArtistInfo }): React.JSX.Element => {
       {...animationProps}
       transition={{ duration: 0.6, ease: "easeOut" as const }}
     >
-      <div className="shrink-0">
-        {artist.image_url ? (
-          <Image
-            src={artist.image_url}
-            alt={artist.name}
-            width={256}
-            height={256}
-            className="h-64 w-64 rounded-2xl object-cover"
-            priority
-          />
-        ) : (
-          <div className="flex h-64 w-64 items-center justify-center rounded-2xl bg-secondary">
-            <span className="text-6xl font-bold text-muted-foreground">
-              {artist.name.charAt(0).toUpperCase()}
-            </span>
-          </div>
-        )}
-      </div>
-      <div className="flex flex-1 flex-col justify-center gap-4">
+      <ChartImage imageUrl={artist.image_url} alt={artist.name} />
+      <div className="flex flex-1 flex-col justify-center gap-2">
         <div>
           <div className="flex flex-wrap items-baseline gap-x-3">
             <h1 className="text-4xl font-bold tracking-tight">{artist.name}</h1>
@@ -153,16 +148,12 @@ const HeroSection = ({ data }: { data: ArtistInfo }): React.JSX.Element => {
             )}
           </div>
           {metadataItems.length > 0 && (
-            <div className="flex mt-1 text-sm text-muted-foreground">
+            <div className="flex mt-2 items-center text-sm text-muted-foreground">
               {metadataItems.map((item, i) => (
-                <div className="flex" key={`${item}-${i}`}>
-                  <p>{item}</p>
-                  <Dot className="-mx-1" />
-                </div>
+                <Badge key={`${item}-${i}`} variant="outline">
+                  {item}
+                </Badge>
               ))}
-              {activeYears && (
-                <span className="hidden md:block">{activeYears}</span>
-              )}
             </div>
           )}
         </div>
@@ -180,8 +171,8 @@ const HeroSection = ({ data }: { data: ArtistInfo }): React.JSX.Element => {
   );
 };
 
-const RecordingsSection = ({ data }: { data: ArtistInfo }) => {
-  const recordings = data.recordings ?? [];
+const TracksSection = ({ data }: { data: ArtistInfo }) => {
+  const tracks = data.tracks;
   const artistName = data.artist ? data.artist.name : "";
   const [downloadingTracks, setDownloadingTracks] = useState<Set<string>>(
     new Set(),
@@ -190,32 +181,35 @@ const RecordingsSection = ({ data }: { data: ArtistInfo }) => {
   const { data: downloadSessions, mutate: refreshDownloads } =
     useDownloadSessions();
 
-  const getRecordingKey = (recording: ArtistRecording): string =>
-    `${artistName.toLowerCase()}:${recording.title.toLowerCase()}`;
+  const [viewMode, setViewMode] = useState<ViewMode>("list");
+  const { setSelectedAlbum } = useChartDrawer();
 
-  const getRecordingStatus = (
-    recording: ArtistRecording,
+  const getTrackKey = (track: ArtistTrack): string =>
+    `${artistName.toLowerCase()}:${track.track_name.toLowerCase()}`;
+
+  const getTrackStatus = (
+    track: ArtistTrack,
   ): DownloadSession["status"] | null => {
     if (!downloadSessions || !data.artist) return null;
 
     const session = downloadSessions.find(
       (session: DownloadSession) =>
         session.artist_name.toLowerCase() === artistName.toLowerCase() &&
-        session.track_name.toLowerCase() === recording.title.toLowerCase(),
+        session.track_name.toLowerCase() === track.track_name.toLowerCase(),
     );
 
     return session ? session.status : null;
   };
 
-  const handleDownload = async (recording: ArtistRecording): Promise<void> => {
-    const key = getRecordingKey(recording);
+  const handleDownload = async (track: ArtistTrack): Promise<void> => {
+    const key = getTrackKey(track);
 
     if (downloadingTracks.has(key)) return;
 
     setDownloadingTracks((prev) => new Set(prev).add(key));
 
     const toastId = toast.loading(
-      `Downloading ${artistName} - ${recording.title}...`,
+      `Downloading ${artistName} - ${track.track_name}...`,
     );
 
     try {
@@ -225,14 +219,14 @@ const RecordingsSection = ({ data }: { data: ArtistInfo }) => {
         path: "track",
         body: {
           artist_name: artistName,
-          track_name: recording.title,
+          track_name: track.track_name,
           image_url: "",
         },
       });
 
       if (response.statusCode !== 200) {
         const errorMessage =
-          response.error?.message || `${artistName} - ${recording.title}`;
+          response.error?.message || `${artistName} - ${track.track_name}`;
 
         toast.error("Failed to start download", {
           description: errorMessage,
@@ -242,13 +236,13 @@ const RecordingsSection = ({ data }: { data: ArtistInfo }) => {
       }
 
       toast.success("Download started", {
-        description: `${artistName} - ${recording.title}`,
+        description: `${artistName} - ${track.track_name}`,
         id: toastId,
       });
       refreshDownloads();
     } catch {
       toast.error("Failed to start download", {
-        description: `${artistName} - ${recording.title}`,
+        description: `${artistName} - ${track.track_name}`,
         id: toastId,
       });
     } finally {
@@ -261,9 +255,9 @@ const RecordingsSection = ({ data }: { data: ArtistInfo }) => {
     }
   };
 
-  const renderAction = (recording: ArtistRecording) => {
-    const status = getRecordingStatus(recording);
-    const isStarting = downloadingTracks.has(getRecordingKey(recording));
+  const renderAction = (track: ArtistTrack) => {
+    const status = getTrackStatus(track);
+    const isStarting = downloadingTracks.has(getTrackKey(track));
 
     if (isStarting || status === "pending" || status === "downloading") {
       return (
@@ -273,17 +267,16 @@ const RecordingsSection = ({ data }: { data: ArtistInfo }) => {
       );
     }
 
-    if (recording.exists) {
-      return null;
-    }
-
     const isFailed = status === "failed";
 
     return (
       <Button
         type="button"
-        onClick={() => handleDownload(recording)}
-        variant={isFailed ? "destructive" : "ghost"}
+        className="w-full"
+        onClick={() => handleDownload(track)}
+        variant={isFailed ? "destructive" : "outline"}
+        disabled={track.exists}
+        size="sm"
       >
         {isFailed ? (
           <RotateCcw className="h-4 w-4" />
@@ -297,55 +290,168 @@ const RecordingsSection = ({ data }: { data: ArtistInfo }) => {
   return (
     <Card>
       <CardHeader>
-        <CardTitle className="text-base font-semibold">Recordings</CardTitle>
+        <CardTitle className="flex justify-between items-center">
+          <span className="text-base font-semibold">Tracks</span>
+          <div className="flex items-center gap-2">
+            <div className="hidden md:flex items-center gap-1 rounded-md border border-border p-1">
+              <Button
+                variant={viewMode === "list" ? "secondary" : "ghost"}
+                size="icon"
+                className="h-7 w-7"
+                onClick={() => setViewMode("list")}
+                aria-label="List view"
+              >
+                <List />
+              </Button>
+              <Button
+                variant={viewMode === "grid" ? "secondary" : "ghost"}
+                size="icon"
+                className="h-7 w-7"
+                onClick={() => setViewMode("grid")}
+                aria-label="Grid view"
+              >
+                <LayoutGrid />
+              </Button>
+            </div>
+            <div className="flex items-center gap-2 md:hidden">
+              <div className="flex items-center gap-1">
+                <span className="inline-block h-2 w-2 rounded-full bg-emerald-500/60" />
+                <Text value="In Library" muted />
+              </div>
+              <div className="flex items-center gap-1">
+                <span className="inline-block h-2 w-2 rounded-full bg-amber-500/60" />
+                <Text value="Downloading" muted />
+              </div>
+            </div>
+          </div>
+        </CardTitle>
       </CardHeader>
       <CardContent>
-        {recordings.length > 0 ? (
-          <div className="max-h-96 overflow-auto rounded-md border">
-            <Table>
-              <TableHeader>
-                <TableRow className="hover:bg-transparent text-xs text-muted-foreground">
-                  <TableHead className="w-10">#</TableHead>
-                  <TableHead>Title</TableHead>
-                  <TableHead className="w-16 text-right">Duration</TableHead>
-                  <TableHead className="w-10"></TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {recordings.map((recording, i) => {
-                  const status = getRecordingStatus(recording);
+        {tracks.length > 0 ? (
+          viewMode === "grid" ? (
+            <div className="grid grid-cols-2 gap-3 md:grid-cols-5 max-h-[60vh] overflow-auto">
+              {tracks.map((track, i) => {
+                const status = getTrackStatus(track);
+                const isStarting = downloadingTracks.has(getTrackKey(track));
+                const isDownloading =
+                  isStarting ||
+                  status === "pending" ||
+                  status === "downloading";
 
-                  return (
-                    <TableRow key={`${recording.title}-${i}`}>
-                      <TableCell className="font-mono text-xs text-muted-foreground">
-                        {i + 1}
-                      </TableCell>
-                      <TableCell>
-                        <div className="flex flex-col gap-1">
-                          <span className="truncate text-sm font-medium">
-                            {recording.title}
-                          </span>
-                          <ChartBadge
-                            isExist={recording.exists}
-                            isDownloading={
-                              status === "pending" || status === "downloading"
+                return (
+                  <ChartGridCard
+                    key={`${track.track_name}-${i}`}
+                    trackName={track.track_name}
+                    albumName={track.album_name}
+                    duration={track.duration}
+                    imageUrl={track.image_url}
+                    isExist={track.exists}
+                    isDownloading={isDownloading}
+                    onAlbumClick={
+                      track.album_name
+                        ? () =>
+                            setSelectedAlbum({
+                              artistName,
+                              albumName: track.album_name,
+                            })
+                        : undefined
+                    }
+                  >
+                    {renderAction(track)}
+                  </ChartGridCard>
+                );
+              })}
+            </div>
+          ) : (
+            <div className="max-h-[60vh] overflow-auto rounded-md border">
+              <Table>
+                <TableHeader>
+                  <TableRow className="hover:bg-transparent text-xs text-muted-foreground">
+                    <TableHead className="hidden md:table-cell w-10">
+                      #
+                    </TableHead>
+                    <TableHead>Title</TableHead>
+                    <TableHead className="hidden md:table-cell">
+                      Album
+                    </TableHead>
+                    <TableHead className="hidden md:table-cell w-16 text-right">
+                      Duration
+                    </TableHead>
+                    <TableHead className="w-10"></TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {tracks.map((track, i) => {
+                    const status = getTrackStatus(track);
+
+                    return (
+                      <TableRow
+                        key={`${track.track_name}-${i}`}
+                        className={cn({
+                          "md:bg-inherit bg-amber-500/10":
+                            status === "pending" || status === "downloading",
+                          "md:bg-inherit bg-emerald-500/10": track.exists,
+                        })}
+                      >
+                        <TableCell className="hidden md:table-cell font-mono text-xs text-muted-foreground">
+                          {i + 1}
+                        </TableCell>
+                        <TableCell>
+                          <div className="flex flex-col gap-1">
+                            <div className="flex flex-col gap-1">
+                              <span className="truncate text-sm font-medium max-w-48 lg:max-w-none">
+                                {track.track_name}
+                                <Text
+                                  className="md:hidden truncate max-w-48"
+                                  value={track.album_name}
+                                  muted
+                                />
+                              </span>
+                            </div>
+                            <div className="hidden md:block">
+                              <ChartBadge
+                                isExist={track.exists}
+                                isDownloading={
+                                  status === "pending" ||
+                                  status === "downloading"
+                                }
+                              />
+                            </div>
+                          </div>
+                        </TableCell>
+                        <TableCell className="hidden md:table-cell">
+                          <Button
+                            onClick={() =>
+                              setSelectedAlbum({
+                                artistName,
+                                albumName: track.album_name,
+                              })
                             }
+                            variant="link"
+                            className="text-muted-foreground hover:text-primary transition-colors text-left px-0"
+                            disabled={!track.album_name}
+                          >
+                            <Text value={track.album_name} />
+                          </Button>
+                        </TableCell>
+                        <TableCell className="hidden md:table-cell">
+                          <Text
+                            value={formatDuration(track.duration)}
+                            muted
+                            noWrap
                           />
-                        </div>
-                      </TableCell>
-                      <TableCell className="text-right font-mono text-xs text-muted-foreground">
-                        {formatDuration(recording.duration)}
-                      </TableCell>
-                      <TableCell>{renderAction(recording)}</TableCell>
-                    </TableRow>
-                  );
-                })}
-              </TableBody>
-            </Table>
-          </div>
+                        </TableCell>
+                        <TableCell>{renderAction(track)}</TableCell>
+                      </TableRow>
+                    );
+                  })}
+                </TableBody>
+              </Table>
+            </div>
+          )
         ) : (
           <p className="text-sm italic text-muted-foreground">
-            No recordings available for this artist.
+            No tracks available for this artist.
           </p>
         )}
       </CardContent>
@@ -376,7 +482,7 @@ const ArtistContent = ({ artistName }: { artistName: string }) => {
     return (
       <div className="flex flex-1 flex-col items-center justify-center px-6 pb-8">
         <div className="flex flex-col items-center gap-4 text-center">
-          <h1 className="text-2xl font-bold">Artist not found</h1>
+          <h1 className="text-2xl font-bold mt-4">Artist not found</h1>
           <p className="text-sm text-muted-foreground">
             We couldn&apos;t find information for &quot;{artistName}&quot;.
           </p>
@@ -420,7 +526,7 @@ const ArtistContent = ({ artistName }: { artistName: string }) => {
           animate={shouldReduceMotion ? {} : "visible"}
         >
           <motion.div variants={shouldReduceMotion ? undefined : itemVariants}>
-            <RecordingsSection data={data} />
+            <TracksSection data={data} />
           </motion.div>
         </motion.div>
       </div>

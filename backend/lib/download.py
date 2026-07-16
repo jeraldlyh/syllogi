@@ -10,8 +10,10 @@ from db.session import get_isolated_session
 from lib.env import is_slskd_configured
 from lib.models.common import ExternalTrack
 from lib.models.provider import ProviderTrack
+from lib.providers.metadata.musicbrainz import MusicBrainzMetadataProvider
 from lib.providers.playlist.base import MusicPlaylistProvider
 from lib.slskd import download_track_slskd
+from lib.tagger import tag_audio_file
 from lib.utils import (
     get_existing_track_path,
     get_now,
@@ -26,6 +28,7 @@ logger = logging.getLogger(__name__)
 
 
 async def download_missing_tracks(
+    *,
     missing_tracks: list[ExternalTrack],
 ) -> tuple[list[ExternalTrack], list[ExternalTrack]]:
     """Download a list of missing songs.
@@ -84,6 +87,23 @@ async def download_missing_tracks(
 
         if is_download_success:
             found_tracks_after_download.append(song)
+            existing_path = get_existing_track_path(
+                artist_name=artist_name, track_name=track_name, album_name=album_name
+            )
+
+            if existing_path:
+                provider = MusicBrainzMetadataProvider()
+                mb_track = await provider.get_artist_track(
+                    artist_name=artist_name, track_name=track_name
+                )
+                tag_audio_file(
+                    file_path=existing_path,
+                    artist_name=artist_name,
+                    track_name=mb_track.track_name if mb_track else track_name,
+                    album_name=mb_track.album_name if mb_track else album_name,
+                    year=song.year,
+                    genres=mb_track.genres if mb_track else [],
+                )
             logger.info(f"{formatted_name}: DOWNLOADED")
         else:
             missing_tracks_after_download.append(song)
@@ -92,24 +112,8 @@ async def download_missing_tracks(
     return found_tracks_after_download, missing_tracks_after_download
 
 
-async def download_missing_tracks_and_refresh_library(
-    provider: MusicPlaylistProvider,
-    missing_tracks: list[ExternalTrack],
-) -> tuple[list[ExternalTrack], list[ExternalTrack]]:
-    """Downloads missing tracks and refreshes the music provider library.
-
-    This is a convenience wrapper around download_missing_tracks that also triggers
-    a library refresh after attempting downloads.
-    """
-
-    found, still_missing = await download_missing_tracks(missing_tracks)
-
-    if found:
-        await provider.rescan_library()
-    return found, still_missing
-
-
 async def upgrade_non_lossless_tracks(
+    *,
     tracks: list[ProviderTrack],
 ) -> list[ProviderTrack]:
     """Attempt to upgrade non-lossless tracks to FLAC via slskd.
@@ -178,6 +182,7 @@ async def upgrade_non_lossless_tracks(
 
 
 async def download_single_track(
+    *,
     provider: MusicPlaylistProvider,
     download_session_id: uuid.UUID,
     track: ExternalTrack,
@@ -217,7 +222,8 @@ async def download_single_track(
                     await provider.rescan_library()
                 download_session.status = DownloadSessionStatus.existed
             else:
-                found, _ = await download_missing_tracks([track])
+                found, _ = await download_missing_tracks(missing_tracks=[track])
+
                 if found:
                     await provider.rescan_library()
 

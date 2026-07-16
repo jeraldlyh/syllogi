@@ -78,3 +78,8 @@ def is_navidrome_configured() -> bool:
 def is_jellyfin_configured() -> bool:
     variables = get_environment_variables()
     return bool(variables.get("JELLYFIN_URL") and variables.get("JELLYFIN_API_KEY"))
+
+
+def is_lastfm_configured() -> bool:
+    variables = get_environment_variables()
+    return bool(variables.get("LASTFM_API_KEY"))

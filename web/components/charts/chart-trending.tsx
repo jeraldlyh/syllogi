@@ -18,19 +18,22 @@ import {
 import { TrendingTrack, useTrendingTracks } from "@/hooks/useTrendingTracks";
 import { api } from "@/lib/api";
 import { formatDuration } from "@/lib/utils";
-import { Download, RefreshCw, Search } from "lucide-react";
+import { Download, LayoutGrid, List, RefreshCw, Search } from "lucide-react";
 import Image from "next/image";
 import { useState } from "react";
 import { toast } from "sonner";
-import { ChartArtistDrawer } from "./chart-artist-drawer";
 import { ChartBadge } from "./chart-badge";
+import { useChartDrawer } from "./chart-drawer-context";
+import { ChartGridCard } from "./chart-grid-card";
+import { ViewMode } from "./types";
 
 export const ChartTrending = () => {
+  const { setSelectedArtist, setSelectedAlbum } = useChartDrawer();
   const [search, setSearch] = useState("");
-  const [selectedArtist, setSelectedArtist] = useState<string | null>(null);
   const [downloadingTracks, setDownloadingTracks] = useState<Set<string>>(
     new Set(),
   );
+  const [viewMode, setViewMode] = useState<ViewMode>("grid");
 
   const {
     data,
@@ -63,7 +66,8 @@ export const ChartTrending = () => {
       const query = search.toLowerCase();
       return (
         track.track_name.toLowerCase().includes(query) ||
-        track.artist_name.toLowerCase().includes(query)
+        track.artist_name.toLowerCase().includes(query) ||
+        track.album_name.toLowerCase().includes(query)
       );
     });
   };
@@ -120,13 +124,113 @@ export const ChartTrending = () => {
         <div className="relative flex-1">
           <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
           <Input
-            placeholder="Search by track or artist..."
+            placeholder="Search by track, artist, or album..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             className="pl-9"
             disabled={isLoading || !!isError}
           />
         </div>
+        <div className="flex items-center gap-1 rounded-md border border-border p-1">
+          <Button
+            variant={viewMode === "list" ? "secondary" : "ghost"}
+            size="icon"
+            className="h-7 w-7"
+            onClick={() => setViewMode("list")}
+            aria-label="List view"
+          >
+            <List />
+          </Button>
+          <Button
+            variant={viewMode === "grid" ? "secondary" : "ghost"}
+            size="icon"
+            className="h-7 w-7"
+            onClick={() => setViewMode("grid")}
+            aria-label="Grid view"
+          >
+            <LayoutGrid />
+          </Button>
+        </div>
+      </div>
+    );
+  };
+
+  const renderGrid = (): React.JSX.Element => {
+    if (isLoading) {
+      return (
+        <div className="flex items-center justify-center py-6">
+          <Text className="text-muted-foreground italic" value="Loading..." />
+        </div>
+      );
+    }
+
+    if (isError) {
+      return (
+        <div className="flex items-center justify-center py-6">
+          <Text
+            className="text-muted-foreground italic text-red-400"
+            value="Failed to load trending tracks"
+          />
+        </div>
+      );
+    }
+
+    if (getFilteredTracks().length === 0) {
+      return (
+        <div className="flex items-center justify-center py-6">
+          <Text
+            className="text-muted-foreground italic"
+            value={
+              data && data.length === 0
+                ? "No trending tracks available"
+                : "No tracks match your search"
+            }
+          />
+        </div>
+      );
+    }
+
+    return (
+      <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 max-h-[60vh] overflow-auto pr-1">
+        {getFilteredTracks().map((track) => {
+          const key = getTrackKey(track);
+          const isDownloading =
+            downloadingTracks.has(key) || isTrackDownloading(track);
+          const isExist = track.exists;
+
+          return (
+            <ChartGridCard
+              key={key}
+              trackName={track.track_name}
+              albumName={track.album_name}
+              artistName={track.artist_name}
+              duration={track.duration}
+              imageUrl={track.image_url}
+              isExist={isExist}
+              isDownloading={isDownloading}
+              onAlbumClick={
+                track.album_name
+                  ? () =>
+                      setSelectedAlbum({
+                        artistName: track.artist_name,
+                        albumName: track.album_name,
+                      })
+                  : undefined
+              }
+              onArtistClick={() => setSelectedArtist(track.artist_name)}
+            >
+              <Button
+                variant="ghost"
+                size="icon"
+                className="h-6 w-6 text-muted-foreground hover:text-foreground"
+                onClick={() => handleDownload(track)}
+                disabled={isDownloading || isExist}
+              >
+                <Download />
+              </Button>
+            </ChartGridCard>
+          );
+        })}
       </div>
     );
   };
@@ -167,14 +271,14 @@ export const ChartTrending = () => {
     }
 
     return (
-      <div className="overflow-x-auto rounded-md border border-border max-h-96">
+      <div className="overflow-x-auto rounded-md border border-border max-h-[40vh]">
         <Table>
           <TableHeader>
             <TableRow className="hover:bg-transparent text-xs text-muted-foreground">
               <TableHead>Track</TableHead>
-              <TableHead>Artist</TableHead>
+              <TableHead>Album</TableHead>
               <TableHead className="hidden md:table-cell">Duration</TableHead>
-              <TableHead className="hidden lg:table-cell">Listeners</TableHead>
+              <TableHead className="hidden lg:table-cell">Artist</TableHead>
               <TableHead className="hidden lg:table-cell">Playcount</TableHead>
               <TableHead>Actions</TableHead>
             </TableRow>
@@ -210,14 +314,23 @@ export const ChartTrending = () => {
                       </div>
                     </div>
                   </TableCell>
-                  <TableCell>
-                    <Button
-                      onClick={() => setSelectedArtist(track.artist_name)}
-                      variant="link"
-                      className="text-muted-foreground hover:text-primary transition-colors text-left px-0"
-                    >
-                      <Text value={track.artist_name} />
-                    </Button>
+                  <TableCell className="hidden md:table-cell">
+                    {track.album_name ? (
+                      <Button
+                        onClick={() =>
+                          setSelectedAlbum({
+                            artistName: track.artist_name,
+                            albumName: track.album_name,
+                          })
+                        }
+                        variant="link"
+                        className="text-muted-foreground hover:text-primary transition-colors text-left px-0"
+                      >
+                        <Text value={track.album_name} />
+                      </Button>
+                    ) : (
+                      <Text value="" muted />
+                    )}
                   </TableCell>
                   <TableCell className="hidden md:table-cell">
                     <Text
@@ -227,10 +340,13 @@ export const ChartTrending = () => {
                     />
                   </TableCell>
                   <TableCell className="hidden lg:table-cell">
-                    <Text
-                      className="text-muted-foreground"
-                      value={track.listeners.toLocaleString()}
-                    />
+                    <Button
+                      onClick={() => setSelectedArtist(track.artist_name)}
+                      variant="link"
+                      className="h-auto p-0 text-muted-foreground hover:text-primary"
+                    >
+                      {track.artist_name}
+                    </Button>
                   </TableCell>
                   <TableCell className="hidden lg:table-cell">
                     <Text
@@ -272,13 +388,9 @@ export const ChartTrending = () => {
         </CardHeader>
         <CardContent>
           {renderTableHeader()}
-          {renderTable()}
+          {viewMode === "list" ? renderTable() : renderGrid()}
         </CardContent>
       </Card>
-      <ChartArtistDrawer
-        artistName={selectedArtist}
-        onClose={() => setSelectedArtist(null)}
-      />
     </>
   );
 };

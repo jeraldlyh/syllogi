@@ -486,7 +486,7 @@ async def download_track_slskd(
             await _delete_slskd_search(search_id)
 
             musicbrainz = MusicBrainzMetadataProvider()
-            artist_alias = await musicbrainz.get_artist_alias(artist_name)
+            artist_alias = await musicbrainz.get_artist_alias(artist_name=artist_name)
 
             if not artist_alias or artist_alias.lower() == artist_name.lower():
                 logger.warning(f"No artist alias found for {artist_name}")

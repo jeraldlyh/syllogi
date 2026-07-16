@@ -9,12 +9,13 @@ from db.download_session import create_download_session, get_download_sessions
 from db.models.download_session import DownloadSession, DownloadSessionStatus
 from db.session import SessionDep
 from lib.download import download_single_track
+from lib.env import is_lastfm_configured
 from lib.models.common import ExternalTrack
 from lib.providers import get_provider
 from lib.providers.metadata.deezer import DeezerMetadataProvider
+from lib.providers.metadata.lastfm import LastFMMetadataProvider
 from lib.providers.metadata.musicbrainz import MusicBrainzMetadataProvider
-from lib.providers.recommendation.lastfm import LastFMRecommendationProvider
-from lib.track import find_track, is_track_in_provider
+from lib.track import is_track_in_provider
 
 logger = logging.getLogger(__name__)
 
@@ -30,7 +31,7 @@ class DownloadTrackRequest(BaseModel):
 @router.get(
     path="/trending",
     summary="Get trending tracks",
-    description="Retrieve the current top trending tracks from Last.fm charts.",
+    description="Retrieve the current top trending tracks.",
     responses={
         200: {
             "description": "List of trending tracks retrieved successfully",
@@ -46,7 +47,7 @@ class DownloadTrackRequest(BaseModel):
                                 "listeners": 5000000,
                                 "playcount": 100000000,
                                 "musicbrainz_id": "abc123",
-                                "image_url": "https://lastfm.freetls.fastly.net/i/u/300x300/abc.jpg",
+                                "image_url": "https://cdn-images.dzcdn.net/images/cover/abc/500x500-000000-80-0-0.jpg",
                                 "exists": False,
                             }
                         ],
@@ -62,7 +63,13 @@ async def _get_trending_tracks(
     ] = 50,
 ) -> list[dict]:
     provider = get_provider()
-    tracks = await LastFMRecommendationProvider().get_chart_top_tracks(limit=limit)
+
+    if is_lastfm_configured():
+        tracks = await LastFMMetadataProvider().get_chart_top_tracks(limit=limit)
+
+        await asyncio.gather(*[track.ensure_metadata() for track in tracks])
+    else:
+        tracks = await DeezerMetadataProvider().get_chart_top_tracks(limit=limit)
 
     provider_statuses = await asyncio.gather(
         *[is_track_in_provider(provider, track) for track in tracks]
@@ -100,6 +107,9 @@ async def _download_track(
     track = ExternalTrack(
         artist_name=item.artist_name,
         track_name=item.track_name,
+        album_name="",
+        year="",
+        duration=0,
     )
     download_session = DownloadSession(
         artist_name=item.artist_name,
@@ -150,7 +160,7 @@ async def _get_download_sessions(session: SessionDep) -> list[dict]:
 @router.get(
     path="/artist/{artist_name}",
     summary="Get artist metadata",
-    description="Retrieve artist metadata and recordings from MusicBrainz by artist name. Returns artist: null when not found.",
+    description="Retrieve artist metadata and tracks from MusicBrainz by artist name. Returns artist: null when not found.",
     responses={
         200: {
             "description": "Artist metadata (or null if not found)",
@@ -172,10 +182,14 @@ async def _get_download_sessions(session: SessionDep) -> list[dict]:
                                     },
                                     "area": "United Kingdom",
                                     "begin_area": "Abingdon",
-                                    "tags": ["alternative rock", "art rock", "electronic"],
+                                    "tags": [
+                                        "alternative rock",
+                                        "art rock",
+                                        "electronic",
+                                    ],
                                     "aliases": ["On a Friday"],
                                 },
-                                "recordings": [
+                                "tracks": [
                                     {
                                         "title": "Creep",
                                         "duration": 238,
@@ -191,7 +205,7 @@ async def _get_download_sessions(session: SessionDep) -> list[dict]:
                         },
                         "not_found": {
                             "summary": "Artist not found",
-                            "value": {"artist": None, "recordings": []},
+                            "value": {"artist": None, "tracks": []},
                         },
                     },
                 }
@@ -201,54 +215,53 @@ async def _get_download_sessions(session: SessionDep) -> list[dict]:
 )
 async def _get_artist_info(
     artist_name: str,
-    locale: str | None = Query(default=None, description="Browser locale (e.g. en-US, ja). Excludes aliases matching the user's language."),
+    locale: str | None = Query(
+        default=None,
+        description="Browser locale (e.g. en-US, ja). Excludes aliases matching the user's language.",
+    ),
 ) -> dict:
     mb_provider = MusicBrainzMetadataProvider()
-    deezer_provider = DeezerMetadataProvider()
-
     artist_info = await mb_provider.get_artist_info(
         artist_name=artist_name, locale=locale
     )
 
     if not artist_info:
-        return {"artist": None, "recordings": []}
+        return {"artist": None, "tracks": []}
 
-    recordings = await mb_provider.get_artist_recordings(artist_mbid=artist_info.id)
-    provider = get_provider()
+    await artist_info.ensure_metadata()
 
-    track_existence = await asyncio.gather(
-        *[
-            find_track(
-                provider=provider,
-                artist_name=artist_name,
-                track_name=recording.title,
-                album_name="",
-                year="",
-                duration=recording.get_duration(),
-            )
-            for recording in recordings
-        ],
-        return_exceptions=True,
-    )
+    mb_tracks = await mb_provider.get_artist_tracks(artist_mbid=artist_info.id)
+    mb_tracks = list(set(mb_tracks))
 
-    deezer_info = await deezer_provider.get_artist_info(artist_name)
-
-    if deezer_info:
-        artist_info.image_url = deezer_info.image_url
-        artist_info.num_of_fans = deezer_info.num_of_fans
+    await asyncio.gather(*[track.ensure_metadata() for track in mb_tracks])
 
     return {
         "artist": artist_info.to_dict(),
-        "recordings": [
-            {
-                "title": recording.title,
-                "duration": recording.get_duration(),
-                "exists": (
-                    not provider_track.is_not_found()
-                    if not isinstance(provider_track, BaseException)
-                    else False
-                ),
-            }
-            for recording, provider_track in zip(recordings, track_existence)
-        ],
+        "tracks": [await track.to_dict() for track in mb_tracks],
     }
+
+
+@router.get(
+    path="/album",
+    summary="Get album info",
+    description="Retrieve album metadata and tracklist by artist and album name.",
+    responses={
+        200: {
+            "description": "Album metadata retrieved successfully",
+        }
+    },
+)
+async def _get_album_info(
+    artist_name: str = Query(description="Artist name"),
+    album_name: str = Query(description="Album name"),
+) -> dict:
+    mb_provider = MusicBrainzMetadataProvider()
+    album_info = await mb_provider.get_album_info(
+        artist_name=artist_name, album_name=album_name
+    )
+
+    if not album_info:
+        return {"album": None, "tracks": []}
+
+    await album_info.ensure_metadata()
+    return await album_info.to_dict()
