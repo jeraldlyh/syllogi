@@ -137,6 +137,7 @@ export const ChartTrending = () => {
             size="icon"
             className="h-7 w-7"
             onClick={() => setViewMode("list")}
+            aria-label="List view"
           >
             <List />
           </Button>
@@ -145,6 +146,7 @@ export const ChartTrending = () => {
             size="icon"
             className="h-7 w-7"
             onClick={() => setViewMode("grid")}
+            aria-label="Grid view"
           >
             <LayoutGrid />
           </Button>

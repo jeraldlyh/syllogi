@@ -299,6 +299,7 @@ const TracksSection = ({ data }: { data: ArtistInfo }) => {
                 size="icon"
                 className="h-7 w-7"
                 onClick={() => setViewMode("list")}
+                aria-label="List view"
               >
                 <List />
               </Button>
@@ -307,6 +308,7 @@ const TracksSection = ({ data }: { data: ArtistInfo }) => {
                 size="icon"
                 className="h-7 w-7"
                 onClick={() => setViewMode("grid")}
+                aria-label="Grid view"
               >
                 <LayoutGrid />
               </Button>
