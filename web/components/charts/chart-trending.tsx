@@ -340,10 +340,13 @@ export const ChartTrending = () => {
                     />
                   </TableCell>
                   <TableCell className="hidden lg:table-cell">
-                    <Text
-                      className="text-muted-foreground"
-                      value={track.artist_name}
-                    />
+                    <Button
+                      onClick={() => setSelectedArtist(track.artist_name)}
+                      variant="link"
+                      className="h-auto p-0 text-muted-foreground hover:text-primary"
+                    >
+                      {track.artist_name}
+                    </Button>
                   </TableCell>
                   <TableCell className="hidden lg:table-cell">
                     <Text
