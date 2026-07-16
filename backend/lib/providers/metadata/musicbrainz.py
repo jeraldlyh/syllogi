@@ -114,12 +114,13 @@ class MusicBrainzMetadataProvider(MetadataProvider):
         self,
         *,
         artist_mbid: str,
+        limit: int,
     ) -> list[ArtistTrack]:
         """Fetch tracks by artist MusicBrainz ID."""
 
         result = await self._http(
             f"/artist/{artist_mbid}",
-            params={"inc": "recordings+genres"},
+            params={"inc": "recordings+genres", "limit": limit},
         )
 
         if not result:
