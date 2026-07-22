@@ -53,10 +53,14 @@ class LRCLIBLyricsProvider(LyricsProvider):
             if not data:
                 return None
 
-            plain_lyrics = data.get("syncedLyrics")
+            synced = data.get("syncedLyrics")
+            if synced:
+                return synced.strip()
 
-            if plain_lyrics:
-                return plain_lyrics.strip()
+            plain = data.get("plainLyrics")
+            if plain:
+                return plain.strip()
+
             return None
         except Exception as e:
             logger.warning(

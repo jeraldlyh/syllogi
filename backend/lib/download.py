@@ -96,13 +96,14 @@ async def download_missing_tracks(
                 mb_track = await provider.get_artist_track(
                     artist_name=artist_name, track_name=track_name
                 )
-                tag_audio_file(
+                await tag_audio_file(
                     file_path=existing_path,
                     artist_name=artist_name,
                     track_name=mb_track.track_name if mb_track else track_name,
                     album_name=mb_track.album_name if mb_track else album_name,
                     year=song.year,
                     genres=mb_track.genres if mb_track else [],
+                    duration=duration,
                 )
             logger.info(f"{formatted_name}: DOWNLOADED")
         else:
