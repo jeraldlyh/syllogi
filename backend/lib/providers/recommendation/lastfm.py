@@ -1,5 +1,6 @@
 import logging
 from collections.abc import Callable, Hashable
+from datetime import datetime
 from typing import Any, TypeVar
 
 from fastapi import HTTPException, status
@@ -12,6 +13,19 @@ from lib.providers.recommendation.base import RecommendationSourceProvider
 
 logger = logging.getLogger(__name__)
 T = TypeVar("T", bound=Hashable)
+
+
+def _extract_year(track: dict[str, Any]) -> str:
+    """Extract release year from a Last.fm track's date.uts field."""
+
+    uts = track.get("date", {}).get("uts", "")
+
+    if not uts:
+        return ""
+    try:
+        return str(datetime.fromtimestamp(int(uts)).year)
+    except (ValueError, OSError):
+        return ""
 
 
 class LastFMRecommendationProvider(RecommendationSourceProvider):
@@ -178,6 +192,7 @@ class LastFMRecommendationProvider(RecommendationSourceProvider):
                 duration=0,
                 playcount=0,
                 similarity_score=0.0,
+                year=_extract_year(track),
             ),
         )
 
@@ -213,6 +228,7 @@ class LastFMRecommendationProvider(RecommendationSourceProvider):
                 album_name="",
                 playcount=int(track.get("playcount", 0)),
                 similarity_score=0.0,
+                year="",
             ),
         )
 
@@ -250,6 +266,7 @@ class LastFMRecommendationProvider(RecommendationSourceProvider):
                     album_name="",
                     playcount=raw_track.get("playcount", 0),
                     similarity_score=raw_track.get("match", 0.0),
+                    year="",
                 )
             )
         return tracks

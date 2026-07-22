@@ -106,6 +106,7 @@ class ListenBrainzRecommendationProvider(RecommendationSourceProvider):
                     / 1000,
                     playcount=0,
                     similarity_score=0.0,
+                    year="",
                 )
             )
         return result
@@ -146,6 +147,7 @@ class ListenBrainzRecommendationProvider(RecommendationSourceProvider):
                 duration=0,
                 playcount=track.get("listen_count", 0),
                 similarity_score=0.0,
+                year="",
             )
             for track in tracks
             if track.get("track_name") and track.get("artist_name")
@@ -231,6 +233,7 @@ class ListenBrainzRecommendationProvider(RecommendationSourceProvider):
                         / 1000,
                         playcount=0,
                         similarity_score=0.0,
+                        year=str(track_metadata.get("year", "")),
                     )
                 )
         return results
