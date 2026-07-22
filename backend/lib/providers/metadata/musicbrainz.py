@@ -11,6 +11,7 @@ from lib.models.musicbrainz import (
     MusicbrainzArtistTag,
 )
 from lib.models.metadata import AlbumInfo, ArtistTrack
+from lib.cache import cached_method
 from lib.providers.metadata.base import (
     ArtistInfo,
     MetadataProvider,
@@ -110,6 +111,7 @@ class MusicBrainzMetadataProvider(MetadataProvider):
             for artist in result.get("artists", [])
         ]
 
+    @cached_method(ttl=604800)
     async def get_artist_tracks(
         self,
         *,
@@ -144,6 +146,7 @@ class MusicBrainzMetadataProvider(MetadataProvider):
             )
         return list(unique)
 
+    @cached_method(ttl=604800)
     async def get_artist_track(
         self,
         *,
@@ -175,6 +178,7 @@ class MusicBrainzMetadataProvider(MetadataProvider):
             image_url="",
         )
 
+    @cached_method(ttl=604800)
     async def get_artist_info(
         self,
         *,
@@ -189,6 +193,7 @@ class MusicBrainzMetadataProvider(MetadataProvider):
             return None
         return results[0].to_artist_info(locale=locale)
 
+    @cached_method(ttl=604800)
     async def get_album_info(
         self,
         *,
@@ -252,6 +257,7 @@ class MusicBrainzMetadataProvider(MetadataProvider):
             tracks=tracks,
         )
 
+    @cached_method(ttl=604800)
     async def get_artist_alias(self, *, artist_name: str) -> str | None:
         """Get artist actual name using MusicBrainz.
 

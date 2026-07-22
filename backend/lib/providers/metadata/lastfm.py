@@ -6,6 +6,7 @@ import httpx
 from lib.env import get_environment_variable
 from lib.models.chart import ChartTrendingTrack
 from lib.models.metadata import AlbumInfo, ArtistInfo, ArtistTrack
+from lib.cache import cached_method
 from lib.providers.metadata.base import MetadataProvider
 
 logger = logging.getLogger(__name__)
@@ -59,6 +60,7 @@ class LastFMMetadataProvider(MetadataProvider):
             value = value.get(key)
         return value
 
+    @cached_method(ttl=86400)
     async def get_artist_info(
         self,
         *,
@@ -98,6 +100,7 @@ class LastFMMetadataProvider(MetadataProvider):
             aliases=[],
         )
 
+    @cached_method(ttl=86400)
     async def get_artist_tracks(
         self,
         *,
@@ -147,6 +150,7 @@ class LastFMMetadataProvider(MetadataProvider):
             )
         return tracks
 
+    @cached_method(ttl=86400)
     async def get_artist_track(
         self,
         *,
@@ -185,6 +189,7 @@ class LastFMMetadataProvider(MetadataProvider):
                 )
         return None
 
+    @cached_method(ttl=86400)
     async def get_album_info(
         self,
         *,
@@ -240,6 +245,7 @@ class LastFMMetadataProvider(MetadataProvider):
             tracks=tracks,
         )
 
+    @cached_method(ttl=3600)
     async def get_chart_top_tracks(self, limit: int = 50) -> list[ChartTrendingTrack]:
         data = await self._http(
             params={

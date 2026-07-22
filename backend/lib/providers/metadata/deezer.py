@@ -6,6 +6,7 @@ import httpx
 from lib.env import get_environment_variable
 from lib.models.chart import ChartTrendingTrack
 from lib.models.metadata import AlbumInfo, ArtistInfo, ArtistTrack
+from lib.cache import cached_method
 from lib.providers.metadata.base import MetadataProvider
 
 logger = logging.getLogger(__name__)
@@ -32,6 +33,7 @@ class DeezerMetadataProvider(MetadataProvider):
                 return response.json()
             return None
 
+    @cached_method(ttl=86400)
     async def get_artist_info(
         self,
         *,
@@ -77,6 +79,7 @@ class DeezerMetadataProvider(MetadataProvider):
             "Deezer does not support fetching tracks by MusicBrainz ID. Use artist_id instead."
         )
 
+    @cached_method(ttl=86400)
     async def get_artist_track(
         self,
         *,
@@ -112,6 +115,7 @@ class DeezerMetadataProvider(MetadataProvider):
             )
             return None
 
+    @cached_method(ttl=86400)
     async def get_album_info(
         self,
         *,
@@ -167,6 +171,7 @@ class DeezerMetadataProvider(MetadataProvider):
             )
             return None
 
+    @cached_method(ttl=86400)
     async def get_chart_top_tracks(self, limit: int = 50) -> list[ChartTrendingTrack]:
         """Fetch the current top chart tracks from Deezer."""
 
