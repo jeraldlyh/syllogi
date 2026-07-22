@@ -82,6 +82,7 @@ class RecommendationTrack:
     track_name: str
     musicbrainz_id: str
     album_name: str
+    year: str
     duration: int
     playcount: int
     similarity_score: float
@@ -105,5 +106,6 @@ class RecommendationTrack:
             artist_name=self.artist_name,
             track_name=self.track_name,
             album_name=self.album_name,
+            year=self.year,
             duration=self.duration,
         )
