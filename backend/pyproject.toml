@@ -5,6 +5,7 @@ requires-python = ">=3.13,<3.14"
 dependencies = [
     "alembic",
     "apscheduler",
+    "cachetools",
     "fastapi[standard]",
     "httpx",
     "mutagen",
