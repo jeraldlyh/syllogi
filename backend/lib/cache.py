@@ -44,7 +44,9 @@ def cached_method(ttl: int = 3600, maxsize: int = 1024):
                 return cache[key]
 
             result = await method(self, *args, **kwargs)
-            cache[key] = result
+
+            if result is not None and result != []:
+                cache[key] = result
             return result
 
         wrapper.cache = cache  # type: ignore[attr-defined]
@@ -71,7 +73,9 @@ def cached_function(ttl: int = 1800, maxsize: int = 256):
                 logger.debug(f"Cache hit: {func.__name__}")
                 return cache[key]
             result = func(*args, **kwargs)
-            cache[key] = result
+
+            if result is not None and result != []:
+                cache[key] = result
             return result
 
         wrapper.cache = cache  # type: ignore[attr-defined]
