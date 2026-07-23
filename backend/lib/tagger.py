@@ -163,7 +163,7 @@ def _tag_mp3(
 
     if lyrics:
         tags.delall("USLT")
-        tags.add(USLT(encoding=3, lang="", desc="", text=lyrics))
+        tags.add(USLT(encoding=3, lang="und", desc="", text=lyrics))
 
     audio.save()
 
