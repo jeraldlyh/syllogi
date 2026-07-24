@@ -6,6 +6,7 @@ import httpx
 
 from lib.env import get_environment_variable
 from lib.models.common import RecommendationTrack
+from lib.cache import cached_method
 from lib.providers.recommendation.base import RecommendationSourceProvider
 
 logger = logging.getLogger(__name__)
@@ -153,6 +154,7 @@ class ListenBrainzRecommendationProvider(RecommendationSourceProvider):
             if track.get("track_name") and track.get("artist_name")
         ]
 
+    @cached_method(ttl=21600)
     async def get_similar_tracks(
         self,
         *,

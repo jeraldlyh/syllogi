@@ -9,6 +9,7 @@ from typing import TYPE_CHECKING, Any
 
 import yt_dlp
 
+from lib.cache import cached_function
 from lib.models.common import ExternalSync, ExternalTrack
 from lib.env import get_environment_variable
 from lib.utils import dump_results, get_download_path, normalize
@@ -47,6 +48,7 @@ def _ytdlp(url: str, opts: _Params | None = None, *, download: bool = False) -> 
         return result
 
 
+@cached_function(ttl=1800)
 def get_youtube_playlist(playlist_id: str) -> ExternalSync:
     """Fetch YouTube playlist metadata."""
 
@@ -71,6 +73,7 @@ def get_youtube_playlist(playlist_id: str) -> ExternalSync:
     )
 
 
+@cached_function(ttl=1800)
 def get_youtube_playlist_songs(playlist_id: str) -> list[ExternalTrack]:
     """Fetch full metadata for every track in a YouTube playlist."""
     url = f"https://www.youtube.com/playlist?list={playlist_id}"

@@ -36,6 +36,7 @@ def get_environment_variables() -> dict[str, str | bool | None]:
         ),
         "LISTENBRAINZ_API_KEY": os.getenv("LISTENBRAINZ_API_KEY", ""),
         "DEEZER_URL": "https://api.deezer.com",
+        "LRCLIB_URL": "https://lrclib.net/api",
     }
 
 

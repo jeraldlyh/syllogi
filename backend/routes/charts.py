@@ -230,7 +230,9 @@ async def _get_artist_info(
 
     await artist_info.ensure_metadata()
 
-    mb_tracks = await mb_provider.get_artist_tracks(artist_mbid=artist_info.id)
+    mb_tracks = await mb_provider.get_artist_tracks(
+        artist_mbid=artist_info.id, limit=10
+    )
     mb_tracks = list(set(mb_tracks))
 
     await asyncio.gather(*[track.ensure_metadata() for track in mb_tracks])
