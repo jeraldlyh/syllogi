@@ -1,8 +1,9 @@
 import logging
-from typing import Callable
 import uuid
+from collections.abc import Callable
 
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
+
 from lib.utils import parse_cron_expression
 
 scheduler = AsyncIOScheduler()
@@ -62,7 +63,7 @@ def update_job(
         kwargs=kwargs,
         trigger="cron",
         id=job_id,
-        replace_existing=True if job else False,
+        replace_existing=bool(job),
         **parse_cron_expression(cron_expression),
     )
 

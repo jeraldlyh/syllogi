@@ -1,5 +1,6 @@
-from datetime import datetime, timezone
-from typing import Iterable, TypedDict, Any
+from collections.abc import Iterable
+from datetime import UTC, datetime
+from typing import Any, TypedDict
 
 import httpx
 
@@ -12,8 +13,8 @@ class EmbedField(TypedDict):
 
 def _to_iso8601(dt: datetime) -> str:
     if dt.tzinfo is None:
-        dt = dt.replace(tzinfo=timezone.utc)
-    return dt.astimezone(timezone.utc).isoformat().replace("+00:00", "Z")
+        dt = dt.replace(tzinfo=UTC)
+    return dt.astimezone(UTC).isoformat().replace("+00:00", "Z")
 
 
 def _to_color_hex(c: int | str) -> int:
@@ -75,7 +76,7 @@ async def send_discord_notification(
             footer["icon_url"] = footer_icon_url
         embed["footer"] = footer
     if timestamp:
-        dt = datetime.now(timezone.utc) if timestamp is True else timestamp
+        dt = datetime.now(UTC) if timestamp is True else timestamp
         embed["timestamp"] = _to_iso8601(dt)
     if fields:
         field_list: list[dict[str, Any]] = []

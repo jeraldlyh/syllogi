@@ -2,6 +2,7 @@ import logging
 import uuid
 from typing import Any
 
+import httpx
 from fastapi import HTTPException, status
 
 from db.models.recommendation import (
@@ -364,7 +365,7 @@ async def generate_recommendations_task(
                 password=decrypted_password,
             )
 
-        except Exception as e:
+        except (HTTPException, httpx.HTTPError, OSError, ValueError) as e:
             if recommendation_session:
                 finished_at = get_now()
                 recommendation_session.status = RecommendationStatus.failed

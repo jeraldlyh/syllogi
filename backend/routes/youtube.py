@@ -5,9 +5,9 @@ from fastapi import APIRouter, Path
 from pydantic import BaseModel
 
 from lib.youtube import (
+    download_track_youtube,
     get_youtube_playlist,
     get_youtube_playlist_songs,
-    download_track_youtube,
 )
 
 router = APIRouter()

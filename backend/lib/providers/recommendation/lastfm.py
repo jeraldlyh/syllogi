@@ -1,16 +1,15 @@
 import logging
 from collections.abc import Callable, Hashable
-from datetime import datetime
+from datetime import UTC, datetime
 from typing import Any, TypeVar
 
-from fastapi import HTTPException, status
 import httpx
+from fastapi import HTTPException, status
 
+from lib.cache import cached_method
 from lib.env import get_environment_variable
 from lib.models.common import RecommendationTrack
-from lib.cache import cached_method
 from lib.providers.recommendation.base import RecommendationSourceProvider
-
 
 logger = logging.getLogger(__name__)
 T = TypeVar("T", bound=Hashable)
@@ -24,7 +23,7 @@ def _extract_year(track: dict[str, Any]) -> str:
     if not uts:
         return ""
     try:
-        return str(datetime.fromtimestamp(int(uts)).year)
+        return str(datetime.fromtimestamp(int(uts), tz=UTC).year)
     except (ValueError, OSError):
         return ""
 
@@ -159,7 +158,7 @@ class LastFMRecommendationProvider(RecommendationSourceProvider):
             )
             if data is None:
                 return False
-            return "user" in data
+            return isinstance(data, dict) and "user" in data
         except httpx.HTTPStatusError as e:
             if e.response.status_code == 404:
                 logger.debug("Username not found")
@@ -167,7 +166,7 @@ class LastFMRecommendationProvider(RecommendationSourceProvider):
             logger.warning("Unexpected HTTP error occurred")
         except httpx.RequestError as e:
             logger.warning(f"Request failed: {e}")
-        except Exception as e:
+        except (ValueError, KeyError) as e:
             logger.error(f"Unexpected error: {e}")
         return False
 

@@ -1,7 +1,8 @@
-from typing import Sequence
 import uuid
+from collections.abc import Sequence
 
 from sqlmodel import desc, select
+
 from db.models.sync import SyncSession, SyncSessionTrack, SyncSessionTrackType
 from db.session import SessionDep
 

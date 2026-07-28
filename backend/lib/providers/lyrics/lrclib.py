@@ -62,7 +62,7 @@ class LRCLIBLyricsProvider(LyricsProvider):
                 return plain.strip()
 
             return None
-        except Exception as e:
+        except httpx.HTTPError as e:
             logger.warning(
                 f"Failed to fetch lyrics from LRCLIB for '{artist_name} - {track_name}': {e}"
             )

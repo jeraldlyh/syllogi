@@ -5,7 +5,6 @@ from spotapi.playlist import PublicPlaylist
 from lib.cache import cached_function
 from lib.models.common import ExternalSync, ExternalTrack
 
-
 logger = logging.getLogger(__name__)
 
 

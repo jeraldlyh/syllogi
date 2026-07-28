@@ -2,6 +2,7 @@ import logging
 import os
 import uuid
 
+import httpx
 from fastapi import HTTPException, status
 
 from db.download_session import get_download_session_by_id, update_download_session
@@ -14,6 +15,7 @@ from lib.providers.metadata.musicbrainz import MusicBrainzMetadataProvider
 from lib.providers.playlist.base import MusicPlaylistProvider
 from lib.slskd import download_track_slskd
 from lib.tagger import tag_audio_file
+from lib.track import find_track
 from lib.utils import (
     get_existing_track_path,
     get_now,
@@ -21,7 +23,6 @@ from lib.utils import (
     is_track_lossless,
     truncate,
 )
-from lib.track import find_track
 from lib.youtube import download_track_youtube
 
 logger = logging.getLogger(__name__)
@@ -236,7 +237,7 @@ async def download_single_track(
 
             download_session.finished_at = get_now()
 
-        except Exception as e:
+        except (HTTPException, httpx.HTTPError, OSError) as e:
             if download_session:
                 download_session.status = DownloadSessionStatus.failed
                 download_session.finished_at = get_now()

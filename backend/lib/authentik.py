@@ -1,7 +1,6 @@
-import httpx
-
 from typing import Any
 
+import httpx
 from fastapi import HTTPException, status
 
 from lib.env import get_environment_variable

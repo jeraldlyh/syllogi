@@ -3,10 +3,10 @@ from typing import Any
 
 import httpx
 
+from lib.cache import cached_method
 from lib.env import get_environment_variable
 from lib.models.chart import ChartTrendingTrack
 from lib.models.metadata import AlbumInfo, ArtistInfo, ArtistTrack
-from lib.cache import cached_method
 from lib.providers.metadata.base import MetadataProvider
 
 logger = logging.getLogger(__name__)

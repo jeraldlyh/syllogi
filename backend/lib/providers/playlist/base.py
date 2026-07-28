@@ -1,6 +1,6 @@
 from abc import ABC, abstractmethod
 
-from lib.models.provider import ProviderTrack, ProviderPlaylist, ProviderUser
+from lib.models.provider import ProviderPlaylist, ProviderTrack, ProviderUser
 
 
 class MusicPlaylistProvider(ABC):

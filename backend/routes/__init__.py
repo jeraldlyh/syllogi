@@ -2,21 +2,20 @@ from fastapi import APIRouter, Depends, FastAPI
 
 from lib.auth import get_current_user
 from routes.auth import router as auth_router
-from routes.oauth import router as oauth_router
-from routes.cron import router as cron_router
 from routes.charts import router as charts_router
+from routes.cron import router as cron_router
 from routes.health import router as health_router
-from routes.users import router as users_router
 from routes.notification import router as notification_router
-
+from routes.oauth import router as oauth_router
+from routes.recommendation import router as recommendation_router
+from routes.recommendation_session import router as recommendation_session_router
+from routes.settings import router as settings_router
 from routes.spotify import router as spotify_router
 from routes.sync import router as sync_router
 from routes.sync_session import router as sync_session_router
 from routes.track import router as track_router
+from routes.users import router as users_router
 from routes.youtube import router as youtube_router
-from routes.settings import router as settings_router
-from routes.recommendation import router as recommendation_router
-from routes.recommendation_session import router as recommendation_session_router
 
 OPENAPI_TAGS = [
     {"name": "Auth", "description": "Authentication and current-user endpoints."},

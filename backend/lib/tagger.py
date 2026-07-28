@@ -1,5 +1,6 @@
 import logging
 
+from mutagen import MutagenError
 from mutagen.flac import FLAC
 from mutagen.id3 import ID3, TALB, TCON, TDRC, TIT2, TPE1, USLT
 from mutagen.mp3 import MP3
@@ -16,15 +17,15 @@ def has_lyrics(file_path: str) -> bool:
     try:
         if file_path.endswith(".flac"):
             audio = FLAC(file_path)
-            return bool(audio.tags and audio.tags["LYRICS"])  # type: ignore[reportAttributeAccessIssue]
+            return bool(audio.tags and audio.tags.get("LYRICS"))  # type: ignore[reportAttributeAccessIssue]
         elif file_path.endswith(".mp3"):
             audio = MP3(file_path)
             return bool(audio.tags and audio.tags.getall("USLT"))
         elif file_path.endswith(".opus"):
             audio = OggOpus(file_path)
-            return bool(audio.tags and audio.tags["LYRICS"])  # type: ignore[reportAttributeAccessIssue]
+            return bool(audio.tags and audio.tags.get("LYRICS"))  # type: ignore[reportAttributeAccessIssue]
         return False
-    except Exception:
+    except (MutagenError, OSError, KeyError):
         return False
 
 
@@ -89,7 +90,7 @@ async def tag_audio_file(
 
         logger.info(f"Tagged: {file_path}")
         return True
-    except Exception:
+    except (MutagenError, OSError):
         logger.error(f"Failed to tag: {file_path}")
         return False
 

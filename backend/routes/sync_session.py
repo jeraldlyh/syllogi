@@ -1,7 +1,7 @@
 from fastapi import APIRouter
 
-from db.sync_session import get_sync_sessions, get_sync_session_tracks
 from db.session import SessionDep
+from db.sync_session import get_sync_session_tracks, get_sync_sessions
 
 router = APIRouter()
 

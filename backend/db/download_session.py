@@ -1,7 +1,8 @@
-from typing import Sequence
 import uuid
+from collections.abc import Sequence
 
 from sqlmodel import desc, select
+
 from db.models.download_session import DownloadSession
 from db.session import SessionDep
 

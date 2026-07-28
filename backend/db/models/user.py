@@ -1,7 +1,9 @@
 import uuid
+
+from sqlmodel import Field, SQLModel
+
 from lib.mixin.metadata import TimestampMixin
 from lib.mixin.serializer import SerializerMixin
-from sqlmodel import Field, SQLModel
 
 
 class User(TimestampMixin, SerializerMixin, SQLModel, table=True):

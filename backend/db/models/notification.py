@@ -3,9 +3,9 @@ import uuid
 
 from sqlmodel import Field, SQLModel
 
-from lib.utils import format_time_with_locale
 from lib.mixin.metadata import TimestampMixin
 from lib.mixin.serializer import SerializerMixin
+from lib.utils import format_time_with_locale
 
 
 class NotificationChannel(enum.Enum):

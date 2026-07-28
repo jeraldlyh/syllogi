@@ -1,9 +1,9 @@
 import enum
 import uuid
-import sqlalchemy as sa
 from datetime import datetime
 from typing import Any, cast
 
+import sqlalchemy as sa
 from sqlmodel import Field, Relationship, SQLModel
 
 from lib.mixin.metadata import TimestampMixin

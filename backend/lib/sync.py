@@ -2,6 +2,7 @@ import asyncio
 import logging
 import uuid
 
+import httpx
 from fastapi import HTTPException, status
 
 from db.models.sync import (
@@ -315,7 +316,7 @@ async def sync_playlist_task(
                     type=SyncSessionTrackType.downloaded,
                 )
             )
-        except Exception as e:
+        except (HTTPException, httpx.HTTPError, OSError, ValueError) as e:
             if sync_session:
                 finished_at = get_now()
                 sync_session.status = SyncStatus.failed
