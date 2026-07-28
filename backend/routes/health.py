@@ -1,4 +1,5 @@
-from fastapi import APIRouter, HTTPException
+import httpx
+from fastapi import APIRouter
 
 from lib.env import is_slskd_configured
 from lib.slskd import _slskd
@@ -51,5 +52,5 @@ async def slskd_health():
     try:
         await _slskd("/health")
         return {"configured": True, "connected": True}
-    except HTTPException:
+    except httpx.HTTPError:
         return {"configured": True, "connected": False}
