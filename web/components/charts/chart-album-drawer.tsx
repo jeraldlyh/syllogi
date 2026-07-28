@@ -11,20 +11,20 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { useAlbum } from "@/hooks/useAlbum";
+import { ArtistTrack } from "@/hooks/useArtist";
 import {
   DownloadSession,
   useDownloadSessions,
 } from "@/hooks/useDownloadSessions";
-import { useAlbum } from "@/hooks/useAlbum";
 import { api } from "@/lib/api";
 import { cn, formatDuration } from "@/lib/utils";
-import { Dot, Download, Loader2, RotateCcw } from "lucide-react";
+import { Download, Loader2, RotateCcw } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
-import { ChartBadge } from "./chart-badge";
-import { ArtistTrack } from "@/hooks/useArtist";
-import { ChartImage } from "./chart-image";
 import { Badge } from "../ui/badge";
+import { ChartBadge } from "./chart-badge";
+import { ChartImage } from "./chart-image";
 
 interface IProps {
   artistName: string;

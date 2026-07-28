@@ -47,7 +47,7 @@ export const ChartGridCard = ({
             <Button
               onClick={onAlbumClick}
               variant="link"
-              className="h-auto p-0 text-xs text-muted-foreground hover:text-primary justify-start truncate"
+              className="h-auto p-0 mb-2 text-xs text-muted-foreground hover:text-primary justify-start truncate"
             >
               {albumName}
             </Button>
@@ -55,7 +55,7 @@ export const ChartGridCard = ({
             <Text className="truncate !text-xs" muted value={albumName} />
           ))}
         {(artistName || children) && (
-          <div className="mt-2 flex items-center justify-between">
+          <div className="mt-auto flex items-center justify-between">
             {artistName &&
               (onArtistClick ? (
                 <Button
