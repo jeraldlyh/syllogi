@@ -1,4 +1,5 @@
 import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 import { Text } from "@/components/common/text";
 import { formatDuration } from "@/lib/utils";
 import { ChartBadge } from "./chart-badge";
@@ -33,7 +34,7 @@ export const ChartGridCard = ({
     <div className="group relative flex flex-col overflow-hidden rounded-lg border border-border bg-card transition-colors hover:border-foreground/20">
       <ChartImage imageUrl={imageUrl} alt={trackName}>
         <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/70 to-transparent p-2.5">
-          <Text className="text-xs" value={formatDuration(duration)} />
+          <Badge variant="secondary">{formatDuration(duration)}</Badge>
         </div>
         <div className="absolute top-2 right-2">
           <ChartBadge isExist={isExist} isDownloading={isDownloading} />
