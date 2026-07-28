@@ -8,6 +8,7 @@ from typing import Any
 
 import httpx
 
+from lib.env import get_environment_variable
 from lib.models.slskd import (
     SlskdDownloadDirectory,
     SlskdDownloadFile,
@@ -17,7 +18,6 @@ from lib.models.slskd import (
     SlskdSearchStatus,
     SlskdTrackCandidate,
 )
-from lib.env import get_environment_variable
 from lib.providers.metadata.musicbrainz import MusicBrainzMetadataProvider
 from lib.utils import (
     find_downloaded_file,
@@ -166,7 +166,7 @@ async def _queue_download(username: str, filename: str, size: int) -> bool:
                 json=[{"filename": filename, "size": size}],
             )
             return True
-        except Exception as e:
+        except httpx.HTTPError as e:
             logger.error(
                 f"[{attempt}/{QUEUE_DOWNLOAD_MAX_RETRIES}] Failed to queue download for {filename}: {e}"
             )
@@ -269,7 +269,7 @@ async def _is_download_completed(username: str, filename: str) -> bool:
             logger.warning(
                 f"[{attempt}/{CHECK_DOWNLOAD_MAX_RETRIES}] Download for {filename} from user {username} not completed yet. State: {downloaded_file.state if downloaded_file else 'N/A'}."
             )
-        except Exception as e:
+        except httpx.HTTPError as e:
             logger.error(f"Failed to poll download status: {e}")
 
         await asyncio.sleep(DOWNLOAD_RETRY_INTERVAL)
@@ -292,7 +292,7 @@ async def _get_downloaded_file(
                 for file in directory.files:
                     if file.filename == filename:
                         return file
-    except Exception as e:
+    except httpx.HTTPError as e:
         logger.warning(f"Error fetching downloaded file info: {e}")
 
     return None
@@ -441,7 +441,7 @@ async def _delete_slskd_search(search_id: str) -> None:
 
     try:
         await _slskd(f"/api/v0/searches/{search_id}", method="DELETE")
-    except Exception as e:
+    except httpx.HTTPError as e:
         logger.debug(f"Failed to delete search {search_id}: {e}")
 
 
@@ -453,7 +453,7 @@ async def _delete_slskd_download(user_id: str, file_id: str) -> None:
             f"/api/v0/transfers/downloads/{user_id}/{file_id}?remove=true",
             method="DELETE",
         )
-    except Exception as e:
+    except httpx.HTTPError as e:
         logger.error(
             f"Failed to delete download for user {user_id} and file {file_id}: {e}"
         )
@@ -573,7 +573,7 @@ async def download_track_slskd(
             f"All {len(candidates)} candidate(s) exhausted for: {search_query}"
         )
         return False
-    except Exception as e:
+    except (httpx.HTTPError, ValueError, KeyError) as e:
         logger.error(f"Failed to download '{search_query}': {e}")
 
         return False

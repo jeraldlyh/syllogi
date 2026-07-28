@@ -1,5 +1,6 @@
 import logging
-from typing import Annotated, Any, Mapping
+from collections.abc import Mapping
+from typing import Annotated, Any
 
 from fastapi import APIRouter, Path
 from pydantic import BaseModel

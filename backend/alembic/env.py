@@ -9,14 +9,17 @@ from alembic import context
 
 load_dotenv()
 
-from db.session import get_connection_string  # noqa: E402
-
-from db.models.sync import Sync, SyncSession, SyncSessionTrack  # noqa: E402, F401
-from db.models.notification import Notification  # noqa: E402, F401
-from db.models.user import User  # noqa: E402, F401
-from db.models.recommendation import (RecommendationSession, RecommendationSessionTrack, Recommendation)  # noqa: E402, F401
-from db.models.download_session import DownloadSession  # noqa: E402, F401
-from db.models.music_server_user import MusicServerUser  # noqa: E402, F401
+from db.models.download_session import DownloadSession  # noqa: F401
+from db.models.music_server_user import MusicServerUser  # noqa: F401
+from db.models.notification import Notification  # noqa: F401
+from db.models.recommendation import (  # noqa: F401
+    Recommendation,
+    RecommendationSession,
+    RecommendationSessionTrack,
+)
+from db.models.sync import Sync, SyncSession, SyncSessionTrack  # noqa: F401
+from db.models.user import User  # noqa: F401
+from db.session import get_connection_string
 
 config = context.config
 

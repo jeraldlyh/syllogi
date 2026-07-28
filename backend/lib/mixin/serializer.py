@@ -1,4 +1,4 @@
-from typing import Any, Dict, Optional, cast
+from typing import Any, cast
 
 from pydantic import ConfigDict
 from sqlmodel import SQLModel
@@ -10,8 +10,8 @@ class SerializerMixin(SQLModel):
     def to_dict(
         self,
         *,
-        exclude: Optional[set[str]] = None,
-    ) -> Dict[str, Any]:
+        exclude: set[str] | None = None,
+    ) -> dict[str, Any]:
         return self.model_dump(
             exclude=exclude or set(),
         )

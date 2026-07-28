@@ -3,15 +3,15 @@ from typing import Any
 
 import httpx
 
+from lib.cache import cached_method
 from lib.env import get_environment_variable
+from lib.models.metadata import AlbumInfo, ArtistTrack
 from lib.models.musicbrainz import (
     MusicbrainzArtist,
     MusicbrainzArtistAlias,
     MusicbrainzArtistArea,
     MusicbrainzArtistTag,
 )
-from lib.models.metadata import AlbumInfo, ArtistTrack
-from lib.cache import cached_method
 from lib.providers.metadata.base import (
     ArtistInfo,
     MetadataProvider,

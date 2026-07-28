@@ -8,10 +8,11 @@ import re
 from typing import TYPE_CHECKING, Any
 
 import yt_dlp
+from yt_dlp.utils import DownloadError
 
 from lib.cache import cached_function
-from lib.models.common import ExternalSync, ExternalTrack
 from lib.env import get_environment_variable
+from lib.models.common import ExternalSync, ExternalTrack
 from lib.utils import dump_results, get_download_path, normalize
 
 if TYPE_CHECKING:
@@ -250,6 +251,6 @@ async def download_track_youtube(
             return True
         logger.warning(f"No results found for: {search_query}")
         return False
-    except Exception as e:
+    except (OSError, ValueError, DownloadError) as e:
         logger.error(f"Failed to download '{search_query}': {e}")
         return False

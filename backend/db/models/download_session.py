@@ -1,14 +1,14 @@
 import enum
 import uuid
-import sqlalchemy as sa
 from datetime import datetime
-from typing import Any, Optional, cast
+from typing import Any, cast
 
+import sqlalchemy as sa
 from sqlmodel import Field, SQLModel
 
-from lib.utils import get_now, format_time_with_locale
-from lib.mixin.serializer import SerializerMixin
 from lib.mixin.metadata import TimestampMixin
+from lib.mixin.serializer import SerializerMixin
+from lib.utils import format_time_with_locale, get_now
 
 
 class DownloadSessionStatus(str, enum.Enum):
@@ -34,13 +34,13 @@ class DownloadSession(TimestampMixin, SerializerMixin, SQLModel, table=True):
         sa_column_kwargs={"server_default": sa.func.now()},
         nullable=False,
     )
-    finished_at: Optional[datetime] = Field(
+    finished_at: datetime | None = Field(
         default=None,
         sa_type=cast(type[Any], sa.DateTime(timezone=True)),
         nullable=True,
     )
 
-    error_message: Optional[str] = Field(default=None, max_length=1024, nullable=True)
+    error_message: str | None = Field(default=None, max_length=1024, nullable=True)
 
     def to_dict(self) -> dict:
         return {

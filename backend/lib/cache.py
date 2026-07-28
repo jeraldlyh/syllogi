@@ -2,7 +2,8 @@ import functools
 import hashlib
 import json
 import logging
-from typing import Any, Callable, TypeVar
+from collections.abc import Callable
+from typing import Any, TypeVar
 
 from cachetools import TTLCache
 
@@ -17,7 +18,7 @@ def _make_cache_key(func_name: str, args: tuple, kwargs: dict) -> str:
     key_parts = [func_name]
 
     key_parts.extend(repr(a) for a in args)
-    key_parts.extend(f"{k}={repr(v)}" for k, v in sorted(kwargs.items()))
+    key_parts.extend(f"{k}={v!r}" for k, v in sorted(kwargs.items()))
 
     raw = json.dumps(key_parts, default=str, sort_keys=True)
 

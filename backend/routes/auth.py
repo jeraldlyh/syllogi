@@ -8,10 +8,10 @@ from db.models.user import User
 from db.session import SessionDep
 from db.user import count_users, create_user, get_user_by_username
 from lib.auth import (
+    _get_password_hash,
     authenticate_user,
     create_access_token,
     get_current_user,
-    _get_password_hash,
 )
 
 router = APIRouter()

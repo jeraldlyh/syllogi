@@ -4,7 +4,6 @@ from dataclasses import dataclass, field
 class ProviderError(Exception):
     """Raised when a music provider operation fails."""
 
-    pass
 
 
 @dataclass

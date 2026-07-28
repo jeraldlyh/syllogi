@@ -1,14 +1,14 @@
 import enum
 import uuid
-import sqlalchemy as sa
 from datetime import datetime
-from typing import Any, Optional, cast
+from typing import Any, cast
 
+import sqlalchemy as sa
 from sqlmodel import Field, Relationship, SQLModel
 
-from lib.utils import get_now, format_time_with_locale
 from lib.mixin.metadata import TimestampMixin
 from lib.mixin.serializer import SerializerMixin
+from lib.utils import format_time_with_locale, get_now
 
 
 class SyncProvider(str, enum.Enum):
@@ -90,7 +90,7 @@ class SyncSession(TimestampMixin, SerializerMixin, SQLModel, table=True):
     status: SyncStatus = Field(nullable=False)
     tracks: list["SyncSessionTrack"] = Relationship(back_populates="session")
 
-    error_message: Optional[str] = Field(default=None, max_length=1024, nullable=True)
+    error_message: str | None = Field(default=None, max_length=1024, nullable=True)
 
     def to_dict(self) -> dict:
         return {

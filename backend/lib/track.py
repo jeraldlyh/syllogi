@@ -1,18 +1,19 @@
 import logging
+from collections.abc import Callable
 from difflib import SequenceMatcher
-from typing import Callable, TypeVar
 
+import httpx
+
+from lib.models.chart import ChartTrendingTrack
 from lib.models.common import (
     ExternalTrack,
     ResolvedTrack,
 )
-from lib.models.chart import ChartTrendingTrack
 from lib.models.provider import ProviderTrack
 from lib.providers.playlist.base import MusicPlaylistProvider
 from lib.utils import get_clean_name
 
 logger = logging.getLogger(__name__)
-T = TypeVar("T")
 
 
 def normalize(text: str) -> str:
@@ -175,7 +176,7 @@ async def resolve_tracks(
     return found, missing
 
 
-def reconcile_after_download(
+def reconcile_after_download[T](
     found_tracks: list[T],
     found_tracks_after_download: list[ResolvedTrack],
     missing_tracks: list[T],
@@ -241,7 +242,7 @@ async def is_track_in_provider(
             duration=track.duration,
         )
         return not provider_track.is_not_found()
-    except Exception:
+    except httpx.HTTPError:
         logger.warning(
             f"Failed to check provider for '{track.artist_name} - {track.track_name}'"
         )

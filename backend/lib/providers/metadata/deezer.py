@@ -3,10 +3,10 @@ from typing import Any
 
 import httpx
 
+from lib.cache import cached_method
 from lib.env import get_environment_variable
 from lib.models.chart import ChartTrendingTrack
 from lib.models.metadata import AlbumInfo, ArtistInfo, ArtistTrack
-from lib.cache import cached_method
 from lib.providers.metadata.base import MetadataProvider
 
 logger = logging.getLogger(__name__)
@@ -65,7 +65,7 @@ class DeezerMetadataProvider(MetadataProvider):
                 image_url=artist.get("picture_big") or artist.get("picture_medium"),
                 num_of_fans=artist.get("nb_fan"),
             )
-        except Exception as e:
+        except httpx.HTTPError as e:
             logger.error(f"Failed to fetch Deezer artist info for '{artist_name}': {e}")
             return None
 
@@ -109,7 +109,7 @@ class DeezerMetadataProvider(MetadataProvider):
                 genres=[],
                 image_url=album.get("cover_big") or album.get("cover_medium"),
             )
-        except Exception as e:
+        except httpx.HTTPError as e:
             logger.warning(
                 f"Failed to fetch Deezer track for '{artist_name} - {track_name}': {e}"
             )
@@ -165,7 +165,7 @@ class DeezerMetadataProvider(MetadataProvider):
                 release_date="",
                 tracks=tracks,
             )
-        except Exception as e:
+        except httpx.HTTPError as e:
             logger.warning(
                 f"Failed to fetch Deezer album info for '{artist_name} - {album_name}': {e}"
             )
@@ -197,6 +197,6 @@ class DeezerMetadataProvider(MetadataProvider):
                     )
                 )
             return tracks
-        except Exception as e:
+        except httpx.HTTPError as e:
             logger.error(f"Failed to fetch Deezer chart top tracks: {e}")
             return []

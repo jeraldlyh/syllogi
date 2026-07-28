@@ -2,8 +2,8 @@ import json
 import logging
 import logging.config
 import os
+from collections.abc import Callable
 from http import HTTPStatus
-from typing import Callable
 
 from dotenv import load_dotenv
 from fastapi import FastAPI, HTTPException, Request
@@ -207,7 +207,7 @@ def create_app() -> FastAPI:
     async def http_exception_handler(request: Request, e: HTTPException):
         try:
             name = HTTPStatus(e.status_code).phrase
-        except Exception:
+        except ValueError:
             name = "HTTP Error"
         payload = {
             "success": False,

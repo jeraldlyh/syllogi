@@ -2,10 +2,10 @@ import glob
 import json
 import logging
 import os
-from pathlib import Path
 import re
 import unicodedata
 from datetime import datetime
+from pathlib import Path
 from time import gmtime, strftime
 
 import pytz
@@ -42,7 +42,7 @@ def dump_results(file_name: str, data: dict) -> None:
         json.dump(data, file, indent=4)
 
 
-def convert_seconds_to_readable_time(seconds: float | int) -> str:
+def convert_seconds_to_readable_time(seconds: float) -> str:
     """Convert seconds to a human-readable format (HH:MM:SS)."""
 
     return strftime("%H:%M:%S", gmtime(seconds))

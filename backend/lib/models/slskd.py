@@ -1,4 +1,5 @@
 from dataclasses import dataclass
+from typing import ClassVar
 
 from lib.track import normalize
 
@@ -56,7 +57,7 @@ class SlskdSearchStatus:
 class SlskdSearchFile:
     """A file from Soulseek search results."""
 
-    PREFERRED_EXTENSIONS = ["flac", "mp3", "opus"]
+    PREFERRED_EXTENSIONS: ClassVar[list[str]] = ["flac", "mp3", "opus"]
 
     def __init__(
         self,

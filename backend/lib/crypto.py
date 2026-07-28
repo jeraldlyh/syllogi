@@ -1,5 +1,6 @@
 import base64
 import hashlib
+
 from cryptography.fernet import Fernet
 
 from lib.env import get_environment_variable

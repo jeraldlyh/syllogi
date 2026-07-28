@@ -143,7 +143,7 @@ class NavidromeProvider(MusicPlaylistProvider):
             self._bearer_token = token
 
             return token
-        except Exception as exc:
+        except (httpx.HTTPError, ValueError) as exc:
             logger.error(f"Failed to obtain Navidrome bearer token: {exc}")
             return None
 
@@ -209,7 +209,7 @@ class NavidromeProvider(MusicPlaylistProvider):
 
                 try:
                     return await _http()
-                except Exception as retry_exc:
+                except (httpx.HTTPError, ValueError) as retry_exc:
                     logger.error(
                         f"Navidrome http error after retrying with new token {retry_exc}"
                     )
@@ -218,7 +218,7 @@ class NavidromeProvider(MusicPlaylistProvider):
                 f"Navidrome HTTP API HTTP error {exc.response.status_code}: {exc}",
             )
             return {}
-        except Exception as exc:
+        except (httpx.HTTPError, ValueError) as exc:
             logger.error("Navidrome http error request error: %s", exc)
             return {}
 
@@ -663,7 +663,7 @@ class NavidromeProvider(MusicPlaylistProvider):
             subsonic_response = body.get("subsonic-response", {})
 
             return subsonic_response.get("status") == "ok"
-        except Exception as exc:
+        except (httpx.HTTPError, ValueError) as exc:
             logger.warning(
                 f"Navidrome credential verification failed for user '{username}': {exc}"
             )

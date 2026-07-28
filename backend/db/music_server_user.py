@@ -1,5 +1,5 @@
-from typing import Sequence
 import uuid
+from collections.abc import Sequence
 
 from sqlmodel import select
 
