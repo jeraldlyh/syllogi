@@ -1,4 +1,3 @@
-"use client";
 import { useSyncSessions } from "@/hooks/useSyncSessions";
 import { ListMusic, User, Music, Plus, Minus, Clock, Hash } from "lucide-react";
 import { StatusBadge } from "../common/status-badge";

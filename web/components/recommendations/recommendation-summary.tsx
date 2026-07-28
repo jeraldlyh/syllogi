@@ -1,4 +1,3 @@
-"use client";
 import { useRecommendationSessions } from "@/hooks/useRecommendationSessions";
 import { User, Music, Plus, Minus, Clock, Hash } from "lucide-react";
 import { StatusBadge } from "@/components/common/status-badge";

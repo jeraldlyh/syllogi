@@ -1,4 +1,3 @@
-"use client";
 import { Text } from "@/components/common/text";
 import { Button } from "@/components/ui/button";
 import { Drawer, DrawerContent, DrawerTitle } from "@/components/ui/drawer";

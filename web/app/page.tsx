@@ -1,4 +1,3 @@
-"use client";
 import { Text } from "@/components/common/text";
 import { DashboardHeader } from "@/components/dashboard-header";
 import { Charts } from "@/components/charts/charts";
@@ -13,12 +12,11 @@ import { UsersSettings } from "@/components/users/users-settings";
 import { useMe } from "@/hooks/useMe";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { api } from "@/lib/api";
-import Image from "next/image";
-import { useRouter } from "next/navigation";
+import { useNavigate } from "react-router-dom";
 import { useEffect, useRef, useState } from "react";
 
 export default function Page() {
-  const router = useRouter();
+  const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
   const { data: currentUser } = useMe();
   const timerRef = useRef<NodeJS.Timeout | undefined>(undefined);
@@ -51,7 +49,7 @@ export default function Page() {
       });
 
       if (!response.data || response.statusCode !== 200) {
-        router.push("/login");
+        navigate("/login");
       }
 
       clearTimeout(timerRef.current);
@@ -61,7 +59,7 @@ export default function Page() {
 
     redirect();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [router]);
+  }, [navigate]);
 
   return (
     <div className="min-h-screen bg-background">
@@ -91,11 +89,10 @@ export default function Page() {
                 className="text-primary"
               />
             </svg>
-            <Image
+            <img
               src="/icon.png"
               alt="syllogi logo"
-              fill
-              className="absolute p-6"
+              className="absolute p-6 h-full w-full"
             />
           </div>
           <div className="flex flex-col items-center gap-1">

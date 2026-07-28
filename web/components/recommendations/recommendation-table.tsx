@@ -1,4 +1,3 @@
-"use client";
 import { StatusBadge } from "@/components/common/status-badge";
 import { Text } from "@/components/common/text";
 import { Button } from "@/components/ui/button";

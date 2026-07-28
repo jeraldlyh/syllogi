@@ -1,14 +1,12 @@
-"use client";
-
 import { Text } from "@/components/common/text";
 import { Layers } from "lucide-react";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 
 export const OAuthCallback = () => {
   const searchParams = useSearchParams();
-  const router = useRouter();
+  const navigate = useNavigate();
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
@@ -24,7 +22,7 @@ export const OAuthCallback = () => {
         setError(errorMessage);
         toast.error("OAuth login failed", { description: errorMessage });
 
-        setTimeout(() => router.replace("/login"), 3000);
+        setTimeout(() => navigate("/login", { replace: true }), 3000);
         return;
       }
 
@@ -34,13 +32,13 @@ export const OAuthCallback = () => {
         setError(errorMessage);
         toast.error(errorMessage);
 
-        setTimeout(() => router.replace("/login"), 3000);
+        setTimeout(() => navigate("/login", { replace: true }), 3000);
         return;
       }
       window.location.href = `/api/oauth/callback?code=${encodeURIComponent(code)}&state=${encodeURIComponent(state)}`;
     };
     handleOAuthCallback();
-  }, [searchParams, router]);
+  }, [searchParams, navigate]);
 
   if (error) {
     return (

@@ -1,5 +1,3 @@
-"use client";
-
 import { Text } from "@/components/common/text";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -8,15 +6,13 @@ import { Separator } from "@/components/ui/separator";
 import { useSettings } from "@/hooks/useSettings";
 import { api } from "@/lib/api";
 import { Layers } from "lucide-react";
-import Image from "next/image";
-import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { Link, useNavigate } from "react-router-dom";
 import React, { useEffect, useState } from "react";
 import { toast } from "sonner";
 
 export default function LoginPage() {
   const { data } = useSettings();
-  const router = useRouter();
+  const navigate = useNavigate();
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
 
@@ -29,12 +25,12 @@ export default function LoginPage() {
       });
 
       if (response.data && response.statusCode === 200) {
-        router.push("/");
+        navigate("/");
       }
     };
 
     redirect();
-  }, [router]);
+  }, [navigate]);
 
   const handlePasswordLogin = async (e: React.FormEvent): Promise<void> => {
     e.preventDefault();
@@ -54,7 +50,7 @@ export default function LoginPage() {
 
     if (response.statusCode === 200) {
       toast.success("Signed in", { id: toastId });
-      router.push("/");
+      navigate("/");
     } else {
       toast.error("Login failed", {
         description: response.error?.message || "An unknown error occurred",
@@ -94,7 +90,7 @@ export default function LoginPage() {
     <div className="flex min-h-screen items-center justify-center bg-background p-4">
       <div className="w-full max-w-md">
         <div className="mb-8 flex flex-col items-center gap-3">
-          <Image
+          <img
             src="/icon.png"
             alt="syllogi logo"
             width={64}
@@ -155,7 +151,7 @@ export default function LoginPage() {
         <p className="mt-4 text-center text-sm text-muted-foreground">
           Don&apos;t have an account?&nbsp;
           <Link
-            href="/signup"
+            to="/signup"
             className="font-medium text-foreground underline-offset-4 hover:underline hover:text-primary transition-colors"
           >
             Sign up

@@ -1,4 +1,3 @@
-"use client";
 import { ChartAlbumDrawer } from "./chart-album-drawer";
 import { ChartArtistDrawer } from "./chart-artist-drawer";
 import { ChartDrawerProvider, useChartDrawer } from "./chart-drawer-context";

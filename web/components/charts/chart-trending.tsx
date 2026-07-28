@@ -1,4 +1,3 @@
-"use client";
 import { Text } from "@/components/common/text";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -19,7 +18,6 @@ import { TrendingTrack, useTrendingTracks } from "@/hooks/useTrendingTracks";
 import { api } from "@/lib/api";
 import { formatDuration } from "@/lib/utils";
 import { Download, LayoutGrid, List, RefreshCw, Search } from "lucide-react";
-import Image from "next/image";
 import { useState } from "react";
 import { toast } from "sonner";
 import { ChartBadge } from "./chart-badge";
@@ -295,7 +293,7 @@ export const ChartTrending = () => {
                   <TableCell>
                     <div className="flex items-center gap-3">
                       {track.image_url ? (
-                        <Image
+                        <img
                           src={track.image_url}
                           alt={track.track_name}
                           width={36}

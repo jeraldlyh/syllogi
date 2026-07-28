@@ -11,6 +11,8 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.openapi.utils import get_openapi
 from fastapi.responses import JSONResponse, Response
 from starlette.middleware.base import BaseHTTPMiddleware
+from starlette.responses import FileResponse
+from starlette.staticfiles import StaticFiles
 
 from db.models.music_server_user import MusicServerProvider, MusicServerUser
 from db.music_server_user import (
@@ -247,6 +249,27 @@ def create_app() -> FastAPI:
     @app.on_event("shutdown")
     def shutdown_event():
         scheduler.shutdown()
+
+    _static_dir = os.path.join(
+        os.path.dirname(os.path.abspath(__file__)), "..", "web", "dist"
+    )
+
+    if os.path.isdir(_static_dir):
+        _assets_dir = os.path.join(_static_dir, "assets")
+
+        if os.path.isdir(_assets_dir):
+            app.mount(
+                "/assets", StaticFiles(directory=_assets_dir), name="static-assets"
+            )
+
+        @app.get("/{full_path:path}")
+        async def serve_spa(full_path: str):
+            file_path = os.path.join(_static_dir, full_path)
+
+            if full_path and os.path.isfile(file_path):
+                return FileResponse(file_path)
+
+            return FileResponse(os.path.join(_static_dir, "index.html"))
 
     return app
 
