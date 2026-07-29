@@ -1,5 +1,6 @@
-"use client";
+import { Text } from "@/components/common/text";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Drawer, DrawerContent, DrawerTitle } from "@/components/ui/drawer";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -18,24 +19,15 @@ import {
 } from "@/hooks/useDownloadSessions";
 import { api } from "@/lib/api";
 import { capitaliseFirstLetter, cn, formatDuration } from "@/lib/utils";
-import {
-  Dot,
-  Download,
-  LayoutGrid,
-  List,
-  Loader2,
-  RotateCcw,
-} from "lucide-react";
+import { Download, LayoutGrid, List, Loader2, RotateCcw } from "lucide-react";
 import { motion, useReducedMotion } from "motion/react";
 import React, { useState } from "react";
 import { toast } from "sonner";
-import { Button } from "@/components/ui/button";
 import { ChartBadge } from "./chart-badge";
 import { useChartDrawer } from "./chart-drawer-context";
 import { ChartGridCard } from "./chart-grid-card";
-import { Text } from "@/components/common/text";
-import { ViewMode } from "./types";
 import { ChartImage } from "./chart-image";
+import { ViewMode } from "./types";
 
 const containerVariants = {
   hidden: { opacity: 0 },
@@ -65,9 +57,11 @@ const HeroSkeleton = (): React.JSX.Element => {
           <Skeleton className="h-6 w-24 rounded-full" />
           <Skeleton className="h-6 w-16 rounded-full" />
         </div>
-        <div className="mt-2 flex gap-6">
-          <Skeleton className="h-8 w-28" />
-          <Skeleton className="h-8 w-28" />
+        <div className="flex flex-wrap gap-2">
+          <Skeleton className="h-5 w-16 rounded-full" />
+          <Skeleton className="h-5 w-20 rounded-full" />
+          <Skeleton className="h-5 w-12 rounded-full" />
+          <Skeleton className="h-5 w-14 rounded-full" />
         </div>
       </div>
     </div>

@@ -19,18 +19,17 @@ services:
       - DATABASE_URL=syllogi-postgres:5432
       - DOWNLOAD_DIR=/downloads
       - DOWNLOAD_LIBRARY_NAME=Downloads
-      - NEXT_PUBLIC_URL=http://localhost:8000
+      - VITE_API_URL=http://localhost:8000
       - ENVIRONMENT=development
     env_file:
       - ./backend/.env
     ports:
-      - 8000:80
+      - 8000:8000
     volumes:
       - ./backend:/app/backend:delegated
       - ./web:/app/web:delegated
-      - web_node_modules:/app/web/node_modules
-      - web_next:/app/web/.next
       - ./downloads:/downloads
+      - web_node_modules:/app/web/node_modules
     healthcheck:
       <<: *default-healthcheck
       test: curl --fail http://localhost:8000/api/health || exit 1
@@ -57,4 +56,3 @@ services:
 
 volumes:
   web_node_modules:
-  web_next:

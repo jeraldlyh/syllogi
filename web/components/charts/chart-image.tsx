@@ -1,4 +1,3 @@
-import Image from "next/image";
 import { Text } from "@/components/common/text";
 
 interface IProps {
@@ -11,11 +10,12 @@ export const ChartImage = ({ imageUrl, alt, children }: IProps) => {
   return (
     <div className="relative min-w-56 min-h-56 aspect-square overflow-hidden bg-secondary">
       {imageUrl ? (
-        <Image
+        <img
           src={imageUrl}
           alt={alt}
-          fill
-          className="object-cover transition-transform duration-300 group-hover:scale-105"
+          loading="lazy"
+          decoding="async"
+          className="absolute h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
         />
       ) : (
         <div className="flex h-full items-center justify-center">

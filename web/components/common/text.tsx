@@ -11,7 +11,7 @@ export const Text = ({ className, value, mono, noWrap, muted }: IProps) => {
   return (
     <p
       className={cn(
-        "text-xs md:text-sm font-medium",
+        "text-xs md:text-sm",
         {
           "font-mono": mono,
           "text-foreground": className && !className.includes("text-"),

@@ -1,19 +1,15 @@
-"use client";
-
 import { Text } from "@/components/common/text";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { api } from "@/lib/api";
 import { cn } from "@/lib/utils";
-import Image from "next/image";
-import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { Link, useNavigate } from "react-router-dom";
 import React, { useEffect, useState } from "react";
 import { toast } from "sonner";
 
 export default function SignupPage() {
-  const router = useRouter();
+  const navigate = useNavigate();
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
@@ -29,12 +25,12 @@ export default function SignupPage() {
       });
 
       if (response.data && response.statusCode === 200) {
-        router.push("/");
+        navigate("/");
       }
     };
 
     redirect();
-  }, [router]);
+  }, [navigate]);
 
   const handleConfirmPasswordChange = (
     e: React.ChangeEvent<HTMLInputElement>,
@@ -94,7 +90,7 @@ export default function SignupPage() {
 
     if (response.statusCode === 200) {
       toast.success("Account created", { id: toastId });
-      router.push("/");
+      navigate("/");
     } else {
       toast.error("Registration failed", {
         description: response.error?.message || "An unknown error occurred",
@@ -107,7 +103,7 @@ export default function SignupPage() {
     <div className="flex min-h-screen items-center justify-center bg-background p-4">
       <div className="w-full max-w-md">
         <div className="mb-8 flex flex-col items-center gap-3">
-          <Image
+          <img
             src="/icon.png"
             alt="syllogi logo"
             width={64}
@@ -201,7 +197,7 @@ export default function SignupPage() {
         <p className="mt-4 text-center text-sm text-muted-foreground">
           Already have an account?&nbsp;
           <Link
-            href="/login"
+            to="/login"
             className="font-medium text-foreground underline-offset-4 hover:underline hover:text-primary transition-colors"
           >
             Sign in

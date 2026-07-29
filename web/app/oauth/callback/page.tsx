@@ -1,5 +1,3 @@
-"use client";
-
 import { OAuthCallback } from "@/components/oauth";
 import { Suspense } from "react";
 

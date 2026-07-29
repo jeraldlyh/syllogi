@@ -1,4 +1,3 @@
-"use client";
 import { Text } from "@/components/common/text";
 import { Button } from "@/components/ui/button";
 import { Drawer, DrawerContent, DrawerTitle } from "@/components/ui/drawer";
@@ -11,20 +10,20 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { useAlbum } from "@/hooks/useAlbum";
+import { ArtistTrack } from "@/hooks/useArtist";
 import {
   DownloadSession,
   useDownloadSessions,
 } from "@/hooks/useDownloadSessions";
-import { useAlbum } from "@/hooks/useAlbum";
 import { api } from "@/lib/api";
 import { cn, formatDuration } from "@/lib/utils";
-import { Dot, Download, Loader2, RotateCcw } from "lucide-react";
+import { Download, Loader2, RotateCcw } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
-import { ChartBadge } from "./chart-badge";
-import { ArtistTrack } from "@/hooks/useArtist";
-import { ChartImage } from "./chart-image";
 import { Badge } from "../ui/badge";
+import { ChartBadge } from "./chart-badge";
+import { ChartImage } from "./chart-image";
 
 interface IProps {
   artistName: string;
@@ -145,6 +144,10 @@ const AlbumContent = ({ artistName, albumName }: IProps) => {
           <div className="flex flex-1 flex-col gap-3">
             <Skeleton className="h-8 w-3/4" />
             <Skeleton className="h-5 w-1/2" />
+            <div className="flex gap-2">
+              <Skeleton className="h-5 w-20 rounded-full" />
+              <Skeleton className="h-5 w-16 rounded-full" />
+            </div>
           </div>
         </div>
       </div>
