@@ -264,9 +264,14 @@ def create_app() -> FastAPI:
 
         @app.get("/{full_path:path}")
         async def serve_spa(full_path: str):
-            file_path = os.path.join(_static_dir, full_path)
+            resolved_static = os.path.realpath(_static_dir)
+            file_path = os.path.realpath(os.path.join(_static_dir, full_path))
+            is_within_static_folder = (
+                file_path.startswith(resolved_static + os.sep)
+                or file_path == resolved_static
+            )
 
-            if full_path and os.path.isfile(file_path):
+            if full_path and os.path.isfile(file_path) and is_within_static_folder:
                 return FileResponse(file_path)
 
             return FileResponse(os.path.join(_static_dir, "index.html"))
