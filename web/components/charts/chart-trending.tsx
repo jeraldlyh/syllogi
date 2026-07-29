@@ -298,6 +298,8 @@ export const ChartTrending = () => {
                           alt={track.track_name}
                           width={36}
                           height={36}
+                          loading="lazy"
+                          decoding="async"
                           className="rounded object-cover shrink-0"
                         />
                       ) : (

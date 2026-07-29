@@ -13,6 +13,8 @@ export const ChartImage = ({ imageUrl, alt, children }: IProps) => {
         <img
           src={imageUrl}
           alt={alt}
+          loading="lazy"
+          decoding="async"
           className="absolute h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
         />
       ) : (
