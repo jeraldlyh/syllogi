@@ -28,6 +28,7 @@ services:
     volumes:
       - ./backend:/app/backend:delegated
       - ./web:/app/web:delegated
+      - ./downloads:/downloads
       - web_node_modules:/app/web/node_modules
     healthcheck:
       <<: *default-healthcheck
