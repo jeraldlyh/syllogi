@@ -1,0 +1,416 @@
+{
+  "created": "2026-08-02T07:46:47.278Z",
+  "count": 1,
+  "offset": 0,
+  "recordings": [
+    {
+      "id": "52269c36-7694-4d96-ae3a-1b6ebc7fa945",
+      "score": 100,
+      "artist-credit-id": "eece83ab-3f28-3366-8c0a-3edb2bf6c252",
+      "title": "Celebrity",
+      "length": 195000,
+      "video": null,
+      "artist-credit": [
+        {
+          "name": "IU",
+          "artist": {
+            "id": "b9545342-1e6d-4dae-84ac-013374ad8d7c",
+            "name": "IU",
+            "sort-name": "IU",
+            "aliases": [
+              {
+                "sort-name": "Lee, Ji-eun",
+                "type-id": "894afba6-2816-3c24-8072-eadb66bd04bc",
+                "name": "Lee Ji-eun",
+                "locale": "en",
+                "type": "Artist name",
+                "primary": null,
+                "begin-date": "2011-01-03",
+                "end-date": null
+              },
+              {
+                "sort-name": "아이유",
+                "type-id": "894afba6-2816-3c24-8072-eadb66bd04bc",
+                "name": "아이유",
+                "locale": "ko",
+                "type": "Artist name",
+                "primary": true,
+                "begin-date": "2008-09-18",
+                "end-date": null
+              },
+              {
+                "sort-name": "이지은",
+                "type-id": "d4dcd0c0-b341-3612-a332-c0ce797b25cf",
+                "name": "이지은",
+                "locale": "ko",
+                "type": "Legal name",
+                "primary": null,
+                "begin-date": "1993-05-16",
+                "end-date": null
+              },
+              {
+                "sort-name": "IU",
+                "type-id": "894afba6-2816-3c24-8072-eadb66bd04bc",
+                "name": "IU",
+                "locale": "en",
+                "type": "Artist name",
+                "primary": true,
+                "begin-date": "2008-09-18",
+                "end-date": null
+              }
+            ]
+          }
+        }
+      ],
+      "first-release-date": "2021-01-27",
+      "releases": [
+        {
+          "id": "106f62d1-bbd3-40d4-a619-12f2e1126b5f",
+          "status-id": "4e304316-386d-3409-af2e-78857eec5cfe",
+          "artist-credit-id": "eece83ab-3f28-3366-8c0a-3edb2bf6c252",
+          "count": 1,
+          "title": "LILAC",
+          "status": "Official",
+          "artist-credit": [
+            {
+              "name": "IU",
+              "artist": {
+                "id": "b9545342-1e6d-4dae-84ac-013374ad8d7c",
+                "name": "IU",
+                "sort-name": "IU"
+              }
+            }
+          ],
+          "release-group": {
+            "id": "bdeb7a5c-c628-4346-b886-842fc86d7250",
+            "type-id": "f529b476-6e62-324f-b0aa-1f3e33d313fc",
+            "primary-type-id": "f529b476-6e62-324f-b0aa-1f3e33d313fc",
+            "title": "LILAC",
+            "primary-type": "Album"
+          },
+          "date": "2021-03-25",
+          "country": "KR",
+          "release-events": [
+            {
+              "date": "2021-03-25",
+              "area": {
+                "id": "b9f7d640-46e8-313e-b158-ded6d18593b3",
+                "name": "South Korea",
+                "sort-name": "South Korea",
+                "iso-3166-1-codes": ["KR"]
+              }
+            }
+          ],
+          "track-count": 10,
+          "media": [
+            {
+              "id": "d427013b-b6b5-3572-81b2-73519f88e3b9",
+              "position": 1,
+              "format": "Digital Media",
+              "track": [
+                {
+                  "id": "ce7fa6ca-cf5c-4fdf-902f-1e1ebf945e93",
+                  "number": "5",
+                  "title": "Celebrity",
+                  "length": 195000
+                }
+              ],
+              "track-count": 10,
+              "track-offset": 4
+            }
+          ]
+        },
+        {
+          "id": "9b121edd-3c9d-4d0e-a529-f5ecdb3026a6",
+          "status-id": "4e304316-386d-3409-af2e-78857eec5cfe",
+          "artist-credit-id": "eece83ab-3f28-3366-8c0a-3edb2bf6c252",
+          "count": 1,
+          "title": "LILAC",
+          "status": "Official",
+          "artist-credit": [
+            {
+              "name": "IU",
+              "artist": {
+                "id": "b9545342-1e6d-4dae-84ac-013374ad8d7c",
+                "name": "IU",
+                "sort-name": "IU"
+              }
+            }
+          ],
+          "release-group": {
+            "id": "bdeb7a5c-c628-4346-b886-842fc86d7250",
+            "type-id": "f529b476-6e62-324f-b0aa-1f3e33d313fc",
+            "primary-type-id": "f529b476-6e62-324f-b0aa-1f3e33d313fc",
+            "title": "LILAC",
+            "primary-type": "Album"
+          },
+          "date": "2021-03-25",
+          "country": "XW",
+          "release-events": [
+            {
+              "date": "2021-03-25",
+              "area": {
+                "id": "525d4e18-3d00-31b9-a58b-a146a916de8f",
+                "name": "[Worldwide]",
+                "sort-name": "[Worldwide]",
+                "iso-3166-1-codes": ["XW"]
+              }
+            }
+          ],
+          "track-count": 10,
+          "media": [
+            {
+              "id": "e1d63702-d079-349a-be1e-0bac05f4ed3e",
+              "position": 1,
+              "format": "Digital Media",
+              "track": [
+                {
+                  "id": "799f5e34-03db-4015-94c5-48b1d5007a10",
+                  "number": "5",
+                  "title": "Celebrity",
+                  "length": 196000
+                }
+              ],
+              "track-count": 10,
+              "track-offset": 4
+            }
+          ]
+        },
+        {
+          "id": "2a520d97-a246-4945-82ed-6ebb6c87ed04",
+          "status-id": "4e304316-386d-3409-af2e-78857eec5cfe",
+          "artist-credit-id": "eece83ab-3f28-3366-8c0a-3edb2bf6c252",
+          "count": 1,
+          "title": "LILAC",
+          "status": "Official",
+          "disambiguation": "BYLAC ver.",
+          "artist-credit": [
+            {
+              "name": "IU",
+              "artist": {
+                "id": "b9545342-1e6d-4dae-84ac-013374ad8d7c",
+                "name": "IU",
+                "sort-name": "IU"
+              }
+            }
+          ],
+          "release-group": {
+            "id": "bdeb7a5c-c628-4346-b886-842fc86d7250",
+            "type-id": "f529b476-6e62-324f-b0aa-1f3e33d313fc",
+            "primary-type-id": "f529b476-6e62-324f-b0aa-1f3e33d313fc",
+            "title": "LILAC",
+            "primary-type": "Album"
+          },
+          "date": "2021-03-25",
+          "country": "KR",
+          "release-events": [
+            {
+              "date": "2021-03-25",
+              "area": {
+                "id": "b9f7d640-46e8-313e-b158-ded6d18593b3",
+                "name": "South Korea",
+                "sort-name": "South Korea",
+                "iso-3166-1-codes": ["KR"]
+              }
+            }
+          ],
+          "track-count": 10,
+          "media": [
+            {
+              "id": "a9ecae94-c112-35e2-83f4-71addbae4e4c",
+              "position": 1,
+              "format": "CD",
+              "track": [
+                {
+                  "id": "4b417aee-c412-47a0-893f-d4aea269d121",
+                  "number": "5",
+                  "title": "Celebrity",
+                  "length": 195000
+                }
+              ],
+              "track-count": 10,
+              "track-offset": 4
+            }
+          ]
+        },
+        {
+          "id": "a7a8008e-cc34-4aa4-9160-b5bd9fc6e2b9",
+          "status-id": "4e304316-386d-3409-af2e-78857eec5cfe",
+          "artist-credit-id": "eece83ab-3f28-3366-8c0a-3edb2bf6c252",
+          "count": 1,
+          "title": "LILAC",
+          "status": "Official",
+          "disambiguation": "HILAC ver.",
+          "artist-credit": [
+            {
+              "name": "IU",
+              "artist": {
+                "id": "b9545342-1e6d-4dae-84ac-013374ad8d7c",
+                "name": "IU",
+                "sort-name": "IU"
+              }
+            }
+          ],
+          "release-group": {
+            "id": "bdeb7a5c-c628-4346-b886-842fc86d7250",
+            "type-id": "f529b476-6e62-324f-b0aa-1f3e33d313fc",
+            "primary-type-id": "f529b476-6e62-324f-b0aa-1f3e33d313fc",
+            "title": "LILAC",
+            "primary-type": "Album"
+          },
+          "date": "2021-03-25",
+          "country": "KR",
+          "release-events": [
+            {
+              "date": "2021-03-25",
+              "area": {
+                "id": "b9f7d640-46e8-313e-b158-ded6d18593b3",
+                "name": "South Korea",
+                "sort-name": "South Korea",
+                "iso-3166-1-codes": ["KR"]
+              }
+            }
+          ],
+          "track-count": 10,
+          "media": [
+            {
+              "id": "83be49ac-6797-31a2-80d3-cccd30b92f2c",
+              "position": 1,
+              "format": "CD",
+              "track": [
+                {
+                  "id": "065eafed-0f8d-4938-bfd7-e1a629455b26",
+                  "number": "5",
+                  "title": "Celebrity",
+                  "length": 195000
+                }
+              ],
+              "track-count": 10,
+              "track-offset": 4
+            }
+          ]
+        },
+        {
+          "id": "7d19dbca-d96b-48e5-a9c2-7631152d646d",
+          "status-id": "4e304316-386d-3409-af2e-78857eec5cfe",
+          "artist-credit-id": "eece83ab-3f28-3366-8c0a-3edb2bf6c252",
+          "count": 1,
+          "title": "LILAC",
+          "status": "Official",
+          "disambiguation": "48.0 kHz / 24-bit",
+          "artist-credit": [
+            {
+              "name": "IU",
+              "artist": {
+                "id": "b9545342-1e6d-4dae-84ac-013374ad8d7c",
+                "name": "IU",
+                "sort-name": "IU"
+              }
+            }
+          ],
+          "release-group": {
+            "id": "bdeb7a5c-c628-4346-b886-842fc86d7250",
+            "type-id": "f529b476-6e62-324f-b0aa-1f3e33d313fc",
+            "primary-type-id": "f529b476-6e62-324f-b0aa-1f3e33d313fc",
+            "title": "LILAC",
+            "primary-type": "Album"
+          },
+          "date": "2021-03-25",
+          "country": "US",
+          "release-events": [
+            {
+              "date": "2021-03-25",
+              "area": {
+                "id": "489ce91b-6658-3307-9877-795b68554c98",
+                "name": "United States",
+                "sort-name": "United States",
+                "iso-3166-1-codes": ["US"]
+              }
+            }
+          ],
+          "track-count": 10,
+          "media": [
+            {
+              "id": "906beeb8-6e43-33ee-a1ec-515b79f8a384",
+              "position": 1,
+              "format": "Digital Media",
+              "track": [
+                {
+                  "id": "db00d965-2b2c-43d6-b651-38c635733329",
+                  "number": "5",
+                  "title": "Celebrity",
+                  "length": 195000
+                }
+              ],
+              "track-count": 10,
+              "track-offset": 4
+            }
+          ]
+        },
+        {
+          "id": "6c5210d7-01f7-407b-a8ed-89c98283499c",
+          "status-id": "4e304316-386d-3409-af2e-78857eec5cfe",
+          "artist-credit-id": "eece83ab-3f28-3366-8c0a-3edb2bf6c252",
+          "count": 1,
+          "title": "Celebrity",
+          "status": "Official",
+          "artist-credit": [
+            {
+              "name": "IU",
+              "artist": {
+                "id": "b9545342-1e6d-4dae-84ac-013374ad8d7c",
+                "name": "IU",
+                "sort-name": "IU"
+              }
+            }
+          ],
+          "release-group": {
+            "id": "fed3f1f3-18c0-4966-a1b5-60f2843ef25d",
+            "type-id": "d6038452-8ee0-3f68-affc-2de9a1ede0b9",
+            "primary-type-id": "d6038452-8ee0-3f68-affc-2de9a1ede0b9",
+            "title": "Celebrity",
+            "primary-type": "Single"
+          },
+          "date": "2021-01-27",
+          "country": "XW",
+          "release-events": [
+            {
+              "date": "2021-01-27",
+              "area": {
+                "id": "525d4e18-3d00-31b9-a58b-a146a916de8f",
+                "name": "[Worldwide]",
+                "sort-name": "[Worldwide]",
+                "iso-3166-1-codes": ["XW"]
+              }
+            }
+          ],
+          "track-count": 1,
+          "media": [
+            {
+              "id": "74e48f74-6d71-3864-8149-088316ee2902",
+              "position": 1,
+              "format": "Digital Media",
+              "track": [
+                {
+                  "id": "50dc5d6d-866a-4036-93ad-6785286c106c",
+                  "number": "1",
+                  "title": "Celebrity",
+                  "length": 195000
+                }
+              ],
+              "track-count": 1,
+              "track-offset": 0
+            }
+          ]
+        }
+      ],
+      "isrcs": ["KRA382100464"],
+      "tags": [
+        {
+          "count": 2,
+          "name": "dance"
+        }
+      ]
+    }
+  ]
+}
