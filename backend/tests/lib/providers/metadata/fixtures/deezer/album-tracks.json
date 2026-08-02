@@ -1,0 +1,30 @@
+{
+  "data": [
+    {
+      "id": 1223062102,
+      "readable": true,
+      "title": "Celebrity",
+      "title_short": "Celebrity",
+      "title_version": "",
+      "isrc": "KRA382100464",
+      "link": "https://www.deezer.com/track/1223062102",
+      "duration": 195,
+      "track_position": 1,
+      "disk_number": 1,
+      "rank": 394822,
+      "explicit_lyrics": false,
+      "explicit_content_lyrics": 0,
+      "explicit_content_cover": 2,
+      "preview": "https://cdnt-preview.dzcdn.net/api/1/1/9/d/a/0/9da9828c28afa12fc9300237a3d5ccca.mp3?hdnea=exp=1785653183~acl=/api/1/1/9/d/a/0/9da9828c28afa12fc9300237a3d5ccca.mp3*~data=user_id=0,application_id=42~hmac=8bea26b7fe3715ce50cf461066c7db3466d3e7880197bfb905ece37e9b5aa436",
+      "md5_image": "9fcc61fee5df1b9e845a618feaa70b72",
+      "artist": {
+        "id": 2810121,
+        "name": "IU",
+        "tracklist": "https://api.deezer.com/artist/2810121/top?limit=50",
+        "type": "artist"
+      },
+      "type": "track"
+    }
+  ],
+  "total": 1
+}
