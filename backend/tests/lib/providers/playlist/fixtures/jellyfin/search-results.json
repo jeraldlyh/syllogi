@@ -1,0 +1,41 @@
+{
+  "Items": [
+    {
+      "Name": "Still Don’t Care",
+      "ServerId": "1",
+      "Id": "item-1",
+      "HasLyrics": false,
+      "Container": "flac",
+      "PremiereDate": "2026-04-23T16:00:00.0000000Z",
+      "ChannelId": null,
+      "RunTimeTicks": 1655705830,
+      "ProductionYear": 2026,
+      "IndexNumber": 2,
+      "ParentIndexNumber": 1,
+      "IsFolder": false,
+      "Type": "Audio",
+      "Artists": ["Meghan Trainor"],
+      "ArtistItems": [
+        {
+          "Name": "Meghan Trainor",
+          "Id": "ad65c7027240424dd4e4478dfa37a4eb"
+        }
+      ],
+      "Album": "Toy With Me",
+      "AlbumId": "album-1",
+      "AlbumArtist": "Meghan Trainor",
+      "AlbumArtists": [
+        {
+          "Name": "Meghan Trainor",
+          "Id": "ad65c7027240424dd4e4478dfa37a4eb"
+        }
+      ],
+      "ImageBlurHashes": {},
+      "LocationType": "FileSystem",
+      "MediaType": "Audio",
+      "NormalizationGain": -11.9
+    }
+  ],
+  "TotalRecordCount": 1,
+  "StartIndex": 0
+}

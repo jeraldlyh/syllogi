@@ -1,0 +1,54 @@
+{
+  "Items": [
+    {
+      "Name": "The Daily Ketchup Podcast",
+      "ServerId": "1",
+      "Id": "playlist-1",
+      "ChannelId": null,
+      "RunTimeTicks": 6528897424978,
+      "IsFolder": true,
+      "Type": "Playlist",
+      "UserData": {
+        "PlaybackPositionTicks": 0,
+        "PlayCount": 0,
+        "IsFavorite": false,
+        "Played": false,
+        "Key": "1",
+        "ItemId": "user-1"
+      },
+      "ChildCount": 307,
+      "ImageTags": {},
+      "BackdropImageTags": [],
+      "ImageBlurHashes": {},
+      "LocationType": "FileSystem",
+      "MediaType": "Audio"
+    },
+    {
+      "Name": "Daily Recommendations",
+      "ServerId": "1",
+      "Id": "playlist-2",
+      "ChannelId": null,
+      "RunTimeTicks": 49577265557,
+      "IsFolder": true,
+      "Type": "Playlist",
+      "UserData": {
+        "PlaybackPositionTicks": 0,
+        "PlayCount": 0,
+        "IsFavorite": false,
+        "Played": false,
+        "Key": "1",
+        "ItemId": "user-1"
+      },
+      "ChildCount": 24,
+      "ImageTags": {
+        "Primary": "1"
+      },
+      "BackdropImageTags": [],
+      "ImageBlurHashes": {},
+      "LocationType": "FileSystem",
+      "MediaType": "Audio"
+    }
+  ],
+  "TotalRecordCount": 2,
+  "StartIndex": 0
+}

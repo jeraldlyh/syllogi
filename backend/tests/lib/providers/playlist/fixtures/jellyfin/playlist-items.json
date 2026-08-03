@@ -1,0 +1,106 @@
+{
+  "Items": [
+    {
+      "Name": "Lose Control",
+      "ServerId": "1",
+      "Id": "item-1",
+      "PlaylistItemId": "playlist-item-1",
+      "HasLyrics": true,
+      "Container": "flac",
+      "PremiereDate": "2023-06-09T16:00:00.0000000Z",
+      "ChannelId": null,
+      "RunTimeTicks": 2106888440,
+      "ProductionYear": 2023,
+      "IndexNumber": 2,
+      "ParentIndexNumber": 1,
+      "IsFolder": false,
+      "Type": "Audio",
+      "UserData": {
+        "PlaybackPositionTicks": 0,
+        "PlayCount": 12,
+        "IsFavorite": false,
+        "LastPlayedDate": "2026-06-17T08:29:53.8409818Z",
+        "Played": true,
+        "Key": "007847d4-a05b-8449-ff22-ad25b7c510a8",
+        "ItemId": "007847d4a05b8449ff22ad25b7c510a8"
+      },
+      "Artists": ["Teddy Swims"],
+      "ArtistItems": [
+        {
+          "Name": "Teddy Swims",
+          "Id": "78bf4d230007e1320e072cb383f02201"
+        }
+      ],
+      "Album": "I’ve Tried Everything But Therapy (Part 1)",
+      "AlbumId": "album-1",
+      "AlbumPrimaryImageTag": "",
+      "AlbumArtist": "Teddy Swims",
+      "AlbumArtists": [
+        {
+          "Name": "Teddy Swims",
+          "Id": "78bf4d230007e1320e072cb383f02201"
+        }
+      ],
+      "ImageTags": {},
+      "BackdropImageTags": [],
+      "ImageBlurHashes": {
+        "Primary": {}
+      },
+      "LocationType": "FileSystem",
+      "MediaType": "Audio"
+    },
+    {
+      "Name": "What More Can I Say",
+      "ServerId": "1",
+      "Id": "item-2",
+      "PlaylistItemId": "playlist-item-2",
+      "HasLyrics": true,
+      "Container": "flac",
+      "PremiereDate": "2023-05-04T16:00:00.0000000Z",
+      "ChannelId": null,
+      "RunTimeTicks": 1411414969,
+      "ProductionYear": 2023,
+      "IndexNumber": 1,
+      "ParentIndexNumber": 1,
+      "IsFolder": false,
+      "Type": "Audio",
+      "UserData": {
+        "PlaybackPositionTicks": 0,
+        "PlayCount": 6,
+        "IsFavorite": false,
+        "LastPlayedDate": "2026-06-17T08:27:32.7756913Z",
+        "Played": true,
+        "Key": "Teddy Swims-What More Can I Say-0001-0001What More Can I Say",
+        "ItemId": "d0772cfc6a3d68012bda6c019111dd07"
+      },
+      "Artists": ["Teddy Swims"],
+      "ArtistItems": [
+        {
+          "Name": "Teddy Swims",
+          "Id": "78bf4d230007e1320e072cb383f02201"
+        }
+      ],
+      "Album": "What More Can I Say",
+      "AlbumId": "album-2",
+      "AlbumPrimaryImageTag": "",
+      "AlbumArtist": "Teddy Swims",
+      "AlbumArtists": [
+        {
+          "Name": "Teddy Swims",
+          "Id": "78bf4d230007e1320e072cb383f02201"
+        }
+      ],
+      "ImageTags": {
+        "Primary": "894b2a37b2f40cfc27d1fc4af3159a14"
+      },
+      "BackdropImageTags": [],
+      "ImageBlurHashes": {
+        "Primary": {}
+      },
+      "LocationType": "FileSystem",
+      "MediaType": "Audio"
+    }
+  ],
+  "TotalRecordCount": 2,
+  "StartIndex": 0
+}
