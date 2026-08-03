@@ -5,7 +5,6 @@ class ProviderError(Exception):
     """Raised when a music provider operation fails."""
 
 
-
 @dataclass
 class ProviderUser:
     """A user in a music server."""
@@ -52,7 +51,9 @@ class ProviderPlaylist:
 
     id: str = ""
     name: str = ""
-    owner_id: str | None = None
 
     def to_dict(self) -> dict[str, str | int | None]:
-        return {"id": self.id, "name": self.name, "owner_id": self.owner_id}
+        return {
+            "id": self.id,
+            "name": self.name,
+        }

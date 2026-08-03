@@ -30,7 +30,7 @@ def _make_provider_track(**overrides) -> ProviderTrack:
 
 
 def _make_provider_playlist(**overrides) -> ProviderPlaylist:
-    defaults = {"id": "p-1", "name": "Playlist", "owner_id": "u-1"}
+    defaults = {"id": "p-1", "name": "Playlist"}
     defaults.update(overrides)
     return ProviderPlaylist(**defaults)
 
@@ -91,7 +91,6 @@ class TestProviderPlaylist:
         playlist = _make_provider_playlist()
 
         assert playlist.id == "p-1"
-        assert playlist.owner_id == "u-1"
 
     def test_to_dict(self):
         playlist = _make_provider_playlist()
@@ -99,5 +98,4 @@ class TestProviderPlaylist:
         assert playlist.to_dict() == {
             "id": "p-1",
             "name": "Playlist",
-            "owner_id": "u-1",
         }
