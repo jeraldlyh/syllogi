@@ -1,0 +1,36 @@
+{
+  "subsonic-response": {
+    "status": "ok",
+    "version": "1.16.1",
+    "type": "navidrome",
+    "serverVersion": "0.62.0 (1b46b977)",
+    "openSubsonic": true,
+    "playlists": {
+      "playlist": [
+        {
+          "id": "playlist-1",
+          "name": "Daily Recommendations",
+          "songCount": 10,
+          "duration": 2143,
+          "owner": "apple",
+          "created": "2026-06-24T16:11:19.587797769Z",
+          "changed": "2026-07-28T16:08:38.754383604Z",
+          "coverArt": "",
+          "readonly": false
+        },
+        {
+          "id": "playlist-2",
+          "name": "The Daily Ketchup Podcast",
+          "songCount": 45,
+          "duration": 10064,
+          "public": true,
+          "owner": "apple",
+          "created": "2026-06-20T15:53:49.374021529Z",
+          "changed": "2026-08-02T16:01:38.123901377Z",
+          "coverArt": "",
+          "readonly": false
+        }
+      ]
+    }
+  }
+}

@@ -1,0 +1,11 @@
+{
+  "subsonic-response": {
+    "status": "ok",
+    "version": "1.16.1",
+    "playlist": {
+      "id": "playlist-1",
+      "name": "Favourites",
+      "owner": "1"
+    }
+  }
+}

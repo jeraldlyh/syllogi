@@ -1,0 +1,162 @@
+{
+  "subsonic-response": {
+    "status": "ok",
+    "version": "1.16.1",
+    "type": "navidrome",
+    "serverVersion": "0.62.0 (1b46b977)",
+    "openSubsonic": true,
+    "playlist": {
+      "id": "playlist-1",
+      "name": "Daily Recommendations",
+      "songCount": 10,
+      "duration": 2143,
+      "owner": "alamo",
+      "created": "2026-06-24T16:11:19.587797769Z",
+      "changed": "2026-07-28T16:08:38.754383604Z",
+      "coverArt": "pl-MkH6z83mzBogL8ubo8Pe5k_6a68d406",
+      "readonly": false,
+      "entry": [
+        {
+          "id": "track-1",
+          "parent": "parent-1",
+          "isDir": false,
+          "title": "the broken hearts club",
+          "album": "the broken hearts club",
+          "artist": "gnash",
+          "track": 1,
+          "year": 2018,
+          "coverArt": "mf-6wLyYt42EczA6GsbXVWOrO_69b3d831",
+          "size": 18780024,
+          "contentType": "audio/flac",
+          "suffix": "flac",
+          "duration": 184,
+          "bitRate": 810,
+          "path": "gnash/the broken hearts club/01-01 - the broken hearts club.flac",
+          "playCount": 1,
+          "discNumber": 1,
+          "created": "2026-06-14T08:39:32.167693724Z",
+          "albumId": "album-1",
+          "artistId": "6Q3cnVxriYRNs9IVwo54A9",
+          "type": "music",
+          "played": "2026-08-01T02:54:57.504Z",
+          "bpm": 100,
+          "comment": "",
+          "sortName": "the broken hearts club",
+          "mediaType": "song",
+          "musicBrainzId": "3c17d64c-8539-4168-9a7b-716a55309bc4",
+          "isrc": ["USAT21801200;USAT21801201"],
+          "genres": [],
+          "replayGain": {},
+          "channelCount": 2,
+          "samplingRate": 44100,
+          "bitDepth": 16,
+          "moods": [],
+          "artists": [
+            {
+              "id": "6Q3cnVxriYRNs9IVwo54A9",
+              "name": "gnash"
+            }
+          ],
+          "displayArtist": "gnash",
+          "albumArtists": [
+            {
+              "id": "6Q3cnVxriYRNs9IVwo54A9",
+              "name": "gnash"
+            }
+          ],
+          "displayAlbumArtist": "gnash",
+          "contributors": [],
+          "displayComposer": "",
+          "explicitStatus": "",
+          "groupings": []
+        },
+        {
+          "id": "track-2",
+          "parent": "parent-2",
+          "isDir": false,
+          "title": "drivers license",
+          "album": "SOUR (box set)",
+          "artist": "Olivia Rodrigo",
+          "track": 3,
+          "year": 2021,
+          "genre": "pop",
+          "coverArt": "mf-91iiELE3llKKss0cTRq49n_69b3fc3f",
+          "size": 43757731,
+          "contentType": "audio/flac",
+          "suffix": "flac",
+          "duration": 242,
+          "bitRate": 1443,
+          "path": "Olivia Rodrigo/SOUR (box set)/01-03 - drivers license.flac",
+          "playCount": 1,
+          "discNumber": 1,
+          "created": "2026-06-14T08:36:53.684328243Z",
+          "albumId": "album-2",
+          "artistId": "0YO8CAUpCEfjAOrDqNmyzM",
+          "type": "music",
+          "played": "2026-08-01T02:58:52.609Z",
+          "bpm": 0,
+          "comment": "Olivia Rodrigo became the brightest new pop star of 2021 with \"Driver's License,\" the single that broke streaming records and kicked off a string of number one hits. It's easy to hear why the song was so popular: As she sang about the plans that fall apart in the wake of a breakup and the sheer magnitude of her very first heartbreak, the rawness in Rodrigo's voice and lyrics spoke to those her own age and provided some potent flashbacks for those a little -- or a lot -- older than her. On the rest of her debut album Sour, she delivers on the potential of that blockbuster single and then some. Rodrigo nails what it's like to be 17, heartbroken, and frustrated, and updates the traditions of the sharp-eyed and sharp-tongued songwriters before her for Generation Z. Like her hero Taylor Swift, she's got a flair for details and a willingness to share every aspect of her heartache, even (or especially) the bitter side of it; on \"Happier,\" she sings to her ex, \"I hope you're happy/But don't be happier.\" Her ability to pair a sizeable amount of disdain with equally big hooks recalls Lorde on the slinky self-loathing of \"Jealousy, Jealousy,\" and there are even shades of Alanis Morissette's jagged, jilted younger woman in \"Deja Vu\"'s hyper-literate litany of tarnished memories. Rodrigo expands on \"Driver's License\" with similarly barbed and self-aware power ballads like \"Traitor,\" which captures the pain when an ex rebounds more quickly than expected, and with the folky introspection of \"Favorite Crime,\" where she reflects on how her desperation to hang onto a relationship made her culpable in her own pain. However, Sour might be even more vital when Rodrigo lashes out on the album's rock-tinged songs. She revels in her anger on \"Good 4 U\"'s sneering verses and pogo-ing choruses, letting the drum rolls build up a head of steam that the riffs unleash, and begins the album with a surprisingly punky blast of angst on \"Brutal,\" where she tears down the idealization of teenage years (\"I'm so sick of seventeen/Where's my fuckin' teenage dream?\") over guitars that are the musical equivalent of an eyeroll. Moments like these lend another exciting dimension to her music, even if she takes a few steps beyond the rest of the album's fury on the tender closing track \"Hope Ur OK.\" Rodrigo wants to be taken seriously as a songwriter, and she should be -- her combination of sweet melodies and bitter moods, her conversational flow, and her self-awareness are all skills many songwriters twice her age would love to call their own, and they make Sour a well-rounded emotional journey and strong debut album.\n<br />&copy  Heather Phares /TiVo",
+          "sortName": "drivers license",
+          "mediaType": "song",
+          "musicBrainzId": "143f1c88-f47f-4f37-b25d-614c74269dea",
+          "isrc": ["USUG12004749"],
+          "genres": [
+            {
+              "name": "pop"
+            },
+            {
+              "name": "rock"
+            },
+            {
+              "name": "pop punk"
+            },
+            {
+              "name": "ballad"
+            },
+            {
+              "name": "power pop"
+            }
+          ],
+          "replayGain": {},
+          "channelCount": 2,
+          "samplingRate": 44100,
+          "bitDepth": 24,
+          "moods": [],
+          "artists": [
+            {
+              "id": "0YO8CAUpCEfjAOrDqNmyzM",
+              "name": "Olivia Rodrigo"
+            }
+          ],
+          "displayArtist": "Olivia Rodrigo",
+          "albumArtists": [
+            {
+              "id": "0YO8CAUpCEfjAOrDqNmyzM",
+              "name": "Olivia Rodrigo"
+            }
+          ],
+          "displayAlbumArtist": "Olivia Rodrigo",
+          "contributors": [
+            {
+              "role": "composer",
+              "artist": {
+                "id": "1ID5i2XNvEuKhjjns92PfL",
+                "name": "Daniel Nigro, Olivia Rodrigo"
+              }
+            },
+            {
+              "role": "lyricist",
+              "artist": {
+                "id": "1ID5i2XNvEuKhjjns92PfL",
+                "name": "Daniel Nigro, Olivia Rodrigo"
+              }
+            }
+          ],
+          "displayComposer": "Daniel Nigro, Olivia Rodrigo",
+          "explicitStatus": "",
+          "groupings": []
+        }
+      ]
+    }
+  }
+}
