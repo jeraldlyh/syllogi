@@ -1,0 +1,229 @@
+{
+  "artist": {
+    "name": "IU",
+    "mbid": "b9545342-1e6d-4dae-84ac-013374ad8d7c",
+    "url": "https://www.last.fm/music/IU",
+    "image": [
+      {
+        "#text": "https://lastfm.freetls.fastly.net/i/u/34s/2a96cbd8b46e442fc41c2b86b821562f.png",
+        "size": "small"
+      },
+      {
+        "#text": "https://lastfm.freetls.fastly.net/i/u/64s/2a96cbd8b46e442fc41c2b86b821562f.png",
+        "size": "medium"
+      },
+      {
+        "#text": "https://lastfm.freetls.fastly.net/i/u/174s/2a96cbd8b46e442fc41c2b86b821562f.png",
+        "size": "large"
+      },
+      {
+        "#text": "https://lastfm.freetls.fastly.net/i/u/300x300/2a96cbd8b46e442fc41c2b86b821562f.png",
+        "size": "extralarge"
+      },
+      {
+        "#text": "https://lastfm.freetls.fastly.net/i/u/300x300/2a96cbd8b46e442fc41c2b86b821562f.png",
+        "size": "mega"
+      },
+      {
+        "#text": "https://lastfm.freetls.fastly.net/i/u/300x300/2a96cbd8b46e442fc41c2b86b821562f.png",
+        "size": ""
+      }
+    ],
+    "streamable": "0",
+    "ontour": "0",
+    "stats": {
+      "listeners": "1114630",
+      "playcount": "93514634"
+    },
+    "similar": {
+      "artist": [
+        {
+          "name": "태연",
+          "url": "https://www.last.fm/music/%ED%83%9C%EC%97%B0",
+          "image": [
+            {
+              "#text": "https://lastfm.freetls.fastly.net/i/u/34s/2a96cbd8b46e442fc41c2b86b821562f.png",
+              "size": "small"
+            },
+            {
+              "#text": "https://lastfm.freetls.fastly.net/i/u/64s/2a96cbd8b46e442fc41c2b86b821562f.png",
+              "size": "medium"
+            },
+            {
+              "#text": "https://lastfm.freetls.fastly.net/i/u/174s/2a96cbd8b46e442fc41c2b86b821562f.png",
+              "size": "large"
+            },
+            {
+              "#text": "https://lastfm.freetls.fastly.net/i/u/300x300/2a96cbd8b46e442fc41c2b86b821562f.png",
+              "size": "extralarge"
+            },
+            {
+              "#text": "https://lastfm.freetls.fastly.net/i/u/300x300/2a96cbd8b46e442fc41c2b86b821562f.png",
+              "size": "mega"
+            },
+            {
+              "#text": "https://lastfm.freetls.fastly.net/i/u/300x300/2a96cbd8b46e442fc41c2b86b821562f.png",
+              "size": ""
+            }
+          ]
+        },
+        {
+          "name": "BOL4",
+          "url": "https://www.last.fm/music/BOL4",
+          "image": [
+            {
+              "#text": "https://lastfm.freetls.fastly.net/i/u/34s/2a96cbd8b46e442fc41c2b86b821562f.png",
+              "size": "small"
+            },
+            {
+              "#text": "https://lastfm.freetls.fastly.net/i/u/64s/2a96cbd8b46e442fc41c2b86b821562f.png",
+              "size": "medium"
+            },
+            {
+              "#text": "https://lastfm.freetls.fastly.net/i/u/174s/2a96cbd8b46e442fc41c2b86b821562f.png",
+              "size": "large"
+            },
+            {
+              "#text": "https://lastfm.freetls.fastly.net/i/u/300x300/2a96cbd8b46e442fc41c2b86b821562f.png",
+              "size": "extralarge"
+            },
+            {
+              "#text": "https://lastfm.freetls.fastly.net/i/u/300x300/2a96cbd8b46e442fc41c2b86b821562f.png",
+              "size": "mega"
+            },
+            {
+              "#text": "https://lastfm.freetls.fastly.net/i/u/300x300/2a96cbd8b46e442fc41c2b86b821562f.png",
+              "size": ""
+            }
+          ]
+        },
+        {
+          "name": "Heize",
+          "url": "https://www.last.fm/music/Heize",
+          "image": [
+            {
+              "#text": "https://lastfm.freetls.fastly.net/i/u/34s/2a96cbd8b46e442fc41c2b86b821562f.png",
+              "size": "small"
+            },
+            {
+              "#text": "https://lastfm.freetls.fastly.net/i/u/64s/2a96cbd8b46e442fc41c2b86b821562f.png",
+              "size": "medium"
+            },
+            {
+              "#text": "https://lastfm.freetls.fastly.net/i/u/174s/2a96cbd8b46e442fc41c2b86b821562f.png",
+              "size": "large"
+            },
+            {
+              "#text": "https://lastfm.freetls.fastly.net/i/u/300x300/2a96cbd8b46e442fc41c2b86b821562f.png",
+              "size": "extralarge"
+            },
+            {
+              "#text": "https://lastfm.freetls.fastly.net/i/u/300x300/2a96cbd8b46e442fc41c2b86b821562f.png",
+              "size": "mega"
+            },
+            {
+              "#text": "https://lastfm.freetls.fastly.net/i/u/300x300/2a96cbd8b46e442fc41c2b86b821562f.png",
+              "size": ""
+            }
+          ]
+        },
+        {
+          "name": "악동뮤지션",
+          "url": "https://www.last.fm/music/%EC%95%85%EB%8F%99%EB%AE%A4%EC%A7%80%EC%85%98",
+          "image": [
+            {
+              "#text": "https://lastfm.freetls.fastly.net/i/u/34s/2a96cbd8b46e442fc41c2b86b821562f.png",
+              "size": "small"
+            },
+            {
+              "#text": "https://lastfm.freetls.fastly.net/i/u/64s/2a96cbd8b46e442fc41c2b86b821562f.png",
+              "size": "medium"
+            },
+            {
+              "#text": "https://lastfm.freetls.fastly.net/i/u/174s/2a96cbd8b46e442fc41c2b86b821562f.png",
+              "size": "large"
+            },
+            {
+              "#text": "https://lastfm.freetls.fastly.net/i/u/300x300/2a96cbd8b46e442fc41c2b86b821562f.png",
+              "size": "extralarge"
+            },
+            {
+              "#text": "https://lastfm.freetls.fastly.net/i/u/300x300/2a96cbd8b46e442fc41c2b86b821562f.png",
+              "size": "mega"
+            },
+            {
+              "#text": "https://lastfm.freetls.fastly.net/i/u/300x300/2a96cbd8b46e442fc41c2b86b821562f.png",
+              "size": ""
+            }
+          ]
+        },
+        {
+          "name": "KIMSEJEONG",
+          "url": "https://www.last.fm/music/KIMSEJEONG",
+          "image": [
+            {
+              "#text": "https://lastfm.freetls.fastly.net/i/u/34s/2a96cbd8b46e442fc41c2b86b821562f.png",
+              "size": "small"
+            },
+            {
+              "#text": "https://lastfm.freetls.fastly.net/i/u/64s/2a96cbd8b46e442fc41c2b86b821562f.png",
+              "size": "medium"
+            },
+            {
+              "#text": "https://lastfm.freetls.fastly.net/i/u/174s/2a96cbd8b46e442fc41c2b86b821562f.png",
+              "size": "large"
+            },
+            {
+              "#text": "https://lastfm.freetls.fastly.net/i/u/300x300/2a96cbd8b46e442fc41c2b86b821562f.png",
+              "size": "extralarge"
+            },
+            {
+              "#text": "https://lastfm.freetls.fastly.net/i/u/300x300/2a96cbd8b46e442fc41c2b86b821562f.png",
+              "size": "mega"
+            },
+            {
+              "#text": "https://lastfm.freetls.fastly.net/i/u/300x300/2a96cbd8b46e442fc41c2b86b821562f.png",
+              "size": ""
+            }
+          ]
+        }
+      ]
+    },
+    "tags": {
+      "tag": [
+        {
+          "name": "k-pop",
+          "url": "https://www.last.fm/tag/k-pop"
+        },
+        {
+          "name": "Korean",
+          "url": "https://www.last.fm/tag/Korean"
+        },
+        {
+          "name": "female vocalists",
+          "url": "https://www.last.fm/tag/female+vocalists"
+        },
+        {
+          "name": "Kpop",
+          "url": "https://www.last.fm/tag/Kpop"
+        },
+        {
+          "name": "pop",
+          "url": "https://www.last.fm/tag/pop"
+        }
+      ]
+    },
+    "bio": {
+      "links": {
+        "link": {
+          "#text": "",
+          "rel": "original",
+          "href": "https://last.fm/music/IU/+wiki"
+        }
+      },
+      "published": "27 Sep 2008, 18:18",
+      "summary": "Lee Ji-eun (이지은; born 16 May 1993), better known by her stage name IU (아이유), is an award-winning South Korean singer-songwriter and actress signed to EDAM Entertainment. She debuted in 2008 to much acclaim for her vocal ability but did not find mainstream success until 2010 with 잔소리 which became her first number one hit. As of 2017, IU has fourteen official #1 singles on Gaon, Korea's national chart, and four #1 singles on Billboard's K-Pop Hot 100. <a href=\"https://www.last.fm/music/IU\">Read more on Last.fm</a>",
+      "content": "Lee Ji-eun (이지은; born 16 May 1993), better known by her stage name IU (아이유), is an award-winning South Korean singer-songwriter and actress signed to EDAM Entertainment. She debuted in 2008 to much acclaim for her vocal ability but did not find mainstream success until 2010 with 잔소리 which became her first number one hit. As of 2017, IU has fourteen official #1 singles on Gaon, Korea's national chart, and four #1 singles on Billboard's K-Pop Hot 100. She also charted in the top ten of Gaon's annual singles chart for two consecutive years from 2010-2011. On top of her commercial success, her music and artistry are also critically acclaimed winning multiple Daesang awards for Song of the Year (for 좋은 날) and Artist of the Year from 2011-2012.\n\n2008: Debut\nIU debuted on a Korean music program called M! Countdown in September 18, 2008. On September 23, 2008, she released her first mini-album, Lost and Found, in which the most famous song was the title track, \"Missing Child.\" However, the album was not commercially successful. It wasn't until her follow-up album that she succeeded in breaking into the mainstream.\n\n2009\nOn April 16, 2009, IU launched her first full album, titled Growing Up, with the lead promotional number \"Boo.\" Within three weeks, \"Boo\" went up to the #1 contenders for SBS Inkigayo, and her name also went up twice on Take 7 together with other notable artists like SG Wannabe and Younha. The song also did well on KBS Music Bank K-Chart, on Mnet M!Countdown chart, and on various online music charts.\n\nIn 2009, IU sang the ending title song, \"Araro\", for the acclaimed MBC drama Queen Seon Duk, where she was recommended by the director, Sam Kim, citing her \"clear tone and her lyrical sensibility.\" She was also featured on Mighty Mouth's album Love Class in the song \"희망사항.\" In late 2009, IU recorded MC Mong's song \"Love Letter For You (Neoyege Sseuneun Pyeonji),\" featuring SHINee's Key as a rapper in the song.\n\n2010\nIU recorded the song \"잔소리\" (Nagging / Scolded) with 2AM's Seulong for the TV show We Got Married. On June 27, 2010, IU won her first award since her debut on SBS Inkigayo for \"Nagging.\" On July 2, 2010, she won another award for that song on KBS Music Bank K-Chart. Soon after, IU was chosen to sing the main OST song for the MBC drama Road No.1 titled \"여자라서\" (Because I'm A Woman). IU's other collaborations include duets with Yoo Seung Ho (\"사랑을 믿어요\" (Believe in Love)), Sung Shi Kyung (\"그대네요\" (It's You)), and Big Bang's Seungri (\"I Know\").\n\nIU worked with some of South Korea's most famous musicians and producers for her third mini-album, REAL, released in December 2010. Lee Min Soo and Kim Eana, the creators of IU's previous hit \"Nagging\", helped produce her award-winning song \"좋은 날\" (\"Good Day\"). IU received three SBS Inkigayo Mutizen awards for her performances of the song (on December 18 and December 26, 2010, and January 2, 2011), three awards from KBS Music Bank K-Chart (on December 24 and December 31, 2010, and January 7, 2011), and one award from Mnet M!Countdown on December 23, 2010.\n\n2011\nIU often covers other pop artists' songs with her guitar and features her friend Thunder from MBLAQ, most notably renditions of SHINee's \"Juliette,\" Big Bang's \"Lies,\" Super Junior's \"Sorry, Sorry\" and Girls' Generation's \"Gee.\"\n\nSoribada, an online music service, combined the music downloads and streams from January 1 to March 30, 2011, to name IU's song, \"Good Day\" as the number one song of the first quarter. Her song \"Someday\" from the KBS Drama Dream High OST and her ballad \"The Story Only I Didn't Know\" placed 4th and 7th place, respectively – showing that IU got 3 of the top 10 digital spots for the first quarter. Her first original composition, \"Dreaming\" was used in the drama \"Dream High\", but not released officially.\n\nOn June 18, 2011, IU held her first official fanmeeting and mini-concert at AX-Korea. It also marked the 1004th day since she debuted.\n\nIU also sang a self-composed OST called \"Hold my Hand\" for drama series The Greatest Love.\nOn November 29, 2011, IU's second full length album Last Fantasy was released and achieved an ‘all-kill’ as all 13 songs immediately swept most of all the charts. The track list was revealed on November 22, 2011.\n\n2012\nOn January 24, 2012, IU held a live showcase at Tokyo's Bunkamura Orchard Hall. On March 1st, 2012, she released a promotional video for the Japanese version of \"Good Day\", the title track of her Japanese single album. The album, which includes DVD footage from the showcase, was later released on March 21, 2012.\n\nIn early April, 2012, it was announced that IU will be holding her first solo tour, \"Real Fantasy\", starting in June. The tour features performances in six different cities across South Korea, including Seoul and Busan.\n\nIU released the single album, \"Spring of a Twenty Year Old\" (\"스무 살의 봄\"), on May 11th, 2012.[16] The album contains three songs, one of which is self-composed by IU. This song, entitled \"Peach\" (\"복숭아\"), was digitally released before the album, on May 4th, 2012. A 26-minute-long documentary-style music video film was released alongside the album, featuring several interviews with IU that showcase her personal thoughts and experiences. This film contains footage of IU as she visits Venice, Italy.\n\n\n2021\nOn January 11, 2021 IU, and her agency EDAM Entertainment, officially announced that they will be releasing a single from her upcoming album on January 27, 2021.\n\nOn January 27, 2021 at 18:00 KST (UTC+9) EDAM Entertainment globally released IU's comeback single entitled \"Celebrity\". The track was released in major online streaming platforms in South Korea and worldwide and achieved multiple All-Kills in Korean charts every hour. <a href=\"https://www.last.fm/music/IU\">Read more on Last.fm</a>. User-contributed text is available under the Creative Commons By-SA License; additional terms may apply."
+    }
+  }
+}

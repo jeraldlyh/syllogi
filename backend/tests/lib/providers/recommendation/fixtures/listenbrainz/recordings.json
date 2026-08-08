@@ -1,0 +1,194 @@
+{
+  "payload": {
+    "count": 10,
+    "from_ts": 1780272000,
+    "last_updated": 1785119576,
+    "offset": 0,
+    "range": "month",
+    "recordings": [
+      {
+        "artist_mbids": ["b9545342-1e6d-4dae-84ac-013374ad8d7c"],
+        "artist_name": "IU",
+        "artists": [
+          {
+            "artist_credit_name": "IU",
+            "artist_mbid": "b9545342-1e6d-4dae-84ac-013374ad8d7c",
+            "join_phrase": ""
+          }
+        ],
+        "caa_id": 38091460605,
+        "caa_release_mbid": "dec72a6b-1a52-4ff2-9d20-5aeb70767330",
+        "listen_count": 8,
+        "recording_mbid": "6de6b17c-ba14-4d4a-8123-314290a7fc04",
+        "release_mbid": "dec72a6b-1a52-4ff2-9d20-5aeb70767330",
+        "release_name": "The Winning",
+        "track_name": "관객이 될게 (I stan U)"
+      },
+      {
+        "artist_mbids": ["b9545342-1e6d-4dae-84ac-013374ad8d7c"],
+        "artist_name": "IU",
+        "artists": [
+          {
+            "artist_credit_name": "IU",
+            "artist_mbid": "b9545342-1e6d-4dae-84ac-013374ad8d7c",
+            "join_phrase": ""
+          }
+        ],
+        "caa_id": 38091460605,
+        "caa_release_mbid": "dec72a6b-1a52-4ff2-9d20-5aeb70767330",
+        "listen_count": 7,
+        "recording_mbid": "63fdd511-acb2-441b-b313-b53169c9dbf0",
+        "release_mbid": "dec72a6b-1a52-4ff2-9d20-5aeb70767330",
+        "release_name": "The Winning",
+        "track_name": "홀씨"
+      },
+      {
+        "artist_mbids": ["fb588f59-af1a-493a-9508-ed487caa2a11"],
+        "artist_name": "MAMAMOO",
+        "artists": [
+          {
+            "artist_credit_name": "MAMAMOO",
+            "artist_mbid": "fb588f59-af1a-493a-9508-ed487caa2a11",
+            "join_phrase": ""
+          }
+        ],
+        "caa_id": 24034594093,
+        "caa_release_mbid": "bca9717a-1250-4739-a22a-f802ee644f35",
+        "listen_count": 7,
+        "recording_mbid": "44d82642-a41b-48c0-90ec-4d918c747689",
+        "release_mbid": "bca9717a-1250-4739-a22a-f802ee644f35",
+        "release_name": "4colors",
+        "track_name": "Starry Night -Japanese ver.-"
+      },
+      {
+        "artist_mbids": ["8da127cc-c432-418f-b356-ef36210d82ac"],
+        "artist_name": "TWICE",
+        "artists": [
+          {
+            "artist_credit_name": "TWICE",
+            "artist_mbid": "8da127cc-c432-418f-b356-ef36210d82ac",
+            "join_phrase": ""
+          }
+        ],
+        "caa_id": 38118913581,
+        "caa_release_mbid": "115cbfc1-26d8-4e03-b140-22ee85e4a1e4",
+        "listen_count": 6,
+        "recording_mbid": "d80dff0d-73bb-453e-bbfa-8c465d279b22",
+        "release_mbid": "115cbfc1-26d8-4e03-b140-22ee85e4a1e4",
+        "release_name": "ONE SPARK",
+        "track_name": "ONE SPARK"
+      },
+      {
+        "artist_mbids": ["705f04e2-fc5b-41ab-b837-1d850d44084a"],
+        "artist_name": "fromis_9",
+        "artists": [
+          {
+            "artist_credit_name": "fromis_9",
+            "artist_mbid": "705f04e2-fc5b-41ab-b837-1d850d44084a",
+            "join_phrase": ""
+          }
+        ],
+        "caa_id": 42333150417,
+        "caa_release_mbid": "a1325180-be8b-4b28-80ca-fbe6742d8efe",
+        "listen_count": 6,
+        "recording_mbid": "05cbd9e0-463a-4d8f-8cc3-3985f7b46c5f",
+        "release_mbid": "162efc89-a5b6-4cc7-b49d-96f3c9eef5f4",
+        "release_name": "From Our 20’s",
+        "track_name": "Merry Go Round"
+      },
+      {
+        "artist_mbids": ["0068ae6c-7156-40f9-a81f-39294af6a549"],
+        "artist_name": "i‐dle",
+        "artists": [
+          {
+            "artist_credit_name": "(G)I‐DLE",
+            "artist_mbid": "0068ae6c-7156-40f9-a81f-39294af6a549",
+            "join_phrase": ""
+          }
+        ],
+        "caa_id": 28283554238,
+        "caa_release_mbid": "349b43d6-528a-437d-b28b-570c106d1288",
+        "listen_count": 6,
+        "recording_mbid": "d1a581a4-f797-414f-8cce-d00ea974dec1",
+        "release_mbid": "349b43d6-528a-437d-b28b-570c106d1288",
+        "release_name": "I burn",
+        "track_name": "HWAA"
+      },
+      {
+        "artist_mbids": ["705f04e2-fc5b-41ab-b837-1d850d44084a"],
+        "artist_name": "fromis_9",
+        "artists": [
+          {
+            "artist_credit_name": "fromis_9",
+            "artist_mbid": "705f04e2-fc5b-41ab-b837-1d850d44084a",
+            "join_phrase": ""
+          }
+        ],
+        "caa_id": 42333150417,
+        "caa_release_mbid": "a1325180-be8b-4b28-80ca-fbe6742d8efe",
+        "listen_count": 5,
+        "recording_mbid": "b9c12ae8-30b4-4c36-b000-c9000195b82e",
+        "release_mbid": "162efc89-a5b6-4cc7-b49d-96f3c9eef5f4",
+        "release_name": "From Our 20’s",
+        "track_name": "Love=Disaster"
+      },
+      {
+        "artist_mbids": ["08525643-7a01-411e-8188-8bf57261c8b3"],
+        "artist_name": "CHUNG HA",
+        "artists": [
+          {
+            "artist_credit_name": "CHUNG HA",
+            "artist_mbid": "08525643-7a01-411e-8188-8bf57261c8b3",
+            "join_phrase": ""
+          }
+        ],
+        "caa_id": 33049106902,
+        "caa_release_mbid": "bb33b4ff-c1b7-4472-b5b8-12e0d357f98b",
+        "listen_count": 4,
+        "recording_mbid": "a4eaad9f-df24-49cc-b3d2-fba11f013f5b",
+        "release_mbid": "bb33b4ff-c1b7-4472-b5b8-12e0d357f98b",
+        "release_name": "Bare&Rare Pt.1",
+        "track_name": "Sparkling"
+      },
+      {
+        "artist_mbids": ["9f6a8346-15f3-4ec4-a632-f5270b0945a3"],
+        "artist_name": "GOT7",
+        "artists": [
+          {
+            "artist_credit_name": "GOT7",
+            "artist_mbid": "9f6a8346-15f3-4ec4-a632-f5270b0945a3",
+            "join_phrase": ""
+          }
+        ],
+        "caa_id": 18409862643,
+        "caa_release_mbid": "a31ea18d-895c-49d6-8ce4-e232c4fe1ca9",
+        "listen_count": 4,
+        "recording_mbid": "3ebbfbc1-d1cc-40b2-b819-200780687a78",
+        "release_mbid": "a31ea18d-895c-49d6-8ce4-e232c4fe1ca9",
+        "release_name": "FLIGHT LOG : ARRIVAL",
+        "track_name": "Never Ever"
+      },
+      {
+        "artist_mbids": ["fb588f59-af1a-493a-9508-ed487caa2a11"],
+        "artist_name": "MAMAMOO",
+        "artists": [
+          {
+            "artist_credit_name": "MAMAMOO",
+            "artist_mbid": "fb588f59-af1a-493a-9508-ed487caa2a11",
+            "join_phrase": ""
+          }
+        ],
+        "caa_id": 32420867298,
+        "caa_release_mbid": "c325870f-5127-4c43-baa4-ce983d001805",
+        "listen_count": 4,
+        "recording_mbid": "4eb24f00-b463-4f7b-8ea6-d846360fb041",
+        "release_mbid": "c325870f-5127-4c43-baa4-ce983d001805",
+        "release_name": "I SAY MAMAMOO : THE BEST",
+        "track_name": "HIP (remix ver.)"
+      }
+    ],
+    "to_ts": 1782864000,
+    "total_recording_count": 103,
+    "user_id": "xdevolution"
+  }
+}

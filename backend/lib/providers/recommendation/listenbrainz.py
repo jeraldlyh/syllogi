@@ -235,7 +235,7 @@ class ListenBrainzRecommendationProvider(RecommendationSourceProvider):
                         / 1000,
                         playcount=0,
                         similarity_score=0.0,
-                        year=str(track_metadata.get("year", "")),
+                        year=str(release.get("year", "")),
                     )
                 )
         return results

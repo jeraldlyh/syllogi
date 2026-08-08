@@ -282,7 +282,6 @@ class NavidromeProvider(MusicPlaylistProvider):
             ProviderPlaylist(
                 id=playlist.get("id", ""),
                 name=playlist.get("name", ""),
-                owner_id=playlist.get("owner"),
             )
             for playlist in playlists
         ]
@@ -314,12 +313,7 @@ class NavidromeProvider(MusicPlaylistProvider):
         )
 
         existing_playlist = next(
-            (
-                pl
-                for pl in playlists
-                if pl.name == playlist_name
-                and (pl.owner_id is None or pl.owner_id == username)
-            ),
+            (pl for pl in playlists if pl.name == playlist_name),
             None,
         )
         playlist_id = existing_playlist.id if existing_playlist else None
@@ -369,7 +363,6 @@ class NavidromeProvider(MusicPlaylistProvider):
         return ProviderPlaylist(
             id=playlist.get("id", ""),
             name=playlist.get("name", playlist_name),
-            owner_id=playlist.get("owner"),
         )
 
     async def delete_playlist(
@@ -600,12 +593,7 @@ class NavidromeProvider(MusicPlaylistProvider):
         )
 
         existing = next(
-            (
-                playlist
-                for playlist in playlists
-                if playlist.name == playlist_name
-                and (playlist.owner_id is None or playlist.owner_id == username)
-            ),
+            (playlist for playlist in playlists if playlist.name == playlist_name),
             None,
         )
 

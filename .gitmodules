@@ -1,3 +1,0 @@
-[submodule "backend/SpotAPI"]
-	path = backend/SpotAPI
-	url = https://github.com/Aran404/SpotAPI.git

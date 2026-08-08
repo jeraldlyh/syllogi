@@ -1,0 +1,127 @@
+{
+  "id": "1b43c9e0-31d4-48ae-92bc-541a6aaf4eb3",
+  "asin": null,
+  "status": "Official",
+  "text-representation": {
+    "language": "eng",
+    "script": "Latn"
+  },
+  "date": "2024-02-20",
+  "disambiguation": "",
+  "status-id": "4e304316-386d-3409-af2e-78857eec5cfe",
+  "title": "The Winning",
+  "media": [
+    {
+      "format": "Digital Media",
+      "id": "7de75d3e-4b6b-3447-b4c8-4f2348989e4c",
+      "title": "",
+      "format-id": "907a28d9-b3b2-3ef6-89a8-7b18d91d4794",
+      "tracks": [
+        {
+          "title": "Shopper",
+          "number": "1",
+          "id": "3bb8bb9b-1cca-4ceb-8b1a-4a42aeabacce",
+          "position": 1,
+          "length": 215720,
+          "recording": {
+            "first-release-date": "2024-02-20",
+            "video": false,
+            "id": "b3b96429-e8f0-467a-8df9-bd4ff1a6efd1",
+            "title": "Shopper",
+            "disambiguation": "",
+            "length": 216000
+          }
+        },
+        {
+          "position": 2,
+          "id": "42fcfd7e-e426-4f82-87fd-c44af9d630b4",
+          "number": "2",
+          "title": "홀씨",
+          "length": 190787,
+          "recording": {
+            "video": false,
+            "first-release-date": "2024-02-20",
+            "disambiguation": "",
+            "length": 191000,
+            "id": "63fdd511-acb2-441b-b313-b53169c9dbf0",
+            "title": "홀씨"
+          }
+        },
+        {
+          "recording": {
+            "first-release-date": "2024-02-20",
+            "video": false,
+            "id": "3c295fcb-ceec-433b-ba0e-d40c471187ba",
+            "title": "Shh..",
+            "disambiguation": "",
+            "length": 227000
+          },
+          "length": 226760,
+          "position": 3,
+          "id": "149ae6c4-8f65-4898-b98b-b8c79015cd6b",
+          "title": "Shh..",
+          "number": "3"
+        },
+        {
+          "length": 271080,
+          "title": "Love wins all",
+          "number": "4",
+          "id": "5743fe8d-1f9f-4fde-ad8c-9b36899d0d98",
+          "position": 4,
+          "recording": {
+            "first-release-date": "2024-01-24",
+            "video": false,
+            "id": "5a30eb21-d05b-436b-8e39-e1322ed9cbd6",
+            "title": "Love wins all",
+            "disambiguation": "",
+            "length": 271080
+          }
+        },
+        {
+          "recording": {
+            "disambiguation": "",
+            "length": 193000,
+            "id": "6de6b17c-ba14-4d4a-8123-314290a7fc04",
+            "title": "관객이 될게 (I stan U)",
+            "video": false,
+            "first-release-date": "2024-02-20"
+          },
+          "length": 192573,
+          "id": "8076e319-605c-4403-85c6-ca9a4b29044f",
+          "position": 5,
+          "title": "관객이 될게 (I stan U)",
+          "number": "5"
+        }
+      ],
+      "track-count": 5,
+      "track-offset": 0,
+      "position": 1
+    }
+  ],
+  "country": "KR",
+  "packaging": "None",
+  "cover-art-archive": {
+    "back": false,
+    "count": 1,
+    "artwork": true,
+    "front": true,
+    "darkened": false
+  },
+  "barcode": "",
+  "quality": "normal",
+  "packaging-id": "119eba76-b343-3e02-a292-f0f00644bb9b",
+  "release-events": [
+    {
+      "date": "2024-02-20",
+      "area": {
+        "type": null,
+        "name": "South Korea",
+        "iso-3166-1-codes": ["KR"],
+        "sort-name": "South Korea",
+        "disambiguation": "",
+        "type-id": null,
+        "id": "b9f7d640-46e8-313e-b158-ded6d18593b3"
+      }
+    }
+  ]
+}

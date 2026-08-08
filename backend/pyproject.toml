@@ -30,7 +30,14 @@ spotapi = { git = "https://github.com/Aran404/SpotAPI.git" , rev = "4ebb81d" }
 dev = [
     "black",
     "ruff",
+    "pytest",
+    "pytest-asyncio",
+    "respx",
 ]
+
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
+testpaths = ["tests"]
 
 [tool.basedpyright]
 typeCheckingMode = "basic"

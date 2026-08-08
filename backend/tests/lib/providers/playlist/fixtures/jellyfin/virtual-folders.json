@@ -1,0 +1,67 @@
+[
+  {
+    "Name": "Ripped",
+    "Locations": ["/media/ripped"],
+    "CollectionType": "homevideos",
+    "LibraryOptions": {
+      "Enabled": true,
+      "EnablePhotos": true,
+      "EnableRealtimeMonitor": true,
+      "EnableLUFSScan": true,
+      "EnableChapterImageExtraction": false,
+      "ExtractChapterImagesDuringLibraryScan": false,
+      "EnableTrickplayImageExtraction": false,
+      "ExtractTrickplayImagesDuringLibraryScan": false,
+      "PathInfos": [
+        {
+          "Path": "/media/ripped"
+        }
+      ],
+      "SaveLocalMetadata": false,
+      "EnableInternetProviders": false,
+      "EnableAutomaticSeriesGrouping": false,
+      "EnableEmbeddedTitles": false,
+      "EnableEmbeddedExtrasTitles": false,
+      "EnableEmbeddedEpisodeInfos": false,
+      "AutomaticRefreshIntervalDays": 0,
+      "PreferredMetadataLanguage": "",
+      "MetadataCountryCode": "",
+      "SeasonZeroDisplayName": "Specials",
+      "MetadataSavers": ["Nfo"],
+      "DisabledLocalMetadataReaders": [],
+      "LocalMetadataReaderOrder": ["Nfo"],
+      "DisabledSubtitleFetchers": [],
+      "SubtitleFetcherOrder": [],
+      "DisabledMediaSegmentProviders": [],
+      "MediaSegmentProviderOrder": ["Intro Skipper"],
+      "SkipSubtitlesIfEmbeddedSubtitlesPresent": false,
+      "SkipSubtitlesIfAudioTrackMatches": false,
+      "SubtitleDownloadLanguages": [],
+      "RequirePerfectSubtitleMatch": true,
+      "SaveSubtitlesWithMedia": true,
+      "SaveLyricsWithMedia": false,
+      "SaveTrickplayWithMedia": false,
+      "DisabledLyricFetchers": [],
+      "LyricFetcherOrder": [],
+      "PreferNonstandardArtistsTag": false,
+      "UseCustomTagDelimiters": false,
+      "CustomTagDelimiters": ["/", "|", ";", "\\"],
+      "DelimiterWhitelist": [],
+      "AutomaticallyAddToCollection": false,
+      "AllowEmbeddedSubtitles": "AllowAll",
+      "TypeOptions": [
+        {
+          "Type": "Video",
+          "MetadataFetchers": [],
+          "MetadataFetcherOrder": [],
+          "ImageFetchers": ["Embedded Image Extractor", "Screen Grabber"],
+          "ImageFetcherOrder": ["Embedded Image Extractor", "Screen Grabber"],
+          "ImageOptions": []
+        }
+      ]
+    },
+    "ItemId": "item-1",
+    "PrimaryImageItemId": "",
+    "RefreshStatus": "Idle"
+  }
+]

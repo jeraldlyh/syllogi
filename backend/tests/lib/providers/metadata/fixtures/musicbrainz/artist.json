@@ -1,0 +1,1309 @@
+{
+  "created": "2026-08-02T07:31:59.331Z",
+  "count": 1287,
+  "offset": 0,
+  "artists": [
+    {
+      "id": "6925db17-f35e-42f3-a4eb-84ee6bf5d4b0",
+      "type": "Person",
+      "type-id": "b6e035f4-3ce9-331c-97df-83397230b0df",
+      "score": 100,
+      "gender-id": "93452b5a-a947-30c8-934f-6a4056b151c2",
+      "name": "Olivia Rodrigo",
+      "sort-name": "Rodrigo, Olivia",
+      "gender": "female",
+      "country": "US",
+      "area": {
+        "id": "489ce91b-6658-3307-9877-795b68554c98",
+        "type": "Country",
+        "type-id": "06dd0ae4-8c74-30bb-b43d-95dcedf961de",
+        "name": "United States",
+        "sort-name": "United States",
+        "life-span": {
+          "ended": null
+        }
+      },
+      "begin-area": {
+        "id": "426eb20b-838d-43e7-911d-ba5826b8c19e",
+        "type": "City",
+        "type-id": "6fd8f29a-3d0a-32fc-980d-ea697b69da78",
+        "name": "Murrieta",
+        "sort-name": "Murrieta",
+        "life-span": {
+          "ended": null
+        }
+      },
+      "disambiguation": "US singer‐songwriter",
+      "ipis": ["00387176421"],
+      "isnis": ["000000047619573X"],
+      "life-span": {
+        "begin": "2003-02-20",
+        "ended": null
+      },
+      "aliases": [
+        {
+          "sort-name": "奥利维亚·罗德里戈",
+          "type-id": "894afba6-2816-3c24-8072-eadb66bd04bc",
+          "name": "奥利维亚·罗德里戈",
+          "locale": "zh",
+          "type": "Artist name",
+          "primary": true,
+          "begin-date": null,
+          "end-date": null
+        },
+        {
+          "sort-name": "奧莉維亞·羅德里戈",
+          "type-id": "894afba6-2816-3c24-8072-eadb66bd04bc",
+          "name": "奧莉維亞·羅德里戈",
+          "locale": "zh_Hant",
+          "type": "Artist name",
+          "primary": true,
+          "begin-date": null,
+          "end-date": null
+        },
+        {
+          "sort-name": "اولیویا روڈریگو",
+          "type-id": "894afba6-2816-3c24-8072-eadb66bd04bc",
+          "name": "اولیویا روڈریگو",
+          "locale": "ur",
+          "type": "Artist name",
+          "primary": true,
+          "begin-date": null,
+          "end-date": null
+        },
+        {
+          "sort-name": "Олівія Родріґо",
+          "type-id": "894afba6-2816-3c24-8072-eadb66bd04bc",
+          "name": "Олівія Родріґо",
+          "locale": "uk",
+          "type": "Artist name",
+          "primary": true,
+          "begin-date": null,
+          "end-date": null
+        },
+        {
+          "sort-name": "โอลิเวีย โรดริโก",
+          "type-id": "894afba6-2816-3c24-8072-eadb66bd04bc",
+          "name": "โอลิเวีย โรดริโก",
+          "locale": "th",
+          "type": "Artist name",
+          "primary": true,
+          "begin-date": null,
+          "end-date": null
+        },
+        {
+          "sort-name": "Оливија Родриго",
+          "type-id": "894afba6-2816-3c24-8072-eadb66bd04bc",
+          "name": "Оливија Родриго",
+          "locale": "sr",
+          "type": "Artist name",
+          "primary": true,
+          "begin-date": null,
+          "end-date": null
+        },
+        {
+          "sort-name": "اولیویا روڈریگو",
+          "type-id": "894afba6-2816-3c24-8072-eadb66bd04bc",
+          "name": "اولیویا روڈریگو",
+          "locale": "skr",
+          "type": "Artist name",
+          "primary": true,
+          "begin-date": null,
+          "end-date": null
+        },
+        {
+          "sort-name": "Оливия Родриго",
+          "type-id": "894afba6-2816-3c24-8072-eadb66bd04bc",
+          "name": "Оливия Родриго",
+          "locale": "ru",
+          "type": "Artist name",
+          "primary": true,
+          "begin-date": null,
+          "end-date": null
+        },
+        {
+          "sort-name": "اولیویا روڈریگو",
+          "type-id": "894afba6-2816-3c24-8072-eadb66bd04bc",
+          "name": "اولیویا روڈریگو",
+          "locale": "pa_Arab",
+          "type": "Artist name",
+          "primary": true,
+          "begin-date": null,
+          "end-date": null
+        },
+        {
+          "sort-name": "ਓਲੀਵੀਆ ਰੌਡਰੀਗੋ",
+          "type-id": "894afba6-2816-3c24-8072-eadb66bd04bc",
+          "name": "ਓਲੀਵੀਆ ਰੌਡਰੀਗੋ",
+          "locale": "pa_Guru",
+          "type": "Artist name",
+          "primary": true,
+          "begin-date": null,
+          "end-date": null
+        },
+        {
+          "sort-name": "ओलिभिया रोड्रिगो",
+          "type-id": "894afba6-2816-3c24-8072-eadb66bd04bc",
+          "name": "ओलिभिया रोड्रिगो",
+          "locale": "ne",
+          "type": "Artist name",
+          "primary": true,
+          "begin-date": null,
+          "end-date": null
+        },
+        {
+          "sort-name": "Оливија Родриго",
+          "type-id": "894afba6-2816-3c24-8072-eadb66bd04bc",
+          "name": "Оливија Родриго",
+          "locale": "mk",
+          "type": "Artist name",
+          "primary": true,
+          "begin-date": null,
+          "end-date": null
+        },
+        {
+          "sort-name": "Rodrigo, Olīvija",
+          "type-id": "894afba6-2816-3c24-8072-eadb66bd04bc",
+          "name": "Olīvija Rodrigo",
+          "locale": "lv",
+          "type": "Artist name",
+          "primary": true,
+          "begin-date": null,
+          "end-date": null
+        },
+        {
+          "sort-name": "올리비아 로드리고",
+          "type-id": "894afba6-2816-3c24-8072-eadb66bd04bc",
+          "name": "올리비아 로드리고",
+          "locale": "ko",
+          "type": "Artist name",
+          "primary": true,
+          "begin-date": null,
+          "end-date": null
+        },
+        {
+          "sort-name": "ოლივია როდრიგო",
+          "type-id": "894afba6-2816-3c24-8072-eadb66bd04bc",
+          "name": "ოლივია როდრიგო",
+          "locale": "ka",
+          "type": "Artist name",
+          "primary": true,
+          "begin-date": null,
+          "end-date": null
+        },
+        {
+          "sort-name": "Օլիվիա Ռոդրիգո",
+          "type-id": "894afba6-2816-3c24-8072-eadb66bd04bc",
+          "name": "Օլիվիա Ռոդրիգո",
+          "locale": "hy",
+          "type": "Artist name",
+          "primary": true,
+          "begin-date": null,
+          "end-date": null
+        },
+        {
+          "sort-name": "אוליביה רודריגו",
+          "type-id": "894afba6-2816-3c24-8072-eadb66bd04bc",
+          "name": "אוליביה רודריגו",
+          "locale": "he",
+          "type": "Artist name",
+          "primary": true,
+          "begin-date": null,
+          "end-date": null
+        },
+        {
+          "sort-name": "اولیویا رودریگو",
+          "type-id": "894afba6-2816-3c24-8072-eadb66bd04bc",
+          "name": "اولیویا رودریگو",
+          "locale": "fa",
+          "type": "Artist name",
+          "primary": true,
+          "begin-date": null,
+          "end-date": null
+        },
+        {
+          "sort-name": "Ολίβια Ροντρίγκο",
+          "type-id": "894afba6-2816-3c24-8072-eadb66bd04bc",
+          "name": "Ολίβια Ροντρίγκο",
+          "locale": "el",
+          "type": "Artist name",
+          "primary": true,
+          "begin-date": null,
+          "end-date": null
+        },
+        {
+          "sort-name": "Rodrigová, Olivia",
+          "type-id": "894afba6-2816-3c24-8072-eadb66bd04bc",
+          "name": "Olivia Rodrigová",
+          "locale": "cs",
+          "type": "Artist name",
+          "primary": true,
+          "begin-date": null,
+          "end-date": null
+        },
+        {
+          "sort-name": "Оливия Родриго",
+          "type-id": "894afba6-2816-3c24-8072-eadb66bd04bc",
+          "name": "Оливия Родриго",
+          "locale": "bg",
+          "type": "Artist name",
+          "primary": true,
+          "begin-date": null,
+          "end-date": null
+        },
+        {
+          "sort-name": "Алівія Радрыга",
+          "type-id": "894afba6-2816-3c24-8072-eadb66bd04bc",
+          "name": "Алівія Радрыга",
+          "locale": "be",
+          "type": "Artist name",
+          "primary": true,
+          "begin-date": null,
+          "end-date": null
+        },
+        {
+          "sort-name": "Rodriqo, Oliviya",
+          "type-id": "894afba6-2816-3c24-8072-eadb66bd04bc",
+          "name": "Oliviya Rodriqo",
+          "locale": "az",
+          "type": "Artist name",
+          "primary": true,
+          "begin-date": null,
+          "end-date": null
+        },
+        {
+          "sort-name": "ئۆلیڤیا ڕادریگۆ",
+          "type-id": "894afba6-2816-3c24-8072-eadb66bd04bc",
+          "name": "ئۆلیڤیا ڕادریگۆ",
+          "locale": "ku",
+          "type": "Artist name",
+          "primary": true,
+          "begin-date": null,
+          "end-date": null
+        },
+        {
+          "sort-name": "اوليفيا رودريجو",
+          "type-id": "894afba6-2816-3c24-8072-eadb66bd04bc",
+          "name": "اوليفيا رودريجو",
+          "locale": "ar_EG",
+          "type": "Artist name",
+          "primary": true,
+          "begin-date": null,
+          "end-date": null
+        },
+        {
+          "sort-name": "أوليفيا رودريغو",
+          "type-id": "894afba6-2816-3c24-8072-eadb66bd04bc",
+          "name": "أوليفيا رودريغو",
+          "locale": "ar",
+          "type": "Artist name",
+          "primary": true,
+          "begin-date": null,
+          "end-date": null
+        },
+        {
+          "sort-name": "オリヴィア・ロドリゴ",
+          "type-id": "894afba6-2816-3c24-8072-eadb66bd04bc",
+          "name": "オリヴィア・ロドリゴ",
+          "locale": "ja",
+          "type": "Artist name",
+          "primary": true,
+          "begin-date": null,
+          "end-date": null
+        },
+        {
+          "sort-name": "Rodrigo, Olivia Isabel",
+          "type-id": "d4dcd0c0-b341-3612-a332-c0ce797b25cf",
+          "name": "Olivia Isabel Rodrigo",
+          "locale": null,
+          "type": "Legal name",
+          "primary": null,
+          "begin-date": null,
+          "end-date": null
+        }
+      ],
+      "tags": [
+        {
+          "count": 1,
+          "name": "rock"
+        },
+        {
+          "count": 14,
+          "name": "pop"
+        },
+        {
+          "count": -2,
+          "name": "alternative rock"
+        },
+        {
+          "count": -2,
+          "name": "punk rock"
+        },
+        {
+          "count": 4,
+          "name": "singer-songwriter"
+        },
+        {
+          "count": 5,
+          "name": "power pop"
+        },
+        {
+          "count": -2,
+          "name": "synth-pop"
+        },
+        {
+          "count": 1,
+          "name": "female vocalists"
+        },
+        {
+          "count": 1,
+          "name": "female vocals"
+        },
+        {
+          "count": -1,
+          "name": "indie pop"
+        },
+        {
+          "count": -2,
+          "name": "dance-pop"
+        },
+        {
+          "count": 9,
+          "name": "pop rock"
+        },
+        {
+          "count": 6,
+          "name": "pop punk"
+        },
+        {
+          "count": -2,
+          "name": "dance-punk"
+        },
+        {
+          "count": 1,
+          "name": "musical"
+        },
+        {
+          "count": 2,
+          "name": "folk pop"
+        },
+        {
+          "count": -2,
+          "name": "indietronica"
+        },
+        {
+          "count": -2,
+          "name": "folktronica"
+        },
+        {
+          "count": -2,
+          "name": "emo pop"
+        },
+        {
+          "count": -2,
+          "name": "dance-rock"
+        },
+        {
+          "count": 0,
+          "name": "2010s"
+        },
+        {
+          "count": -2,
+          "name": "bubblegum pop"
+        },
+        {
+          "count": 4,
+          "name": "2020s"
+        },
+        {
+          "count": 1,
+          "name": "gen z"
+        }
+      ]
+    },
+    {
+      "id": "fde4460b-868a-493e-8c53-221e418c8959",
+      "type": "Person",
+      "type-id": "b6e035f4-3ce9-331c-97df-83397230b0df",
+      "score": 47,
+      "gender-id": "36d3d30a-839d-3eda-8cb3-29be4384e4a9",
+      "name": "Joaquín Rodrigo",
+      "sort-name": "Rodrigo, Joaquín",
+      "gender": "male",
+      "country": "ES",
+      "area": {
+        "id": "471c46a7-afc5-31c4-923c-d0444f5053a4",
+        "type": "Country",
+        "type-id": "06dd0ae4-8c74-30bb-b43d-95dcedf961de",
+        "name": "Spain",
+        "sort-name": "Spain",
+        "life-span": {
+          "ended": null
+        }
+      },
+      "begin-area": {
+        "id": "8ebfaba9-5846-4086-af2f-a24efe3b4869",
+        "type": "City",
+        "type-id": "6fd8f29a-3d0a-32fc-980d-ea697b69da78",
+        "name": "Sagunto",
+        "sort-name": "Sagunto",
+        "life-span": {
+          "ended": null
+        }
+      },
+      "end-area": {
+        "id": "9ddf829c-48ee-4457-a80d-f7370f24f2ec",
+        "type": "City",
+        "type-id": "6fd8f29a-3d0a-32fc-980d-ea697b69da78",
+        "name": "Madrid",
+        "sort-name": "Madrid",
+        "life-span": {
+          "ended": null
+        }
+      },
+      "disambiguation": "Spanish composer and virtuoso pianist",
+      "ipis": ["00026370893"],
+      "isnis": ["0000000109062011"],
+      "life-span": {
+        "begin": "1901-11-22",
+        "end": "1999-07-06",
+        "ended": true
+      },
+      "aliases": [
+        {
+          "sort-name": "ホアキン・ロドリーゴ",
+          "type-id": "894afba6-2816-3c24-8072-eadb66bd04bc",
+          "name": "ホアキン・ロドリーゴ",
+          "locale": "ja_JP",
+          "type": "Artist name",
+          "primary": true,
+          "begin-date": null,
+          "end-date": null
+        },
+        {
+          "sort-name": "Rodrigo Vidre, Joaquín, I Marqués de los Jardines de Aranjuez",
+          "name": "Joaquín Rodrigo Vidre, I Marqués de los Jardines de Aranjuez",
+          "locale": "es",
+          "type": null,
+          "primary": null,
+          "begin-date": null,
+          "end-date": null
+        },
+        {
+          "sort-name": "Joaquín Vidre Rodrigo",
+          "type-id": "1937e404-b981-3cb7-8151-4c86ebfc8d8e",
+          "name": "Joaquín Vidre Rodrigo",
+          "locale": null,
+          "type": "Search hint",
+          "primary": null,
+          "begin-date": null,
+          "end-date": null
+        },
+        {
+          "sort-name": "J. Rodrigo",
+          "type-id": "1937e404-b981-3cb7-8151-4c86ebfc8d8e",
+          "name": "J. Rodrigo",
+          "locale": null,
+          "type": "Search hint",
+          "primary": null,
+          "begin-date": null,
+          "end-date": null
+        },
+        {
+          "sort-name": "Rodrigo Vidre, Joaquín",
+          "name": "Joaquín Rodrigo Vidre",
+          "locale": null,
+          "type": null,
+          "primary": null,
+          "begin-date": null,
+          "end-date": null
+        },
+        {
+          "sort-name": "Joqauin Rodrigo",
+          "type-id": "1937e404-b981-3cb7-8151-4c86ebfc8d8e",
+          "name": "Joqauin Rodrigo",
+          "locale": null,
+          "type": "Search hint",
+          "primary": null,
+          "begin-date": null,
+          "end-date": null
+        },
+        {
+          "sort-name": "ロドリーゴ",
+          "name": "ロドリーゴ",
+          "locale": null,
+          "type": null,
+          "primary": null,
+          "begin-date": null,
+          "end-date": null
+        },
+        {
+          "sort-name": "Joaquim Rodrigo",
+          "type-id": "1937e404-b981-3cb7-8151-4c86ebfc8d8e",
+          "name": "Joaquim Rodrigo",
+          "locale": null,
+          "type": "Search hint",
+          "primary": null,
+          "begin-date": null,
+          "end-date": null
+        },
+        {
+          "sort-name": "Rodrigo, Joaquin",
+          "name": "Joaquin Rodrigo",
+          "locale": null,
+          "type": null,
+          "primary": null,
+          "begin-date": null,
+          "end-date": null
+        },
+        {
+          "sort-name": "Rodrigo",
+          "type-id": "1937e404-b981-3cb7-8151-4c86ebfc8d8e",
+          "name": "Rodrigo",
+          "locale": null,
+          "type": "Search hint",
+          "primary": null,
+          "begin-date": null,
+          "end-date": null
+        },
+        {
+          "sort-name": "Joaquin Roberto",
+          "name": "Joaquin Roberto",
+          "locale": null,
+          "type": null,
+          "primary": null,
+          "begin-date": null,
+          "end-date": null
+        },
+        {
+          "sort-name": "Rodrigo Vidre, Joaquín, 1st Marquis of the Gardens of Aranjuez",
+          "name": "Joaquín Rodrigo Vidre, 1st Marquis of the Gardens of Aranjuez",
+          "locale": "en",
+          "type": null,
+          "primary": null,
+          "begin-date": null,
+          "end-date": null
+        },
+        {
+          "sort-name": "Rodrigo, Joaquín",
+          "type-id": "894afba6-2816-3c24-8072-eadb66bd04bc",
+          "name": "Joaquín Rodrigo",
+          "locale": "en",
+          "type": "Artist name",
+          "primary": true,
+          "begin-date": null,
+          "end-date": null
+        },
+        {
+          "sort-name": "Родриго, Хоакин",
+          "type-id": "894afba6-2816-3c24-8072-eadb66bd04bc",
+          "name": "Хоакин Родриго",
+          "locale": "ru",
+          "type": "Artist name",
+          "primary": null,
+          "begin-date": null,
+          "end-date": null
+        }
+      ],
+      "tags": [
+        {
+          "count": 2,
+          "name": "classical"
+        },
+        {
+          "count": 1,
+          "name": "composer"
+        },
+        {
+          "count": 0,
+          "name": "rodrigo interpreta a rodrigo"
+        },
+        {
+          "count": 0,
+          "name": "spanish composer"
+        }
+      ]
+    },
+    {
+      "id": "10ccb5d8-f9d5-4954-9441-3419b522a214",
+      "type": "Person",
+      "type-id": "b6e035f4-3ce9-331c-97df-83397230b0df",
+      "score": 46,
+      "gender-id": "93452b5a-a947-30c8-934f-6a4056b151c2",
+      "name": "Olivia Newton‐John",
+      "sort-name": "Newton‐John, Olivia",
+      "gender": "female",
+      "country": "AU",
+      "area": {
+        "id": "106e0bec-b638-3b37-b731-f53d507dc00e",
+        "type": "Country",
+        "type-id": "06dd0ae4-8c74-30bb-b43d-95dcedf961de",
+        "name": "Australia",
+        "sort-name": "Australia",
+        "life-span": {
+          "ended": null
+        }
+      },
+      "begin-area": {
+        "id": "11ba7f4f-3fb9-4b4b-a72f-ab1cd9c37d99",
+        "type": "City",
+        "type-id": "6fd8f29a-3d0a-32fc-980d-ea697b69da78",
+        "name": "Cambridge",
+        "sort-name": "Cambridge",
+        "life-span": {
+          "ended": null
+        }
+      },
+      "end-area": {
+        "id": "418f6280-54cb-4245-b8ab-e63f3e135347",
+        "type": "City",
+        "type-id": "6fd8f29a-3d0a-32fc-980d-ea697b69da78",
+        "name": "Santa Ynez",
+        "sort-name": "Santa Ynez",
+        "life-span": {
+          "ended": null
+        }
+      },
+      "disambiguation": "British‐Australian singer, actress and activist",
+      "ipis": ["00036924178"],
+      "isnis": ["0000000114505120"],
+      "life-span": {
+        "begin": "1948-09-26",
+        "end": "2022-08-08",
+        "ended": true
+      },
+      "aliases": [
+        {
+          "sort-name": "Oliva Newton-john",
+          "name": "Oliva Newton-john",
+          "locale": null,
+          "type": null,
+          "primary": null,
+          "begin-date": null,
+          "end-date": null
+        },
+        {
+          "sort-name": "Olivia Newton John",
+          "name": "Olivia Newton John",
+          "locale": null,
+          "type": null,
+          "primary": null,
+          "begin-date": null,
+          "end-date": null
+        },
+        {
+          "sort-name": "Newton-John, Olivia",
+          "name": "Newton-John, Olivia",
+          "locale": null,
+          "type": null,
+          "primary": null,
+          "begin-date": null,
+          "end-date": null
+        },
+        {
+          "sort-name": "ONJ",
+          "name": "ONJ",
+          "locale": null,
+          "type": null,
+          "primary": null,
+          "begin-date": null,
+          "end-date": null
+        },
+        {
+          "sort-name": "オリビア・ニュートン・ジョン",
+          "name": "オリビア・ニュートン・ジョン",
+          "locale": null,
+          "type": null,
+          "primary": null,
+          "begin-date": null,
+          "end-date": null
+        },
+        {
+          "sort-name": "オリビア ニュートン ジョン",
+          "name": "オリビア ニュートン ジョン",
+          "locale": null,
+          "type": null,
+          "primary": null,
+          "begin-date": null,
+          "end-date": null
+        },
+        {
+          "sort-name": "オリビアニュートンジョン",
+          "name": "オリビアニュートンジョン",
+          "locale": null,
+          "type": null,
+          "primary": null,
+          "begin-date": null,
+          "end-date": null
+        }
+      ],
+      "tags": [
+        {
+          "count": 1,
+          "name": "death by breast cancer"
+        },
+        {
+          "count": 1,
+          "name": "country"
+        },
+        {
+          "count": 1,
+          "name": "country pop"
+        },
+        {
+          "count": 2,
+          "name": "pop"
+        },
+        {
+          "count": 1,
+          "name": "ballad"
+        },
+        {
+          "count": 1,
+          "name": "australian"
+        },
+        {
+          "count": 1,
+          "name": "british"
+        },
+        {
+          "count": 2,
+          "name": "classic pop and rock"
+        },
+        {
+          "count": 1,
+          "name": "disco"
+        },
+        {
+          "count": 1,
+          "name": "2008 universal fire victim"
+        }
+      ]
+    },
+    {
+      "id": "0c02315f-9f33-4ff9-889f-50f4bfa93a48",
+      "type": "Person",
+      "type-id": "b6e035f4-3ce9-331c-97df-83397230b0df",
+      "score": 45,
+      "gender-id": "36d3d30a-839d-3eda-8cb3-29be4384e4a9",
+      "name": "Rodrigo",
+      "sort-name": "Rodrigo",
+      "gender": "male",
+      "country": "AR",
+      "area": {
+        "id": "0df04709-c7d8-3b55-a6ea-f3e5069a947b",
+        "type": "Country",
+        "type-id": "06dd0ae4-8c74-30bb-b43d-95dcedf961de",
+        "name": "Argentina",
+        "sort-name": "Argentina",
+        "life-span": {
+          "ended": null
+        }
+      },
+      "begin-area": {
+        "id": "1420ce10-868e-4347-ac9c-b439b86bc0cd",
+        "type": "City",
+        "type-id": "6fd8f29a-3d0a-32fc-980d-ea697b69da78",
+        "name": "Córdoba",
+        "sort-name": "Córdoba",
+        "life-span": {
+          "ended": null
+        }
+      },
+      "end-area": {
+        "id": "70557b49-74e4-4a5c-8387-9d9c5d2029e9",
+        "type": "City",
+        "type-id": "6fd8f29a-3d0a-32fc-980d-ea697b69da78",
+        "name": "Berazategui",
+        "sort-name": "Berazategui",
+        "life-span": {
+          "ended": null
+        }
+      },
+      "disambiguation": "Argentine “cuarteto” singer",
+      "life-span": {
+        "begin": "1973-05-24",
+        "end": "2000-06-24",
+        "ended": true
+      },
+      "aliases": [
+        {
+          "sort-name": "El Potro",
+          "name": "El Potro",
+          "locale": null,
+          "type": null,
+          "primary": null,
+          "begin-date": null,
+          "end-date": null
+        },
+        {
+          "sort-name": "Bueno, Rodrigo Alejandro",
+          "type-id": "d4dcd0c0-b341-3612-a332-c0ce797b25cf",
+          "name": "Rodrigo Alejandro Bueno",
+          "locale": null,
+          "type": "Legal name",
+          "primary": null,
+          "begin-date": null,
+          "end-date": null
+        }
+      ],
+      "tags": [
+        {
+          "count": 1,
+          "name": "cuarteto"
+        },
+        {
+          "count": 1,
+          "name": "latin"
+        },
+        {
+          "count": 1,
+          "name": "international"
+        },
+        {
+          "count": 1,
+          "name": "brazilian traditions"
+        },
+        {
+          "count": 0,
+          "name": "27 club"
+        }
+      ]
+    },
+    {
+      "id": "44353ce7-1d1b-43c8-868d-83213531f688",
+      "type": "Person",
+      "type-id": "b6e035f4-3ce9-331c-97df-83397230b0df",
+      "score": 45,
+      "gender-id": "93452b5a-a947-30c8-934f-6a4056b151c2",
+      "name": "OLIVIA",
+      "sort-name": "Olivia",
+      "gender": "female",
+      "country": "JP",
+      "area": {
+        "id": "2db42837-c832-3c27-b4a3-08198f75693c",
+        "type": "Country",
+        "type-id": "06dd0ae4-8c74-30bb-b43d-95dcedf961de",
+        "name": "Japan",
+        "sort-name": "Japan",
+        "life-span": {
+          "ended": null
+        }
+      },
+      "begin-area": {
+        "id": "7040f2a6-1299-4561-b7b0-ac2a68343f17",
+        "type": "City",
+        "type-id": "6fd8f29a-3d0a-32fc-980d-ea697b69da78",
+        "name": "Naha",
+        "sort-name": "Naha",
+        "life-span": {
+          "ended": null
+        }
+      },
+      "disambiguation": "J-Pop/Rock artist Olivia Lufkin",
+      "life-span": {
+        "begin": "1979-12-09",
+        "ended": null
+      },
+      "aliases": [
+        {
+          "sort-name": "OLIVIA inspi'REIRA (TRAPNEST)",
+          "name": "OLIVIA inspi'REIRA (TRAPNEST)",
+          "locale": null,
+          "type": null,
+          "primary": null,
+          "begin-date": null,
+          "end-date": null
+        },
+        {
+          "sort-name": "OLIVIA inspi’REIRA(TRAPNEST)",
+          "name": "OLIVIA inspi’REIRA(TRAPNEST)",
+          "locale": null,
+          "type": null,
+          "primary": null,
+          "begin-date": null,
+          "end-date": null
+        },
+        {
+          "sort-name": "OLIVIA inspi' REIRA (TRAPNEST)",
+          "name": "OLIVIA inspi' REIRA (TRAPNEST)",
+          "locale": null,
+          "type": null,
+          "primary": null,
+          "begin-date": null,
+          "end-date": null
+        },
+        {
+          "sort-name": "OLIVIA inspi'REIRA [TRAPNEST]",
+          "name": "OLIVIA inspi'REIRA [TRAPNEST]",
+          "locale": null,
+          "type": null,
+          "primary": null,
+          "begin-date": null,
+          "end-date": null
+        },
+        {
+          "sort-name": "OLIVIA inspi' REIRA",
+          "name": "OLIVIA inspi' REIRA",
+          "locale": null,
+          "type": null,
+          "primary": null,
+          "begin-date": null,
+          "end-date": null
+        },
+        {
+          "sort-name": "OLIVIA inspi REIRA",
+          "name": "OLIVIA inspi REIRA",
+          "locale": null,
+          "type": null,
+          "primary": null,
+          "begin-date": null,
+          "end-date": null
+        },
+        {
+          "sort-name": "OLIVIA inspi' REIRA(TRAPNEST)",
+          "name": "OLIVIA inspi' REIRA(TRAPNEST)",
+          "locale": null,
+          "type": null,
+          "primary": null,
+          "begin-date": null,
+          "end-date": null
+        },
+        {
+          "sort-name": "OLIVIA inspi’ REIRA(TRAPNEST)",
+          "name": "OLIVIA inspi’ REIRA(TRAPNEST)",
+          "locale": null,
+          "type": null,
+          "primary": null,
+          "begin-date": null,
+          "end-date": null
+        },
+        {
+          "sort-name": "Lufkin, Olivia",
+          "type-id": "d4dcd0c0-b341-3612-a332-c0ce797b25cf",
+          "name": "Olivia Lufkin",
+          "locale": null,
+          "type": "Legal name",
+          "primary": null,
+          "begin-date": null,
+          "end-date": null
+        }
+      ]
+    },
+    {
+      "id": "09a6c10b-c32c-4f5e-a3b8-c8af4cfa0517",
+      "type": "Person",
+      "type-id": "b6e035f4-3ce9-331c-97df-83397230b0df",
+      "score": 44,
+      "gender-id": "93452b5a-a947-30c8-934f-6a4056b151c2",
+      "name": "Olivia",
+      "sort-name": "Olivia",
+      "gender": "female",
+      "country": "US",
+      "area": {
+        "id": "489ce91b-6658-3307-9877-795b68554c98",
+        "type": "Country",
+        "type-id": "06dd0ae4-8c74-30bb-b43d-95dcedf961de",
+        "name": "United States",
+        "sort-name": "United States",
+        "life-span": {
+          "ended": null
+        }
+      },
+      "begin-area": {
+        "id": "a71b0d32-7752-49e9-8594-2247ad6ac12c",
+        "type": "District",
+        "type-id": "84039871-5e47-38ca-a66a-45e512c8290f",
+        "name": "Brooklyn",
+        "sort-name": "Brooklyn",
+        "life-span": {
+          "ended": null
+        }
+      },
+      "disambiguation": "US R&B & hip‐hop artist",
+      "ipis": ["00348791616"],
+      "isnis": ["0000000406526337"],
+      "life-span": {
+        "begin": "1981-02-15",
+        "ended": null
+      },
+      "aliases": [
+        {
+          "sort-name": "Longott, Olivia",
+          "name": "Olivia Longott",
+          "locale": null,
+          "type": null,
+          "primary": null,
+          "begin-date": null,
+          "end-date": null
+        },
+        {
+          "sort-name": "Longott, Olivia Theresa",
+          "type-id": "d4dcd0c0-b341-3612-a332-c0ce797b25cf",
+          "name": "Olivia Theresa Longott",
+          "locale": null,
+          "type": "Legal name",
+          "primary": null,
+          "begin-date": null,
+          "end-date": null
+        }
+      ],
+      "tags": [
+        {
+          "count": 1,
+          "name": "r&b"
+        }
+      ]
+    },
+    {
+      "id": "f3df0b46-d21a-4230-9a94-4082e8d6860b",
+      "type": "Person",
+      "type-id": "b6e035f4-3ce9-331c-97df-83397230b0df",
+      "score": 43,
+      "gender-id": "36d3d30a-839d-3eda-8cb3-29be4384e4a9",
+      "name": "Rodrigo Leão",
+      "sort-name": "Leão, Rodrigo",
+      "gender": "male",
+      "country": "PT",
+      "area": {
+        "id": "781b0c54-3d54-362d-a941-8a617def4992",
+        "type": "Country",
+        "type-id": "06dd0ae4-8c74-30bb-b43d-95dcedf961de",
+        "name": "Portugal",
+        "sort-name": "Portugal",
+        "life-span": {
+          "ended": null
+        }
+      },
+      "begin-area": {
+        "id": "9aee8c1a-c7d5-4713-af71-c022bccf50b4",
+        "type": "City",
+        "type-id": "6fd8f29a-3d0a-32fc-980d-ea697b69da78",
+        "name": "Lisboa",
+        "sort-name": "Lisboa",
+        "life-span": {
+          "ended": null
+        }
+      },
+      "ipis": ["00140928873", "00149168549"],
+      "isnis": ["0000000055188259"],
+      "life-span": {
+        "begin": "1964-10-15",
+        "ended": null
+      },
+      "aliases": [
+        {
+          "sort-name": "Costa Leão Muñoz Miguez, Rodrigo",
+          "type-id": "d4dcd0c0-b341-3612-a332-c0ce797b25cf",
+          "name": "Rodrigo Costa Leão Muñoz Miguez",
+          "locale": null,
+          "type": "Legal name",
+          "primary": null,
+          "begin-date": null,
+          "end-date": null
+        },
+        {
+          "sort-name": "Rodrigo Leгo",
+          "name": "Rodrigo Leгo",
+          "locale": null,
+          "type": null,
+          "primary": null,
+          "begin-date": null,
+          "end-date": null
+        },
+        {
+          "sort-name": "Leão, Rodrigo Fabiano",
+          "name": "Rodrigo Fabiano Leão",
+          "locale": null,
+          "type": null,
+          "primary": null,
+          "begin-date": null,
+          "end-date": null
+        }
+      ],
+      "tags": [
+        {
+          "count": 1,
+          "name": "portugal"
+        },
+        {
+          "count": 1,
+          "name": "minimalism"
+        },
+        {
+          "count": 1,
+          "name": "modern classical"
+        },
+        {
+          "count": 1,
+          "name": "neoclassical new age"
+        }
+      ]
+    },
+    {
+      "id": "8581bff2-6c78-4ac7-a950-9318e4c5bf7c",
+      "type": "Character",
+      "type-id": "5c1375b0-f18d-3db7-a164-a49d7a63773f",
+      "score": 42,
+      "gender-id": "93452b5a-a947-30c8-934f-6a4056b151c2",
+      "name": "オリヴィア",
+      "sort-name": "Olivia",
+      "gender": "female",
+      "country": "JP",
+      "area": {
+        "id": "2db42837-c832-3c27-b4a3-08198f75693c",
+        "type": "Country",
+        "type-id": "06dd0ae4-8c74-30bb-b43d-95dcedf961de",
+        "name": "Japan",
+        "sort-name": "Japan",
+        "life-span": {
+          "ended": null
+        }
+      },
+      "disambiguation": "あそびあそばせ",
+      "life-span": {
+        "ended": null
+      },
+      "aliases": [
+        {
+          "sort-name": "Olivia",
+          "type-id": "894afba6-2816-3c24-8072-eadb66bd04bc",
+          "name": "Olivia",
+          "locale": "en",
+          "type": "Artist name",
+          "primary": true,
+          "begin-date": null,
+          "end-date": null
+        }
+      ]
+    },
+    {
+      "id": "5083e4bf-3246-4ab9-a6d3-23be8db8db2c",
+      "type": "Person",
+      "type-id": "b6e035f4-3ce9-331c-97df-83397230b0df",
+      "score": 41,
+      "gender-id": "93452b5a-a947-30c8-934f-6a4056b151c2",
+      "name": "Olivia Ruiz",
+      "sort-name": "Ruiz, Olivia",
+      "gender": "female",
+      "country": "FR",
+      "area": {
+        "id": "08310658-51eb-3801-80de-5a0739207115",
+        "type": "Country",
+        "type-id": "06dd0ae4-8c74-30bb-b43d-95dcedf961de",
+        "name": "France",
+        "sort-name": "France",
+        "life-span": {
+          "ended": null
+        }
+      },
+      "begin-area": {
+        "id": "43fe7bde-816b-465a-960c-a47fa6d211bb",
+        "type": "City",
+        "type-id": "6fd8f29a-3d0a-32fc-980d-ea697b69da78",
+        "name": "Carcassonne",
+        "sort-name": "Carcassonne",
+        "life-span": {
+          "ended": null
+        }
+      },
+      "isnis": ["000000005518141X"],
+      "life-span": {
+        "begin": "1980-01-01",
+        "ended": null
+      },
+      "aliases": [
+        {
+          "sort-name": "Oliva Ruiz",
+          "name": "Oliva Ruiz",
+          "locale": null,
+          "type": null,
+          "primary": null,
+          "begin-date": null,
+          "end-date": null
+        }
+      ],
+      "tags": [
+        {
+          "count": 1,
+          "name": "pop"
+        },
+        {
+          "count": 1,
+          "name": "french"
+        },
+        {
+          "count": 1,
+          "name": "chanson française"
+        },
+        {
+          "count": 1,
+          "name": "star academy"
+        }
+      ]
+    },
+    {
+      "id": "734e44ec-0eb4-408e-b6c6-c4952b36bbd0",
+      "type": "Person",
+      "type-id": "b6e035f4-3ce9-331c-97df-83397230b0df",
+      "score": 41,
+      "gender-id": "36d3d30a-839d-3eda-8cb3-29be4384e4a9",
+      "name": "Rodrigo",
+      "sort-name": "Rodrigo",
+      "gender": "male",
+      "country": "PT",
+      "area": {
+        "id": "781b0c54-3d54-362d-a941-8a617def4992",
+        "type": "Country",
+        "type-id": "06dd0ae4-8c74-30bb-b43d-95dcedf961de",
+        "name": "Portugal",
+        "sort-name": "Portugal",
+        "life-span": {
+          "ended": null
+        }
+      },
+      "begin-area": {
+        "id": "9aee8c1a-c7d5-4713-af71-c022bccf50b4",
+        "type": "City",
+        "type-id": "6fd8f29a-3d0a-32fc-980d-ea697b69da78",
+        "name": "Lisboa",
+        "sort-name": "Lisboa",
+        "life-span": {
+          "ended": null
+        }
+      },
+      "disambiguation": "fado singer",
+      "ipis": ["00067797516"],
+      "life-span": {
+        "begin": "1941-06-29",
+        "ended": null
+      },
+      "aliases": [
+        {
+          "sort-name": "Ferreira Inácio, Rodrigo",
+          "type-id": "d4dcd0c0-b341-3612-a332-c0ce797b25cf",
+          "name": "Rodrigo Ferreira Inácio",
+          "locale": null,
+          "type": "Legal name",
+          "primary": null,
+          "begin-date": null,
+          "end-date": null
+        }
+      ],
+      "tags": [
+        {
+          "count": 1,
+          "name": "portuguese"
+        },
+        {
+          "count": 1,
+          "name": "fado"
+        },
+        {
+          "count": 1,
+          "name": "portugal"
+        }
+      ]
+    }
+  ]
+}

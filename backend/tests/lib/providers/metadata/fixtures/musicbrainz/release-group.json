@@ -1,0 +1,1170 @@
+{
+  "created": "2026-08-02T07:47:19.389Z",
+  "count": 9200,
+  "offset": 0,
+  "release-groups": [
+    {
+      "id": "4ac99850-1e56-4882-b12f-c602834b006b",
+      "type-id": "6d0c5bf6-7a33-3420-a519-44fc63eedebf",
+      "score": 100,
+      "primary-type-id": "6d0c5bf6-7a33-3420-a519-44fc63eedebf",
+      "artist-credit-id": "45846dd6-74bd-497b-ae96-f2285198f9f6",
+      "count": 1,
+      "title": "Create a new release group",
+      "first-release-date": "2025-05-24",
+      "primary-type": "EP",
+      "artist-credit": [
+        {
+          "name": "KARIHAXAT",
+          "artist": {
+            "id": "e13d1c81-27f1-46f4-b768-db949bb295f2",
+            "name": "KARIHAXAT",
+            "sort-name": "KARIHAXAT"
+          }
+        }
+      ],
+      "releases": [
+        {
+          "id": "d1560bef-8a26-46c0-8102-f5fd5edb0fd2",
+          "status-id": "4e304316-386d-3409-af2e-78857eec5cfe",
+          "title": "EREIGNIS LOVE",
+          "status": "Official"
+        }
+      ]
+    },
+    {
+      "id": "83940158-3d3c-4948-aae3-261ad7624595",
+      "type-id": "f529b476-6e62-324f-b0aa-1f3e33d313fc",
+      "score": 83,
+      "primary-type-id": "f529b476-6e62-324f-b0aa-1f3e33d313fc",
+      "artist-credit-id": "4c502840-b566-416c-962c-39343a44d092",
+      "count": 1,
+      "title": "Group",
+      "first-release-date": "2020-06-04",
+      "primary-type": "Album",
+      "artist-credit": [
+        {
+          "joinphrase": " & ",
+          "name": "EKG",
+          "artist": {
+            "id": "3021b34e-987e-44c0-812d-a2910e8f96a9",
+            "name": "EKG",
+            "sort-name": "EKG",
+            "disambiguation": "Electronic musicians Ernst Karel & Kyle Bruckmann"
+          }
+        },
+        {
+          "name": "Giuseppe Ielasi",
+          "artist": {
+            "id": "debe2b84-becb-4c5a-bbbb-1e6232bcbecd",
+            "name": "Giuseppe Ielasi",
+            "sort-name": "Ielasi, Giuseppe",
+            "disambiguation": "electronic musician and mastering engineer"
+          }
+        }
+      ],
+      "releases": [
+        {
+          "id": "e9a4991e-2489-47b5-9789-bd9bb2c08009",
+          "status-id": "4e304316-386d-3409-af2e-78857eec5cfe",
+          "title": "Group",
+          "status": "Official"
+        }
+      ],
+      "tags": [
+        {
+          "count": 1,
+          "name": "eai"
+        }
+      ]
+    },
+    {
+      "id": "114ab84c-7e83-4c85-9b86-1aa9a84e17a9",
+      "type-id": "6d0c5bf6-7a33-3420-a519-44fc63eedebf",
+      "score": 83,
+      "primary-type-id": "6d0c5bf6-7a33-3420-a519-44fc63eedebf",
+      "artist-credit-id": "aaad20e8-ac14-36af-a817-a2c680d8916b",
+      "count": 1,
+      "title": "Group",
+      "first-release-date": "2018-07-06",
+      "primary-type": "EP",
+      "artist-credit": [
+        {
+          "name": "장덕철",
+          "artist": {
+            "id": "e6b89e6e-4ab8-4c2c-b875-bc2577e7d66b",
+            "name": "장덕철",
+            "sort-name": "Jang Deok Cheol",
+            "aliases": [
+              {
+                "sort-name": "Jang Deok Cheol",
+                "type-id": "894afba6-2816-3c24-8072-eadb66bd04bc",
+                "name": "Jang Deok Cheol",
+                "locale": "en",
+                "type": "Artist name",
+                "primary": true,
+                "begin-date": null,
+                "end-date": null
+              }
+            ]
+          }
+        }
+      ],
+      "releases": [
+        {
+          "id": "b77b62e2-66e8-481e-bb80-fd8cd39eaf01",
+          "status-id": "4e304316-386d-3409-af2e-78857eec5cfe",
+          "title": "Group",
+          "status": "Official"
+        }
+      ]
+    },
+    {
+      "id": "39e6153c-d11d-4eb3-94e2-9b3c4163847f",
+      "type-id": "6d0c5bf6-7a33-3420-a519-44fc63eedebf",
+      "score": 83,
+      "primary-type-id": "6d0c5bf6-7a33-3420-a519-44fc63eedebf",
+      "artist-credit-id": "1814597c-360f-37b1-855b-06784c120d24",
+      "count": 1,
+      "title": "Groupees Unreleased EP",
+      "first-release-date": "2011-05-04",
+      "primary-type": "EP",
+      "artist-credit": [
+        {
+          "name": "Celldweller",
+          "artist": {
+            "id": "fad8967c-a327-4af5-a64a-d4de66ece652",
+            "name": "Celldweller",
+            "sort-name": "Celldweller",
+            "aliases": [
+              {
+                "sort-name": "Cell Dweller",
+                "name": "Cell Dweller",
+                "locale": null,
+                "type": null,
+                "primary": null,
+                "begin-date": null,
+                "end-date": null
+              },
+              {
+                "sort-name": "Celldweller",
+                "name": "Celldweller (RIOT 87 Remix)",
+                "locale": null,
+                "type": null,
+                "primary": null,
+                "begin-date": null,
+                "end-date": null
+              }
+            ]
+          }
+        }
+      ],
+      "releases": [
+        {
+          "id": "1e3cb31a-8b1c-4fa8-87f2-343063e5a9dc",
+          "status-id": "4e304316-386d-3409-af2e-78857eec5cfe",
+          "title": "Groupees Unreleased EP",
+          "status": "Official"
+        }
+      ]
+    },
+    {
+      "id": "438e5838-b5e8-4ff1-b560-7ec08ab5450b",
+      "type-id": "dd2a21e1-0c00-3729-a7a0-de60b84eb5d1",
+      "score": 83,
+      "primary-type-id": "f529b476-6e62-324f-b0aa-1f3e33d313fc",
+      "artist-credit-id": "9c7f641f-4dbb-3806-9d5d-720c9930f4c2",
+      "count": 1,
+      "title": "Groupees Unreleased",
+      "first-release-date": "2018-11-02",
+      "primary-type": "Album",
+      "secondary-types": ["Compilation", "Soundtrack"],
+      "secondary-type-ids": [
+        "dd2a21e1-0c00-3729-a7a0-de60b84eb5d1",
+        "22a628ad-c082-3c4f-b1b6-d41665107b88"
+      ],
+      "artist-credit": [
+        {
+          "name": "Austin Wintory",
+          "artist": {
+            "id": "78f15956-c5e1-46d6-a46b-fa6f46681ec8",
+            "name": "Austin Wintory",
+            "sort-name": "Wintory, Austin",
+            "disambiguation": "American video game music composer"
+          }
+        }
+      ],
+      "releases": [
+        {
+          "id": "45c9e053-0c83-4c47-825e-32118841a4c7",
+          "status-id": "41121bb9-3413-3818-8a9a-9742318349aa",
+          "title": "Groupees Unreleased",
+          "status": "Pseudo-Release"
+        }
+      ]
+    },
+    {
+      "id": "ef9e96f5-cb95-4fd9-84b0-f5ff56b088a1",
+      "type-id": "6d0c5bf6-7a33-3420-a519-44fc63eedebf",
+      "score": 81,
+      "primary-type-id": "6d0c5bf6-7a33-3420-a519-44fc63eedebf",
+      "artist-credit-id": "144d3187-b607-3558-b75b-61dd4bac900a",
+      "count": 1,
+      "title": "3 Unreleased Tracks [Groupees]",
+      "first-release-date": "2015-11",
+      "primary-type": "EP",
+      "artist-credit": [
+        {
+          "name": "The Enigma TNG",
+          "artist": {
+            "id": "a8cd824e-837c-43dc-b074-b187ee177b67",
+            "name": "The Enigma TNG",
+            "sort-name": "Enigma TNG, The",
+            "aliases": [
+              {
+                "sort-name": "Collins, Che'Z",
+                "type-id": "d4dcd0c0-b341-3612-a332-c0ce797b25cf",
+                "name": "Che'Z Collins",
+                "locale": null,
+                "type": "Legal name",
+                "primary": null,
+                "begin-date": null,
+                "end-date": null
+              },
+              {
+                "sort-name": "TheEnigmaTNG",
+                "type-id": "1937e404-b981-3cb7-8151-4c86ebfc8d8e",
+                "name": "TheEnigmaTNG",
+                "locale": null,
+                "type": "Search hint",
+                "primary": null,
+                "begin-date": null,
+                "end-date": null
+              }
+            ]
+          }
+        }
+      ],
+      "releases": [
+        {
+          "id": "fd901fd4-c5e1-49cc-a9ea-1a4c3083d9e5",
+          "status-id": "518ffc83-5cde-34df-8627-81bff5093d92",
+          "title": "3 Unreleased Tracks [Groupees]",
+          "status": "Promotion"
+        }
+      ]
+    },
+    {
+      "id": "7f6b0f3e-35cd-36bd-ba1e-a3bb31dae3c6",
+      "type-id": "6d0c5bf6-7a33-3420-a519-44fc63eedebf",
+      "score": 81,
+      "primary-type-id": "6d0c5bf6-7a33-3420-a519-44fc63eedebf",
+      "artist-credit-id": "9edd6805-e6a8-37d1-8a9e-08e3f31cc1ad",
+      "count": 1,
+      "title": "Release",
+      "first-release-date": "1998",
+      "primary-type": "EP",
+      "artist-credit": [
+        {
+          "name": "Mick Hart",
+          "artist": {
+            "id": "41ad6e16-9479-4c30-a89c-6eec96b09e6e",
+            "name": "Mick Hart",
+            "sort-name": "Hart, Mick",
+            "disambiguation": "Australian singer songwriter"
+          }
+        }
+      ],
+      "releases": [
+        {
+          "id": "3581ffdc-4a4c-4f07-9bea-6e9cdaa0b048",
+          "status-id": "4e304316-386d-3409-af2e-78857eec5cfe",
+          "title": "Release",
+          "status": "Official"
+        }
+      ],
+      "tags": [
+        {
+          "count": 1,
+          "name": "rock"
+        }
+      ]
+    },
+    {
+      "id": "aad63038-24ff-4d4e-856d-0437efdf3e45",
+      "type-id": "f529b476-6e62-324f-b0aa-1f3e33d313fc",
+      "score": 81,
+      "primary-type-id": "f529b476-6e62-324f-b0aa-1f3e33d313fc",
+      "artist-credit-id": "a67325b9-4139-3f3e-9024-0d46788dfe14",
+      "count": 1,
+      "title": "Release",
+      "first-release-date": "1998",
+      "primary-type": "Album",
+      "artist-credit": [
+        {
+          "name": "All Together Separate",
+          "artist": {
+            "id": "22ff6555-231f-4773-ba91-f7e0a4753d45",
+            "name": "All Together Separate",
+            "sort-name": "All Together Separate"
+          }
+        }
+      ],
+      "releases": [
+        {
+          "id": "8a436692-89bc-4302-b67c-20554a549cc0",
+          "status-id": "4e304316-386d-3409-af2e-78857eec5cfe",
+          "title": "Release",
+          "status": "Official"
+        }
+      ]
+    },
+    {
+      "id": "669944ea-bdf1-33fc-9831-bf0b27587e5e",
+      "type-id": "d6038452-8ee0-3f68-affc-2de9a1ede0b9",
+      "score": 81,
+      "primary-type-id": "d6038452-8ee0-3f68-affc-2de9a1ede0b9",
+      "artist-credit-id": "11ea05a6-6373-3914-adc7-cdc982106944",
+      "count": 2,
+      "title": "Release",
+      "first-release-date": "1997",
+      "primary-type": "Single",
+      "artist-credit": [
+        {
+          "name": "The Tea Party",
+          "artist": {
+            "id": "7ebc552b-71b2-47b7-9dc8-31ef08e20aec",
+            "name": "The Tea Party",
+            "sort-name": "Tea Party, The",
+            "aliases": [
+              {
+                "sort-name": "Tea Party",
+                "name": "Tea Party",
+                "locale": null,
+                "type": null,
+                "primary": null,
+                "begin-date": null,
+                "end-date": null
+              }
+            ]
+          }
+        }
+      ],
+      "releases": [
+        {
+          "id": "0e8e0fae-5488-406f-a2b7-6e8faf318f51",
+          "status-id": "518ffc83-5cde-34df-8627-81bff5093d92",
+          "title": "Release",
+          "status": "Promotion"
+        },
+        {
+          "id": "6edf8260-296d-4d1c-9ae2-56b47c320804",
+          "status-id": "4e304316-386d-3409-af2e-78857eec5cfe",
+          "title": "Release",
+          "status": "Official"
+        }
+      ]
+    },
+    {
+      "id": "d75510e1-50d4-3101-8ac8-8d764a0fe748",
+      "type-id": "d6038452-8ee0-3f68-affc-2de9a1ede0b9",
+      "score": 81,
+      "primary-type-id": "d6038452-8ee0-3f68-affc-2de9a1ede0b9",
+      "artist-credit-id": "dac44f1c-50aa-3de8-923f-2f2dba8e4cf9",
+      "count": 1,
+      "title": "Release",
+      "first-release-date": "1998",
+      "primary-type": "Single",
+      "artist-credit": [
+        {
+          "name": "Kobyashi",
+          "artist": {
+            "id": "16aa2f51-8b79-451f-b42b-354fc7693c36",
+            "name": "Kobyashi",
+            "sort-name": "Kobyashi"
+          }
+        }
+      ],
+      "releases": [
+        {
+          "id": "b557e34c-7c80-47af-8269-a5da743d61bd",
+          "status-id": "4e304316-386d-3409-af2e-78857eec5cfe",
+          "title": "Release",
+          "status": "Official"
+        }
+      ],
+      "tags": [
+        {
+          "count": 2,
+          "name": "electronic"
+        },
+        {
+          "count": 2,
+          "name": "progressive trance"
+        },
+        {
+          "count": 2,
+          "name": "progressive house"
+        }
+      ]
+    },
+    {
+      "id": "f7660630-d37e-3447-bcf5-c2bdc3da40b4",
+      "type-id": "f529b476-6e62-324f-b0aa-1f3e33d313fc",
+      "score": 81,
+      "primary-type-id": "f529b476-6e62-324f-b0aa-1f3e33d313fc",
+      "artist-credit-id": "88a9dc6e-209c-3984-a076-6e3b33702300",
+      "count": 1,
+      "title": "Release",
+      "first-release-date": "2008-08-30",
+      "primary-type": "Album",
+      "artist-credit": [
+        {
+          "name": "Warbaby",
+          "artist": {
+            "id": "4c90917c-90ee-4dd3-b8c8-5d6c914242a5",
+            "name": "Warbaby",
+            "sort-name": "Warbaby"
+          }
+        }
+      ],
+      "releases": [
+        {
+          "id": "8d97ae31-de58-4569-82e8-60e2e96873fb",
+          "status-id": "4e304316-386d-3409-af2e-78857eec5cfe",
+          "title": "Release",
+          "status": "Official"
+        }
+      ],
+      "tags": [
+        {
+          "count": 2,
+          "name": "electronic"
+        },
+        {
+          "count": 2,
+          "name": "industrial"
+        },
+        {
+          "count": 2,
+          "name": "techno"
+        },
+        {
+          "count": 2,
+          "name": "rhythmic noise"
+        }
+      ]
+    },
+    {
+      "id": "226fe93c-0b78-3488-8c63-383dde9c623e",
+      "type-id": "f529b476-6e62-324f-b0aa-1f3e33d313fc",
+      "score": 81,
+      "primary-type-id": "f529b476-6e62-324f-b0aa-1f3e33d313fc",
+      "artist-credit-id": "6a4b6d3b-b2c8-3353-a2b3-a9a3f6c1a467",
+      "count": 1,
+      "title": "Release",
+      "primary-type": "Album",
+      "artist-credit": [
+        {
+          "name": "Zen Arcade",
+          "artist": {
+            "id": "1fe5aec4-821f-404a-873a-a306c5d2ace3",
+            "name": "Zen Arcade",
+            "sort-name": "Zen Arcade"
+          }
+        }
+      ],
+      "releases": [
+        {
+          "id": "7891ef92-0d70-4ada-bda9-e0d7f9eac21f",
+          "status-id": "4e304316-386d-3409-af2e-78857eec5cfe",
+          "title": "Release",
+          "status": "Official"
+        }
+      ]
+    },
+    {
+      "id": "123878be-044d-442e-b062-2a15c95f198f",
+      "type-id": "f529b476-6e62-324f-b0aa-1f3e33d313fc",
+      "score": 81,
+      "primary-type-id": "f529b476-6e62-324f-b0aa-1f3e33d313fc",
+      "artist-credit-id": "1eacd25a-1e3b-3195-8416-a7ae2c45b33a",
+      "count": 2,
+      "title": "Release",
+      "first-release-date": "2011-12-05",
+      "primary-type": "Album",
+      "artist-credit": [
+        {
+          "name": "Steve Smyth",
+          "artist": {
+            "id": "fd93a816-575c-4b76-9a7b-6c2b1fabf78e",
+            "name": "Steve Smyth",
+            "sort-name": "Smyth, Steve",
+            "disambiguation": "Australian indie singer"
+          }
+        }
+      ],
+      "releases": [
+        {
+          "id": "5d0ad072-e3fe-4092-af65-1d515456137f",
+          "status-id": "4e304316-386d-3409-af2e-78857eec5cfe",
+          "title": "Release",
+          "status": "Official"
+        },
+        {
+          "id": "fbf08e87-b57f-424c-91be-8c4118b43890",
+          "status-id": "4e304316-386d-3409-af2e-78857eec5cfe",
+          "title": "Release",
+          "status": "Official"
+        }
+      ]
+    },
+    {
+      "id": "fe9d2e40-a99e-4712-a29d-9db8fc04f3b6",
+      "type-id": "f529b476-6e62-324f-b0aa-1f3e33d313fc",
+      "score": 81,
+      "primary-type-id": "f529b476-6e62-324f-b0aa-1f3e33d313fc",
+      "artist-credit-id": "f512ae8f-9f5b-3ce9-a3b9-6b73ceab8514",
+      "count": 1,
+      "title": "Release",
+      "primary-type": "Album",
+      "artist-credit": [
+        {
+          "name": "Lungbutter",
+          "artist": {
+            "id": "345c4ead-9243-4143-8390-6bb7b6185b90",
+            "name": "Lungbutter",
+            "sort-name": "Lungbutter"
+          }
+        }
+      ],
+      "releases": [
+        {
+          "id": "9a4b1142-d2ab-4e9e-9c1f-2a867a992549",
+          "status-id": "4e304316-386d-3409-af2e-78857eec5cfe",
+          "title": "Release",
+          "status": "Official"
+        }
+      ]
+    },
+    {
+      "id": "007d6b3b-878e-40a4-a026-c644aad9b31e",
+      "type-id": "f529b476-6e62-324f-b0aa-1f3e33d313fc",
+      "score": 81,
+      "primary-type-id": "f529b476-6e62-324f-b0aa-1f3e33d313fc",
+      "artist-credit-id": "2e17139d-de14-32c4-87d1-0a060709d6d4",
+      "count": 2,
+      "title": "Release",
+      "first-release-date": "2012-10-29",
+      "primary-type": "Album",
+      "artist-credit": [
+        {
+          "name": "Pangaea",
+          "artist": {
+            "id": "d73f7df8-8cf6-49c1-828c-f5d80835917c",
+            "name": "Pangaea",
+            "sort-name": "Pangaea",
+            "disambiguation": "dubstep artist, Kevin McAuley",
+            "aliases": [
+              {
+                "sort-name": "McAuley, Kevin",
+                "name": "Kevin McAuley",
+                "locale": null,
+                "type": null,
+                "primary": null,
+                "begin-date": null,
+                "end-date": null
+              }
+            ]
+          }
+        }
+      ],
+      "releases": [
+        {
+          "id": "2e279ffc-eacf-4df9-a6a9-9fdb1c112ff8",
+          "status-id": "4e304316-386d-3409-af2e-78857eec5cfe",
+          "title": "Release",
+          "status": "Official"
+        },
+        {
+          "id": "b3d729d2-0404-42dc-ae29-5044940f7c13",
+          "status-id": "4e304316-386d-3409-af2e-78857eec5cfe",
+          "title": "Release",
+          "status": "Official"
+        }
+      ]
+    },
+    {
+      "id": "6e1c182a-9d54-4215-9855-6dd6c5cef58c",
+      "type-id": "f529b476-6e62-324f-b0aa-1f3e33d313fc",
+      "score": 81,
+      "primary-type-id": "f529b476-6e62-324f-b0aa-1f3e33d313fc",
+      "artist-credit-id": "50d815ce-c355-3c13-9310-2dc32743783a",
+      "count": 2,
+      "title": "Release",
+      "first-release-date": "2009-08-18",
+      "primary-type": "Album",
+      "artist-credit": [
+        {
+          "name": "Sister Hazel",
+          "artist": {
+            "id": "3b141e34-8c02-4074-b68a-7d64e3212acd",
+            "name": "Sister Hazel",
+            "sort-name": "Sister Hazel",
+            "disambiguation": "American alternative rock band from Gainesville FL"
+          }
+        }
+      ],
+      "releases": [
+        {
+          "id": "49884169-83ba-442f-8380-832923472c2c",
+          "status-id": "4e304316-386d-3409-af2e-78857eec5cfe",
+          "title": "Release",
+          "status": "Official"
+        },
+        {
+          "id": "c0790c74-ecd5-4bce-ae07-ac6169bb4a1b",
+          "status-id": "4e304316-386d-3409-af2e-78857eec5cfe",
+          "title": "Release",
+          "status": "Official"
+        }
+      ]
+    },
+    {
+      "id": "9de05adc-26f0-49d0-9ecf-3b8972f12f8a",
+      "type-id": "f529b476-6e62-324f-b0aa-1f3e33d313fc",
+      "score": 81,
+      "primary-type-id": "f529b476-6e62-324f-b0aa-1f3e33d313fc",
+      "artist-credit-id": "7fa1a8d9-5663-3aa5-a9b9-f98df8ce6275",
+      "count": 2,
+      "title": "Release",
+      "first-release-date": "1983",
+      "primary-type": "Album",
+      "artist-credit": [
+        {
+          "name": "David Knopfler",
+          "artist": {
+            "id": "0fab169b-cd60-42e7-9fcd-d54ec37a9b46",
+            "name": "David Knopfler",
+            "sort-name": "Knopfler, David",
+            "aliases": [
+              {
+                "sort-name": "Knopfler, David",
+                "name": "Knopfler, David",
+                "locale": null,
+                "type": null,
+                "primary": null,
+                "begin-date": null,
+                "end-date": null
+              }
+            ]
+          }
+        }
+      ],
+      "releases": [
+        {
+          "id": "993b8898-4e21-4937-ba18-9ffb50c2fe6c",
+          "status-id": "4e304316-386d-3409-af2e-78857eec5cfe",
+          "title": "Release",
+          "status": "Official"
+        },
+        {
+          "id": "acff0b56-ce24-4811-9a90-5f6e085f0883",
+          "status-id": "4e304316-386d-3409-af2e-78857eec5cfe",
+          "title": "Release",
+          "status": "Official"
+        }
+      ],
+      "tags": [
+        {
+          "count": 1,
+          "name": "rock"
+        }
+      ]
+    },
+    {
+      "id": "eb2aa393-12df-4f75-aca8-e7bef8995fbb",
+      "type-id": "f529b476-6e62-324f-b0aa-1f3e33d313fc",
+      "score": 81,
+      "primary-type-id": "f529b476-6e62-324f-b0aa-1f3e33d313fc",
+      "artist-credit-id": "a976205b-c2fd-3d1e-a046-2d0e94712537",
+      "count": 1,
+      "title": "Release",
+      "first-release-date": "2015-07-22",
+      "primary-type": "Album",
+      "artist-credit": [
+        {
+          "name": "ESNO",
+          "artist": {
+            "id": "47671869-6a3f-4360-b552-19ce78ef7a12",
+            "name": "ESNO",
+            "sort-name": "ESNO"
+          }
+        }
+      ],
+      "releases": [
+        {
+          "id": "36d41bad-2b92-4c55-80bd-7ac1463e13d0",
+          "status-id": "4e304316-386d-3409-af2e-78857eec5cfe",
+          "title": "Release",
+          "status": "Official"
+        }
+      ]
+    },
+    {
+      "id": "27b50200-9dcb-3885-a723-14701f86a7a8",
+      "type-id": "f529b476-6e62-324f-b0aa-1f3e33d313fc",
+      "score": 81,
+      "primary-type-id": "f529b476-6e62-324f-b0aa-1f3e33d313fc",
+      "artist-credit-id": "e5d426ee-b3eb-3044-afa1-3358c9241851",
+      "count": 3,
+      "title": "Release",
+      "first-release-date": "2000-09-20",
+      "primary-type": "Album",
+      "artist-credit": [
+        {
+          "name": "The Ananda Project",
+          "artist": {
+            "id": "f4c22ea4-a21f-43e4-8271-731defce1476",
+            "name": "The Ananda Project",
+            "sort-name": "Ananda Project, The",
+            "aliases": [
+              {
+                "sort-name": "Ananda Project",
+                "name": "Ananda Project",
+                "locale": null,
+                "type": null,
+                "primary": null,
+                "begin-date": null,
+                "end-date": null
+              }
+            ]
+          }
+        }
+      ],
+      "releases": [
+        {
+          "id": "9355b179-d1bd-44b4-9c8f-422a9b8d0d94",
+          "status-id": "4e304316-386d-3409-af2e-78857eec5cfe",
+          "title": "Release",
+          "status": "Official"
+        },
+        {
+          "id": "a917c65c-17e3-4b1e-bac9-2668bc8d7152",
+          "status-id": "4e304316-386d-3409-af2e-78857eec5cfe",
+          "title": "Release",
+          "status": "Official"
+        },
+        {
+          "id": "71e5b10c-108c-43b4-b537-d22733fd275c",
+          "status-id": "4e304316-386d-3409-af2e-78857eec5cfe",
+          "title": "Release",
+          "status": "Official"
+        }
+      ],
+      "tags": [
+        {
+          "count": 2,
+          "name": "electronic"
+        },
+        {
+          "count": 2,
+          "name": "house"
+        },
+        {
+          "count": 2,
+          "name": "deep house"
+        },
+        {
+          "count": 2,
+          "name": "tribal house"
+        }
+      ]
+    },
+    {
+      "id": "38af3a36-553f-3a1a-998f-9739b959d9aa",
+      "type-id": "f529b476-6e62-324f-b0aa-1f3e33d313fc",
+      "score": 81,
+      "primary-type-id": "f529b476-6e62-324f-b0aa-1f3e33d313fc",
+      "artist-credit-id": "1dceb439-d98c-3236-8d81-4dfdaf4c38a3",
+      "count": 1,
+      "title": "Release",
+      "primary-type": "Album",
+      "artist-credit": [
+        {
+          "name": "Aurora Jane",
+          "artist": {
+            "id": "320b157b-bf85-4c07-839e-e96d0329ccb3",
+            "name": "Aurora Jane",
+            "sort-name": "Aurora Jane"
+          }
+        }
+      ],
+      "releases": [
+        {
+          "id": "be3011de-ed69-487e-9847-030c59f21465",
+          "status-id": "4e304316-386d-3409-af2e-78857eec5cfe",
+          "title": "Release",
+          "status": "Official"
+        }
+      ]
+    },
+    {
+      "id": "51c935e1-0056-370e-9946-d49dc1c411e7",
+      "type-id": "f529b476-6e62-324f-b0aa-1f3e33d313fc",
+      "score": 81,
+      "primary-type-id": "f529b476-6e62-324f-b0aa-1f3e33d313fc",
+      "artist-credit-id": "84500742-0710-3439-938a-fbfb29122951",
+      "count": 1,
+      "title": "Release",
+      "primary-type": "Album",
+      "artist-credit": [
+        {
+          "name": "Chris Hickey",
+          "artist": {
+            "id": "aa4c772d-e6a0-4e75-aa74-c3eac1131a85",
+            "name": "Chris Hickey",
+            "sort-name": "Hickey, Chris"
+          }
+        }
+      ],
+      "releases": [
+        {
+          "id": "cc394c94-23b6-4e36-abb4-5056661479fa",
+          "status-id": "4e304316-386d-3409-af2e-78857eec5cfe",
+          "title": "Release",
+          "status": "Official"
+        }
+      ]
+    },
+    {
+      "id": "1cf71669-5d3c-3322-abf9-9eac31c33daa",
+      "type-id": "d6038452-8ee0-3f68-affc-2de9a1ede0b9",
+      "score": 81,
+      "primary-type-id": "d6038452-8ee0-3f68-affc-2de9a1ede0b9",
+      "artist-credit-id": "fb1c3a25-e685-378b-83bb-9b4983253f0f",
+      "count": 1,
+      "title": "Release",
+      "first-release-date": "2000-01",
+      "primary-type": "Single",
+      "artist-credit": [
+        {
+          "name": "Afro Celt Sound System",
+          "artist": {
+            "id": "2f0baf2a-bfa7-4116-8c75-8240aed74553",
+            "name": "Afro Celt Sound System",
+            "sort-name": "Afro Celt Sound System",
+            "aliases": [
+              {
+                "sort-name": "The Afro-Celt Sound System",
+                "name": "The Afro-Celt Sound System",
+                "locale": null,
+                "type": null,
+                "primary": null,
+                "begin-date": null,
+                "end-date": null
+              },
+              {
+                "sort-name": "Afro Celts",
+                "name": "Afro Celts",
+                "locale": null,
+                "type": null,
+                "primary": null,
+                "begin-date": null,
+                "end-date": null
+              },
+              {
+                "sort-name": "AfroCelt",
+                "name": "AfroCelt",
+                "locale": null,
+                "type": null,
+                "primary": null,
+                "begin-date": null,
+                "end-date": null
+              },
+              {
+                "sort-name": "AfroCelts",
+                "name": "AfroCelts",
+                "locale": null,
+                "type": null,
+                "primary": null,
+                "begin-date": null,
+                "end-date": null
+              },
+              {
+                "sort-name": "Afro-Celt Soundsystem",
+                "name": "Afro-Celt Soundsystem",
+                "locale": null,
+                "type": null,
+                "primary": null,
+                "begin-date": null,
+                "end-date": null
+              },
+              {
+                "sort-name": "Afro Celtic Soundsystem",
+                "name": "Afro Celtic Soundsystem",
+                "locale": null,
+                "type": null,
+                "primary": null,
+                "begin-date": null,
+                "end-date": null
+              },
+              {
+                "sort-name": "Afro-Celt Sound System",
+                "name": "Afro-Celt Sound System",
+                "locale": null,
+                "type": null,
+                "primary": null,
+                "begin-date": null,
+                "end-date": null
+              },
+              {
+                "sort-name": "Afro-Celts Sound System",
+                "name": "Afro-Celts Sound System",
+                "locale": null,
+                "type": null,
+                "primary": null,
+                "begin-date": null,
+                "end-date": null
+              },
+              {
+                "sort-name": "The Afro Celt Sound System",
+                "name": "The Afro Celt Sound System",
+                "locale": null,
+                "type": null,
+                "primary": null,
+                "begin-date": null,
+                "end-date": null
+              }
+            ]
+          }
+        }
+      ],
+      "releases": [
+        {
+          "id": "ea613c40-343c-42b5-95b2-0fd48217a6d3",
+          "status-id": "4e304316-386d-3409-af2e-78857eec5cfe",
+          "title": "Release",
+          "status": "Official"
+        }
+      ],
+      "tags": [
+        {
+          "count": 1,
+          "name": "electronic"
+        },
+        {
+          "count": 1,
+          "name": "downtempo"
+        },
+        {
+          "count": 1,
+          "name": "celtic"
+        },
+        {
+          "count": 1,
+          "name": "euro house"
+        },
+        {
+          "count": 1,
+          "name": "tribal house"
+        }
+      ]
+    },
+    {
+      "id": "36261812-0ff1-3a39-80cf-2f847fa65528",
+      "type-id": "f529b476-6e62-324f-b0aa-1f3e33d313fc",
+      "score": 81,
+      "primary-type-id": "f529b476-6e62-324f-b0aa-1f3e33d313fc",
+      "artist-credit-id": "8c8add96-0b75-372b-a3a0-2babfe5264f0",
+      "count": 1,
+      "title": "Release",
+      "first-release-date": "2003",
+      "primary-type": "Album",
+      "artist-credit": [
+        {
+          "name": "Erin Miller",
+          "artist": {
+            "id": "9ce1c2c7-faeb-4a75-83b9-7beb334d5454",
+            "name": "Erin Miller",
+            "sort-name": "Miller, Erin"
+          }
+        }
+      ],
+      "releases": [
+        {
+          "id": "37476412-d911-4686-9b27-3d22d8cd7240",
+          "status-id": "4e304316-386d-3409-af2e-78857eec5cfe",
+          "title": "Release",
+          "status": "Official"
+        }
+      ],
+      "tags": [
+        {
+          "count": 1,
+          "name": "rock"
+        },
+        {
+          "count": 1,
+          "name": "pop"
+        }
+      ]
+    },
+    {
+      "id": "f7391c86-06cc-3170-ad5a-6d6a54e5ff9d",
+      "type-id": "d6038452-8ee0-3f68-affc-2de9a1ede0b9",
+      "score": 81,
+      "primary-type-id": "d6038452-8ee0-3f68-affc-2de9a1ede0b9",
+      "artist-credit-id": "c10233f4-ce83-36f4-95ec-9db4a5a8b1f8",
+      "count": 3,
+      "title": "Release",
+      "first-release-date": "2001-02-26",
+      "primary-type": "Single",
+      "artist-credit": [
+        {
+          "name": "Medway",
+          "artist": {
+            "id": "3dd5bc71-a3e4-4dd8-89c3-e809b4020a0d",
+            "name": "Medway",
+            "sort-name": "Medway"
+          }
+        }
+      ],
+      "releases": [
+        {
+          "id": "b2665cc9-4f4d-4791-b8f4-57c5137a7eb7",
+          "status-id": "4e304316-386d-3409-af2e-78857eec5cfe",
+          "title": "Release (disc 1)",
+          "status": "Official"
+        },
+        {
+          "id": "b25cbef0-de9a-4f16-af29-6b37b0abab79",
+          "status-id": "4e304316-386d-3409-af2e-78857eec5cfe",
+          "title": "Release (disc 2)",
+          "status": "Official"
+        },
+        {
+          "id": "8731a68a-d804-43ed-b4e6-19f86c9819b1",
+          "status-id": "4e304316-386d-3409-af2e-78857eec5cfe",
+          "title": "Release",
+          "status": "Official"
+        }
+      ],
+      "tags": [
+        {
+          "count": 2,
+          "name": "electronic"
+        },
+        {
+          "count": 2,
+          "name": "progressive house"
+        }
+      ]
+    },
+    {
+      "id": "f1f2de07-88e4-3be6-ae9c-1deabb7eb5ee",
+      "type-id": "f529b476-6e62-324f-b0aa-1f3e33d313fc",
+      "score": 81,
+      "primary-type-id": "f529b476-6e62-324f-b0aa-1f3e33d313fc",
+      "artist-credit-id": "99edf722-2379-3364-97fb-4b8f7c59a07f",
+      "count": 1,
+      "title": "Release",
+      "first-release-date": "2005",
+      "primary-type": "Album",
+      "artist-credit": [
+        {
+          "name": "Natasja",
+          "artist": {
+            "id": "6b678f17-c410-4027-8c74-e071de98b216",
+            "name": "Natasja",
+            "sort-name": "Natasja",
+            "disambiguation": "Natasja Saad, Danish reggae fusion artist",
+            "aliases": [
+              {
+                "sort-name": "Saad, Natasja",
+                "type-id": "d4dcd0c0-b341-3612-a332-c0ce797b25cf",
+                "name": "Natasja Saad",
+                "locale": null,
+                "type": "Legal name",
+                "primary": null,
+                "begin-date": null,
+                "end-date": null
+              },
+              {
+                "sort-name": "Saad, N.",
+                "name": "N. Saad",
+                "locale": null,
+                "type": null,
+                "primary": null,
+                "begin-date": null,
+                "end-date": null
+              },
+              {
+                "sort-name": "Little T",
+                "name": "Little T",
+                "locale": null,
+                "type": null,
+                "primary": null,
+                "begin-date": null,
+                "end-date": null
+              },
+              {
+                "sort-name": "Lil T",
+                "name": "Lil T",
+                "locale": null,
+                "type": null,
+                "primary": null,
+                "begin-date": null,
+                "end-date": null
+              },
+              {
+                "sort-name": "L'il T",
+                "name": "L'il T",
+                "locale": null,
+                "type": null,
+                "primary": null,
+                "begin-date": null,
+                "end-date": null
+              },
+              {
+                "sort-name": "L’il T",
+                "name": "L’il T",
+                "locale": null,
+                "type": null,
+                "primary": null,
+                "begin-date": null,
+                "end-date": null
+              }
+            ]
+          }
+        }
+      ],
+      "releases": [
+        {
+          "id": "9063f28e-9ce2-4e65-91ff-c6895ed3bae8",
+          "status-id": "4e304316-386d-3409-af2e-78857eec5cfe",
+          "title": "Release",
+          "status": "Official"
+        }
+      ],
+      "tags": [
+        {
+          "count": 1,
+          "name": "hip hop"
+        },
+        {
+          "count": 2,
+          "name": "reggae"
+        },
+        {
+          "count": 1,
+          "name": "dancehall"
+        },
+        {
+          "count": 1,
+          "name": "ragga hip-hop"
+        }
+      ]
+    }
+  ]
+}

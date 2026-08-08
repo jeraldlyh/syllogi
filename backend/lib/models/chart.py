@@ -36,14 +36,19 @@ class ChartTrendingTrack:
             track_name=self.track_name,
         )
 
-        if not deezer_track:
-            return
+        if deezer_track:
+            if not self.image_url and deezer_track.image_url:
+                self.image_url = deezer_track.image_url
 
-        if not self.image_url and deezer_track.image_url:
-            self.image_url = deezer_track.image_url
+            if not self.album_name and deezer_track.album_name:
+                self.album_name = deezer_track.album_name
 
-        if not self.album_name and deezer_track.album_name:
-            self.album_name = deezer_track.album_name
+        if not self.image_url:
+            deezer_artist = await deezer_provider.get_artist_info(
+                artist_name=self.artist_name,
+            )
+            if deezer_artist and deezer_artist.image_url:
+                self.image_url = deezer_artist.image_url
 
     def __eq__(self, other: object) -> bool:
         if not isinstance(other, ChartTrendingTrack):

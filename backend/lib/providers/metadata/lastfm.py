@@ -181,7 +181,7 @@ class LastFMMetadataProvider(MetadataProvider):
                 return ArtistTrack(
                     artist_name=track.get("artist", ""),
                     track_name=track.get("name", ""),
-                    duration_ms=track.get("duration", 0) * 1000,
+                    duration_ms=0,
                     disambiguation="",
                     album_name="",
                     genres=[],
@@ -223,7 +223,7 @@ class LastFMMetadataProvider(MetadataProvider):
                 ArtistTrack(
                     artist_name=track.get("artist", {}).get("name", artist_name),
                     track_name=track.get("name", ""),
-                    duration_ms=track.get("duration", 0) * 1000,
+                    duration_ms=(track.get("duration") or 0) * 1000,
                     disambiguation="",
                     album_name=album.get("name", album_name),
                     genres=[],

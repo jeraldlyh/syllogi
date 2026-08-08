@@ -1,4 +1,4 @@
-name: Build and Lint Pull Requests
+name: Build, Lint, and Test Pull Requests
 
 on:
   pull_request:
@@ -9,7 +9,11 @@ jobs:
     name: Lint
     uses: ./.github/workflows/lint.yml
 
+  test:
+    name: Test
+    uses: ./.github/workflows/test.yml
+
   build:
     name: Build
-    needs: lint
+    needs: [lint, test]
     uses: ./.github/workflows/build.yml

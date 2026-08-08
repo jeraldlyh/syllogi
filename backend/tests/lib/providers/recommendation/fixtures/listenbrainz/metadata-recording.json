@@ -1,0 +1,20 @@
+{
+  "72abfada-b107-4d09-b1a6-69a84f312fde": {
+    "recording": {
+      "first_release_date": "2021-08-03",
+      "isrcs": ["JPPO82102215"],
+      "length": 194000,
+      "name": "Lovesick Girls",
+      "rels": []
+    },
+    "release": {
+      "album_artist_name": "BLACKPINK",
+      "caa_id": 27413237641,
+      "caa_release_mbid": "6f673878-edde-46ac-82fd-0c198302d6f4",
+      "mbid": "5e724c9a-d7f0-4506-baa6-2989b6858cd0",
+      "name": "THE ALBUM",
+      "release_group_mbid": "8240b45e-5e5c-4c47-a96c-0a0d2c556c08",
+      "year": 2020
+    }
+  }
+}

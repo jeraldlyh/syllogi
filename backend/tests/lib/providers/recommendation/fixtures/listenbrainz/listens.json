@@ -1,0 +1,478 @@
+{
+  "payload": {
+    "count": 10,
+    "latest_listen_ts": 1785553745,
+    "listens": [
+      {
+        "inserted_at": 1785553746,
+        "listened_at": 1785553745,
+        "recording_msid": "130ee26b-090d-4507-ad07-45c0b1a919f7",
+        "track_metadata": {
+          "additional_info": {
+            "artist_mbids": ["b053d1c8-8407-40b6-85fb-665dcb1b4a67"],
+            "artist_names": [
+              "Anson Seabra",
+              "Anson Long-Seabra, Alex Borel, Colin Foote"
+            ],
+            "duration_ms": 209070,
+            "recording_msid": "130ee26b-090d-4507-ad07-45c0b1a919f7",
+            "submission_client": "navidrome",
+            "submission_client_version": "0.62.0 (1b46b977)",
+            "tracknumber": 3
+          },
+          "artist_name": "Anson Seabra • Anson Long-Seabra, Alex Borel, Colin Foote",
+          "release_name": "a heartfelt holiday part 2",
+          "track_name": "Snow Angel"
+        },
+        "user_name": "xDevolution"
+      },
+      {
+        "inserted_at": 1785553542,
+        "listened_at": 1785553540,
+        "recording_msid": "db9cb269-7426-4ed8-afe5-95328e325600",
+        "track_metadata": {
+          "additional_info": {
+            "artist_mbids": ["c0ef2ba5-a7b7-40ea-bd27-30acccfcac11"],
+            "artist_names": ["Lauv"],
+            "duration_ms": 194820,
+            "recording_msid": "db9cb269-7426-4ed8-afe5-95328e325600",
+            "submission_client": "navidrome",
+            "submission_client_version": "0.62.0 (1b46b977)",
+            "tracknumber": 8
+          },
+          "artist_name": "Lauv",
+          "mbid_mapping": {
+            "artist_mbids": ["c0ef2ba5-a7b7-40ea-bd27-30acccfcac11"],
+            "artists": [
+              {
+                "artist_credit_name": "Lauv",
+                "artist_mbid": "c0ef2ba5-a7b7-40ea-bd27-30acccfcac11",
+                "join_phrase": ""
+              }
+            ],
+            "caa_id": 20154949431,
+            "caa_release_mbid": "ab47d34a-acfb-451d-870a-b1ebba2304cf",
+            "recording_mbid": "b6dfb2e1-46da-4309-827a-d0a1b720f403",
+            "recording_name": "Enemies",
+            "release_mbid": "91fa6b52-3373-42c7-9c7b-d73df10fdbea"
+          },
+          "release_name": "I met you when I was 18. (the playlist)",
+          "track_name": "Enemies"
+        },
+        "user_name": "xDevolution"
+      },
+      {
+        "inserted_at": 1785553344,
+        "listened_at": 1785553342,
+        "recording_msid": "f85769d5-7fde-46ce-a1ec-c0c656f6fc6e",
+        "track_metadata": {
+          "additional_info": {
+            "artist_mbids": ["01962e70-c4a6-440d-81c4-b5eb9de7b299"],
+            "artist_names": ["Bruno Major"],
+            "duration_ms": 204330,
+            "recording_mbid": "3034ef4c-61b9-4512-9529-ea644d4f099c",
+            "recording_msid": "f85769d5-7fde-46ce-a1ec-c0c656f6fc6e",
+            "release_group_mbid": "a099e2f8-27b1-4820-a3db-0775ca073cc9",
+            "release_mbid": "ac324064-28e9-4463-8d00-f1737462008f",
+            "submission_client": "navidrome",
+            "submission_client_version": "0.62.0 (1b46b977)",
+            "tracknumber": 1
+          },
+          "artist_name": "Bruno Major",
+          "mbid_mapping": {
+            "artist_mbids": ["01962e70-c4a6-440d-81c4-b5eb9de7b299"],
+            "artists": [
+              {
+                "artist_credit_name": "Bruno Major",
+                "artist_mbid": "01962e70-c4a6-440d-81c4-b5eb9de7b299",
+                "join_phrase": ""
+              }
+            ],
+            "caa_id": 36267563806,
+            "caa_release_mbid": "284d4ceb-884b-43b5-a645-711e6e115e3d",
+            "recording_mbid": "3034ef4c-61b9-4512-9529-ea644d4f099c",
+            "recording_name": "We Were Never Really Friends",
+            "release_mbid": "284d4ceb-884b-43b5-a645-711e6e115e3d"
+          },
+          "release_name": "We Were Never Really Friends",
+          "track_name": "We Were Never Really Friends"
+        },
+        "user_name": "xDevolution"
+      },
+      {
+        "inserted_at": 1785553134,
+        "listened_at": 1785553132,
+        "recording_msid": "dac83636-b4e9-428a-b396-84249803879d",
+        "track_metadata": {
+          "additional_info": {
+            "artist_mbids": ["6925db17-f35e-42f3-a4eb-84ee6bf5d4b0"],
+            "artist_names": ["Olivia Rodrigo"],
+            "duration_ms": 242010,
+            "recording_mbid": "143f1c88-f47f-4f37-b25d-614c74269dea",
+            "recording_msid": "dac83636-b4e9-428a-b396-84249803879d",
+            "release_group_mbid": "2ae2e504-7116-4b4f-b632-9748bb18ccd2",
+            "release_mbid": "ce0797da-a9b1-4a15-8cd6-7c0b82498ede",
+            "submission_client": "navidrome",
+            "submission_client_version": "0.62.0 (1b46b977)",
+            "tracknumber": 3
+          },
+          "artist_name": "Olivia Rodrigo",
+          "mbid_mapping": {
+            "artist_mbids": ["6925db17-f35e-42f3-a4eb-84ee6bf5d4b0"],
+            "artists": [
+              {
+                "artist_credit_name": "Olivia Rodrigo",
+                "artist_mbid": "6925db17-f35e-42f3-a4eb-84ee6bf5d4b0",
+                "join_phrase": ""
+              }
+            ],
+            "caa_id": 32201040812,
+            "caa_release_mbid": "6dd75bce-0194-4737-810c-d389689b4759",
+            "recording_mbid": "143f1c88-f47f-4f37-b25d-614c74269dea",
+            "recording_name": "drivers license",
+            "release_mbid": "4d91d37f-54dd-4f87-aeb9-891213e60fb8",
+            "url_rels": [
+              {
+                "type": "free streaming",
+                "url": "https://www.deezer.com/track/1378342592"
+              },
+              {
+                "type": "streaming",
+                "url": "https://tidal.com/track/184786871"
+              },
+              {
+                "type": "free streaming",
+                "url": "https://open.spotify.com/track/5wANPM4fQCJwkGd4rN57mH"
+              },
+              {
+                "type": "streaming",
+                "url": "https://music.apple.com/us/song/1560735424"
+              },
+              {
+                "type": "streaming",
+                "url": "https://tidal.com/track/486949862"
+              },
+              {
+                "type": "free streaming",
+                "url": "https://open.spotify.com/track/7JjvawRgT9c8bTlSJPhabt"
+              },
+              {
+                "type": "purchase for download",
+                "url": "https://music.apple.com/gb/song/1866426349"
+              },
+              {
+                "type": "streaming",
+                "url": "https://music.apple.com/gb/song/1866426349"
+              },
+              {
+                "type": "free streaming",
+                "url": "https://music.youtube.com/watch?v=l0txe6yk8Kc"
+              },
+              {
+                "type": "purchase for download",
+                "url": "https://music.apple.com/us/song/1560735424"
+              }
+            ]
+          },
+          "release_name": "SOUR",
+          "track_name": "drivers license"
+        },
+        "user_name": "xDevolution"
+      },
+      {
+        "inserted_at": 1785552898,
+        "listened_at": 1785552897,
+        "recording_msid": "62a775f5-6668-4e97-aefb-915c3aa6531c",
+        "track_metadata": {
+          "additional_info": {
+            "artist_mbids": ["02f44a81-34f0-4f52-9ab7-c3cfcdb60333"],
+            "artist_names": ["gnash"],
+            "duration_ms": 184470,
+            "recording_mbid": "3c17d64c-8539-4168-9a7b-716a55309bc4",
+            "recording_msid": "62a775f5-6668-4e97-aefb-915c3aa6531c",
+            "release_group_mbid": "b04c82d5-d515-45ed-949f-e999b282f3e4",
+            "release_mbid": "be8ebeb4-da99-4a72-87fc-4452d267a474",
+            "submission_client": "navidrome",
+            "submission_client_version": "0.62.0 (1b46b977)",
+            "tracknumber": 1
+          },
+          "artist_name": "gnash",
+          "mbid_mapping": {
+            "artist_mbids": ["02f44a81-34f0-4f52-9ab7-c3cfcdb60333"],
+            "artists": [
+              {
+                "artist_credit_name": "gnash",
+                "artist_mbid": "02f44a81-34f0-4f52-9ab7-c3cfcdb60333",
+                "join_phrase": ""
+              }
+            ],
+            "caa_id": 21852994342,
+            "caa_release_mbid": "f1e93b3c-6e5d-4b4c-888e-657c7bd6327e",
+            "recording_mbid": "3c17d64c-8539-4168-9a7b-716a55309bc4",
+            "recording_name": "The Broken Hearts Club",
+            "release_mbid": "f1e93b3c-6e5d-4b4c-888e-657c7bd6327e",
+            "url_rels": [
+              {
+                "type": "free streaming",
+                "url": "https://www.deezer.com/track/613964362"
+              },
+              {
+                "type": "streaming",
+                "url": "https://tidal.com/track/101483062"
+              },
+              {
+                "type": "free streaming",
+                "url": "https://open.spotify.com/track/3Uu6pcfL9xsdfsKRx3DXRf"
+              }
+            ]
+          },
+          "release_name": "the broken hearts club",
+          "track_name": "the broken hearts club"
+        },
+        "user_name": "xDevolution"
+      },
+      {
+        "inserted_at": 1785502921,
+        "listened_at": 1785502920,
+        "recording_msid": "191108dc-486f-4eec-8768-1271ba5e817d",
+        "track_metadata": {
+          "additional_info": {
+            "artist_mbids": ["b9545342-1e6d-4dae-84ac-013374ad8d7c"],
+            "artist_names": ["IU"],
+            "duration_ms": 239310,
+            "recording_mbid": "85ef14f6-f780-43ec-815d-df275708b828",
+            "recording_msid": "191108dc-486f-4eec-8768-1271ba5e817d",
+            "release_group_mbid": "1613e530-60b7-470f-9f5c-7fe834b2bb10",
+            "release_mbid": "798396ca-6354-44c7-829f-52da17de20c1",
+            "submission_client": "navidrome",
+            "submission_client_version": "0.62.0 (1b46b977)",
+            "tracknumber": 5
+          },
+          "artist_name": "IU",
+          "mbid_mapping": {
+            "artist_mbids": ["b9545342-1e6d-4dae-84ac-013374ad8d7c"],
+            "artists": [
+              {
+                "artist_credit_name": "IU",
+                "artist_mbid": "b9545342-1e6d-4dae-84ac-013374ad8d7c",
+                "join_phrase": ""
+              }
+            ],
+            "caa_id": 37905612241,
+            "caa_release_mbid": "798396ca-6354-44c7-829f-52da17de20c1",
+            "recording_mbid": "85ef14f6-f780-43ec-815d-df275708b828",
+            "recording_name": "혼자 있는 방",
+            "release_mbid": "b6b41cf6-d3d5-4f89-ae56-5cba5b10f4d9"
+          },
+          "release_name": "REAL",
+          "track_name": "In a room alone"
+        },
+        "user_name": "xDevolution"
+      },
+      {
+        "inserted_at": 1785502693,
+        "listened_at": 1785502689,
+        "recording_msid": "988339bb-d7f4-4a18-9271-453f7f5ee51e",
+        "track_metadata": {
+          "additional_info": {
+            "artist_mbids": ["b9545342-1e6d-4dae-84ac-013374ad8d7c"],
+            "artist_names": ["IU"],
+            "duration_ms": 192640,
+            "recording_mbid": "d850aa34-7b1f-4655-866d-92ddea375382",
+            "recording_msid": "988339bb-d7f4-4a18-9271-453f7f5ee51e",
+            "release_group_mbid": "32b36971-88f4-4c3c-9bf4-54c6983928d6",
+            "release_mbid": "0bf59ccf-ed5b-4c7d-89c7-cb6209c0bfed",
+            "submission_client": "navidrome",
+            "submission_client_version": "0.62.0 (1b46b977)",
+            "tracknumber": 1
+          },
+          "artist_name": "IU",
+          "mbid_mapping": {
+            "artist_mbids": ["b9545342-1e6d-4dae-84ac-013374ad8d7c"],
+            "artists": [
+              {
+                "artist_credit_name": "IU",
+                "artist_mbid": "b9545342-1e6d-4dae-84ac-013374ad8d7c",
+                "join_phrase": ""
+              }
+            ],
+            "caa_id": 37560916936,
+            "caa_release_mbid": "89966142-041d-44f2-a0f9-2fe036b73a7e",
+            "recording_mbid": "d850aa34-7b1f-4655-866d-92ddea375382",
+            "recording_name": "복숭아",
+            "release_mbid": "0bf59ccf-ed5b-4c7d-89c7-cb6209c0bfed"
+          },
+          "release_name": "스무 살의 봄",
+          "track_name": "복숭아"
+        },
+        "user_name": "xDevolution"
+      },
+      {
+        "inserted_at": 1785333783,
+        "listened_at": 1785333627,
+        "recording_msid": "fa8f944a-63f5-4381-95f6-08713d6eff43",
+        "track_metadata": {
+          "additional_info": {
+            "artist_mbids": ["b9545342-1e6d-4dae-84ac-013374ad8d7c"],
+            "artist_names": ["IU"],
+            "duration_ms": 192570,
+            "recording_mbid": "6de6b17c-ba14-4d4a-8123-314290a7fc04",
+            "recording_msid": "fa8f944a-63f5-4381-95f6-08713d6eff43",
+            "release_group_mbid": "066225ff-a8bd-4183-bff5-08329f0a063a",
+            "release_mbid": "dec72a6b-1a52-4ff2-9d20-5aeb70767330",
+            "submission_client": "navidrome",
+            "submission_client_version": "0.62.0 (1b46b977)",
+            "tracknumber": 5
+          },
+          "artist_name": "IU",
+          "mbid_mapping": {
+            "artist_mbids": ["b9545342-1e6d-4dae-84ac-013374ad8d7c"],
+            "artists": [
+              {
+                "artist_credit_name": "IU",
+                "artist_mbid": "b9545342-1e6d-4dae-84ac-013374ad8d7c",
+                "join_phrase": ""
+              }
+            ],
+            "caa_id": 38091373139,
+            "caa_release_mbid": "28c917b7-b2c7-4e71-bc23-939c7b58ffed",
+            "recording_mbid": "6de6b17c-ba14-4d4a-8123-314290a7fc04",
+            "recording_name": "관객이 될게 (I stan U)",
+            "release_mbid": "dec72a6b-1a52-4ff2-9d20-5aeb70767330"
+          },
+          "release_name": "The Winning",
+          "track_name": "관객이 될게 (I stan U)"
+        },
+        "user_name": "xDevolution"
+      },
+      {
+        "inserted_at": 1785333610,
+        "listened_at": 1785333320,
+        "recording_msid": "1584c0b4-06f0-423c-95f5-6174725ea3bd",
+        "track_metadata": {
+          "additional_info": {
+            "artist_mbids": [
+              "b9545342-1e6d-4dae-84ac-013374ad8d7c",
+              "3902653d-ec22-4a74-8909-90ee509d1a39",
+              "2481e678-c76f-4355-8aed-54f6ce879af7",
+              "3f9861c8-46ff-4c88-86f6-8c72fbb6a122"
+            ],
+            "artist_names": ["IU", "혜인", "조원선", "패티김"],
+            "duration_ms": 226760,
+            "recording_mbid": "3c295fcb-ceec-433b-ba0e-d40c471187ba",
+            "recording_msid": "1584c0b4-06f0-423c-95f5-6174725ea3bd",
+            "release_group_mbid": "066225ff-a8bd-4183-bff5-08329f0a063a",
+            "release_mbid": "dec72a6b-1a52-4ff2-9d20-5aeb70767330",
+            "submission_client": "navidrome",
+            "submission_client_version": "0.62.0 (1b46b977)",
+            "tracknumber": 3
+          },
+          "artist_name": "IU feat. 혜인, 조원선 & special narr. 패티김",
+          "mbid_mapping": {
+            "artist_mbids": [
+              "b9545342-1e6d-4dae-84ac-013374ad8d7c",
+              "3902653d-ec22-4a74-8909-90ee509d1a39",
+              "2481e678-c76f-4355-8aed-54f6ce879af7",
+              "3f9861c8-46ff-4c88-86f6-8c72fbb6a122"
+            ],
+            "artists": [
+              {
+                "artist_credit_name": "IU",
+                "artist_mbid": "b9545342-1e6d-4dae-84ac-013374ad8d7c",
+                "join_phrase": " feat. "
+              },
+              {
+                "artist_credit_name": "혜인",
+                "artist_mbid": "3902653d-ec22-4a74-8909-90ee509d1a39",
+                "join_phrase": ", "
+              },
+              {
+                "artist_credit_name": "조원선",
+                "artist_mbid": "2481e678-c76f-4355-8aed-54f6ce879af7",
+                "join_phrase": " & special narr. "
+              },
+              {
+                "artist_credit_name": "패티김",
+                "artist_mbid": "3f9861c8-46ff-4c88-86f6-8c72fbb6a122",
+                "join_phrase": ""
+              }
+            ],
+            "caa_id": 38091373139,
+            "caa_release_mbid": "28c917b7-b2c7-4e71-bc23-939c7b58ffed",
+            "recording_mbid": "3c295fcb-ceec-433b-ba0e-d40c471187ba",
+            "recording_name": "Shh..",
+            "release_mbid": "dec72a6b-1a52-4ff2-9d20-5aeb70767330"
+          },
+          "release_name": "The Winning",
+          "track_name": "Shh.."
+        },
+        "user_name": "xDevolution"
+      },
+      {
+        "inserted_at": 1785288847,
+        "listened_at": 1785288846,
+        "recording_msid": "1584c0b4-06f0-423c-95f5-6174725ea3bd",
+        "track_metadata": {
+          "additional_info": {
+            "artist_mbids": [
+              "b9545342-1e6d-4dae-84ac-013374ad8d7c",
+              "3902653d-ec22-4a74-8909-90ee509d1a39",
+              "2481e678-c76f-4355-8aed-54f6ce879af7",
+              "3f9861c8-46ff-4c88-86f6-8c72fbb6a122"
+            ],
+            "artist_names": ["IU", "혜인", "조원선", "패티김"],
+            "duration_ms": 226760,
+            "recording_mbid": "3c295fcb-ceec-433b-ba0e-d40c471187ba",
+            "recording_msid": "1584c0b4-06f0-423c-95f5-6174725ea3bd",
+            "release_group_mbid": "066225ff-a8bd-4183-bff5-08329f0a063a",
+            "release_mbid": "dec72a6b-1a52-4ff2-9d20-5aeb70767330",
+            "submission_client": "navidrome",
+            "submission_client_version": "0.62.0 (1b46b977)",
+            "tracknumber": 3
+          },
+          "artist_name": "IU feat. 혜인, 조원선 & special narr. 패티김",
+          "mbid_mapping": {
+            "artist_mbids": [
+              "b9545342-1e6d-4dae-84ac-013374ad8d7c",
+              "3902653d-ec22-4a74-8909-90ee509d1a39",
+              "2481e678-c76f-4355-8aed-54f6ce879af7",
+              "3f9861c8-46ff-4c88-86f6-8c72fbb6a122"
+            ],
+            "artists": [
+              {
+                "artist_credit_name": "IU",
+                "artist_mbid": "b9545342-1e6d-4dae-84ac-013374ad8d7c",
+                "join_phrase": " feat. "
+              },
+              {
+                "artist_credit_name": "혜인",
+                "artist_mbid": "3902653d-ec22-4a74-8909-90ee509d1a39",
+                "join_phrase": ", "
+              },
+              {
+                "artist_credit_name": "조원선",
+                "artist_mbid": "2481e678-c76f-4355-8aed-54f6ce879af7",
+                "join_phrase": " & special narr. "
+              },
+              {
+                "artist_credit_name": "패티김",
+                "artist_mbid": "3f9861c8-46ff-4c88-86f6-8c72fbb6a122",
+                "join_phrase": ""
+              }
+            ],
+            "caa_id": 38091373139,
+            "caa_release_mbid": "28c917b7-b2c7-4e71-bc23-939c7b58ffed",
+            "recording_mbid": "3c295fcb-ceec-433b-ba0e-d40c471187ba",
+            "recording_name": "Shh..",
+            "release_mbid": "dec72a6b-1a52-4ff2-9d20-5aeb70767330"
+          },
+          "release_name": "The Winning",
+          "track_name": "Shh.."
+        },
+        "user_name": "xDevolution"
+      }
+    ],
+    "oldest_listen_ts": 1781574184,
+    "user_id": "xdevolution"
+  }
+}

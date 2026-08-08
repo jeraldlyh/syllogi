@@ -1,0 +1,243 @@
+{
+  "subsonic-response": {
+    "status": "ok",
+    "version": "1.16.1",
+    "type": "navidrome",
+    "serverVersion": "0.62.0 (1b46b977)",
+    "openSubsonic": true,
+    "searchResult3": {
+      "album": [
+        {
+          "id": "album-1",
+          "name": "Broken Clocks",
+          "artist": "SZA",
+          "artistId": "0tXI6v8HhUwxPnwM6Mz4FV",
+          "coverArt": "al-2xwsjqgEotK3heeZa4X7FP_69b411fe",
+          "songCount": 1,
+          "duration": 231,
+          "created": "2026-06-14T08:37:41.197998774Z",
+          "year": 2017,
+          "genre": "Contemporary R&B",
+          "userRating": 0,
+          "genres": [
+            {
+              "name": "Contemporary R&B"
+            },
+            {
+              "name": "Funk"
+            },
+            {
+              "name": "Pop"
+            },
+            {
+              "name": "Soul"
+            }
+          ],
+          "musicBrainzId": "",
+          "isCompilation": false,
+          "sortName": "broken clocks",
+          "discTitles": [],
+          "originalReleaseDate": {
+            "year": 2017
+          },
+          "releaseDate": {
+            "year": 2017
+          },
+          "releaseTypes": ["FLAC", "Single"],
+          "recordLabels": [
+            {
+              "name": "Top Dawg Entertainment"
+            }
+          ],
+          "moods": [],
+          "artists": [
+            {
+              "id": "0tXI6v8HhUwxPnwM6Mz4FV",
+              "name": "SZA"
+            }
+          ],
+          "displayArtist": "SZA",
+          "explicitStatus": "",
+          "version": ""
+        },
+        {
+          "id": "album-2",
+          "name": "Broken Memories",
+          "artist": "Jamie Miller",
+          "artistId": "1tzoNS03zulBPxZF7TNeAd",
+          "coverArt": "al-3TKfI1OuInzagNqELxQGSz_6a68d3f7",
+          "songCount": 1,
+          "duration": 153,
+          "created": "2026-07-28T16:08:17.825458623Z",
+          "year": 2022,
+          "userRating": 0,
+          "genres": [],
+          "musicBrainzId": "9884a58e-9fda-4f46-83a8-2c5ce084ed0a",
+          "isCompilation": false,
+          "sortName": "broken memories",
+          "discTitles": [],
+          "originalReleaseDate": {
+            "year": 2022,
+            "month": 4,
+            "day": 29
+          },
+          "releaseDate": {
+            "year": 2022
+          },
+          "releaseTypes": ["ep"],
+          "recordLabels": [
+            {
+              "name": "Atlantic"
+            }
+          ],
+          "moods": [],
+          "artists": [
+            {
+              "id": "1tzoNS03zulBPxZF7TNeAd",
+              "name": "Jamie Miller"
+            }
+          ],
+          "displayArtist": "Jamie Miller",
+          "explicitStatus": "",
+          "version": ""
+        }
+      ],
+      "song": [
+        {
+          "id": "song-1",
+          "parent": "parent-1",
+          "isDir": false,
+          "title": "Broken Clocks",
+          "album": "Broken Clocks",
+          "artist": "SZA",
+          "track": 1,
+          "year": 2017,
+          "genre": "Funk",
+          "coverArt": "mf-9LyeD4F3VxPzZ2mqjvW2nS_69b411fe",
+          "size": 26142101,
+          "contentType": "audio/flac",
+          "suffix": "flac",
+          "duration": 231,
+          "bitRate": 882,
+          "path": "SZA/Broken Clocks/01-01 - Broken Clocks.flac",
+          "discNumber": 1,
+          "created": "2026-06-14T08:37:41.197998774Z",
+          "albumId": "album-1",
+          "artistId": "0tXI6v8HhUwxPnwM6Mz4FV",
+          "type": "music",
+          "bpm": 112,
+          "comment": "",
+          "sortName": "broken clocks",
+          "mediaType": "song",
+          "musicBrainzId": "",
+          "isrc": ["USRC11701122"],
+          "genres": [
+            {
+              "name": "Funk"
+            },
+            {
+              "name": "Soul"
+            },
+            {
+              "name": "Pop"
+            },
+            {
+              "name": "Contemporary R&B"
+            }
+          ],
+          "replayGain": {},
+          "channelCount": 2,
+          "samplingRate": 44100,
+          "bitDepth": 16,
+          "moods": [],
+          "artists": [
+            {
+              "id": "0tXI6v8HhUwxPnwM6Mz4FV",
+              "name": "SZA"
+            }
+          ],
+          "displayArtist": "SZA",
+          "albumArtists": [
+            {
+              "id": "0tXI6v8HhUwxPnwM6Mz4FV",
+              "name": "SZA"
+            }
+          ],
+          "displayAlbumArtist": "SZA",
+          "contributors": [],
+          "displayComposer": "",
+          "explicitStatus": "",
+          "groupings": []
+        },
+        {
+          "id": "song-2",
+          "parent": "parent-2",
+          "isDir": false,
+          "title": "Broken Clocks",
+          "album": "Ctrl (deluxe)",
+          "artist": "SZA",
+          "track": 9,
+          "year": 2017,
+          "genre": "contemporary r&b",
+          "coverArt": "mf-EKKhu7DSQzOytrlImMub4O_69b4122e",
+          "size": 45342800,
+          "contentType": "audio/flac",
+          "suffix": "flac",
+          "duration": 231,
+          "bitRate": 1556,
+          "path": "SZA/Ctrl (deluxe)/01-09 - Broken Clocks.flac",
+          "discNumber": 1,
+          "created": "2026-06-14T08:37:43.911146128Z",
+          "albumId": "album-2",
+          "artistId": "0tXI6v8HhUwxPnwM6Mz4FV",
+          "type": "music",
+          "bpm": 0,
+          "comment": "",
+          "sortName": "broken clocks",
+          "mediaType": "song",
+          "musicBrainzId": "e217cb7e-782a-4474-b408-e994992f41a2",
+          "isrc": ["USRC11701122"],
+          "genres": [
+            {
+              "name": "contemporary r&b"
+            },
+            {
+              "name": "r&b"
+            }
+          ],
+          "replayGain": {},
+          "channelCount": 2,
+          "samplingRate": 44100,
+          "bitDepth": 24,
+          "moods": [],
+          "artists": [
+            {
+              "id": "0tXI6v8HhUwxPnwM6Mz4FV",
+              "name": "SZA"
+            }
+          ],
+          "displayArtist": "SZA",
+          "albumArtists": [
+            {
+              "id": "0tXI6v8HhUwxPnwM6Mz4FV",
+              "name": "SZA"
+            }
+          ],
+          "displayAlbumArtist": "SZA",
+          "contributors": [
+            {
+              "role": "composer",
+              "artist": {
+                "id": "0AAj2IBYnH56c7OGCst5vy",
+                "name": "Preservation\u001fBilly Woods\u001fBilly Woods\u001fMos Def\u001fTalib Kweli\u001fTony Cottrell\u001fDante Smith\u001fTalib Kweli Greene\u001fTony Cottrell\u001fDante Smith\u001fTalib Kweli\u001fDante Smith\u001fTalib Kweli Greene\u001fJ. Rawls\u001fTony Cottrell\u001fDante Smith\u001fTalib Kweli\u001fVinia Mojica\u001fTalib Kweli\u001fJ. Rawls\u001fD. Smith\u001fTony Cottrell\u001fTalib Kweli Greene\u001fJuwan Elcock\u001fHarry Edohoukwa\u001fJordan Elcock\u001fJuwan Elcock\u001fJordan Knul\u001fJuwan Elcock\u001fJordan Knul\u001fJordan Elcock\u001fJordan Knul\u001fJames Robinson\u001fJuwan Elcock\u001fJuwan Elcock\u001fHarry Edohoukwa\u001fDayne Reliford\u001fJuwan Elcock\u001fJuwan Elcock\u001fNnedi Agbaroji\u001fKeisha Plum\u001fJuwan Elcock\u001fJordan Elcock\u001fJuwan Elcock\u001fJordan Elcock\u001fJuwan Elcock\u001fVictor Gasper\u001fKirby\u001fSteve Octave\u001fHarry Edohoukwa\u001fJordan Elcock\u001fJuwan Elcock\u001fEimiral Sol\u001fIsaiah Boone\u001fJeMarcus Bridges\u001fJordan Elcock\u001fJuwan Elcock\u001fRapsody\u001fJordan Elcock\u001fJuwan Elcock\u001fKeisha Plum\u001fBLK ODYSSY\u001fBLK ODYSSY\u001fRapsody\u001fBLK ODYSSY\u001fNikko brim\u001fJuwan Eocock\u001fMoe\u001fJuwan Elcock\u001fKyle Smith\u001fChancelor J. Bennett\u001fKanye West\u001fJohn Stephens\u001fWill Miller\u001fCommon\u001fDewayne Julius Rogers Sr.\u001fChancelor Bennett\u001fStefan Ponce\u001fCameron Oste"
+              }
+            }
+          ],
+          "displayComposer": "Preservation\u001fBilly Woods\u001fBilly Woods\u001fMos Def\u001fTalib Kweli\u001fTony Cottrell\u001fDante Smith\u001fTalib Kweli Greene\u001fTony Cottrell\u001fDante Smith\u001fTalib Kweli\u001fDante Smith\u001fTalib Kweli Greene\u001fJ. Rawls\u001fTony Cottrell\u001fDante Smith\u001fTalib Kweli\u001fVinia Mojica\u001fTalib Kweli\u001fJ. Rawls\u001fD. Smith\u001fTony Cottrell\u001fTalib Kweli Greene\u001fJuwan Elcock\u001fHarry Edohoukwa\u001fJordan Elcock\u001fJuwan Elcock\u001fJordan Knul\u001fJuwan Elcock\u001fJordan Knul\u001fJordan Elcock\u001fJordan Knul\u001fJames Robinson\u001fJuwan Elcock\u001fJuwan Elcock\u001fHarry Edohoukwa\u001fDayne Reliford\u001fJuwan Elcock\u001fJuwan Elcock\u001fNnedi Agbaroji\u001fKeisha Plum\u001fJuwan Elcock\u001fJordan Elcock\u001fJuwan Elcock\u001fJordan Elcock\u001fJuwan Elcock\u001fVictor Gasper\u001fKirby\u001fSteve Octave\u001fHarry Edohoukwa\u001fJordan Elcock\u001fJuwan Elcock\u001fEimiral Sol\u001fIsaiah Boone\u001fJeMarcus Bridges\u001fJordan Elcock\u001fJuwan Elcock\u001fRapsody\u001fJordan Elcock\u001fJuwan Elcock\u001fKeisha Plum\u001fBLK ODYSSY\u001fBLK ODYSSY\u001fRapsody\u001fBLK ODYSSY\u001fNikko brim\u001fJuwan Eocock\u001fMoe\u001fJuwan Elcock\u001fKyle Smith\u001fChancelor J. Bennett\u001fKanye West\u001fJohn Stephens\u001fWill Miller\u001fCommon\u001fDewayne Julius Rogers Sr.\u001fChancelor Bennett\u001fStefan Ponce\u001fCameron Oste",
+          "explicitStatus": "",
+          "groupings": []
+        }
+      ]
+    }
+  }
+}
