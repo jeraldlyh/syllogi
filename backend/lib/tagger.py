@@ -1,4 +1,5 @@
 import logging
+import re
 
 from mutagen import MutagenError
 from mutagen.flac import FLAC
@@ -11,19 +12,54 @@ from lib.providers.lyrics.lrclib import LRCLIBLyricsProvider
 logger = logging.getLogger(__name__)
 
 
+LRC_TIMESTAMP = re.compile(r"(?:\[\d{1,3}:\d{2}(?:[.:]\d{1,3})?\]\s*)+")
+
+
+def get_lyrics_tag(tags) -> str | None:
+    """Extract the LYRICS value from a mutagen Vorbis-style tag dict."""
+    if tags is None:
+        return None
+
+    value = tags.get("LYRICS")
+
+    if isinstance(value, (list, tuple)):
+        return "\n".join(str(part) for part in value)
+    return value if isinstance(value, str) else None
+
+
+def is_valid_lyrics(text: str | None) -> bool:
+    """Verifies if the text contains meaningful lyrics content."""
+    if not text or not text.strip():
+        return False
+
+    for line in text.splitlines():
+        stripped = line.strip()
+        if not stripped:
+            continue
+        if LRC_TIMESTAMP.fullmatch(stripped):
+            continue
+        return True
+
+    return False
+
+
 def has_lyrics(file_path: str) -> bool:
-    """Check if an audio file already has lyrics tagged."""
+    """Check if an audio file already has valid lyrics tagged."""
 
     try:
         if file_path.endswith(".flac"):
             audio = FLAC(file_path)
-            return bool(audio.tags and audio.tags.get("LYRICS"))  # type: ignore[reportAttributeAccessIssue]
+            return is_valid_lyrics(get_lyrics_tag(audio.tags))
         elif file_path.endswith(".mp3"):
             audio = MP3(file_path)
-            return bool(audio.tags and audio.tags.getall("USLT"))
+
+            if audio.tags is not None and audio.tags.getall("USLT"):
+                frames = audio.tags.getall("USLT")
+                return any(is_valid_lyrics(frame.text) for frame in frames)
+            return False
         elif file_path.endswith(".opus"):
             audio = OggOpus(file_path)
-            return bool(audio.tags and audio.tags.get("LYRICS"))  # type: ignore[reportAttributeAccessIssue]
+            return is_valid_lyrics(get_lyrics_tag(audio.tags))
         return False
     except (MutagenError, OSError, KeyError):
         return False
