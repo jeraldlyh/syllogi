@@ -45,16 +45,16 @@
     "embla-carousel-react": "8.5.1",
     "input-otp": "1.4.1",
     "lucide-react": "^0.577.0",
-    "motion": "^12.42.2",
+    "motion": "^12.43.0",
     "react": "^19.2.8",
     "react-day-picker": "8.10.1",
     "react-dom": "^19.2.8",
-    "react-hook-form": "^7.83.0",
+    "react-hook-form": "^7.84.0",
     "react-resizable-panels": "^2.1.7",
-    "react-router-dom": "^7.5.1",
+    "react-router-dom": "^7.18.2",
     "recharts": "2.15.0",
     "sonner": "^1.7.1",
-    "swr": "^2.4.2",
+    "swr": "^2.5.0",
     "tailwind-merge": "^2.5.5",
     "tailwindcss-animate": "^1.0.7",
     "vaul": "^1.1.2",
@@ -62,18 +62,18 @@
   },
   "devDependencies": {
     "@types/node": "^22.20.1",
-    "@types/react": "^19.2.17",
+    "@types/react": "^19.2.18",
     "@types/react-dom": "^19",
     "@vitejs/plugin-react": "^4.4.1",
     "eslint": "^9.39.5",
-    "postcss": "^8.5.23",
+    "postcss": "^8.5.25",
     "tailwindcss": "3.4.19",
     "typescript": "5.7.3",
     "vite": "^6.3.2"
   },
   "pnpm": {
     "overrides": {
-      "postcss": ">=8.5.23",
+      "postcss": ">=8.5.25",
       "js-yaml": "4.3.0"
     }
   }
