@@ -4,6 +4,7 @@ import jwt
 
 from lib.auth import (
     ALGORITHM,
+    AUTH_SECRET_KEY,
     _get_password_hash,
     _verify_password,
     create_access_token,
@@ -43,7 +44,7 @@ class TestCreateAccessToken:
     def test_creates_valid_jwt(self):
         token = create_access_token({"sub": "alice"})
         payload = jwt.decode(
-            token, "test-secret-key-for-unit-tests", algorithms=[ALGORITHM]
+            token, AUTH_SECRET_KEY, algorithms=[ALGORITHM]
         )
 
         assert payload["sub"] == "alice"
@@ -51,7 +52,7 @@ class TestCreateAccessToken:
     def test_token_contains_expiry(self):
         token = create_access_token({"sub": "alice"})
         payload = jwt.decode(
-            token, "test-secret-key-for-unit-tests", algorithms=[ALGORITHM]
+            token, AUTH_SECRET_KEY, algorithms=[ALGORITHM]
         )
 
         assert "exp" in payload
@@ -62,7 +63,7 @@ class TestCreateAccessToken:
             {"sub": "alice"}, expires_delta=timedelta(minutes=60)
         )
         payload = jwt.decode(
-            token, "test-secret-key-for-unit-tests", algorithms=[ALGORITHM]
+            token, AUTH_SECRET_KEY, algorithms=[ALGORITHM]
         )
 
         exp = datetime.fromtimestamp(payload["exp"], tz=UTC)
@@ -74,7 +75,7 @@ class TestCreateAccessToken:
         before = datetime.now(UTC)
         token = create_access_token({"sub": "alice"})
         payload = jwt.decode(
-            token, "test-secret-key-for-unit-tests", algorithms=[ALGORITHM]
+            token, AUTH_SECRET_KEY, algorithms=[ALGORITHM]
         )
 
         exp = datetime.fromtimestamp(payload["exp"], tz=UTC)
