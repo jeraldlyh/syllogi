@@ -73,7 +73,6 @@ class TestCachedFunction:
             nonlocal call_count
             call_count += 1
 
-            return None
 
         func(1)
         func(1)

@@ -2,13 +2,13 @@ import uuid
 
 from sqlmodel import Session
 
-from db.models.download_session import DownloadSession, DownloadSessionStatus
 from db.download_session import (
     create_download_session,
     get_download_session_by_id,
     get_download_sessions,
     update_download_session,
 )
+from db.models.download_session import DownloadSession, DownloadSessionStatus
 
 
 def _make_download_session(**overrides) -> DownloadSession:

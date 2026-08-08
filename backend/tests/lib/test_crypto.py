@@ -1,4 +1,4 @@
-from lib.crypto import encrypt, decrypt
+from lib.crypto import decrypt, encrypt
 
 
 class TestCrypto:

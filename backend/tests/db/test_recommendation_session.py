@@ -3,11 +3,11 @@ import uuid
 from sqlmodel import Session
 
 from db.models.recommendation import (
-    RecommendationSession,
-    RecommendationTrackType,
-    RecommendationStatus,
     RecommendationProvider,
+    RecommendationSession,
+    RecommendationStatus,
     RecommendationStrategy,
+    RecommendationTrackType,
 )
 from db.recommendation_session import (
     build_recommendation_session_tracks,

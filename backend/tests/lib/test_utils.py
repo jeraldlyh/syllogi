@@ -1,11 +1,11 @@
 import pytest
 
 from lib.utils import (
-    get_clean_name,
     convert_seconds_to_readable_time,
+    get_clean_name,
+    normalize,
     parse_cron_expression,
     sanitize_filename,
-    normalize,
     truncate,
 )
 

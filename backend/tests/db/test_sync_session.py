@@ -3,10 +3,10 @@ import uuid
 from sqlmodel import Session
 
 from db.models.sync import (
+    SyncProvider,
     SyncSession,
     SyncSessionTrackType,
     SyncStatus,
-    SyncProvider,
 )
 from db.sync_session import (
     build_sync_session_tracks,
