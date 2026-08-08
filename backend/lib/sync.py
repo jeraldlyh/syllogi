@@ -23,7 +23,6 @@ from db.sync_session import (
 )
 from lib.crypto import decrypt
 from lib.download import download_missing_tracks
-from lib.env import get_environment_variable
 from lib.models.common import (
     ExternalSync,
     ExternalTrack,
@@ -31,12 +30,11 @@ from lib.models.common import (
     SyncDiff,
 )
 from lib.models.provider import ProviderTrack
-from lib.notification import send_discord_notification
 from lib.providers import get_provider_enum
 from lib.providers.playlist.base import MusicPlaylistProvider
 from lib.spotify import get_spotify_playlist, get_spotify_playlist_songs
 from lib.track import reconcile_after_download, resolve_tracks
-from lib.utils import convert_seconds_to_readable_time, get_now, truncate
+from lib.utils import get_now, truncate
 from lib.youtube import get_youtube_playlist, get_youtube_playlist_songs
 
 logger = logging.getLogger(__name__)
@@ -191,8 +189,8 @@ async def sync_playlist_task(
 
             num_of_added_tracks = len(diff.added)
             num_of_removed_tracks = len(diff.removed)
-            num_of_missing_tracks = len(missing_tracks)
-            num_of_downloaded_tracks = len(downloaded_tracks)
+            # num_of_missing_tracks = len(missing_tracks)
+            # num_of_downloaded_tracks = len(downloaded_tracks)
 
             if num_of_removed_tracks > 0:
                 logger.info(
@@ -235,48 +233,6 @@ async def sync_playlist_task(
 
             finished_at = get_now()
             duration_taken = finished_at.timestamp() - started_at.timestamp()
-
-            discord_webhook_url = get_environment_variable("DISCORD_WEBHOOK_URL")
-
-            if (
-                isinstance(discord_webhook_url, str)
-                and discord_webhook_url.strip() != ""
-            ):
-                await send_discord_notification(
-                    webhook_url=discord_webhook_url,
-                    title="Import Summary",
-                    fields=[
-                        {"name": "Username", "value": username, "inline": True},
-                        {
-                            "name": "Playlist",
-                            "value": external_playlist_name,
-                            "inline": True,
-                        },
-                        {
-                            "name": "Tracks",
-                            "value": f"{num_of_added_tracks} 🔺 {num_of_removed_tracks} 🔻 {num_of_downloaded_tracks} 💾",
-                            "inline": True,
-                        },
-                        {
-                            "name": "Missing",
-                            "value": num_of_missing_tracks,
-                            "inline": True,
-                        },
-                        {
-                            "name": "Total",
-                            "value": len(songs),
-                            "inline": True,
-                        },
-                        {
-                            "name": "Time Taken",
-                            "value": convert_seconds_to_readable_time(
-                                seconds=duration_taken
-                            ),
-                            "inline": True,
-                        },
-                    ],
-                    timestamp=True,
-                )
 
             added_track_names = [track.display_name for track in diff.added]
             removed_track_names = [track.track_name for track in diff.removed]
