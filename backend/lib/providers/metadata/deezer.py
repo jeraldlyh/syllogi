@@ -116,6 +116,48 @@ class DeezerMetadataProvider(MetadataProvider):
             return None
 
     @cached_method(ttl=86400)
+    async def search_tracks(
+        self,
+        *,
+        artist_name: str,
+        track_name: str,
+        limit: int = 10,
+    ) -> list[ArtistTrack]:
+        """Search Deezer for tracks matching an artist name and/or track name."""
+
+        query = f"{artist_name} {track_name}".strip()
+
+        try:
+            result = await self._http(
+                "/search/track", params={"q": query, "limit": limit}
+            )
+
+            if not result or not result.get("data"):
+                return []
+
+            tracks: list[ArtistTrack] = []
+
+            for track in result["data"]:
+                album = track.get("album", {})
+
+                tracks.append(
+                    ArtistTrack(
+                        artist_name=track.get("artist", {}).get("name", artist_name),
+                        track_name=track.get("title", ""),
+                        duration_ms=int(track.get("duration", 0) or 0) * 1000,
+                        disambiguation="",
+                        album_name=album.get("title", ""),
+                        genres=[],
+                        image_url=album.get("cover_big") or album.get("cover_medium")
+                        or "",
+                    )
+                )
+            return tracks
+        except httpx.HTTPError as e:
+            logger.warning(f"Failed to search Deezer tracks for '{query}': {e}")
+            return []
+
+    @cached_method(ttl=86400)
     async def get_album_info(
         self,
         *,

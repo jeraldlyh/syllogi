@@ -42,6 +42,52 @@ class TestGetArtistTrack:
         assert result.album_name == "LILAC"
 
 
+class TestSearchTracks:
+    @respx.mock
+    async def test_returns_tracks_matching_artist_and_track(self):
+        respx.get("https://musicbrainz.org/ws/2/recording").mock(
+            return_value=httpx.Response(200, json=load_fixture("musicbrainz/recording"))
+        )
+
+        provider = _make_provider()
+        result = await provider.search_tracks(artist_name="IU", track_name="Celebrity")
+
+        assert len(result) == 1
+        assert result[0].artist_name == "IU"
+        assert result[0].track_name == "Celebrity"
+        assert result[0].duration_ms == 195000
+        assert result[0].album_name == "LILAC"
+
+    @respx.mock
+    async def test_returns_tracks_by_track_name_only(self):
+        respx.get("https://musicbrainz.org/ws/2/recording").mock(
+            return_value=httpx.Response(200, json=load_fixture("musicbrainz/recording"))
+        )
+
+        provider = _make_provider()
+        result = await provider.search_tracks(artist_name="", track_name="Celebrity")
+
+        assert len(result) == 1
+        assert result[0].artist_name == "IU"
+
+    async def test_returns_empty_when_no_query(self):
+        provider = _make_provider()
+        result = await provider.search_tracks(artist_name="", track_name="")
+
+        assert result == []
+
+    @respx.mock
+    async def test_returns_empty_when_no_matches(self):
+        respx.get("https://musicbrainz.org/ws/2/recording").mock(
+            return_value=httpx.Response(200, json={"recordings": []})
+        )
+
+        provider = _make_provider()
+        result = await provider.search_tracks(artist_name="", track_name="Nobody")
+
+        assert result == []
+
+
 class TestGetAlbumInfo:
     @respx.mock
     async def test_returns_album(self):
@@ -72,6 +118,32 @@ class TestGetAlbumInfo:
             assert track.duration_ms is not None
             assert track.disambiguation is not None
             assert track.album_name is not None
+
+
+class TestSearchArtists:
+    @respx.mock
+    async def test_returns_multiple_artists(self):
+        respx.get("https://musicbrainz.org/ws/2/artist").mock(
+            return_value=httpx.Response(200, json=load_fixture("musicbrainz/artist"))
+        )
+
+        provider = _make_provider()
+        result = await provider.search_artists(query="Olivia", limit=10)
+
+        assert len(result) == 10
+        assert result[0].name == "Olivia Rodrigo"
+        assert all(artist.name for artist in result)
+
+    @respx.mock
+    async def test_returns_empty_when_no_matches(self):
+        respx.get("https://musicbrainz.org/ws/2/artist").mock(
+            return_value=httpx.Response(200, json={"artists": []})
+        )
+
+        provider = _make_provider()
+        result = await provider.search_artists(query="Nobody")
+
+        assert result == []
 
 
 class TestGetArtistAlias:

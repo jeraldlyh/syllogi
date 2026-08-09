@@ -4,7 +4,6 @@ from difflib import SequenceMatcher
 
 import httpx
 
-from lib.models.chart import ChartTrendingTrack
 from lib.models.common import (
     ExternalTrack,
     ResolvedTrack,
@@ -228,22 +227,25 @@ def reconcile_after_download[T](
 
 
 async def is_track_in_provider(
-    provider: MusicPlaylistProvider, track: ChartTrendingTrack
+    *,
+    provider: MusicPlaylistProvider,
+    artist_name: str,
+    track_name: str,
+    album_name: str = "",
+    duration: int = 0,
 ) -> bool:
     """Return True if the track exists in the provider library, False otherwise."""
 
     try:
         provider_track = await find_track(
             provider=provider,
-            artist_name=track.artist_name,
-            track_name=track.track_name,
-            album_name="",
+            artist_name=artist_name,
+            track_name=track_name,
+            album_name=album_name,
             year="",
-            duration=track.duration,
+            duration=duration,
         )
         return not provider_track.is_not_found()
     except httpx.HTTPError:
-        logger.warning(
-            f"Failed to check provider for '{track.artist_name} - {track.track_name}'"
-        )
+        logger.warning(f"Failed to check provider for '{artist_name} - {track_name}'")
         return False

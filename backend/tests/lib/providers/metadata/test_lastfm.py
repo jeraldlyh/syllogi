@@ -60,6 +60,35 @@ class TestGetArtistTrack:
         assert result.track_name == "Celebrity"
 
 
+class TestSearchTracks:
+    @respx.mock
+    async def test_returns_multiple_tracks(self):
+        respx.get("https://ws.audioscrobbler.com/2.0/").mock(
+            return_value=httpx.Response(200, json=load_fixture("lastfm/track-search"))
+        )
+
+        provider = _make_provider()
+        result = await provider.search_tracks(
+            artist_name="IU", track_name="Celebrity", limit=10
+        )
+
+        assert len(result) == 30
+        assert result[0].artist_name == "IU"
+        assert result[0].track_name == "Celebrity"
+        assert all(track.track_name for track in result)
+
+    @respx.mock
+    async def test_returns_empty_when_no_data(self):
+        respx.get("https://ws.audioscrobbler.com/2.0/").mock(
+            return_value=httpx.Response(204)
+        )
+
+        provider = _make_provider()
+        result = await provider.search_tracks(artist_name="IU", track_name="Nobody")
+
+        assert result == []
+
+
 class TestGetAlbumInfo:
     @respx.mock
     async def test_returns_album(self):

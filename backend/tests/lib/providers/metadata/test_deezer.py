@@ -64,6 +64,37 @@ class TestGetArtistTrack:
         )
 
 
+class TestSearchTracks:
+    @respx.mock
+    async def test_returns_multiple_tracks(self):
+        respx.get("https://api.deezer.com/search/track").mock(
+            return_value=httpx.Response(200, json=load_fixture("deezer/search-track"))
+        )
+
+        provider = _make_provider()
+        result = await provider.search_tracks(
+            artist_name="", track_name="Celebrity", limit=10
+        )
+
+        assert len(result) == 5
+        assert result[0].artist_name == "IU"
+        assert result[0].track_name == "Celebrity"
+        assert result[0].album_name == "Celebrity"
+        assert result[0].duration_ms == 195000
+        assert all(track.track_name for track in result)
+
+    @respx.mock
+    async def test_returns_empty_on_error(self):
+        respx.get("https://api.deezer.com/search/track").mock(
+            return_value=httpx.Response(500)
+        )
+
+        provider = _make_provider()
+        result = await provider.search_tracks(artist_name="", track_name="Nobody")
+
+        assert result == []
+
+
 class TestGetAlbumInfo:
     @respx.mock
     async def test_returns_album_with_tracks(self):

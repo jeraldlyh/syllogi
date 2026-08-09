@@ -1,11 +1,25 @@
+from typing import cast
+
 from lib.models.common import ExternalTrack, ResolvedTrack
 from lib.models.provider import ProviderTrack
+from lib.providers.playlist.base import MusicPlaylistProvider
 from lib.track import (
     _score_track,
     _similarity_score,
+    is_track_in_provider,
     normalize,
     reconcile_after_download,
 )
+
+
+class FakeProvider:
+    def __init__(self, tracks: list[ProviderTrack]):
+        self._tracks = tracks
+
+    async def search_track(
+        self, *, artist_name: str, title: str, album: str, year: str
+    ) -> list[ProviderTrack]:
+        return self._tracks
 
 
 def _make_track(
@@ -339,3 +353,35 @@ class TestReconcileAfterDownload:
         assert updated_found == []
         assert [t.track.track_name for t in updated_missing] == ["Song 1", "Song 1"]
 
+
+class TestIsTrackInProvider:
+    async def test_returns_true_when_match_found(self):
+        provider = FakeProvider(
+            [
+                ProviderTrack(
+                    id="1",
+                    track_name="Creep",
+                    album_name="Pablo Honey",
+                    artists=["Radiohead"],
+                )
+            ]
+        )
+
+        result = await is_track_in_provider(
+            provider=cast(MusicPlaylistProvider, provider),
+            artist_name="Radiohead",
+            track_name="Creep",
+        )
+
+        assert result is True
+
+    async def test_returns_false_when_no_match(self):
+        provider = FakeProvider([])
+
+        result = await is_track_in_provider(
+            provider=cast(MusicPlaylistProvider, provider),
+            artist_name="Unknown",
+            track_name="Unknown",
+        )
+
+        assert result is False

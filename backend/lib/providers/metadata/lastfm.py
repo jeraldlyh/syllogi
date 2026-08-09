@@ -190,6 +190,42 @@ class LastFMMetadataProvider(MetadataProvider):
         return None
 
     @cached_method(ttl=86400)
+    async def search_tracks(
+        self,
+        *,
+        artist_name: str,
+        track_name: str,
+        limit: int = 10,
+    ) -> list[ArtistTrack]:
+        """Search Last.fm for tracks matching an artist name and/or track name."""
+
+        data = await self._http(
+            params={
+                "method": "track.search",
+                "track": track_name,
+                "artist": artist_name,
+                "limit": limit,
+            },
+        )
+        if not data:
+            return []
+
+        raw_tracks = self._get_nested_value(data, "results.trackmatches.track") or []
+
+        return [
+            ArtistTrack(
+                artist_name=track.get("artist", "") or artist_name,
+                track_name=track.get("name", ""),
+                duration_ms=0,
+                disambiguation="",
+                album_name="",
+                genres=[],
+                image_url="",
+            )
+            for track in raw_tracks
+        ]
+
+    @cached_method(ttl=86400)
     async def get_album_info(
         self,
         *,
