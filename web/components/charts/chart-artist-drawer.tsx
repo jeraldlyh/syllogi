@@ -25,7 +25,7 @@ import React, { useState } from "react";
 import { toast } from "sonner";
 import { ChartBadge } from "./chart-badge";
 import { useChartDrawer } from "./chart-drawer-context";
-import { ChartGridCard } from "./chart-grid-card";
+import { ChartSearchTrackCard } from "./chart-search-track-card";
 import { ChartImage } from "./chart-image";
 import { ViewMode } from "./types";
 
@@ -333,7 +333,7 @@ const TracksSection = ({ data }: { data: ArtistInfo }) => {
                   status === "downloading";
 
                 return (
-                  <ChartGridCard
+                  <ChartSearchTrackCard
                     key={`${track.track_name}-${i}`}
                     trackName={track.track_name}
                     albumName={track.album_name}
@@ -352,7 +352,7 @@ const TracksSection = ({ data }: { data: ArtistInfo }) => {
                     }
                   >
                     {renderAction(track)}
-                  </ChartGridCard>
+                  </ChartSearchTrackCard>
                 );
               })}
             </div>
