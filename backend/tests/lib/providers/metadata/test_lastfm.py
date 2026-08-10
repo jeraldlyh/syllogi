@@ -72,7 +72,7 @@ class TestSearchTracks:
             artist_name="IU", track_name="Celebrity", limit=10
         )
 
-        assert len(result) == 30
+        assert len(result) == 10
         assert result[0].artist_name == "IU"
         assert result[0].track_name == "Celebrity"
         assert all(track.track_name for track in result)

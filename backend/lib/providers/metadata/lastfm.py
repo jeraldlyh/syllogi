@@ -222,7 +222,7 @@ class LastFMMetadataProvider(MetadataProvider):
                 genres=[],
                 image_url="",
             )
-            for track in raw_tracks
+            for track in raw_tracks[:limit]
         ]
 
     @cached_method(ttl=86400)
