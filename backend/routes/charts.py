@@ -77,6 +77,7 @@ async def _get_trending_tracks(
                 provider=provider,
                 artist_name=track.artist_name,
                 track_name=track.track_name,
+                album_name=track.album_name,
                 duration=track.duration,
             )
             for track in tracks
@@ -167,8 +168,8 @@ async def _get_download_sessions(session: SessionDep) -> list[dict]:
 
 @router.get(
     path="/search",
-    summary="Search the catalog",
-    description="Free-text search for artists and tracks across the global music catalog.",
+    summary="Search for artists and tracks",
+    description="Free-text search for artists and tracks. Returns matching artists from MusicBrainz and tracks from Deezer.",
     responses={
         200: {
             "description": "Search results retrieved successfully",
