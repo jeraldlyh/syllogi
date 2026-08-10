@@ -69,3 +69,25 @@ class MetadataProvider(ABC):
             An AlbumInfo instance with tracks, or None if not found.
         """
         ...
+
+    @abstractmethod
+    async def search_tracks(
+        self,
+        *,
+        artist_name: str,
+        track_name: str,
+        limit: int = 10,
+    ) -> list[ArtistTrack]:
+        """Search for tracks matching an artist name and/or track name.
+
+        Args:
+            artist_name: Artist name to search for. Pass an empty string to
+                search by track name only.
+            track_name: Track name to search for. Pass an empty string to
+                search by artist name only.
+            limit: Maximum number of tracks to return.
+
+        Returns:
+            List of matching ArtistTrack, best match first.
+        """
+        ...

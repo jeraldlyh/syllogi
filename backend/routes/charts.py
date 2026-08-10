@@ -72,7 +72,16 @@ async def _get_trending_tracks(
         tracks = await DeezerMetadataProvider().get_chart_top_tracks(limit=limit)
 
     provider_statuses = await asyncio.gather(
-        *[is_track_in_provider(provider, track) for track in tracks]
+        *[
+            is_track_in_provider(
+                provider=provider,
+                artist_name=track.artist_name,
+                track_name=track.track_name,
+                album_name=track.album_name,
+                duration=track.duration,
+            )
+            for track in tracks
+        ]
     )
     return [
         {**track.to_dict(), "exists": exists}
@@ -155,6 +164,87 @@ async def _download_track(
 async def _get_download_sessions(session: SessionDep) -> list[dict]:
     downloads = get_download_sessions(session, limit=20)
     return [download.to_dict() for download in downloads]
+
+
+@router.get(
+    path="/search",
+    summary="Search for artists and tracks",
+    description="Free-text search for artists and tracks. Returns matching artists from MusicBrainz and tracks from Deezer.",
+    responses={
+        200: {
+            "description": "Search results retrieved successfully",
+            "content": {
+                "application/json": {
+                    "example": {
+                        "success": True,
+                        "data": {
+                            "artists": [
+                                {
+                                    "id": "a74b1b7f-71a5-4028-9831-c43e3266b76e",
+                                    "name": "Radiohead",
+                                    "image_url": "https://cdn-images.dzcdn.net/images/artist/abc/500x500-000000-80-0-0.jpg",
+                                }
+                            ],
+                            "tracks": [
+                                {
+                                    "artist_name": "Radiohead",
+                                    "track_name": "Creep",
+                                    "album_name": "Pablo Honey",
+                                    "duration": 238,
+                                    "image_url": "https://cdn-images.dzcdn.net/images/cover/abc/500x500-000000-80-0-0.jpg",
+                                    "exists": False,
+                                }
+                            ],
+                        },
+                    }
+                }
+            },
+        }
+    },
+)
+async def _search_catalog(
+    q: Annotated[
+        str, Query(description="Free-text search query", min_length=1, max_length=200)
+    ],
+) -> dict:
+    mb_provider = MusicBrainzMetadataProvider()
+    deezer_provider = DeezerMetadataProvider()
+    provider = get_provider()
+
+    artists, tracks = await asyncio.gather(
+        mb_provider.search_artists(query=q, limit=5),
+        deezer_provider.search_tracks(artist_name="", track_name=q, limit=10),
+    )
+
+    await asyncio.gather(*[artist.ensure_metadata() for artist in artists])
+
+    track_exists = await asyncio.gather(
+        *[
+            is_track_in_provider(
+                provider=provider,
+                artist_name=track.artist_name,
+                track_name=track.track_name,
+                album_name=track.album_name,
+                duration=track.get_duration(),
+            )
+            for track in tracks
+        ]
+    )
+
+    return {
+        "artists": [artist.to_dict() for artist in artists],
+        "tracks": [
+            {
+                "artist_name": track.artist_name,
+                "track_name": track.track_name,
+                "album_name": track.album_name,
+                "duration": track.get_duration(),
+                "image_url": track.image_url,
+                "exists": exists,
+            }
+            for track, exists in zip(tracks, track_exists)
+        ],
+    }
 
 
 @router.get(

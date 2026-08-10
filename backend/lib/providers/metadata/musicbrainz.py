@@ -16,8 +16,11 @@ from lib.providers.metadata.base import (
     ArtistInfo,
     MetadataProvider,
 )
+from lib.rate_limit import TokenBucketRateLimiter
 
 logger = logging.getLogger(__name__)
+
+_musicbrainz_limiter = TokenBucketRateLimiter(rate=50, per=1.0)
 
 
 class MusicBrainzMetadataProvider(MetadataProvider):
@@ -37,6 +40,8 @@ class MusicBrainzMetadataProvider(MetadataProvider):
         }
 
         query_params = {"fmt": "json", **(params or {})}
+
+        await _musicbrainz_limiter.acquire()
 
         async with httpx.AsyncClient(timeout=10) as client:
             response = await client.get(url, params=query_params, headers=headers)
@@ -179,6 +184,58 @@ class MusicBrainzMetadataProvider(MetadataProvider):
         )
 
     @cached_method(ttl=604800)
+    async def search_tracks(
+        self,
+        *,
+        artist_name: str,
+        track_name: str,
+        limit: int = 10,
+    ) -> list[ArtistTrack]:
+        """Search MusicBrainz for tracks matching an artist name and/or track name."""
+
+        clauses = []
+
+        if track_name:
+            clauses.append(f'recording:"{track_name}"')
+        if artist_name:
+            clauses.append(f'artist:"{artist_name}"')
+
+        if not clauses:
+            return []
+
+        query = " AND ".join(clauses)
+        result = await self._http(
+            "/recording",
+            params={"query": query, "inc": "genres", "limit": limit},
+        )
+
+        if not result or not result.get("recordings"):
+            return []
+
+        tracks: list[ArtistTrack] = []
+
+        for recording in result["recordings"]:
+            releases = recording.get("releases", [])
+            release_group = releases[0].get("release-group", {}) if releases else {}
+            artist_credits = recording.get("artist-credit", [])
+            recording_artist_name = (
+                artist_credits[0].get("name", "") if artist_credits else ""
+            )
+
+            tracks.append(
+                ArtistTrack(
+                    artist_name=recording_artist_name or artist_name,
+                    track_name=recording.get("title", ""),
+                    duration_ms=recording.get("length"),
+                    disambiguation=recording.get("disambiguation", ""),
+                    album_name=release_group.get("title", ""),
+                    genres=[genre.get("name") for genre in recording.get("genres", [])],
+                    image_url="",
+                )
+            )
+        return tracks
+
+    @cached_method(ttl=604800)
     async def get_artist_info(
         self,
         *,
@@ -192,6 +249,19 @@ class MusicBrainzMetadataProvider(MetadataProvider):
         if not results:
             return None
         return results[0].to_artist_info(locale=locale)
+
+    @cached_method(ttl=604800)
+    async def search_artists(
+        self,
+        *,
+        query: str,
+        limit: int = 5,
+        locale: str | None = None,
+    ) -> list[ArtistInfo]:
+        """Search MusicBrainz for artists matching a free-text query."""
+
+        results = await self._get_artists(artist_name=query, limit=limit)
+        return [artist.to_artist_info(locale=locale) for artist in results]
 
     @cached_method(ttl=604800)
     async def get_album_info(

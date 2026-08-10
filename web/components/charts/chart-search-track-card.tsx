@@ -18,7 +18,7 @@ interface IProps {
   children?: React.ReactNode;
 }
 
-export const ChartGridCard = ({
+export const ChartSearchTrackCard = ({
   trackName,
   albumName,
   artistName,
