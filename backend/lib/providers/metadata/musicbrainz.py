@@ -16,8 +16,11 @@ from lib.providers.metadata.base import (
     ArtistInfo,
     MetadataProvider,
 )
+from lib.rate_limit import TokenBucketRateLimiter
 
 logger = logging.getLogger(__name__)
+
+_musicbrainz_limiter = TokenBucketRateLimiter(rate=50, per=1.0)
 
 
 class MusicBrainzMetadataProvider(MetadataProvider):
@@ -37,6 +40,8 @@ class MusicBrainzMetadataProvider(MetadataProvider):
         }
 
         query_params = {"fmt": "json", **(params or {})}
+
+        await _musicbrainz_limiter.acquire()
 
         async with httpx.AsyncClient(timeout=10) as client:
             response = await client.get(url, params=query_params, headers=headers)
