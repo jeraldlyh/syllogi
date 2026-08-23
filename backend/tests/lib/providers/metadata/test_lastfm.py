@@ -88,6 +88,43 @@ class TestSearchTracks:
 
         assert result == []
 
+    async def test_returns_empty_when_no_criteria(self):
+        provider = _make_provider()
+        result = await provider.search_tracks()
+
+        assert result == []
+
+    @respx.mock
+    async def test_ignores_album_name(self):
+        route = respx.get("https://ws.audioscrobbler.com/2.0/").mock(
+            return_value=httpx.Response(200, json=load_fixture("lastfm/track-search"))
+        )
+
+        provider = _make_provider()
+        await provider.search_tracks(
+            artist_name="IU", track_name="Celebrity", album_name="LILAC"
+        )
+
+        params = route.calls.last.request.url.params
+
+        assert params["track"] == "Celebrity"
+        assert params["artist"] == "IU"
+        assert "album" not in params
+
+    @respx.mock
+    async def test_free_text_query_searched_as_track_term(self):
+        route = respx.get("https://ws.audioscrobbler.com/2.0/").mock(
+            return_value=httpx.Response(200, json=load_fixture("lastfm/track-search"))
+        )
+
+        provider = _make_provider()
+        await provider.search_tracks(artist_name="IU", query="lilac iu")
+
+        params = route.calls.last.request.url.params
+
+        assert params["track"] == "lilac iu"
+        assert params["artist"] == ""
+
 
 class TestGetAlbumInfo:
     @respx.mock

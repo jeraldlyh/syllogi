@@ -119,13 +119,23 @@ class DeezerMetadataProvider(MetadataProvider):
     async def search_tracks(
         self,
         *,
-        artist_name: str,
-        track_name: str,
+        artist_name: str = "",
+        track_name: str = "",
+        album_name: str = "",
+        query: str = "",
         limit: int = 10,
     ) -> list[ArtistTrack]:
-        """Search Deezer for tracks matching an artist name and/or track name."""
+        """Search Deezer for tracks matching an artist, track and/or album name."""
 
-        query = f"{artist_name} {track_name}".strip()
+        if not query:
+            query = " ".join(
+                term for term in (artist_name, track_name, album_name) if term
+            )
+
+        query = query.strip()
+
+        if not query:
+            return []
 
         try:
             result = await self._http(

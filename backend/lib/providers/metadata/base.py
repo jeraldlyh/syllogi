@@ -74,20 +74,27 @@ class MetadataProvider(ABC):
     async def search_tracks(
         self,
         *,
-        artist_name: str,
-        track_name: str,
+        artist_name: str = "",
+        track_name: str = "",
+        album_name: str = "",
+        query: str = "",
         limit: int = 10,
     ) -> list[ArtistTrack]:
-        """Search for tracks matching an artist name and/or track name.
+        """Search for tracks matching any combination of artist, track and album.
 
         Args:
             artist_name: Artist name to search for. Pass an empty string to
-                search by track name only.
+                search by the other fields only.
             track_name: Track name to search for. Pass an empty string to
-                search by artist name only.
+                search by the other fields only.
+            album_name: Album name to narrow the search by. Providers whose
+                search endpoint has no album dimension ignore it.
+            query: Free-text search, used instead of the fields above.
             limit: Maximum number of tracks to return.
 
         Returns:
-            List of matching ArtistTrack, best match first.
+            List of matching ArtistTrack, best match first, or an empty list if
+            no criteria were given. The id, release_date and score fields are
+            only populated by providers that expose them.
         """
         ...
