@@ -4,7 +4,12 @@ from dataclasses import dataclass
 
 @dataclass
 class ArtistTrack:
-    """A track by an artist."""
+    """A track by an artist.
+
+    The trailing fields are only populated by providers that expose them (today
+    MusicBrainz); they carry everything needed to retag a file. Providers that
+    cannot supply them leave them at their defaults.
+    """
 
     artist_name: str
     track_name: str
@@ -13,6 +18,9 @@ class ArtistTrack:
     album_name: str
     genres: list[str]
     image_url: str
+    id: str = ""
+    release_date: str = ""
+    score: int = 0
 
     async def ensure_metadata(self) -> None:
         """Ensure that metadata is set, by falling back to Deezer API"""
@@ -45,6 +53,33 @@ class ArtistTrack:
         if not self.duration_ms:
             return 0
         return self.duration_ms // 1000
+
+    def get_year(self) -> str:
+        """Get the release year, from a date that may be a year, year-month or full date."""
+
+        if not self.release_date:
+            return ""
+        return self.release_date.split("-")[0]
+
+    def to_search_dict(self) -> dict[str, str | int | list]:
+        """Convert the ArtistTrack to a search-result dictionary representation.
+
+        Unlike `to_dict`, this is synchronous and does no provider lookup, so it
+        is safe to call for every hit in a result set.
+        """
+
+        return {
+            "id": self.id,
+            "title": self.track_name,
+            "artist_name": self.artist_name,
+            "album_name": self.album_name,
+            "release_date": self.release_date,
+            "year": self.get_year(),
+            "duration": self.get_duration(),
+            "disambiguation": self.disambiguation,
+            "genres": self.genres,
+            "score": self.score,
+        }
 
     async def to_dict(
         self,
