@@ -47,7 +47,7 @@ const MISSING_OPTIONS = [
 const PLACEHOLDER_ROWS = [0, 1, 2, 3, 4, 5];
 
 const StatDivider = () => (
-  <span aria-hidden className="hidden h-3 w-px shrink-0 bg-border sm:block" />
+  <span aria-hidden className="hidden h-3 w-px shrink-0 bg-border md:block" />
 );
 
 const StatCount = ({
@@ -182,8 +182,8 @@ export const Library = () => {
           <Table>
             <TableHeader>
               <TableRow className="text-xs text-muted-foreground hover:bg-transparent">
-                <TableHead className="sm:w-2/5">File</TableHead>
-                <TableHead className="hidden sm:table-cell sm:w-1/5">
+                <TableHead className="md:w-2/5">File</TableHead>
+                <TableHead className="hidden md:table-cell md:w-1/5">
                   Artist
                 </TableHead>
                 <TableHead className="hidden lg:table-cell lg:w-1/5">
@@ -222,41 +222,66 @@ export const Library = () => {
         <CardHeader className="gap-4 pb-4">
           <CardTitle className="sr-only">Library</CardTitle>
           {data ? (
-            <div className="flex flex-wrap items-baseline gap-x-3 gap-y-2 border-b border-border pb-3 font-mono text-xs">
-              <StatCount value={data.summary.total} label="files" />
-              <StatDivider />
-              <StatCount
-                value={data.summary.missing_lyrics}
-                label="without lyrics"
-                className={cn({
-                  "text-amber-400": data.summary.missing_lyrics > 0,
-                  "text-primary": data.summary.missing_lyrics == 0,
-                })}
-              />
-              <StatDivider />
-              <StatCount
-                value={data.summary.missing_musicbrainz_id}
-                label="not linked"
-                className={cn({
-                  "text-amber-400": data.summary.missing_musicbrainz_id > 0,
-                  "text-primary": data.summary.missing_musicbrainz_id == 0,
-                })}
-              />
-              <StatDivider />
-              <StatCount value={data.summary.lossless} label="lossless" />
-              <span className="ml-auto max-w-full truncate text-muted-foreground/60">
-                {data.directory.slice(0, data.directory.lastIndexOf("/") + 1)}
-                <span className="text-foreground">
+            <div className="border-b border-border pb-3 font-mono text-xs">
+              <div className="md:hidden block">
+                <Text
+                  muted
+                  className="uppercase tracking-widest pb-2"
+                  value="Directory"
+                />
+                <p className="truncate">
+                  <span className="text-muted-foreground/60">
+                    {data.directory.slice(
+                      0,
+                      data.directory.lastIndexOf("/") + 1,
+                    )}
+                  </span>
                   {data.directory.slice(data.directory.lastIndexOf("/") + 1)}
+                </p>
+                <Text
+                  muted
+                  className="uppercase tracking-widest pb-2 mt-4"
+                  value="Directory"
+                />
+              </div>
+              <div className="grid grid-cols-2 items-baseline gap-x-4 gap-y-2 md:flex md:flex-wrap md:gap-x-3">
+                <StatCount value={data.summary.total} label="files" />
+                <StatDivider />
+                <StatCount
+                  value={data.summary.missing_lyrics}
+                  label="without lyrics"
+                  className={cn({
+                    "text-amber-400": data.summary.missing_lyrics > 0,
+                    "text-primary": data.summary.missing_lyrics == 0,
+                  })}
+                />
+                <StatDivider />
+                <StatCount
+                  value={data.summary.missing_musicbrainz_id}
+                  label="not linked"
+                  className={cn({
+                    "text-amber-400": data.summary.missing_musicbrainz_id > 0,
+                    "text-primary": data.summary.missing_musicbrainz_id == 0,
+                  })}
+                />
+                <StatDivider />
+                <StatCount value={data.summary.lossless} label="lossless" />
+                <span className="hidden min-w-0 max-w-full truncate text-muted-foreground/60 md:ml-auto md:inline">
+                  {data.directory.slice(0, data.directory.lastIndexOf("/") + 1)}
+                  <span className="text-foreground">
+                    {data.directory.slice(data.directory.lastIndexOf("/") + 1)}
+                  </span>
                 </span>
-              </span>
+              </div>
             </div>
           ) : (
             <div className="border-b border-border pb-3">
-              <Skeleton className="h-4 w-72" />
+              <Skeleton className="h-4 w-full md:w-72" />
+              <Skeleton className="mt-2 h-4 w-full md:hidden" />
+              <Skeleton className="mt-2 h-4 w-1/3 md:hidden" />
             </div>
           )}
-          <div className="flex flex-col gap-2 sm:flex-row">
+          <div className="flex flex-col gap-2 md:flex-row">
             <div className="relative flex-1">
               <span className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2">
                 <FilterActivityIcon
@@ -280,7 +305,7 @@ export const Library = () => {
               value={filters.format || ALL}
               options={FORMAT_OPTIONS}
               label="Filter by format"
-              className="sm:w-40"
+              className="md:w-40"
               onChange={(value) =>
                 patchFilters({
                   format:
@@ -292,7 +317,7 @@ export const Library = () => {
               value={filters.missing || ALL}
               options={MISSING_OPTIONS}
               label="Filter by missing tags"
-              className="sm:w-56"
+              className="md:w-56"
               onChange={(value) =>
                 patchFilters({
                   missing:
