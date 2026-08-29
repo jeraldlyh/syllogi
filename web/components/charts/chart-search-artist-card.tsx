@@ -21,7 +21,7 @@ export const ChartSearchArtistCard = ({
       <ChartImage imageUrl={imageUrl} alt={name} />
       <div className="flex flex-1 flex-col gap-1 p-3">
         <Text className="truncate font-semibold" value={name} />
-        <Text className="text-xs text-muted-foreground" value="Artist" />
+        <Text muted value="Artist" />
       </div>
     </button>
   );

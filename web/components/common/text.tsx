@@ -1,7 +1,7 @@
 import { cn } from "@/lib/utils";
 
 const TEXT_VARIANTS = {
-  xs: "text-xs md:text-sm",
+  xs: "text-xs",
   sm: "text-sm",
   base: "text-base",
   lg: "text-lg",
@@ -16,6 +16,7 @@ interface IProps {
   mono?: boolean;
   noWrap?: boolean;
   muted?: boolean;
+  disableViewport?: boolean;
 }
 export const Text = ({
   className,
@@ -24,6 +25,7 @@ export const Text = ({
   mono,
   noWrap,
   muted,
+  disableViewport,
 }: IProps) => {
   return (
     <p
@@ -34,6 +36,7 @@ export const Text = ({
           "text-foreground": className && !className.includes("text-"),
           "whitespace-nowrap": noWrap,
           "text-muted-foreground": muted,
+          "md:text-sm": variant === "xs" && !disableViewport,
         },
         className,
       )}

@@ -97,11 +97,8 @@ export default function Page() {
             />
           </div>
           <div className="flex flex-col items-center gap-1">
-            <Text value="Signing you in" className="text-lg" />
-            <Text
-              value="Please wait a moment..."
-              className="text-sm text-muted-foreground"
-            />
+            <Text value="Signing you in" variant="lg" />
+            <Text value="Please wait a moment..." variant="sm" muted />
           </div>
         </div>
       ) : (

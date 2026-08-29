@@ -53,7 +53,7 @@ export const RecordingPanel = ({ initialQuery, linkedId, onApply }: IProps) => {
             >
               <div className="flex items-start justify-between gap-3">
                 <div className="min-w-0">
-                  <p className="truncate text-sm font-medium md:text-base">
+                  <p className="truncate text-sm font-medium">
                     {match.title}
                     {match.disambiguation && (
                       <span className="text-muted-foreground">

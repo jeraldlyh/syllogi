@@ -179,13 +179,14 @@ export const RecommendationTable = () => {
             <DialogTitle className="flex items-center gap-2">
               <Text
                 value="Recommendation Failed"
-                className="text-lg font-semibold"
+                variant="lg"
+                className="font-semibold"
               />
               <StatusBadge status={selectedSession.status} />
             </DialogTitle>
           </DialogHeader>
           <div className="p-4 bg-red-500/5 rounded-md text-red-400">
-            <Text value="Stacktrace:" className="text-sm" />
+            <Text value="Stacktrace:" variant="sm" />
             <ScrollArea className="max-h-64 mt-2 rounded-md border bg-secondary/50 p-2 overflow-y-scroll">
               <pre className="text-xs text-wrap">
                 {selectedSession.error_message || "No stacktrace available."}
@@ -202,7 +203,8 @@ export const RecommendationTable = () => {
           <DialogTitle className="flex items-center gap-2">
             <Text
               value={selectedSession.username}
-              className="text-lg font-semibold"
+              variant="lg"
+              className="font-semibold"
             />
             <StatusBadge status={selectedSession.status} />
           </DialogTitle>
@@ -476,7 +478,7 @@ export const RecommendationTable = () => {
 const DialogItem = ({ label, value }: { label: string; value: string }) => {
   return (
     <div>
-      <p className="text-xs text-muted-foreground">{label}</p>
+      <Text muted value={label} />
       <Text className="truncate" value={value} />
     </div>
   );
@@ -513,7 +515,7 @@ const TrackList = ({
 
   return (
     <div>
-      <p className={cn("mb-2 text-xs font-semibold", accent)}>{title}</p>
+      <Text className={cn("mb-2 font-semibold", accent)} value={title} />
       {renderTracks()}
     </div>
   );

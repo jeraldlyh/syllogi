@@ -140,7 +140,13 @@ const LibraryRow = ({
         className="truncate font-medium"
         value={track.tags.title || removeFileExtension(track.filename)}
       />
-      <Text mono muted className="truncate" value={track.directory} />
+      <Text
+        disableViewport
+        mono
+        muted
+        className="truncate"
+        value={track.directory}
+      />
     </TableCell>
     <TagCell
       value={track.tags.artist}

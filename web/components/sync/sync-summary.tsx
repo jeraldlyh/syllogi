@@ -87,7 +87,7 @@ const SummaryItem = ({
   return (
     <div className="grid grid-cols-[auto,1fr] gap-x-2 gap-y-1">
       {icon}
-      <p className="text-xs text-muted-foreground">{label}</p>
+      <Text muted value={label} />
       <div />
       <Text className="truncate" value={String(value)} mono={mono} />
     </div>

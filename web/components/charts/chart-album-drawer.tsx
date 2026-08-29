@@ -159,9 +159,11 @@ const AlbumContent = ({ artistName, albumName }: IProps) => {
       <div className="flex flex-1 flex-col items-center justify-center px-6 pb-8">
         <div className="flex flex-col items-center gap-4 text-center">
           <h1 className="text-2xl font-bold mt-4">Album not found</h1>
-          <p className="text-sm text-muted-foreground">
-            We couldn&apos;t find information for &quot;{albumName}&quot;.
-          </p>
+          <Text
+            variant="sm"
+            muted
+            value={`We couldn't find information for "${albumName}".`}
+          />
         </div>
       </div>
     );
@@ -245,9 +247,12 @@ const AlbumContent = ({ artistName, albumName }: IProps) => {
               </Table>
             </div>
           ) : (
-            <p className="text-sm italic text-muted-foreground">
-              No tracks available for this album.
-            </p>
+            <Text
+              variant="sm"
+              muted
+              className="italic"
+              value="No tracks available for this album."
+            />
           )}
         </div>
       </div>

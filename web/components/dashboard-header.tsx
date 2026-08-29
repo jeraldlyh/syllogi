@@ -1,3 +1,4 @@
+import { Text } from "@/components/common/text";
 import { Button } from "@/components/ui/button";
 import {
   Tooltip,
@@ -93,12 +94,12 @@ export function DashboardHeader() {
           <h1 className="text-xl font-semibold tracking-tight text-foreground">
             syllogi
           </h1>
-          <p className="text-xs text-muted-foreground">
-            Last sync&nbsp;
-            {formatLastSyncedTime(
+          <Text
+            muted
+            value={`Last sync ${formatLastSyncedTime(
               new Date(data && data.length > 0 ? data[0].finished_at : ""),
-            )}
-          </p>
+            )}`}
+          />
           {slskdHealth?.configured && (
             <Tooltip>
               <TooltipTrigger asChild>
@@ -132,9 +133,12 @@ export function DashboardHeader() {
       </div>
       <div className="flex items-center gap-2 self-start md:self-auto">
         {currentUser?.username && (
-          <p className="text-sm font-medium border-b border-border text-muted-foreground">
-            {currentUser.username}
-          </p>
+          <Text
+            variant="sm"
+            muted
+            className="font-medium border-b border-border"
+            value={currentUser.username}
+          />
         )}
         <Tooltip>
           <TooltipTrigger asChild>
