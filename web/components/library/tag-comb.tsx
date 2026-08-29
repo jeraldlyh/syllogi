@@ -43,7 +43,18 @@ export const TagComb = ({ filled, className }: IProps) => {
         </span>
       </TooltipTrigger>
       <TooltipContent side="left" className="font-mono text-xs">
-        {label}
+        {missing.length === 0 ? (
+          `All ${TAG_FIELDS.length} tags present`
+        ) : (
+          <>
+            <p>{`Missing ${missing.length} of ${TAG_FIELDS.length} tags`}</p>
+            <ul className="mt-1.5 flex flex-col gap-0.5 text-amber-400">
+              {missing.map((field) => (
+                <li key={field}>{TAG_FIELD_LABELS[field]}</li>
+              ))}
+            </ul>
+          </>
+        )}
       </TooltipContent>
     </Tooltip>
   );

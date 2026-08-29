@@ -165,7 +165,7 @@ const LibraryRow = ({
         </span>
       </div>
     </TableCell>
-    <TableCell className="w-px">
+    <TableCell>
       <div className="flex items-center justify-end gap-3">
         <TagComb filled={track.filled_fields} />
         <ChevronRight className="h-4 w-4 shrink-0 text-muted-foreground/50" />
@@ -250,7 +250,7 @@ export const Library = () => {
                   Album
                 </TableHead>
                 <TableHead className="hidden md:table-cell">Format</TableHead>
-                <TableHead className="w-px text-right">Tags</TableHead>
+                <TableHead>Tags</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
