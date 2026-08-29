@@ -40,3 +40,17 @@ export const formatDuration = (seconds: number | null): string => {
   if (minute > 0) return `${minute}m ${second}s`;
   return `${second}s`;
 };
+
+export const formatClock = (seconds: number): string => {
+  if (!seconds || seconds < 0) return "--:--";
+
+  const minutes = Math.floor(seconds / 60);
+  const remainder = Math.floor(seconds % 60);
+
+  return `${minutes}:${String(remainder).padStart(2, "0")}`;
+};
+
+export const formatSize = (bytes: number): string => {
+  if (bytes >= 1_000_000) return `${(bytes / 1_048_576).toFixed(1)} MB`;
+  return `${Math.round(bytes / 1024)} KB`;
+};

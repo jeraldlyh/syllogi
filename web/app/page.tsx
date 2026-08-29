@@ -2,6 +2,7 @@ import { Text } from "@/components/common/text";
 import { DashboardHeader } from "@/components/dashboard-header";
 import { Charts } from "@/components/charts/charts";
 import { ChartDownloads } from "@/components/charts/chart-downloads";
+import { Library } from "@/components/library/library";
 import { SyncSettings } from "@/components/sync/sync-settings";
 import { RecommendationSummary } from "@/components/recommendations/recommendation-summary";
 import { Recommendations } from "@/components/recommendations/recommendation-settings";
@@ -114,6 +115,7 @@ export default function Page() {
                   Recommendations
                 </TabsTrigger>
                 <TabsTrigger value="charts">Charts</TabsTrigger>
+                <TabsTrigger value="library">Library</TabsTrigger>
                 {currentUser?.is_admin && (
                   <TabsTrigger value="users">Users</TabsTrigger>
                 )}
@@ -136,6 +138,11 @@ export default function Page() {
                 <div className="flex flex-col gap-6 pt-6">
                   <ChartDownloads />
                   <Charts />
+                </div>
+              </TabsContent>
+              <TabsContent value="library">
+                <div className="flex flex-col gap-6 pt-6">
+                  <Library />
                 </div>
               </TabsContent>
               {currentUser?.is_admin && (

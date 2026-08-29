@@ -62,6 +62,9 @@ const config: Config = {
           ring: "hsl(var(--sidebar-ring))",
         },
       },
+      height: {
+        editor: "62vh",
+      },
       fontFamily: {
         sans: ["var(--font-inter)", "system-ui", "sans-serif"],
         mono: ["var(--font-jetbrains-mono)", "monospace"],
