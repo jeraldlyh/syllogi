@@ -1,9 +1,25 @@
-from unittest.mock import MagicMock, patch
+from unittest.mock import AsyncMock, patch
 
 import pytest
-from mutagen import MutagenError
 
-from lib.tagger import has_lyrics, is_valid_lyrics
+from lib.models.library import AudioTags, LyricsCandidate
+from lib.tagger import get_tag_frames, is_valid_lyrics, tag_audio_file
+
+
+def make_candidate(**overrides) -> LyricsCandidate:
+    fields = {
+        "id": 1,
+        "track_name": "Blinding Lights",
+        "artist_name": "The Weeknd",
+        "album_name": "After Hours",
+        "duration": 200,
+        "instrumental": False,
+        "plain_lyrics": "I've been tryna call",
+        "synced_lyrics": "[00:03.45] I've been tryna call",
+    }
+    fields.update(overrides)
+
+    return LyricsCandidate(**fields)
 
 
 class TestIsValidLyrics:
@@ -36,161 +52,178 @@ class TestIsValidLyrics:
         assert is_valid_lyrics(text) is True
 
 
-class TestHasLyricsFlac:
-    @patch("lib.tagger.FLAC")
-    def test_returns_true_when_lyrics_tag_present(self, mock_flac):
-        mock_audio = MagicMock()
-        mock_audio.tags = {"LYRICS": ["test lyrics"]}
-        mock_flac.return_value = mock_audio
+class TestGetTagFrames:
+    def test_reports_id3_frames_for_mp3(self):
+        frames = get_tag_frames("Artist/Track.mp3")
 
-        assert has_lyrics("test.flac") is True
-        mock_flac.assert_called_once_with("test.flac")
+        assert frames["title"] == "TIT2"
+        assert frames["musicbrainz_id"] == "UFID"
 
-    @patch("lib.tagger.FLAC")
-    def test_returns_true_when_lyrics_tag_is_lrc_with_text(self, mock_flac):
-        mock_audio = MagicMock()
-        mock_audio.tags = {"LYRICS": ["[00:12.00]hello world\n[00:15.00]goodbye"]}
-        mock_flac.return_value = mock_audio
+    @pytest.mark.parametrize("file_path", ["Artist/Track.flac", "Artist/Track.opus"])
+    def test_reports_vorbis_frames_for_flac_and_opus(self, file_path):
+        frames = get_tag_frames(file_path)
 
-        assert has_lyrics("test.flac") is True
-        mock_flac.assert_called_once_with("test.flac")
-
-    @patch("lib.tagger.FLAC")
-    def test_returns_false_when_lyrics_tag_is_empty(self, mock_flac):
-        mock_audio = MagicMock()
-        mock_audio.tags = {"LYRICS": [""]}
-        mock_flac.return_value = mock_audio
-
-        assert has_lyrics("test.flac") is False
-        mock_flac.assert_called_once_with("test.flac")
-
-    @patch("lib.tagger.FLAC")
-    def test_returns_false_when_lyrics_tag_is_whitespace_only(self, mock_flac):
-        mock_audio = MagicMock()
-        mock_audio.tags = {"LYRICS": ["\n  \t\n"]}
-        mock_flac.return_value = mock_audio
-
-        assert has_lyrics("test.flac") is False
-        mock_flac.assert_called_once_with("test.flac")
-
-    @patch("lib.tagger.FLAC")
-    def test_returns_false_when_lyrics_tag_is_timestamp_only(self, mock_flac):
-        mock_audio = MagicMock()
-        mock_audio.tags = {"LYRICS": ["[00:00.00]\n[00:05.00]"]}
-        mock_flac.return_value = mock_audio
-
-        assert has_lyrics("test.flac") is False
-        mock_flac.assert_called_once_with("test.flac")
-
-    @patch("lib.tagger.FLAC")
-    def test_returns_false_when_no_lyrics_tag(self, mock_flac):
-        mock_audio = MagicMock()
-        mock_audio.tags = {}
-        mock_flac.return_value = mock_audio
-
-        assert has_lyrics("test.flac") is False
-        mock_flac.assert_called_once_with("test.flac")
-
-    @patch("lib.tagger.FLAC")
-    def test_returns_false_when_no_tags(self, mock_flac):
-        mock_audio = MagicMock()
-        mock_audio.tags = None
-        mock_flac.return_value = mock_audio
-
-        assert has_lyrics("test.flac") is False
-        mock_flac.assert_called_once_with("test.flac")
-
-    @patch("lib.tagger.FLAC")
-    def test_returns_false_on_mutagen_error(self, mock_flac):
-        mock_flac.side_effect = MutagenError("boom")
-
-        assert has_lyrics("test.flac") is False
-        mock_flac.assert_called_once_with("test.flac")
+        assert frames["title"] == "TITLE"
+        assert frames["musicbrainz_id"] == "MUSICBRAINZ_TRACKID"
 
 
-class TestHasLyricsMp3:
-    @patch("lib.tagger.MP3")
-    def test_returns_true_when_uslt_tag_present(self, mock_mp3):
-        mock_audio = MagicMock()
-        mock_tag = MagicMock()
-        mock_tag.text = "test lyrics"
-        mock_audio.tags.getall.return_value = [mock_tag]
-        mock_mp3.return_value = mock_audio
+class TestTagAudioFile:
+    @staticmethod
+    def _patch(existing: AudioTags, candidates: list[LyricsCandidate] | None = None):
+        return (
+            patch("lib.tagger.read_audio_tags", return_value=(existing, 200)),
+            patch("lib.tagger.write_audio_tags"),
+            patch(
+                "lib.tagger.LRCLIBLyricsProvider.search_lyrics",
+                new=AsyncMock(return_value=candidates or []),
+            ),
+        )
 
-        assert has_lyrics("test.mp3") is True
-        mock_mp3.assert_called_once_with("test.mp3")
+    async def test_writes_the_supplied_metadata(self):
+        existing = AudioTags()
+        read, write, search = self._patch(existing)
 
-    @patch("lib.tagger.MP3")
-    def test_returns_false_when_uslt_text_empty(self, mock_mp3):
-        mock_audio = MagicMock()
-        mock_tag = MagicMock()
-        mock_tag.text = "   "
-        mock_audio.tags.getall.return_value = [mock_tag]
-        mock_mp3.return_value = mock_audio
+        with read, write as mock_write, search:
+            result = await tag_audio_file(
+                file_path="Track.flac",
+                artist_name="The Weeknd",
+                track_name="Blinding Lights",
+                album_name="After Hours",
+                year="2020",
+                genres=["synth-pop"],
+                duration=200,
+            )
 
-        assert has_lyrics("test.mp3") is False
-        mock_mp3.assert_called_once_with("test.mp3")
+        assert result is True
+        written = mock_write.call_args.kwargs["tags"]
+        assert written.title == "Blinding Lights"
+        assert written.artist == "The Weeknd"
+        assert written.album == "After Hours"
+        assert written.date == "2020"
+        assert written.genres == ["synth-pop"]
 
-    @patch("lib.tagger.MP3")
-    def test_returns_false_when_uslt_timestamp_only(self, mock_mp3):
-        mock_audio = MagicMock()
-        mock_tag = MagicMock()
-        mock_tag.text = "[00:00.00]\n[00:05.00]"
-        mock_audio.tags.getall.return_value = [mock_tag]
-        mock_mp3.return_value = mock_audio
+    async def test_keeps_lyrics_already_on_the_file(self):
+        existing = AudioTags(lyrics="[00:03.45] I've been tryna call")
+        read, write, search = self._patch(existing)
 
-        assert has_lyrics("test.mp3") is False
-        mock_mp3.assert_called_once_with("test.mp3")
+        with read, write as mock_write, search as mock_search:
+            await tag_audio_file(
+                file_path="Track.flac",
+                artist_name="The Weeknd",
+                track_name="Blinding Lights",
+                album_name="After Hours",
+                year="2020",
+                genres=[],
+                duration=200,
+            )
 
-    @patch("lib.tagger.MP3")
-    def test_returns_false_when_no_uslt_tag(self, mock_mp3):
-        mock_audio = MagicMock()
-        mock_audio.tags.getall.return_value = []
-        mock_mp3.return_value = mock_audio
+        assert mock_write.call_args.kwargs["tags"].lyrics == existing.lyrics
+        mock_search.assert_not_awaited()
 
-        assert has_lyrics("test.mp3") is False
-        mock_mp3.assert_called_once_with("test.mp3")
+    async def test_keeps_the_musicbrainz_id_already_on_the_file(self):
+        existing = AudioTags(musicbrainz_id="9b1a2b3c")
+        read, write, search = self._patch(existing)
 
-    @patch("lib.tagger.MP3")
-    def test_returns_false_when_no_tags(self, mock_mp3):
-        mock_audio = MagicMock()
-        mock_audio.tags = None
-        mock_mp3.return_value = mock_audio
+        with read, write as mock_write, search:
+            await tag_audio_file(
+                file_path="Track.flac",
+                artist_name="The Weeknd",
+                track_name="Blinding Lights",
+                album_name="",
+                year="",
+                genres=[],
+                duration=200,
+            )
 
-        assert has_lyrics("test.mp3") is False
-        mock_mp3.assert_called_once_with("test.mp3")
+        assert mock_write.call_args.kwargs["tags"].musicbrainz_id == "9b1a2b3c"
 
-    @patch("lib.tagger.MP3")
-    def test_returns_false_on_mutagen_error(self, mock_mp3):
-        mock_mp3.side_effect = MutagenError("boom")
+    async def test_keeps_existing_values_when_no_replacement_is_supplied(self):
+        existing = AudioTags(album="After Hours", date="2020", genres=["synth-pop"])
+        read, write, search = self._patch(existing)
 
-        assert has_lyrics("test.mp3") is False
-        mock_mp3.assert_called_once_with("test.mp3")
+        with read, write as mock_write, search:
+            await tag_audio_file(
+                file_path="Track.flac",
+                artist_name="The Weeknd",
+                track_name="Blinding Lights",
+                album_name="",
+                year="",
+                genres=[],
+                duration=200,
+            )
 
+        written = mock_write.call_args.kwargs["tags"]
+        assert written.album == "After Hours"
+        assert written.date == "2020"
+        assert written.genres == ["synth-pop"]
 
-class TestHasLyricsOpus:
-    @patch("lib.tagger.OggOpus")
-    def test_returns_true_when_lyrics_tag_present(self, mock_ogg_opus):
-        mock_audio = MagicMock()
-        mock_audio.tags = {"LYRICS": ["test lyrics"]}
-        mock_ogg_opus.return_value = mock_audio
+    async def test_fetches_lyrics_when_the_file_has_none(self):
+        existing = AudioTags()
+        read, write, search = self._patch(existing, [make_candidate()])
 
-        assert has_lyrics("test.opus") is True
-        mock_ogg_opus.assert_called_once_with("test.opus")
+        with read, write as mock_write, search as mock_search:
+            await tag_audio_file(
+                file_path="Track.flac",
+                artist_name="The Weeknd",
+                track_name="Blinding Lights",
+                album_name="After Hours",
+                year="2020",
+                genres=[],
+                duration=200,
+            )
 
-    @patch("lib.tagger.OggOpus")
-    def test_returns_false_when_no_lyrics_tag(self, mock_ogg_opus):
-        mock_audio = MagicMock()
-        mock_audio.tags = {}
-        mock_ogg_opus.return_value = mock_audio
+        mock_search.assert_awaited_once()
+        assert (
+            mock_write.call_args.kwargs["tags"].lyrics
+            == "[00:03.45] I've been tryna call"
+        )
 
-        assert has_lyrics("test.opus") is False
-        mock_ogg_opus.assert_called_once_with("test.opus")
+    async def test_leaves_lyrics_empty_when_no_candidate_matches(self):
+        existing = AudioTags()
+        read, write, search = self._patch(existing, [make_candidate(duration=400)])
 
+        with read, write as mock_write, search:
+            await tag_audio_file(
+                file_path="Track.flac",
+                artist_name="The Weeknd",
+                track_name="Blinding Lights",
+                album_name="After Hours",
+                year="2020",
+                genres=[],
+                duration=200,
+            )
 
-class TestHasLyricsUnsupported:
-    def test_returns_false_for_unsupported_extension(self):
-        assert has_lyrics("test.wav") is False
+        assert mock_write.call_args.kwargs["tags"].lyrics == ""
 
-    def test_returns_false_for_nonexistent_file(self):
-        assert has_lyrics("missing.ogg") is False
+    async def test_returns_false_for_an_unreadable_file(self):
+        with patch("lib.tagger.read_audio_tags", return_value=None):
+            result = await tag_audio_file(
+                file_path="Track.wav",
+                artist_name="The Weeknd",
+                track_name="Blinding Lights",
+                album_name="After Hours",
+                year="2020",
+                genres=[],
+            )
+
+        assert result is False
+
+    async def test_returns_false_when_the_write_fails(self):
+        existing = AudioTags()
+        read, _, search = self._patch(existing)
+
+        with (
+            read,
+            patch("lib.tagger.write_audio_tags", side_effect=OSError("disk full")),
+            search,
+        ):
+            result = await tag_audio_file(
+                file_path="Track.flac",
+                artist_name="The Weeknd",
+                track_name="Blinding Lights",
+                album_name="After Hours",
+                year="2020",
+                genres=[],
+            )
+
+        assert result is False
