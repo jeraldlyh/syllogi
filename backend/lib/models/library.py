@@ -1,5 +1,7 @@
 from dataclasses import dataclass, field
 
+LRC_LINE_PREFIX = "["
+
 
 @dataclass
 class AudioTags:
@@ -39,7 +41,14 @@ class LibraryTrack:
     duration: int
     tags: AudioTags
     has_lyrics: bool
-    is_synced_lyrics: bool
+
+    def is_synced_lyrics(self) -> bool:
+        """Check whether the lyrics on this file carry LRC timestamps."""
+
+        return any(
+            line.strip().startswith(LRC_LINE_PREFIX)
+            for line in self.tags.lyrics.splitlines()
+        )
 
     def filled_fields(self) -> list[str]:
         """List the tag fields that carry a value on this file."""
@@ -82,7 +91,7 @@ class LibraryTrack:
             "size": self.size,
             "duration": self.duration,
             "has_lyrics": self.has_lyrics,
-            "is_synced_lyrics": self.is_synced_lyrics,
+            "is_synced_lyrics": self.is_synced_lyrics(),
             "filled_fields": self.filled_fields(),
             "tags": tags,
         }
