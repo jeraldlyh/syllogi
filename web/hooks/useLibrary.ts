@@ -102,7 +102,7 @@ export interface LibraryFilters {
   missing: "" | "lyrics" | "musicbrainz_id" | "any";
 }
 
-export const LIBRARY_PAGE_SIZE = 100;
+export const LIBRARY_PAGE_SIZE = 50;
 
 export const SEARCH_DEBOUNCE_MS = 300;
 
