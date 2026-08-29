@@ -106,7 +106,7 @@ export default function Page() {
           <DashboardHeader />
           <main className="mt-10">
             <Tabs defaultValue="sync" className="w-full">
-              <TabsList>
+              <TabsList className="overflow-x-auto">
                 <TabsTrigger value="sync">Sync</TabsTrigger>
                 <TabsTrigger value="recommendations">
                   Recommendations
