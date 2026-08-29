@@ -118,9 +118,12 @@ const useDebounced = <T>(value: T, delay: number): T => {
   return settled;
 };
 
-export const useLibraryTracks = (filters: LibraryFilters) => {
+export const useLibraryTracks = (filters: LibraryFilters, page: number) => {
   const query = useDebounced(filters.query, SEARCH_DEBOUNCE_MS);
-  const params = new URLSearchParams({ limit: String(LIBRARY_PAGE_SIZE) });
+  const params = new URLSearchParams({
+    limit: String(LIBRARY_PAGE_SIZE),
+    offset: String(page * LIBRARY_PAGE_SIZE),
+  });
 
   if (query.trim()) params.set("q", query.trim());
   if (filters.format) params.set("file_format", filters.format);

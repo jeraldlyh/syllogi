@@ -1,5 +1,4 @@
 import { Text } from "@/components/common/text";
-import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import {
@@ -13,7 +12,6 @@ import { Skeleton } from "@/components/ui/skeleton";
 import {
   Table,
   TableBody,
-  TableCell,
   TableHead,
   TableHeader,
   TableRow,
@@ -21,14 +19,14 @@ import {
 import {
   LIBRARY_PAGE_SIZE,
   LibraryFilters,
-  LibraryTrack,
   useLibraryTracks,
 } from "@/hooks/useLibrary";
-import { cn, formatClock, removeFileExtension } from "@/lib/utils";
-import { ChevronRight, FileAudio, Loader2, Search } from "lucide-react";
-import { useState } from "react";
+import { cn } from "@/lib/utils";
+import { FileAudio, Loader2, Search } from "lucide-react";
+import { useEffect, useState } from "react";
 import { LibraryEditor } from "./library-editor";
-import { TagComb } from "./tag-comb";
+import { LibraryPagination } from "./library-pagination";
+import { LibraryRow } from "./library-row";
 
 const ALL = "all";
 
@@ -94,92 +92,6 @@ const FilterSelect = ({
   </Select>
 );
 
-const TagCell = ({
-  value,
-  fallback,
-  className,
-}: {
-  value: string;
-  fallback: string;
-  className: string;
-}) => (
-  <TableCell className={cn("max-w-0", className)}>
-    <Text
-      value={value || fallback}
-      className={cn(
-        "truncate",
-        value ? "text-muted-foreground" : "text-amber-400/70",
-      )}
-    />
-  </TableCell>
-);
-
-const LibraryRow = ({
-  track,
-  onOpen,
-}: {
-  track: LibraryTrack;
-  onOpen: (path: string) => void;
-}) => (
-  <TableRow
-    tabIndex={0}
-    role="button"
-    aria-label={`Edit tags for ${track.filename}`}
-    onClick={() => onOpen(track.path)}
-    onKeyDown={(event) => {
-      if (event.key !== "Enter" && event.key !== " ") return;
-
-      event.preventDefault();
-      onOpen(track.path);
-    }}
-    className="cursor-pointer focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
-  >
-    <TableCell className="max-w-0">
-      <Text
-        variant="sm"
-        className="truncate font-medium"
-        value={track.tags.title || removeFileExtension(track.filename)}
-      />
-      <Text
-        disableViewport
-        mono
-        muted
-        className="truncate"
-        value={track.directory}
-      />
-    </TableCell>
-    <TagCell
-      value={track.tags.artist}
-      fallback="No artist"
-      className="hidden sm:table-cell"
-    />
-    <TagCell
-      value={track.tags.album}
-      fallback="No album"
-      className="hidden lg:table-cell"
-    />
-    <TableCell className="hidden md:table-cell">
-      <div className="flex items-center gap-2">
-        <Badge
-          variant="outline"
-          className="border-border font-mono text-xs uppercase tracking-wider text-muted-foreground"
-        >
-          {track.format}
-        </Badge>
-        <span className="font-mono text-xs text-muted-foreground">
-          {formatClock(track.duration)}
-        </span>
-      </div>
-    </TableCell>
-    <TableCell>
-      <div className="flex items-center justify-end gap-3">
-        <TagComb filled={track.filled_fields} />
-        <ChevronRight className="h-4 w-4 shrink-0 text-muted-foreground/50" />
-      </div>
-    </TableCell>
-  </TableRow>
-);
-
 export const Library = () => {
   const [filters, setFilters] = useState<LibraryFilters>({
     query: "",
@@ -187,11 +99,25 @@ export const Library = () => {
     missing: "",
   });
   const [openPath, setOpenPath] = useState<string | null>(null);
-  const { data, isLoading, isError, refresh } = useLibraryTracks(filters);
+  const [page, setPage] = useState(0);
+  const { data, isLoading, isError, refresh } = useLibraryTracks(filters, page);
   const FilterActivityIcon = isLoading ? Loader2 : Search;
 
-  const patchFilters = (patch: Partial<LibraryFilters>): void =>
+  useEffect(() => {
+    if (!data) return;
+
+    const lastPage = Math.max(
+      0,
+      Math.ceil(data.matched / LIBRARY_PAGE_SIZE) - 1,
+    );
+
+    if (page > lastPage) setPage(lastPage);
+  }, [data, page]);
+
+  const patchFilters = (patch: Partial<LibraryFilters>): void => {
+    setPage(0);
     setFilters((previous) => ({ ...previous, ...patch }));
+  };
 
   const renderContent = (): React.JSX.Element => {
     if (isLoading && !data) {
@@ -278,13 +204,12 @@ export const Library = () => {
             </TableBody>
           </Table>
         </div>
-        {data.matched > data.tracks.length && (
-          <Text
-            muted
-            className="pt-3"
-            value={`Showing the first ${LIBRARY_PAGE_SIZE} of ${data.matched} matching files. Narrow the search to reach the rest.`}
-          />
-        )}
+        <LibraryPagination
+          page={page}
+          shown={data.tracks.length}
+          matched={data.matched}
+          onChange={setPage}
+        />
       </>
     );
   };
