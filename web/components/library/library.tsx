@@ -25,7 +25,7 @@ import {
   useLibraryTracks,
 } from "@/hooks/useLibrary";
 import { cn, formatClock, removeFileExtension } from "@/lib/utils";
-import { ChevronRight, FileAudio, Search } from "lucide-react";
+import { ChevronRight, FileAudio, Loader2, Search } from "lucide-react";
 import { useState } from "react";
 import { LibraryEditor } from "./library-editor";
 import { TagComb } from "./tag-comb";
@@ -182,6 +182,7 @@ export const Library = () => {
   });
   const [openPath, setOpenPath] = useState<string | null>(null);
   const { data, isLoading, isError, refresh } = useLibraryTracks(filters);
+  const FilterActivityIcon = isLoading ? Loader2 : Search;
 
   const patchFilters = (patch: Partial<LibraryFilters>): void =>
     setFilters((previous) => ({ ...previous, ...patch }));
@@ -238,7 +239,13 @@ export const Library = () => {
 
     return (
       <>
-        <div className="overflow-x-auto rounded-md border border-border">
+        <div
+          aria-busy={isLoading}
+          className={cn(
+            "overflow-x-auto rounded-md border border-border transition-opacity",
+            isLoading && "opacity-50",
+          )}
+        >
           <Table>
             <TableHeader>
               <TableRow className="text-xs text-muted-foreground hover:bg-transparent">
@@ -316,7 +323,14 @@ export const Library = () => {
           )}
           <div className="flex flex-col gap-2 sm:flex-row">
             <div className="relative flex-1">
-              <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+              <span className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2">
+                <FilterActivityIcon
+                  className={cn(
+                    "h-4 w-4 text-muted-foreground",
+                    isLoading && "animate-spin text-primary",
+                  )}
+                />
+              </span>
               <Input
                 value={filters.query}
                 onChange={(event) =>
