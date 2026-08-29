@@ -21,11 +21,10 @@ import {
 import {
   LIBRARY_PAGE_SIZE,
   LibraryFilters,
-  LibrarySummary,
   LibraryTrack,
   useLibraryTracks,
 } from "@/hooks/useLibrary";
-import { cn, formatClock } from "@/lib/utils";
+import { cn, formatClock, removeFileExtension } from "@/lib/utils";
 import { ChevronRight, FileAudio, Search } from "lucide-react";
 import { useState } from "react";
 import { LibraryEditor } from "./library-editor";
@@ -137,13 +136,10 @@ const LibraryRow = ({
   >
     <TableCell className="max-w-0">
       <p className="truncate text-sm font-medium">
-        {track.tags.title || track.filename}
+        {track.tags.title || removeFileExtension(track.filename)}
       </p>
-      <p className="truncate font-mono text-xs text-muted-foreground sm:hidden">
-        {track.tags.artist || "No artist"}
-      </p>
-      <p className="hidden truncate font-mono text-xs text-muted-foreground sm:block">
-        {track.tags.title ? track.filename : track.directory || "/"}
+      <p className="truncate font-mono text-xs text-muted-foreground">
+        {track.directory}
       </p>
     </TableCell>
     <TagCell

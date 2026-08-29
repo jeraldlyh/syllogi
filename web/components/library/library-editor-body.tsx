@@ -10,7 +10,7 @@ import {
   TagSource,
 } from "@/hooks/useLibrary";
 import { api } from "@/lib/api";
-import { formatClock, formatSize } from "@/lib/utils";
+import { formatClock, formatSize, removeFileExtension } from "@/lib/utils";
 import { ExternalLink, Loader2, Save, Undo2 } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
@@ -244,7 +244,7 @@ export const EditorBody = ({ detail, onSaved, onDirtyChange }: IProps) => {
       <header className="flex flex-col gap-3 border-b border-border px-4 pb-4 pt-2 sm:flex-row sm:items-start sm:justify-between">
         <div className="min-w-0">
           <h2 className="truncate text-xl font-semibold tracking-tight">
-            {draft.title || detail.filename}
+            {draft.title || removeFileExtension(detail.filename)}
           </h2>
           <p className="mt-1 truncate font-mono text-xs text-muted-foreground">
             {detail.path}
