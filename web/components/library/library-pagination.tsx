@@ -21,7 +21,7 @@ export const LibraryPagination = ({
   return (
     <nav
       aria-label="pages"
-      className="flex flex-wrap items-center justify-between gap-3 pt-3"
+      className="grid grid-cols-1 place-items-center md:flex md:flex-wrap items-center md:justify-between gap-3 mt-3"
     >
       <Text mono muted value={`${first}–${last} of ${matched} files`} />
       {pageCount > 1 && (
