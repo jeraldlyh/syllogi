@@ -1,3 +1,4 @@
+import { Text } from "@/components/common/text";
 import {
   Tooltip,
   TooltipContent,
@@ -47,7 +48,9 @@ export const TagComb = ({ filled, className }: IProps) => {
           `All ${TAG_FIELDS.length} tags present`
         ) : (
           <>
-            <p>{`Missing ${missing.length} of ${TAG_FIELDS.length} tags`}</p>
+            <Text
+              value={`Missing ${missing.length} of ${TAG_FIELDS.length} tags`}
+            />
             <ul className="mt-1.5 flex flex-col gap-0.5 text-amber-400">
               {missing.map((field) => (
                 <li key={field}>{TAG_FIELD_LABELS[field]}</li>

@@ -135,12 +135,12 @@ const LibraryRow = ({
     className="cursor-pointer focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
   >
     <TableCell className="max-w-0">
-      <p className="truncate text-sm font-medium">
-        {track.tags.title || removeFileExtension(track.filename)}
-      </p>
-      <p className="truncate font-mono text-xs text-muted-foreground">
-        {track.directory}
-      </p>
+      <Text
+        variant="sm"
+        className="truncate font-medium"
+        value={track.tags.title || removeFileExtension(track.filename)}
+      />
+      <Text mono muted className="truncate" value={track.directory} />
     </TableCell>
     <TagCell
       value={track.tags.artist}
@@ -218,7 +218,8 @@ export const Library = () => {
         <div className="flex flex-col items-center justify-center gap-2 py-14 text-center">
           <FileAudio className="h-8 w-8 text-muted-foreground/40" />
           <Text
-            className="text-sm text-muted-foreground"
+            variant="sm"
+            muted
             value={
               isFiltered
                 ? "No files match these filters"
@@ -226,7 +227,7 @@ export const Library = () => {
             }
           />
           <Text
-            className="text-xs text-muted-foreground/70"
+            className="text-muted-foreground/70"
             value={
               isFiltered
                 ? "Clear the search or widen the filters to see more."
@@ -273,7 +274,8 @@ export const Library = () => {
         </div>
         {data.matched > data.tracks.length && (
           <Text
-            className="pt-3 text-xs text-muted-foreground"
+            muted
+            className="pt-3"
             value={`Showing the first ${LIBRARY_PAGE_SIZE} of ${data.matched} matching files. Narrow the search to reach the rest.`}
           />
         )}

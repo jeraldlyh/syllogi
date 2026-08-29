@@ -1,3 +1,4 @@
+import { Text } from "@/components/common/text";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -246,9 +247,7 @@ export const EditorBody = ({ detail, onSaved, onDirtyChange }: IProps) => {
           <h2 className="truncate text-xl font-semibold tracking-tight">
             {draft.title || removeFileExtension(detail.filename)}
           </h2>
-          <p className="mt-1 truncate font-mono text-xs text-muted-foreground">
-            {detail.path}
-          </p>
+          <Text mono muted className="mt-1 truncate" value={detail.path} />
           <div className="mt-2 flex flex-wrap items-center gap-1.5">
             <Badge
               variant="outline"
@@ -334,9 +333,12 @@ export const EditorBody = ({ detail, onSaved, onDirtyChange }: IProps) => {
             isChanged={isChanged("lyrics")}
             isFlashing={flashing.includes("lyrics")}
             hint={
-              <p className="mt-2 font-mono text-xs text-muted-foreground">
-                {summariseLyrics(draft.lyrics)}
-              </p>
+              <Text
+                mono
+                muted
+                className="mt-2"
+                value={summariseLyrics(draft.lyrics)}
+              />
             }
           >
             <Textarea

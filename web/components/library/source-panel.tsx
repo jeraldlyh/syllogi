@@ -1,3 +1,4 @@
+import { Text } from "@/components/common/text";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
@@ -71,8 +72,6 @@ export const SourcePanel = ({
   );
 };
 
-export const PanelMessage = ({ children }: { children: React.ReactNode }) => (
-  <p className="px-1 py-6 text-center text-sm text-muted-foreground">
-    {children}
-  </p>
+export const PanelMessage = ({ value }: { value: string }) => (
+  <Text variant="sm" muted className="px-1 py-6 text-center" value={value} />
 );

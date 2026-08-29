@@ -1,3 +1,4 @@
+import { Text } from "@/components/common/text";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -51,11 +52,16 @@ export const LibraryEditor = ({ path, onClose, onSaved }: IProps) => {
     if (isError || !data) {
       return (
         <div className="flex flex-col items-center gap-2 px-4 py-16 text-center">
-          <p className="text-lg font-semibold">This file could not be read</p>
-          <p className="text-sm text-muted-foreground">
-            It may have been moved or renamed since the last scan. Refresh the
-            list to see what is on disk now.
-          </p>
+          <Text
+            variant="lg"
+            className="font-semibold"
+            value="This file could not be read"
+          />
+          <Text
+            variant="sm"
+            muted
+            value="It may have been moved or renamed since the last scan. Refresh the list to see what is on disk now."
+          />
         </div>
       );
     }

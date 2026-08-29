@@ -1,3 +1,4 @@
+import { Text } from "@/components/common/text";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { RecordingMatch, useRecordingMatches } from "@/hooks/useLibrary";
@@ -20,23 +21,18 @@ export const RecordingPanel = ({ initialQuery, linkedId, onApply }: IProps) => {
 
   const renderResults = (): React.JSX.Element => {
     if (isLoading) {
-      return <PanelMessage>Searching MusicBrainz...</PanelMessage>;
+      return <PanelMessage value="Searching MusicBrainz..." />;
     }
 
     if (isError) {
       return (
-        <PanelMessage>
-          MusicBrainz did not respond. Search again in a moment.
-        </PanelMessage>
+        <PanelMessage value="MusicBrainz did not respond. Search again in a moment." />
       );
     }
 
     if (!data || data.length === 0) {
       return (
-        <PanelMessage>
-          No recordings match that search. Try the artist and title on their
-          own.
-        </PanelMessage>
+        <PanelMessage value="No recordings match that search. Try the artist and title on their own." />
       );
     }
 
@@ -57,7 +53,7 @@ export const RecordingPanel = ({ initialQuery, linkedId, onApply }: IProps) => {
             >
               <div className="flex items-start justify-between gap-3">
                 <div className="min-w-0">
-                  <p className="truncate text-sm font-medium">
+                  <p className="truncate text-sm font-medium md:text-base">
                     {match.title}
                     {match.disambiguation && (
                       <span className="text-muted-foreground">
@@ -66,10 +62,13 @@ export const RecordingPanel = ({ initialQuery, linkedId, onApply }: IProps) => {
                       </span>
                     )}
                   </p>
-                  <p className="truncate text-xs text-muted-foreground">
-                    {match.artist_name}
-                    {match.album_name && ` — ${match.album_name}`}
-                  </p>
+                  <Text
+                    muted
+                    className="truncate"
+                    value={[match.artist_name, match.album_name]
+                      .filter(Boolean)
+                      .join(" — ")}
+                  />
                 </div>
                 {isLinked && (
                   <Badge
@@ -81,11 +80,14 @@ export const RecordingPanel = ({ initialQuery, linkedId, onApply }: IProps) => {
                   </Badge>
                 )}
               </div>
-              <p className="mt-1.5 font-mono text-xs text-muted-foreground">
-                {[match.year, formatClock(match.duration)]
+              <Text
+                mono
+                muted
+                className="mt-1.5"
+                value={[match.year, formatClock(match.duration)]
                   .filter(Boolean)
                   .join(" | ")}
-              </p>
+              />
               {match.genres.length > 0 && (
                 <div className="mt-2 flex flex-wrap gap-1">
                   {match.genres.slice(0, MAX_GENRES).map((genre) => (
