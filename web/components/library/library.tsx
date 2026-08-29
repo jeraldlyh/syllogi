@@ -190,7 +190,9 @@ export const Library = () => {
                   Album
                 </TableHead>
                 <TableHead className="hidden md:table-cell">Format</TableHead>
-                <TableHead>Tags</TableHead>
+                <TableHead className="text-right md:text-start w-px">
+                  Tags
+                </TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
