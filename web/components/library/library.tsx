@@ -49,13 +49,23 @@ const MISSING_OPTIONS = [
 
 const PLACEHOLDER_ROWS = [0, 1, 2, 3, 4, 5];
 
-const LibraryStat = ({ value, label }: { value: string; label: string }) => (
-  <div className="flex flex-col gap-0.5">
-    <span className="font-mono text-lg leading-none">{value}</span>
-    <span className="text-xs uppercase tracking-widest text-muted-foreground">
-      {label}
-    </span>
-  </div>
+const StatDivider = () => (
+  <span aria-hidden className="hidden h-3 w-px shrink-0 bg-border sm:block" />
+);
+
+const StatCount = ({
+  value,
+  label,
+  className,
+}: {
+  value: number;
+  label: string;
+  className?: string;
+}) => (
+  <span className="flex shrink-0 items-baseline gap-1.5">
+    <span className={cn("text-sm tabular-nums", className)}>{value}</span>
+    <span className="text-muted-foreground">{label}</span>
+  </span>
 );
 
 const FilterSelect = ({
@@ -180,21 +190,6 @@ export const Library = () => {
   const patchFilters = (patch: Partial<LibraryFilters>): void =>
     setFilters((previous) => ({ ...previous, ...patch }));
 
-  const renderSummary = (summary: LibrarySummary): React.JSX.Element => (
-    <div className="flex flex-wrap gap-x-8 gap-y-3 border-y border-border py-3">
-      <LibraryStat value={String(summary.total)} label="Files" />
-      <LibraryStat
-        value={String(summary.missing_lyrics)}
-        label="Without lyrics"
-      />
-      <LibraryStat
-        value={String(summary.missing_musicbrainz_id)}
-        label="Not linked"
-      />
-      <LibraryStat value={String(summary.lossless)} label="Lossless" />
-    </div>
-  );
-
   const renderContent = (): React.JSX.Element => {
     if (isLoading && !data) {
       return (
@@ -287,15 +282,42 @@ export const Library = () => {
     <>
       <Card>
         <CardHeader className="gap-4 pb-4">
-          <div className="flex flex-wrap items-baseline justify-between gap-2">
-            <CardTitle className="text-base font-medium">
-              Library files
-            </CardTitle>
-            <span className="truncate font-mono text-xs text-muted-foreground">
-              {data?.directory}
-            </span>
-          </div>
-          {data && renderSummary(data.summary)}
+          <CardTitle className="sr-only">Library</CardTitle>
+          {data ? (
+            <div className="flex flex-wrap items-baseline gap-x-3 gap-y-2 border-b border-border pb-3 font-mono text-xs">
+              <StatCount value={data.summary.total} label="files" />
+              <StatDivider />
+              <StatCount
+                value={data.summary.missing_lyrics}
+                label="without lyrics"
+                className={cn({
+                  "text-amber-400": data.summary.missing_lyrics > 0,
+                  "text-primary": data.summary.missing_lyrics == 0,
+                })}
+              />
+              <StatDivider />
+              <StatCount
+                value={data.summary.missing_musicbrainz_id}
+                label="not linked"
+                className={cn({
+                  "text-amber-400": data.summary.missing_musicbrainz_id > 0,
+                  "text-primary": data.summary.missing_musicbrainz_id == 0,
+                })}
+              />
+              <StatDivider />
+              <StatCount value={data.summary.lossless} label="lossless" />
+              <span className="ml-auto max-w-full truncate text-muted-foreground/60">
+                {data.directory.slice(0, data.directory.lastIndexOf("/") + 1)}
+                <span className="text-foreground">
+                  {data.directory.slice(data.directory.lastIndexOf("/") + 1)}
+                </span>
+              </span>
+            </div>
+          ) : (
+            <div className="border-b border-border pb-3">
+              <Skeleton className="h-4 w-72" />
+            </div>
+          )}
           <div className="flex flex-col gap-2 sm:flex-row">
             <div className="relative flex-1">
               <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
