@@ -44,6 +44,22 @@ def _make_music_provider(provider_tracks=None):
     return provider
 
 
+def _make_music_provider_with_tracks(tracks: list[RecommendationTrack]):
+    by_track_name = {
+        track.track_name: _make_matching_provider_track(track) for track in tracks
+    }
+
+    async def search_track(*, artist_name, title, album, year):
+        provider_track = by_track_name.get(title)
+
+        return [provider_track] if provider_track else []
+
+    provider = MagicMock()
+    provider.search_track = AsyncMock(side_effect=search_track)
+
+    return provider
+
+
 def _make_matching_provider_track(track: RecommendationTrack) -> ProviderTrack:
     return ProviderTrack(
         id="provider-1",
@@ -278,6 +294,117 @@ class TestTrackMatching:
         )
 
         assert found == []
-        assert missing == [similar_track]
+        assert missing.count(similar_track) == 1
         assert provider_tracks == []
 
+
+class TestFamiliarTracks:
+    async def test_fills_a_quarter_of_recommendations_with_top_tracks(self):
+        top_tracks = [
+            _make_recommendation_track(track_name=f"Top Track {index}")
+            for index in range(8)
+        ]
+        similar_tracks = [
+            _make_recommendation_track(track_name=f"Similar Track {index}")
+            for index in range(8)
+        ]
+
+        recommendation_provider = _make_recommendation_provider()
+        recommendation_provider.get_top_tracks.return_value = top_tracks
+        recommendation_provider.get_similar_tracks.return_value = similar_tracks
+
+        music_provider = _make_music_provider_with_tracks(top_tracks + similar_tracks)
+
+        found, missing, provider_tracks = await get_recommendations(
+            recommendation_provider=recommendation_provider,
+            music_provider=music_provider,
+            strategy=RecommendationStrategy.top_tracks,
+            num_recommendations=8,
+            username="user",
+            blend_users=None,
+        )
+
+        familiar_tracks = [track for track in found if track in top_tracks]
+
+        assert len(found) == 8
+        assert len(familiar_tracks) == 2
+        assert set(familiar_tracks) == {top_tracks[0], top_tracks[1]}
+        assert len(provider_tracks) == 8
+        assert missing == []
+
+    async def test_familiar_track_still_seeds_similar_tracks(self):
+        top_tracks = [
+            _make_recommendation_track(track_name=f"Top Track {index}")
+            for index in range(4)
+        ]
+        similar_track = _make_recommendation_track(track_name="Similar Track")
+
+        recommendation_provider = _make_recommendation_provider()
+        recommendation_provider.get_top_tracks.return_value = top_tracks
+        recommendation_provider.get_similar_tracks.return_value = [similar_track]
+
+        music_provider = _make_music_provider_with_tracks(top_tracks + [similar_track])
+
+        found, _, _ = await get_recommendations(
+            recommendation_provider=recommendation_provider,
+            music_provider=music_provider,
+            strategy=RecommendationStrategy.top_tracks,
+            num_recommendations=4,
+            username="user",
+            blend_users=None,
+        )
+
+        assert top_tracks[0] in found
+        assert similar_track in found
+        recommendation_provider.get_similar_tracks.assert_any_await(
+            artist_name=top_tracks[0].artist_name,
+            track_name=top_tracks[0].track_name,
+            musicbrainz_id=top_tracks[0].musicbrainz_id,
+        )
+
+    async def test_familiar_track_missing_when_not_in_provider(self):
+        top_tracks = [
+            _make_recommendation_track(track_name=f"Top Track {index}")
+            for index in range(4)
+        ]
+
+        recommendation_provider = _make_recommendation_provider()
+        recommendation_provider.get_top_tracks.return_value = top_tracks
+        recommendation_provider.get_similar_tracks.return_value = []
+
+        music_provider = _make_music_provider_with_tracks([])
+
+        found, missing, provider_tracks = await get_recommendations(
+            recommendation_provider=recommendation_provider,
+            music_provider=music_provider,
+            strategy=RecommendationStrategy.top_tracks,
+            num_recommendations=4,
+            username="user",
+            blend_users=None,
+        )
+
+        assert found == []
+        assert missing == [top_tracks[0]]
+        assert provider_tracks == []
+
+    async def test_no_familiar_tracks_when_quarter_rounds_to_zero(self):
+        top_track = _make_recommendation_track(track_name="Top Track")
+        similar_track = _make_recommendation_track(track_name="Similar Track")
+
+        recommendation_provider = _make_recommendation_provider()
+        recommendation_provider.get_top_tracks.return_value = [top_track]
+        recommendation_provider.get_similar_tracks.return_value = [similar_track]
+
+        music_provider = _make_music_provider_with_tracks([top_track, similar_track])
+
+        found, missing, _ = await get_recommendations(
+            recommendation_provider=recommendation_provider,
+            music_provider=music_provider,
+            strategy=RecommendationStrategy.top_tracks,
+            num_recommendations=1,
+            username="user",
+            blend_users=None,
+        )
+
+        assert found == [similar_track]
+        assert missing == []
