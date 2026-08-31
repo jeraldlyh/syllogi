@@ -35,6 +35,8 @@ from lib.utils import get_now, truncate
 
 logger = logging.getLogger(__name__)
 
+FAMILIAR_TRACK_RATIO = 0.25
+
 
 async def get_recommendations(
     recommendation_provider: RecommendationSourceProvider,
@@ -89,6 +91,33 @@ async def get_recommendations(
     missing: set[RecommendationTrack] = set()
     found: set[RecommendationTrack] = set()
     provider_tracks: list[ProviderTrack] = []
+
+    familiar_limit = min(
+        round(num_recommendations * FAMILIAR_TRACK_RATIO), num_recommendations
+    )
+
+    for track in all_tracks:
+        if len(found) + len(missing) >= familiar_limit:
+            break
+
+        if track in found or track in missing:
+            continue
+
+        provider_track = await find_track(
+            provider=music_provider,
+            artist_name=track.artist_name,
+            track_name=track.track_name,
+            album_name=track.album_name,
+            year="",
+            duration=track.duration,
+        )
+
+        if provider_track.is_not_found():
+            missing.add(track)
+            continue
+
+        found.add(track)
+        provider_tracks.append(provider_track)
 
     for track in all_tracks:
         if len(found) + len(missing) >= num_recommendations:
