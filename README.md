@@ -138,6 +138,22 @@ Each recommendation rule requires a **music server username**, a **Last.fm usern
 
 Browse Last.fm globally trending tracks, and tracks can be queued for download directly from the Charts tab. The download activity log on the dashboard tracks the status of all in-progress and completed downloads.
 
+### Library Management
+
+Browse and retag the audio files found in `DOWNLOAD_DIR` from the dashboard. This tab lists every `.flac`, `.mp3` and `.opus` file with the tags it carries, searchable by file name, title, artist or album, and filterable by container or by the tags a file is missing.
+
+Each row shows how many of the seven editable tags the file has, so gaps are visible at a glance:
+
+| Tag       |
+| --------- |
+| Title     |
+| Artist    |
+| Album     |
+| Date      |
+| Genre     |
+| Lyrics    |
+| Recording |
+
 ## Quick Start
 
 1. Copy the example compose file:
@@ -270,6 +286,8 @@ Special thanks to the following projects for making **syllogi** possible:
 - [Navidrome]
 - [Last.fm]
 - [slskd]
+- [MusicBrainz]
+- [LRCLIB]
 
 [SpotAPI]: https://github.com/Aran404/SpotAPI/tree/main
 [yt-dlp]: https://github.com/yt-dlp/yt-dlp
@@ -277,3 +295,5 @@ Special thanks to the following projects for making **syllogi** possible:
 [Navidrome]: https://github.com/navidrome/navidrome
 [Last.fm]: https://www.last.fm/
 [slskd]: https://github.com/slskd/slskd
+[MusicBrainz]: https://musicbrainz.org/
+[LRCLIB]: https://lrclib.net/
