@@ -188,43 +188,49 @@ export const EditorBody = ({ detail, onSaved, onDirtyChange }: IProps) => {
   const save = async (): Promise<void> => {
     setIsSaving(true);
 
-    const response = await api<LibraryTrackDetail>({
-      method: "PUT",
-      service: "library",
-      path: "track",
-      body: {
-        path: detail.path,
-        title: draft.title,
-        artist: draft.artist,
-        album: draft.album,
-        date: draft.date,
-        genres: draft.genresText
-          .split(",")
-          .map((genre) => genre.trim())
-          .filter(Boolean),
-        lyrics: draft.lyrics,
-        musicbrainz_id: draft.musicbrainz_id,
-      },
-    });
-
-    setIsSaving(false);
-
-    if (response.statusCode !== 200 || !response.data) {
-      toast.error("Could not save tags", {
-        description: response.error?.message || detail.filename,
+    try {
+      const response = await api<LibraryTrackDetail>({
+        method: "PUT",
+        service: "library",
+        path: "track",
+        body: {
+          path: detail.path,
+          title: draft.title,
+          artist: draft.artist,
+          album: draft.album,
+          date: draft.date,
+          genres: draft.genresText
+            .split(",")
+            .map((genre) => genre.trim())
+            .filter(Boolean),
+          lyrics: draft.lyrics,
+          musicbrainz_id: draft.musicbrainz_id,
+        },
       });
-      return;
+
+      if (response.statusCode !== 200 || !response.data) {
+        toast.error("Could not save tags", {
+          description: response.error?.message || detail.filename,
+        });
+        return;
+      }
+
+      const saved = toDraft(response.data.tags);
+
+      setDraft(saved);
+      setBaseline(saved);
+      setSources(defaultSources);
+      onSaved();
+      toast.success("Tags saved", {
+        description: `${detail.filename} rewritten on disk.`,
+      });
+    } catch {
+      toast.error("Could not save tags", {
+        description: "Unable to reach the server right now.",
+      });
+    } finally {
+      setIsSaving(false);
     }
-
-    const saved = toDraft(response.data.tags);
-
-    setDraft(saved);
-    setBaseline(saved);
-    setSources(defaultSources);
-    onSaved();
-    toast.success("Tags saved", {
-      description: `${detail.filename} rewritten on disk.`,
-    });
   };
 
   const summariseLyrics = (lyrics: string): string => {
