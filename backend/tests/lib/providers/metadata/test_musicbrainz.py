@@ -130,6 +130,35 @@ class TestSearchTracks:
 
         assert route.calls.last.request.url.params["query"] == "lilac iu"
 
+    @respx.mock
+    async def test_escapes_lucene_operators_in_field_clauses(self):
+        route = respx.get("https://musicbrainz.org/ws/2/recording").mock(
+            return_value=httpx.Response(200, json=load_fixture("musicbrainz/recording"))
+        )
+
+        provider = _make_provider()
+        await provider.search_tracks(
+            artist_name="AC/DC", track_name='10" Vinyl (Remix)'
+        )
+
+        sent = route.calls.last.request.url.params["query"]
+
+        assert 'recording:"10\\" Vinyl \\(Remix\\)"' in sent
+        assert 'artist:"AC\\/DC"' in sent
+
+    @respx.mock
+    async def test_leaves_the_free_text_query_unescaped(self):
+        route = respx.get("https://musicbrainz.org/ws/2/recording").mock(
+            return_value=httpx.Response(200, json=load_fixture("musicbrainz/recording"))
+        )
+
+        provider = _make_provider()
+        await provider.search_tracks(query='recording:"Celebrity" AND artist:"IU"')
+
+        sent = route.calls.last.request.url.params["query"]
+
+        assert sent == 'recording:"Celebrity" AND artist:"IU"'
+
 
 class TestGetAlbumInfo:
     @respx.mock

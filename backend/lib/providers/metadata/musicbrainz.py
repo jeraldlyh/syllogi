@@ -1,4 +1,5 @@
 import logging
+import re
 from typing import Any
 
 import httpx
@@ -50,6 +51,12 @@ class MusicBrainzMetadataProvider(MetadataProvider):
             if response.content:
                 return response.json()
             return None
+
+    def _escape_lucene(self, value: str) -> str:
+        """Escape the characters Lucene reads as operators, so a value stays literal."""
+
+        pattern = re.compile(r'([+\-&|!(){}\[\]^"~*?:\\/])')
+        return re.compile(pattern=pattern).sub(r"\\\1", value)
 
     async def _get_artists(
         self,
@@ -206,11 +213,11 @@ class MusicBrainzMetadataProvider(MetadataProvider):
             clauses = []
 
             if track_name:
-                clauses.append(f'recording:"{track_name}"')
+                clauses.append(f'recording:"{self._escape_lucene(track_name)}"')
             if artist_name:
-                clauses.append(f'artist:"{artist_name}"')
+                clauses.append(f'artist:"{self._escape_lucene(artist_name)}"')
             if album_name:
-                clauses.append(f'release:"{album_name}"')
+                clauses.append(f'release:"{self._escape_lucene(album_name)}"')
 
             if not clauses:
                 return []
