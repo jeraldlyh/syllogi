@@ -227,7 +227,7 @@ def _write_id3_tags(audio: MP3, tags: AudioTags) -> None:
         if frame is not None:
             id3.add(frame)
 
-    id3.delall("UFID")
+    id3.pop(f"UFID:{MUSICBRAINZ_UFID_OWNER}", None)
     id3.delall("TXXX:MusicBrainz Track Id")
 
     if tags.musicbrainz_id:
