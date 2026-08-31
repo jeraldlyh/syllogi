@@ -1,0 +1,42 @@
+[
+  {
+    "id": 3396227,
+    "trackName": "I Want to Live (Instrumental)",
+    "artistName": "Borislav Slavov",
+    "albumName": "Baldur's Gate 3 (Original Game Soundtrack)",
+    "duration": 233,
+    "instrumental": true,
+    "plainLyrics": "",
+    "syncedLyrics": ""
+  },
+  {
+    "id": 3396228,
+    "trackName": "I Want to Live",
+    "artistName": "Borislav Slavov",
+    "albumName": "Single",
+    "duration": 234,
+    "instrumental": false,
+    "plainLyrics": "I feel your breath upon my neck\n...The clock won't stop and this is what we get\n",
+    "syncedLyrics": ""
+  },
+  {
+    "id": 3396229,
+    "trackName": "I Want to Live (Extended Mix)",
+    "artistName": "Borislav Slavov",
+    "albumName": "Remixes",
+    "duration": 400,
+    "instrumental": false,
+    "plainLyrics": "I feel your breath upon my neck\n...The clock won't stop and this is what we get\n",
+    "syncedLyrics": "[00:17.12] I feel your breath upon my neck\n...[03:20.31] The clock won't stop and this is what we get\n[03:25.72] "
+  },
+  {
+    "id": 3396226,
+    "trackName": "I Want to Live",
+    "artistName": "Borislav Slavov",
+    "albumName": "Baldur's Gate 3 (Original Game Soundtrack)",
+    "duration": 233,
+    "instrumental": false,
+    "plainLyrics": "I feel your breath upon my neck\n...The clock won't stop and this is what we get\n",
+    "syncedLyrics": "[00:17.12] I feel your breath upon my neck\n...[03:20.31] The clock won't stop and this is what we get\n[03:25.72] "
+  }
+]

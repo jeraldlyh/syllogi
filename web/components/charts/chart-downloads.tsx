@@ -40,8 +40,7 @@ const DownloadStatusBadge = ({
         "border-red-500/30 bg-red-500/10 text-red-400": status === "failed",
         "border-muted/30 bg-muted/10 text-muted-foreground":
           status === "pending",
-        "border-sky-500/30 bg-sky-500/10 text-sky-400":
-          status === "existed",
+        "border-sky-500/30 bg-sky-500/10 text-sky-400": status === "existed",
       })}
     >
       {labels[status]}
@@ -77,7 +76,9 @@ export const ChartDownloads = () => {
         <div className="flex flex-col items-center justify-center gap-2 py-8">
           <Music2 className="h-8 w-8 text-muted-foreground/40" />
           <Text
-            className="text-muted-foreground italic text-sm"
+            variant="sm"
+            muted
+            className="italic"
             value="No downloads yet"
           />
         </div>
@@ -124,16 +125,10 @@ export const ChartDownloads = () => {
                   <DownloadStatusBadge status={download.status} />
                 </TableCell>
                 <TableCell className="hidden sm:table-cell">
-                  <Text
-                    className="text-muted-foreground text-xs"
-                    value={formatDateTime(download.started_at)}
-                  />
+                  <Text muted value={formatDateTime(download.started_at)} />
                 </TableCell>
                 <TableCell className="hidden sm:table-cell">
-                  <Text
-                    className="text-muted-foreground text-xs"
-                    value={formatDateTime(download.finished_at)}
-                  />
+                  <Text muted value={formatDateTime(download.finished_at)} />
                 </TableCell>
               </TableRow>
             ))}

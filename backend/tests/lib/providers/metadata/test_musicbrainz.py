@@ -87,6 +87,78 @@ class TestSearchTracks:
 
         assert result == []
 
+    @respx.mock
+    async def test_populates_recording_fields(self):
+        route = respx.get("https://musicbrainz.org/ws/2/recording").mock(
+            return_value=httpx.Response(200, json=load_fixture("musicbrainz/recording"))
+        )
+
+        provider = _make_provider()
+        result = await provider.search_tracks(artist_name="IU", track_name="Celebrity")
+
+        assert result[0].id
+        assert result[0].get_year() == result[0].release_date.split("-")[0]
+        assert route.called
+
+    @respx.mock
+    async def test_builds_release_clause_from_album_name(self):
+        route = respx.get("https://musicbrainz.org/ws/2/recording").mock(
+            return_value=httpx.Response(200, json=load_fixture("musicbrainz/recording"))
+        )
+
+        provider = _make_provider()
+        await provider.search_tracks(
+            artist_name="IU", track_name="Celebrity", album_name="LILAC"
+        )
+
+        sent = route.calls.last.request.url.params["query"]
+
+        assert 'recording:"Celebrity"' in sent
+        assert 'artist:"IU"' in sent
+        assert 'release:"LILAC"' in sent
+
+    @respx.mock
+    async def test_free_text_query_replaces_field_clauses(self):
+        route = respx.get("https://musicbrainz.org/ws/2/recording").mock(
+            return_value=httpx.Response(200, json=load_fixture("musicbrainz/recording"))
+        )
+
+        provider = _make_provider()
+        await provider.search_tracks(
+            artist_name="IU", track_name="Celebrity", query="lilac iu"
+        )
+
+        assert route.calls.last.request.url.params["query"] == "lilac iu"
+
+    @respx.mock
+    async def test_escapes_lucene_operators_in_field_clauses(self):
+        route = respx.get("https://musicbrainz.org/ws/2/recording").mock(
+            return_value=httpx.Response(200, json=load_fixture("musicbrainz/recording"))
+        )
+
+        provider = _make_provider()
+        await provider.search_tracks(
+            artist_name="AC/DC", track_name='10" Vinyl (Remix)'
+        )
+
+        sent = route.calls.last.request.url.params["query"]
+
+        assert 'recording:"10\\" Vinyl \\(Remix\\)"' in sent
+        assert 'artist:"AC\\/DC"' in sent
+
+    @respx.mock
+    async def test_leaves_the_free_text_query_unescaped(self):
+        route = respx.get("https://musicbrainz.org/ws/2/recording").mock(
+            return_value=httpx.Response(200, json=load_fixture("musicbrainz/recording"))
+        )
+
+        provider = _make_provider()
+        await provider.search_tracks(query='recording:"Celebrity" AND artist:"IU"')
+
+        sent = route.calls.last.request.url.params["query"]
+
+        assert sent == 'recording:"Celebrity" AND artist:"IU"'
+
 
 class TestGetAlbumInfo:
     @respx.mock

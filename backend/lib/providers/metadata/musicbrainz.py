@@ -1,4 +1,5 @@
 import logging
+import re
 from typing import Any
 
 import httpx
@@ -50,6 +51,12 @@ class MusicBrainzMetadataProvider(MetadataProvider):
             if response.content:
                 return response.json()
             return None
+
+    def _escape_lucene(self, value: str) -> str:
+        """Escape the characters Lucene reads as operators, so a value stays literal."""
+
+        pattern = re.compile(r'([+\-&|!(){}\[\]^"~*?:\\/])')
+        return re.compile(pattern=pattern).sub(r"\\\1", value)
 
     async def _get_artists(
         self,
@@ -187,53 +194,77 @@ class MusicBrainzMetadataProvider(MetadataProvider):
     async def search_tracks(
         self,
         *,
-        artist_name: str,
-        track_name: str,
+        artist_name: str = "",
+        track_name: str = "",
+        album_name: str = "",
+        query: str = "",
         limit: int = 10,
     ) -> list[ArtistTrack]:
-        """Search MusicBrainz for tracks matching an artist name and/or track name."""
+        """Search MusicBrainz recordings, keeping the MBID and release of each match.
 
-        clauses = []
+        Populates the fields needed to retag a file — the recording MBID, the
+        release it appeared on, and that release's date — which the other
+        providers leave empty.
+        """
 
-        if track_name:
-            clauses.append(f'recording:"{track_name}"')
-        if artist_name:
-            clauses.append(f'artist:"{artist_name}"')
+        if query:
+            search = query
+        else:
+            clauses = []
 
-        if not clauses:
-            return []
+            if track_name:
+                clauses.append(f'recording:"{self._escape_lucene(track_name)}"')
+            if artist_name:
+                clauses.append(f'artist:"{self._escape_lucene(artist_name)}"')
+            if album_name:
+                clauses.append(f'release:"{self._escape_lucene(album_name)}"')
 
-        query = " AND ".join(clauses)
+            if not clauses:
+                return []
+
+            search = " AND ".join(clauses)
+
         result = await self._http(
             "/recording",
-            params={"query": query, "inc": "genres", "limit": limit},
+            params={"query": search, "inc": "genres", "limit": limit},
         )
 
         if not result or not result.get("recordings"):
             return []
 
-        tracks: list[ArtistTrack] = []
+        matches: list[ArtistTrack] = []
 
         for recording in result["recordings"]:
-            releases = recording.get("releases", [])
-            release_group = releases[0].get("release-group", {}) if releases else {}
-            artist_credits = recording.get("artist-credit", [])
-            recording_artist_name = (
-                artist_credits[0].get("name", "") if artist_credits else ""
+            releases = recording.get("releases") or []
+            release = releases[0] if releases else {}
+            release_group = release.get("release-group") or {}
+            artist_credits = recording.get("artist-credit") or []
+            credited_artist = " & ".join(
+                credit.get("name", "")
+                for credit in artist_credits
+                if credit.get("name")
             )
 
-            tracks.append(
+            matches.append(
                 ArtistTrack(
-                    artist_name=recording_artist_name or artist_name,
+                    artist_name=credited_artist or artist_name,
                     track_name=recording.get("title", ""),
                     duration_ms=recording.get("length"),
                     disambiguation=recording.get("disambiguation", ""),
-                    album_name=release_group.get("title", ""),
-                    genres=[genre.get("name") for genre in recording.get("genres", [])],
+                    album_name=release.get("title") or release_group.get("title") or "",
+                    genres=[
+                        genre.get("name", "") for genre in recording.get("genres") or []
+                    ],
                     image_url="",
+                    id=recording.get("id", ""),
+                    release_date=release.get("date")
+                    or release_group.get("first-release-date")
+                    or recording.get("first-release-date")
+                    or "",
+                    score=recording.get("score", 0),
                 )
             )
-        return tracks
+        return matches
 
     @cached_method(ttl=604800)
     async def get_artist_info(

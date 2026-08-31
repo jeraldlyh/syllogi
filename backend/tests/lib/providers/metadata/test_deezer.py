@@ -94,6 +94,36 @@ class TestSearchTracks:
 
         assert result == []
 
+    async def test_returns_empty_when_no_criteria(self):
+        provider = _make_provider()
+        result = await provider.search_tracks()
+
+        assert result == []
+
+    @respx.mock
+    async def test_folds_album_name_into_query(self):
+        route = respx.get("https://api.deezer.com/search/track").mock(
+            return_value=httpx.Response(200, json=load_fixture("deezer/search-track"))
+        )
+
+        provider = _make_provider()
+        await provider.search_tracks(
+            artist_name="IU", track_name="Celebrity", album_name="LILAC"
+        )
+
+        assert route.calls.last.request.url.params["q"] == "IU Celebrity LILAC"
+
+    @respx.mock
+    async def test_free_text_query_replaces_field_terms(self):
+        route = respx.get("https://api.deezer.com/search/track").mock(
+            return_value=httpx.Response(200, json=load_fixture("deezer/search-track"))
+        )
+
+        provider = _make_provider()
+        await provider.search_tracks(artist_name="IU", query="lilac iu")
+
+        assert route.calls.last.request.url.params["q"] == "lilac iu"
+
 
 class TestGetAlbumInfo:
     @respx.mock

@@ -178,12 +178,16 @@ export const SyncSessionTable = () => {
         <DialogContent className="max-w-lg bg-card">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
-              <Text value="Sync Failed" className="text-lg font-semibold" />
+              <Text
+                value="Sync Failed"
+                variant="lg"
+                className="font-semibold"
+              />
               <StatusBadge status={selectedSession.status} />
             </DialogTitle>
           </DialogHeader>
           <div className="p-4 bg-red-500/5 rounded-md text-red-400">
-            <Text value="Stacktrace:" className="text-sm" />
+            <Text value="Stacktrace:" variant="sm" />
             <ScrollArea className="max-h-64 mt-2 rounded-md border bg-secondary/50 p-2 overflow-y-scroll">
               <pre className="text-xs text-wrap">
                 {selectedSession.error_message || "No stacktrace available."}
@@ -479,7 +483,7 @@ const DialogItem = ({
 }) => {
   return (
     <div>
-      <p className="text-xs text-muted-foreground">{label}</p>
+      <Text muted disableViewport value={label} />
       <Text className="truncate" value={value} mono={mono} />
     </div>
   );
@@ -496,7 +500,7 @@ const TrackList = ({
 }) => {
   const renderTracks = (): React.JSX.Element => {
     if (tracks.length === 0) {
-      return <p className="text-xs text-muted-foreground">None</p>;
+      return <Text muted disableViewport value="None" />;
     }
     const uniqueTracks = Array.from(new Set(tracks));
 
@@ -505,11 +509,7 @@ const TrackList = ({
         <ul className="flex flex-col gap-1">
           {uniqueTracks.map((track) => (
             <li key={track} className="border-b last:border-0 py-1">
-              <Text
-                value={track}
-                mono
-                className="text-xs text-muted-foreground leading-relaxed"
-              />
+              <Text value={track} mono muted className="leading-relaxed" />
             </li>
           ))}
         </ul>
@@ -519,7 +519,11 @@ const TrackList = ({
 
   return (
     <div>
-      <p className={cn("mb-2 text-xs font-semibold", accent)}>{title}</p>
+      <Text
+        disableViewport
+        className={cn("mb-2 font-semibold", accent)}
+        value={title}
+      />
       {renderTracks()}
     </div>
   );

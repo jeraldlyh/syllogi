@@ -204,15 +204,18 @@ export const UsersSettings = () => {
     message: string | undefined,
   ): React.JSX.Element | undefined => {
     if (!message) return undefined;
-    return <Text value={message} className="text-red-400 text-xs" />;
+    return <Text value={message} className="text-red-400" />;
   };
 
   const renderUsers = (): React.JSX.Element => {
     if (!savedUsers || savedUsers.length === 0) {
       return (
-        <p className="py-6 text-center text-sm text-muted-foreground">
-          No users yet. Add one to get started.
-        </p>
+        <Text
+          variant="sm"
+          muted
+          className="py-6 text-center"
+          value="No users yet. Add one to get started."
+        />
       );
     }
 

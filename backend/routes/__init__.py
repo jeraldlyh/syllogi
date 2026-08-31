@@ -5,6 +5,7 @@ from routes.auth import router as auth_router
 from routes.charts import router as charts_router
 from routes.cron import router as cron_router
 from routes.health import router as health_router
+from routes.library import router as library_router
 from routes.notification import router as notification_router
 from routes.oauth import router as oauth_router
 from routes.recommendation import router as recommendation_router
@@ -39,6 +40,10 @@ OPENAPI_TAGS = [
         "description": "Track recommendation session history and results.",
     },
     {"name": "Charts", "description": "Trending tracks and charts endpoints."},
+    {
+        "name": "Library",
+        "description": "Audio file metadata browsing and tag editing endpoints.",
+    },
 ]
 
 
@@ -117,5 +122,11 @@ def register_routes(app: FastAPI) -> None:
         prefix="/charts",
         dependencies=[Depends(get_current_user)],
         tags=["Charts"],
+    )
+    api.include_router(
+        router=library_router,
+        prefix="/library",
+        dependencies=[Depends(get_current_user)],
+        tags=["Library"],
     )
     app.include_router(api)

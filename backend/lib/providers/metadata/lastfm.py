@@ -193,11 +193,24 @@ class LastFMMetadataProvider(MetadataProvider):
     async def search_tracks(
         self,
         *,
-        artist_name: str,
-        track_name: str,
+        artist_name: str = "",
+        track_name: str = "",
+        album_name: str = "",
+        query: str = "",
         limit: int = 10,
     ) -> list[ArtistTrack]:
-        """Search Last.fm for tracks matching an artist name and/or track name."""
+        """Search Last.fm for tracks matching an artist name and/or track name.
+
+        track.search has no album dimension, so album_name is ignored; a
+        free-text query is searched as the track term.
+        """
+
+        if query:
+            track_name = query
+            artist_name = ""
+
+        if not track_name and not artist_name:
+            return []
 
         data = await self._http(
             params={

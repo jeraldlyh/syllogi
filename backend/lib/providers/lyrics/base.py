@@ -1,27 +1,33 @@
 from abc import ABC, abstractmethod
 
+from lib.models.library import LyricsCandidate
+
+MAX_SEARCH_RESULTS = 20
+
 
 class LyricsProvider(ABC):
     """Abstract base class for lyrics metadata providers."""
 
     @abstractmethod
-    async def get_lyrics(
+    async def search_lyrics(
         self,
         *,
-        artist_name: str,
-        track_name: str,
-        album_name: str,
-        duration: int,
-    ) -> str | None:
-        """Get track lyrics.
+        query: str = "",
+        artist_name: str = "",
+        track_name: str = "",
+        album_name: str = "",
+        limit: int = 20,
+    ) -> list[LyricsCandidate]:
+        """Search for lyrics matching a track.
 
         Args:
+            query: Free-text search, used instead of the fields below.
             artist_name: Name of the artist.
             track_name: Name of the track.
             album_name: Name of the album.
-            duration: Track's duration in seconds.
+            limit: Maximum number of candidates to return.
 
         Returns:
-            str containing the lyrics, or None if not found.
+            The matching candidates, best match first. Empty if none were found.
         """
         ...

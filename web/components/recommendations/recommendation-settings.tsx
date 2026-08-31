@@ -289,7 +289,7 @@ export const Recommendations = () => {
   ): React.JSX.Element | undefined => {
     if (!message) return undefined;
 
-    return <Text value={message} className="text-red-400 text-xs" />;
+    return <Text value={message} className="text-red-400" />;
   };
 
   const renderTable = (): React.JSX.Element => {
@@ -311,9 +311,12 @@ export const Recommendations = () => {
 
     if (!recommendations || recommendations.length === 0) {
       return (
-        <p className="py-6 text-center text-sm text-muted-foreground">
-          No recommendations yet. Add one to get started.
-        </p>
+        <Text
+          variant="sm"
+          muted
+          className="py-6 text-center"
+          value="No recommendations yet. Add one to get started."
+        />
       );
     }
 
@@ -412,7 +415,7 @@ export const Recommendations = () => {
       return (
         <Text
           muted
-          className="text-xs py-2 text-center w-full"
+          className="py-2 text-center w-full"
           value="No users available"
         />
       );
@@ -803,10 +806,10 @@ export const Recommendations = () => {
                   ?
                 </p>
                 <br />
-                <p>
-                  This will fetch tracks from the selected recommendation source
-                  and add them to your music server.
-                </p>
+                <Text
+                  variant="sm"
+                  value="This will fetch tracks from the selected recommendation source and add them to your music server."
+                />
               </div>
             </AlertDialogDescription>
           </AlertDialogHeader>

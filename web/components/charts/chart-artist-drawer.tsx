@@ -103,9 +103,11 @@ const HeroSection = ({ data }: { data: ArtistInfo }): React.JSX.Element => {
         transition={{ duration: 0.6, ease: "easeOut" as const }}
       >
         <h1 className="text-2xl font-bold">Artist not found</h1>
-        <p className="text-sm text-muted-foreground">
-          We couldn&apos;t find information for this artist.
-        </p>
+        <Text
+          variant="sm"
+          muted
+          value="We couldn't find information for this artist."
+        />
       </motion.div>
     );
   }
@@ -444,9 +446,12 @@ const TracksSection = ({ data }: { data: ArtistInfo }) => {
             </div>
           )
         ) : (
-          <p className="text-sm italic text-muted-foreground">
-            No tracks available for this artist.
-          </p>
+          <Text
+            variant="sm"
+            muted
+            className="italic"
+            value="No tracks available for this artist."
+          />
         )}
       </CardContent>
     </Card>
@@ -477,9 +482,11 @@ const ArtistContent = ({ artistName }: { artistName: string }) => {
       <div className="flex flex-1 flex-col items-center justify-center px-6 pb-8">
         <div className="flex flex-col items-center gap-4 text-center">
           <h1 className="text-2xl font-bold mt-4">Artist not found</h1>
-          <p className="text-sm text-muted-foreground">
-            We couldn&apos;t find information for &quot;{artistName}&quot;.
-          </p>
+          <Text
+            variant="sm"
+            muted
+            value={`We couldn't find information for "${artistName}".`}
+          />
         </div>
       </div>
     );
@@ -490,9 +497,11 @@ const ArtistContent = ({ artistName }: { artistName: string }) => {
       <div className="flex flex-1 flex-col items-center justify-center px-6 pb-8">
         <div className="flex flex-col items-center gap-4 text-center">
           <h1 className="text-2xl font-bold">Artist not found</h1>
-          <p className="text-sm text-muted-foreground">
-            &quot;{artistName}&quot; was not found in MusicBrainz.
-          </p>
+          <Text
+            variant="sm"
+            muted
+            value={`"${artistName}" was not found in MusicBrainz.`}
+          />
         </div>
       </div>
     );

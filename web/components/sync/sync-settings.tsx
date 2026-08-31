@@ -226,15 +226,18 @@ export const SyncSettings = () => {
   ): React.JSX.Element | undefined => {
     if (!message) return undefined;
 
-    return <Text value={message} className="text-red-400 text-xs" />;
+    return <Text value={message} className="text-red-400" />;
   };
 
   const renderPlaylists = (): React.JSX.Element => {
     if (!playlists || playlists.length === 0) {
       return (
-        <p className="py-6 text-center text-sm text-muted-foreground">
-          No playlist yet. Add one to get started.
-        </p>
+        <Text
+          variant="sm"
+          muted
+          className="py-6 text-center"
+          value="No playlist yet. Add one to get started."
+        />
       );
     }
 
@@ -591,11 +594,10 @@ export const SyncSettings = () => {
                   </Button>
                 </TooltipTrigger>
                 <TooltipContent side="right" className="max-w-xs">
-                  <p>
-                    When enabled, missing tracks are automatically downloaded
-                    via yt-dlp during sync and added to your music server
-                    library.
-                  </p>
+                  <Text
+                    variant="sm"
+                    value="When enabled, missing tracks are automatically downloaded via yt-dlp during sync and added to your music server library."
+                  />
                 </TooltipContent>
               </Tooltip>
             </div>
@@ -633,10 +635,10 @@ export const SyncSettings = () => {
                   ?
                 </p>
                 <br />
-                <p>
-                  This will fetch the latest tracks and sync them to your music
-                  server.
-                </p>
+                <Text
+                  variant="sm"
+                  value="This will fetch the latest tracks and sync them to your music server."
+                />
               </div>
             </AlertDialogDescription>
           </AlertDialogHeader>
