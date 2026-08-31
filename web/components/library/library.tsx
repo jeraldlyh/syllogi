@@ -241,7 +241,7 @@ export const Library = () => {
                 <Text
                   muted
                   className="uppercase tracking-widest pb-2 mt-4"
-                  value="Directory"
+                  value="Statistics"
                 />
               </div>
               <div className="grid grid-cols-2 items-baseline gap-x-4 gap-y-2 md:flex md:flex-wrap md:gap-x-3">

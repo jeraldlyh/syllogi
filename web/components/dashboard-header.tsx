@@ -96,6 +96,7 @@ export function DashboardHeader() {
           </h1>
           <Text
             muted
+            disableViewport
             value={`Last sync ${formatLastSyncedTime(
               new Date(data && data.length > 0 ? data[0].finished_at : ""),
             )}`}

@@ -483,7 +483,7 @@ const DialogItem = ({
 }) => {
   return (
     <div>
-      <Text muted value={label} />
+      <Text muted disableViewport value={label} />
       <Text className="truncate" value={value} mono={mono} />
     </div>
   );
@@ -500,7 +500,7 @@ const TrackList = ({
 }) => {
   const renderTracks = (): React.JSX.Element => {
     if (tracks.length === 0) {
-      return <Text muted value="None" />;
+      return <Text muted disableViewport value="None" />;
     }
     const uniqueTracks = Array.from(new Set(tracks));
 
@@ -519,7 +519,11 @@ const TrackList = ({
 
   return (
     <div>
-      <Text className={cn("mb-2 font-semibold", accent)} value={title} />
+      <Text
+        disableViewport
+        className={cn("mb-2 font-semibold", accent)}
+        value={title}
+      />
       {renderTracks()}
     </div>
   );

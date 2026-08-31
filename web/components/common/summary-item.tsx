@@ -16,7 +16,7 @@ export const SummaryItem = ({
   return (
     <div className="grid grid-cols-[auto,1fr] gap-x-2 gap-y-1">
       {icon}
-      <Text muted value={label} />
+      <Text muted disableViewport value={label} />
       <div />
       {typeof value === "string" || typeof value === "number" ? (
         <Text className="truncate" value={String(value)} mono={mono} />

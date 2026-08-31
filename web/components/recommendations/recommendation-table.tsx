@@ -478,7 +478,7 @@ export const RecommendationTable = () => {
 const DialogItem = ({ label, value }: { label: string; value: string }) => {
   return (
     <div>
-      <Text muted value={label} />
+      <Text muted disableViewport value={label} />
       <Text className="truncate" value={value} />
     </div>
   );
@@ -515,7 +515,11 @@ const TrackList = ({
 
   return (
     <div>
-      <Text className={cn("mb-2 font-semibold", accent)} value={title} />
+      <Text
+        disableViewport
+        className={cn("mb-2 font-semibold", accent)}
+        value={title}
+      />
       {renderTracks()}
     </div>
   );
