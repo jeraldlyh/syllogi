@@ -75,6 +75,16 @@ class TestIsSyncedLyrics:
 
         assert track.is_synced_lyrics() is False
 
+    def test_returns_false_for_bracketed_section_labels(self):
+        track = make_track(lyrics="[Chorus]\nI've been tryna call")
+
+        assert track.is_synced_lyrics() is False
+
+    def test_returns_true_for_timestamps_without_fractions(self):
+        track = make_track(lyrics="[Verse 1]\n[00:12] I've been tryna call")
+
+        assert track.is_synced_lyrics() is True
+
 
 class TestResolveLibraryPath:
     @patch("lib.library.get_library_directory")

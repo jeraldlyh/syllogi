@@ -1,6 +1,7 @@
+import re
 from dataclasses import dataclass, field
 
-LRC_LINE_PREFIX = "["
+LRC_TIMESTAMP = re.compile(r"^\[\d{1,3}:\d{2}(?:[.:]\d{1,3})?\]")
 
 
 @dataclass
@@ -46,8 +47,7 @@ class LibraryTrack:
         """Check whether the lyrics on this file carry LRC timestamps."""
 
         return any(
-            line.strip().startswith(LRC_LINE_PREFIX)
-            for line in self.tags.lyrics.splitlines()
+            LRC_TIMESTAMP.match(line.strip()) for line in self.tags.lyrics.splitlines()
         )
 
     def filled_fields(self) -> list[str]:
