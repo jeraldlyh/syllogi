@@ -192,7 +192,7 @@ def _get_library_track(
         }
     },
 )
-async def _update_library_track(
+def _update_library_track(
     item: UpdateTagsRequest,
     background_tasks: BackgroundTasks,
 ) -> dict:
@@ -220,9 +220,9 @@ async def _update_library_track(
 
     invalidate_track(item.path)
     track = read_library_track(file_path)
-
     provider = get_provider()
-    await provider.rescan_library()
+
+    background_tasks.add_task(provider.rescan_library)
 
     if not track:
         raise HTTPException(
