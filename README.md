@@ -38,17 +38,61 @@ Supported music servers:
 
 ## Screenshots
 
-### Playlist Sync
+### Desktop
 
-<p align="center">
-  <img src="assets/sync.jpeg" alt="Sync dashboard" width="800" />
-</p>
+<table>
+  <tr>
+    <td width="50%" align="center">
+      <img src="assets/sync.jpeg" alt="Playlist sync dashboard on desktop" width="100%" />
+      <br />
+      <sub><b>Playlist Sync</b></sub>
+    </td>
+    <td width="50%" align="center">
+      <img src="assets/recommendations.jpeg" alt="Recommendations dashboard on desktop" width="100%" />
+      <br />
+      <sub><b>Recommendations</b></sub>
+    </td>
+  </tr>
+  <tr>
+    <td width="50%" align="center">
+      <img src="assets/charts.jpeg" alt="Trending charts on desktop" width="100%" />
+      <br />
+      <sub><b>Charts</b></sub>
+    </td>
+    <td width="50%" align="center">
+      <img src="assets/library.jpeg" alt="Library manager on desktop" width="100%" />
+      <br />
+      <sub><b>Library</b></sub>
+    </td>
+  </tr>
+</table>
 
-### Trending Charts
+### Mobile
 
-<p align="center">
-  <img src="assets/charts.jpeg" alt="Charts dashboard" width="800" />
-</p>
+<table>
+  <tr>
+    <td width="25%" align="center">
+      <img src="assets/sync-mobile.jpeg" alt="Playlist sync dashboard on mobile" width="100%" />
+      <br />
+      <sub><b>Playlist Sync</b></sub>
+    </td>
+    <td width="25%" align="center">
+      <img src="assets/recommendations-mobile.jpeg" alt="Recommendations dashboard on mobile" width="100%" />
+      <br />
+      <sub><b>Recommendations</b></sub>
+    </td>
+    <td width="25%" align="center">
+      <img src="assets/charts-mobile.jpeg" alt="Trending charts on mobile" width="100%" />
+      <br />
+      <sub><b>Charts</b></sub>
+    </td>
+    <td width="25%" align="center">
+      <img src="assets/library-mobile.jpeg" alt="Library manager on mobile" width="100%" />
+      <br />
+      <sub><b>Library</b></sub>
+    </td>
+  </tr>
+</table>
 
 ---
 
