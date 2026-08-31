@@ -95,7 +95,7 @@ export default function LoginPage() {
             alt="syllogi logo"
             width={64}
             height={64}
-            className="rounded-xl bg-purple-600/10 p-2"
+            className="rounded-xl bg-purple-600/10 p-1"
           />
           <div className="text-center">
             <h1 className="text-2xl font-semibold tracking-tight text-foreground">
