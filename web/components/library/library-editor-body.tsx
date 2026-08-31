@@ -67,7 +67,7 @@ const TEXT_FIELDS: {
   },
 ];
 
-const LRC_LINE_PREFIX = "[";
+const LRC_TIMESTAMP = /^\[\d{1,3}:\d{2}([.:]\d{1,3})?\]/;
 const FLASH_MS = 1000;
 
 const defaultSources = (): Record<TagField, TagSource> =>
@@ -239,9 +239,7 @@ export const EditorBody = ({ detail, onSaved, onDirtyChange }: IProps) => {
 
     if (written === 0) return "No lyrics on this file";
 
-    const isSynced = lines.some((line) =>
-      line.trim().startsWith(LRC_LINE_PREFIX),
-    );
+    const isSynced = lines.some((line) => LRC_TIMESTAMP.test(line.trim()));
 
     return `${written} lines | ${isSynced ? "synced" : "plain"}`;
   };
