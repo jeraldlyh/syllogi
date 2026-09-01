@@ -173,9 +173,8 @@ export const Library = () => {
     return (
       <>
         <div
-          aria-busy={isLoading}
           className={cn(
-            "overflow-x-auto rounded-md border border-border transition-opacity",
+            "overflow-x-auto rounded-md border border-border transition-opacity md:max-h-[75vh] max-h-[50vh]",
             isLoading && "opacity-50",
           )}
         >
