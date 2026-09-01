@@ -20,7 +20,7 @@ logger = logging.getLogger(__name__)
 SCAN_CACHE_TTL = 60.0
 
 _track_cache: dict[str, tuple[float, LibraryTrack]] = {}
-_scan_cache: tuple[float, list[LibraryTrack]] | None = None
+_scan_cache: tuple[float, list[LibraryTrack], list[str]] | None = None
 _scan_lock = threading.Lock()
 
 
@@ -109,42 +109,81 @@ def invalidate_track(path: str) -> None:
     _scan_cache = None
 
 
-def _walk_library() -> list[LibraryTrack]:
-    """Walk the library directory and read the tags of every supported file."""
+def _collect_empty_directories(
+    library_directory: Path, holds_audio: dict[str, bool]
+) -> list[str]:
+    """Reduce a directory-to-audio map to the folders worth deleting.
+
+    A folder is empty when no audio file sits anywhere beneath it. Only the
+    outermost one is reported: an artist folder holding nothing but empty album
+    folders is a single dead folder, not one per album.
+    """
+
+    root = str(library_directory)
+
+    return sorted(
+        str(Path(directory).relative_to(library_directory))
+        for directory, audio in holds_audio.items()
+        if not audio
+        and directory != root
+        and (
+            os.path.dirname(directory) == root
+            or holds_audio.get(os.path.dirname(directory), True)
+        )
+    )
+
+
+def _walk_library() -> tuple[list[LibraryTrack], list[str]]:
+    """Walk the library directory, reading every supported file and noting dead folders.
+
+    The walk runs bottom-up so a folder's audio flag can fold in the flags of the
+    subfolders below it, which have already been visited.
+    """
 
     library_directory = get_library_directory()
 
     if not library_directory.is_dir():
         logger.warning(f"Library directory does not exist: {library_directory}")
-        return []
+        return [], []
 
     started_at = time.monotonic()
     tracks: list[LibraryTrack] = []
     seen: set[str] = set()
+    holds_audio: dict[str, bool] = {}
 
-    for root, _, filenames in os.walk(library_directory):
-        for filename in filenames:
-            if not filename.lower().endswith(SUPPORTED_EXTENSIONS):
-                continue
+    for root, directories, filenames in os.walk(library_directory, topdown=False):
+        audio_filenames = [
+            filename
+            for filename in filenames
+            if filename.lower().endswith(SUPPORTED_EXTENSIONS)
+        ]
 
-            track = read_library_track(Path(root) / filename)
+        for filename in audio_filenames:
+            track = read_library_track(file_path=Path(root) / filename)
 
             if track:
                 tracks.append(track)
                 seen.add(track.path)
 
+        holds_audio[root] = bool(audio_filenames) or any(
+            holds_audio.get(os.path.join(root, directory), False)
+            for directory in directories
+        )
+
     for stale in set(_track_cache) - seen:
         _track_cache.pop(stale, None)
 
+    empty_directories = _collect_empty_directories(library_directory, holds_audio)
+
     logger.info(
-        f"Scanned {len(tracks)} files in {library_directory} "
-        f"in {time.monotonic() - started_at:.2f}s"
+        f"Scanned {len(tracks)} files and {len(empty_directories)} empty folders "
+        f"in {library_directory} in {time.monotonic() - started_at:.2f}s"
     )
-    return sorted(tracks, key=lambda track: track.path.casefold())
+    return sorted(tracks, key=lambda track: track.path.casefold()), empty_directories
 
 
-def scan_library() -> list[LibraryTrack]:
-    """Read every supported audio file in the library, ordered by path.
+def _cached_scan() -> tuple[list[LibraryTrack], list[str]]:
+    """Return the cached walk of the library, rewalking it when the cache is cold.
 
     This blocks on disk I/O for as long as the walk takes, so it must never be
     called from the event loop. Route handlers that need it are declared `def`
@@ -161,12 +200,24 @@ def scan_library() -> list[LibraryTrack]:
         cached = _scan_cache
 
         if cached and (time.monotonic() - cached[0]) < SCAN_CACHE_TTL:
-            return cached[1]
+            return cached[1], cached[2]
 
-        tracks = _walk_library()
-        _scan_cache = (time.monotonic(), tracks)
+        tracks, empty_directories = _walk_library()
+        _scan_cache = (time.monotonic(), tracks, empty_directories)
 
-        return tracks
+        return tracks, empty_directories
+
+
+def scan_library() -> list[LibraryTrack]:
+    """Read every supported audio file in the library, ordered by path."""
+
+    return _cached_scan()[0]
+
+
+def scan_empty_directories() -> list[str]:
+    """List the library folders that hold no audio file, outermost first."""
+
+    return _cached_scan()[1]
 
 
 def filter_tracks(
@@ -205,7 +256,41 @@ def filter_tracks(
     return results
 
 
-def summarize_library(tracks: list[LibraryTrack]) -> dict[str, int]:
+def _duplicate_key(track: LibraryTrack) -> str:
+    """Build the identity a track shares with its copies in other formats.
+
+    Tagged files are keyed on artist and title, so the same recording is caught
+    wherever it sits on disk. Untagged files fall back to their folder and file
+    name, which keeps two albums that both open with an `01` file apart.
+    """
+
+    title = normalize(track.tags.title)
+
+    if not title:
+        return f"{normalize(track.directory)}\0{normalize(Path(track.filename).stem)}"
+
+    return f"{normalize(track.tags.artist)}\0{title}"
+
+
+def count_duplicate_tracks(tracks: list[LibraryTrack]) -> int:
+    """Count the tracks the library holds more than one file for.
+
+    A track downloaded as both Opus and FLAC counts once, not twice: the number
+    answers "how many tracks are duplicated", not "how many files are spare".
+    """
+
+    counts: dict[str, int] = {}
+
+    for track in tracks:
+        key = _duplicate_key(track)
+        counts[key] = counts.get(key, 0) + 1
+
+    return sum(1 for count in counts.values() if count > 1)
+
+
+def summarize_library(
+    tracks: list[LibraryTrack], empty_directories: int = 0
+) -> dict[str, int]:
     """Count the library-wide gaps worth acting on."""
 
     return {
@@ -215,4 +300,6 @@ def summarize_library(tracks: list[LibraryTrack]) -> dict[str, int]:
             1 for track in tracks if not track.tags.musicbrainz_id
         ),
         "lossless": sum(1 for track in tracks if track.format == "flac"),
+        "duplicates": count_duplicate_tracks(tracks),
+        "empty_directories": empty_directories,
     }

@@ -11,6 +11,7 @@ from lib.library import (
     invalidate_track,
     read_library_track,
     resolve_library_path,
+    scan_empty_directories,
     scan_library,
     summarize_library,
 )
@@ -54,6 +55,8 @@ class UpdateTagsRequest(BaseModel):
                                 "missing_lyrics": 96,
                                 "missing_musicbrainz_id": 210,
                                 "lossless": 188,
+                                "duplicates": 14,
+                                "empty_directories": 3,
                             },
                             "matched": 412,
                             "tracks": [
@@ -105,7 +108,7 @@ def _list_library_tracks(
 
     return {
         "directory": str(get_library_directory()),
-        "summary": summarize_library(tracks),
+        "summary": summarize_library(tracks, len(scan_empty_directories())),
         "matched": len(matched),
         "tracks": [track.to_dict() for track in matched[offset : offset + limit]],
     }

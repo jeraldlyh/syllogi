@@ -7,10 +7,12 @@ from fastapi import HTTPException
 
 from lib import library
 from lib.library import (
+    count_duplicate_tracks,
     filter_tracks,
     invalidate_track,
     read_library_track,
     resolve_library_path,
+    scan_empty_directories,
     scan_library,
     summarize_library,
 )
@@ -320,16 +322,132 @@ class TestSummarizeLibrary:
     def test_counts_the_gaps_worth_acting_on(self):
         tracks = [
             make_track(),
-            make_track(path="A/B/C.mp3", file_format="mp3", has_lyrics=False),
-            make_track(path="A/B/D.flac", musicbrainz_id=""),
+            make_track(
+                path="A/B/C.mp3", file_format="mp3", has_lyrics=False, title="C"
+            ),
+            make_track(path="A/B/D.flac", musicbrainz_id="", title="D"),
         ]
 
-        assert summarize_library(tracks) == {
+        assert summarize_library(tracks, 4) == {
             "total": 3,
             "missing_lyrics": 1,
             "missing_musicbrainz_id": 1,
             "lossless": 2,
+            "duplicates": 0,
+            "empty_directories": 4,
         }
+
+    def test_reports_no_empty_folders_when_none_are_passed(self):
+        assert summarize_library([make_track()])["empty_directories"] == 0
+
+
+class TestCountDuplicateTracks:
+    def test_counts_a_track_held_in_two_formats_once(self):
+        tracks = [
+            make_track(path="Artist/Album/Track.flac"),
+            make_track(path="Artist/Album/Track.opus", file_format="opus"),
+        ]
+
+        assert count_duplicate_tracks(tracks) == 1
+
+    def test_matches_the_same_recording_across_folders(self):
+        tracks = [
+            make_track(path="Artist/Album/Track.flac"),
+            make_track(path="Artist/Greatest Hits/Track.opus", file_format="opus"),
+        ]
+
+        assert count_duplicate_tracks(tracks) == 1
+
+    def test_ignores_case_and_accents_when_matching(self):
+        tracks = [
+            make_track(path="A/B/C.flac", title="Blinding Lights"),
+            make_track(path="A/B/D.opus", file_format="opus", title="BLINDING LIGHTS"),
+        ]
+
+        assert count_duplicate_tracks(tracks) == 1
+
+    def test_keeps_different_artists_apart(self):
+        tracks = [
+            make_track(path="A/B/C.flac"),
+            make_track(path="D/E/F.flac", artist="Someone Else"),
+        ]
+
+        assert count_duplicate_tracks(tracks) == 0
+
+    def test_counts_each_duplicated_track_once_however_many_copies(self):
+        tracks = [
+            make_track(path="A/B/C.flac"),
+            make_track(path="A/B/C.mp3", file_format="mp3"),
+            make_track(path="A/B/C.opus", file_format="opus"),
+        ]
+
+        assert count_duplicate_tracks(tracks) == 1
+
+    def test_falls_back_to_the_folder_and_file_name_when_untagged(self):
+        tracks = [
+            make_track(path="A/Album One/01.flac", title="", artist=""),
+            make_track(path="A/Album Two/01.flac", title="", artist=""),
+        ]
+
+        assert count_duplicate_tracks(tracks) == 0
+
+    def test_matches_untagged_files_sharing_a_folder_and_name(self):
+        tracks = [
+            make_track(path="A/Album One/01.flac", title="", artist=""),
+            make_track(
+                path="A/Album One/01.opus", file_format="opus", title="", artist=""
+            ),
+        ]
+
+        assert count_duplicate_tracks(tracks) == 1
+
+
+class TestScanEmptyDirectories:
+    @patch("lib.library.read_audio_tags")
+    @patch("lib.library.get_library_directory")
+    def test_reports_folders_holding_no_audio(
+        self, mock_directory, mock_read, tmp_path
+    ):
+        mock_directory.return_value = tmp_path
+        (tmp_path / "Artist").mkdir()
+        (tmp_path / "Artist" / "Track.flac").write_bytes(b"")
+        (tmp_path / "Abandoned").mkdir()
+        (tmp_path / "Artwork Only").mkdir()
+        (tmp_path / "Artwork Only" / "cover.jpg").write_bytes(b"")
+        mock_read.return_value = (AudioTags(title="Track"), 100)
+
+        assert scan_empty_directories() == ["Abandoned", "Artwork Only"]
+
+    @patch("lib.library.read_audio_tags")
+    @patch("lib.library.get_library_directory")
+    def test_reports_only_the_outermost_dead_folder(
+        self, mock_directory, mock_read, tmp_path
+    ):
+        mock_directory.return_value = tmp_path
+        (tmp_path / "Artist" / "Album").mkdir(parents=True)
+        mock_read.return_value = (AudioTags(title="Track"), 100)
+
+        assert scan_empty_directories() == ["Artist"]
+
+    @patch("lib.library.read_audio_tags")
+    @patch("lib.library.get_library_directory")
+    def test_keeps_a_folder_whose_audio_sits_in_a_subfolder(
+        self, mock_directory, mock_read, tmp_path
+    ):
+        mock_directory.return_value = tmp_path
+        (tmp_path / "Artist" / "Album").mkdir(parents=True)
+        (tmp_path / "Artist" / "Album" / "Track.flac").write_bytes(b"")
+        mock_read.return_value = (AudioTags(title="Track"), 100)
+
+        assert scan_empty_directories() == []
+
+    @patch("lib.library.get_library_directory")
+    def test_reports_nothing_when_the_directory_is_missing(
+        self, mock_directory, tmp_path
+    ):
+        mock_directory.return_value = tmp_path / "absent"
+
+        assert scan_empty_directories() == []
 
 
 class TestLibraryTrackSerialization:
