@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="assets/icon.png" alt="syllogi logo" width="320" />
+  <img src="assets/icon.png" alt="syllogi logo" width="160" />
 </p>
 
 # syllogi
