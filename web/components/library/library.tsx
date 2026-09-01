@@ -264,6 +264,24 @@ export const Library = () => {
                   })}
                 />
                 <StatDivider />
+                <StatCount
+                  value={data.summary.duplicates}
+                  label="duplicated"
+                  className={cn({
+                    "text-amber-400": data.summary.duplicates > 0,
+                    "text-primary": data.summary.duplicates == 0,
+                  })}
+                />
+                <StatDivider />
+                <StatCount
+                  value={data.summary.empty_directories}
+                  label="empty folders"
+                  className={cn({
+                    "text-amber-400": data.summary.empty_directories > 0,
+                    "text-primary": data.summary.empty_directories == 0,
+                  })}
+                />
+                <StatDivider />
                 <StatCount value={data.summary.lossless} label="lossless" />
                 <span className="hidden min-w-0 max-w-full truncate text-muted-foreground/60 md:ml-auto md:inline">
                   {data.directory.slice(0, data.directory.lastIndexOf("/") + 1)}

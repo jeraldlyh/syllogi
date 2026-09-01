@@ -62,6 +62,8 @@ export interface LibrarySummary {
   missing_lyrics: number;
   missing_musicbrainz_id: number;
   lossless: number;
+  duplicates: number;
+  empty_directories: number;
 }
 
 export interface LibraryResponse {
