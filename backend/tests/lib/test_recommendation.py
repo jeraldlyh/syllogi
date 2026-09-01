@@ -384,8 +384,38 @@ class TestFamiliarTracks:
         )
 
         assert found == []
-        assert missing == [top_tracks[0]]
+        assert set(missing) == set(top_tracks)
         assert provider_tracks == []
+
+    async def test_familiar_tracks_fill_slots_left_by_similar_tracks(self):
+        top_tracks = [
+            _make_recommendation_track(track_name=f"Top Track {index}")
+            for index in range(8)
+        ]
+        similar_track = _make_recommendation_track(track_name="Similar Track")
+
+        recommendation_provider = _make_recommendation_provider()
+        recommendation_provider.get_top_tracks.return_value = top_tracks
+        recommendation_provider.get_similar_tracks.return_value = [similar_track]
+
+        music_provider = _make_music_provider_with_tracks(top_tracks + [similar_track])
+
+        found, missing, provider_tracks = await get_recommendations(
+            recommendation_provider=recommendation_provider,
+            music_provider=music_provider,
+            strategy=RecommendationStrategy.top_tracks,
+            num_recommendations=8,
+            username="user",
+            blend_users=None,
+        )
+
+        familiar_tracks = [track for track in found if track in top_tracks]
+
+        assert len(found) == 8
+        assert similar_track in found
+        assert len(familiar_tracks) == 7
+        assert len(provider_tracks) == 8
+        assert missing == []
 
     async def test_no_familiar_tracks_when_quarter_rounds_to_zero(self):
         top_track = _make_recommendation_track(track_name="Top Track")

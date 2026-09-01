@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="assets/icon.png" alt="syllogi logo" width="320" />
+  <img src="assets/icon.png" alt="syllogi logo" width="160" />
 </p>
 
 # syllogi
@@ -38,17 +38,61 @@ Supported music servers:
 
 ## Screenshots
 
-### Playlist Sync
+### Desktop
 
-<p align="center">
-  <img src="assets/sync.jpeg" alt="Sync dashboard" width="800" />
-</p>
+<table>
+  <tr>
+    <td width="50%" align="center">
+      <img src="assets/sync.jpeg" alt="Playlist sync dashboard on desktop" width="100%" />
+      <br />
+      <sub><b>Playlist Sync</b></sub>
+    </td>
+    <td width="50%" align="center">
+      <img src="assets/recommendations.jpeg" alt="Recommendations dashboard on desktop" width="100%" />
+      <br />
+      <sub><b>Recommendations</b></sub>
+    </td>
+  </tr>
+  <tr>
+    <td width="50%" align="center">
+      <img src="assets/charts.jpeg" alt="Trending charts on desktop" width="100%" />
+      <br />
+      <sub><b>Charts</b></sub>
+    </td>
+    <td width="50%" align="center">
+      <img src="assets/library.jpeg" alt="Library manager on desktop" width="100%" />
+      <br />
+      <sub><b>Library</b></sub>
+    </td>
+  </tr>
+</table>
 
-### Trending Charts
+### Mobile
 
-<p align="center">
-  <img src="assets/charts.jpeg" alt="Charts dashboard" width="800" />
-</p>
+<table>
+  <tr>
+    <td width="25%" align="center">
+      <img src="assets/sync-mobile.jpeg" alt="Playlist sync dashboard on mobile" width="100%" />
+      <br />
+      <sub><b>Playlist Sync</b></sub>
+    </td>
+    <td width="25%" align="center">
+      <img src="assets/recommendations-mobile.jpeg" alt="Recommendations dashboard on mobile" width="100%" />
+      <br />
+      <sub><b>Recommendations</b></sub>
+    </td>
+    <td width="25%" align="center">
+      <img src="assets/charts-mobile.jpeg" alt="Trending charts on mobile" width="100%" />
+      <br />
+      <sub><b>Charts</b></sub>
+    </td>
+    <td width="25%" align="center">
+      <img src="assets/library-mobile.jpeg" alt="Library manager on mobile" width="100%" />
+      <br />
+      <sub><b>Library</b></sub>
+    </td>
+  </tr>
+</table>
 
 ---
 
@@ -93,6 +137,22 @@ Each recommendation rule requires a **music server username**, a **Last.fm usern
 ### Charts
 
 Browse Last.fm globally trending tracks, and tracks can be queued for download directly from the Charts tab. The download activity log on the dashboard tracks the status of all in-progress and completed downloads.
+
+### Library Management
+
+Browse and retag the audio files found in `DOWNLOAD_DIR` from the dashboard. This tab lists every `.flac`, `.mp3` and `.opus` file with the tags it carries, searchable by file name, title, artist or album, and filterable by container or by the tags a file is missing.
+
+Each row shows how many of the seven editable tags the file has, so gaps are visible at a glance:
+
+| Tag       |
+| --------- |
+| Title     |
+| Artist    |
+| Album     |
+| Date      |
+| Genre     |
+| Lyrics    |
+| Recording |
 
 ## Quick Start
 
@@ -226,6 +286,8 @@ Special thanks to the following projects for making **syllogi** possible:
 - [Navidrome]
 - [Last.fm]
 - [slskd]
+- [MusicBrainz]
+- [LRCLIB]
 
 [SpotAPI]: https://github.com/Aran404/SpotAPI/tree/main
 [yt-dlp]: https://github.com/yt-dlp/yt-dlp
@@ -233,3 +295,5 @@ Special thanks to the following projects for making **syllogi** possible:
 [Navidrome]: https://github.com/navidrome/navidrome
 [Last.fm]: https://www.last.fm/
 [slskd]: https://github.com/slskd/slskd
+[MusicBrainz]: https://musicbrainz.org/
+[LRCLIB]: https://lrclib.net/

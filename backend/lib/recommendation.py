@@ -92,35 +92,12 @@ async def get_recommendations(
     found: set[RecommendationTrack] = set()
     provider_tracks: list[ProviderTrack] = []
 
-    familiar_limit = min(
-        round(num_recommendations * FAMILIAR_TRACK_RATIO), num_recommendations
+    num_recommended_tracks = min(
+        round(num_recommendations * (1 - FAMILIAR_TRACK_RATIO)), num_recommendations
     )
 
     for track in all_tracks:
-        if len(found) + len(missing) >= familiar_limit:
-            break
-
-        if track in found or track in missing:
-            continue
-
-        provider_track = await find_track(
-            provider=music_provider,
-            artist_name=track.artist_name,
-            track_name=track.track_name,
-            album_name=track.album_name,
-            year="",
-            duration=track.duration,
-        )
-
-        if provider_track.is_not_found():
-            missing.add(track)
-            continue
-
-        found.add(track)
-        provider_tracks.append(provider_track)
-
-    for track in all_tracks:
-        if len(found) + len(missing) >= num_recommendations:
+        if len(found) + len(missing) >= num_recommended_tracks:
             break
 
         similar_tracks = await recommendation_provider.get_similar_tracks(
@@ -131,7 +108,7 @@ async def get_recommendations(
 
         has_missing = False
         for similar_track in similar_tracks:
-            if len(found) + len(missing) >= num_recommendations:
+            if len(found) + len(missing) >= num_recommended_tracks:
                 break
 
             if similar_track in found or similar_track in missing:
@@ -153,6 +130,29 @@ async def get_recommendations(
             if not has_missing and provider_track.is_not_found():
                 missing.add(similar_track)
                 has_missing = True
+
+    for track in all_tracks:
+        if len(found) + len(missing) >= num_recommendations:
+            break
+
+        if track in found or track in missing:
+            continue
+
+        provider_track = await find_track(
+            provider=music_provider,
+            artist_name=track.artist_name,
+            track_name=track.track_name,
+            album_name=track.album_name,
+            year="",
+            duration=track.duration,
+        )
+
+        if provider_track.is_not_found():
+            missing.add(track)
+            continue
+
+        found.add(track)
+        provider_tracks.append(provider_track)
 
     return list(found), list(missing), provider_tracks
 
