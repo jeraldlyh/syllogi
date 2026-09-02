@@ -6,12 +6,14 @@ from mutagen import MutagenError
 from pydantic import BaseModel, Field
 
 from db.library import (
+    get_empty_folders,
     query_tracks,
     summarize_library,
     upsert_tracks,
 )
 from db.session import SessionDep
 from lib.library import (
+    delete_empty_folders,
     get_library_directory,
     get_scan_state,
     read_library_track,
@@ -162,6 +164,61 @@ async def _scan_library(
     ] = True,
 ) -> dict:
     return {"started": trigger_library_sweep(force=force), **get_scan_state()}
+
+
+@router.get(
+    path="/folders",
+    summary="List empty folders",
+    description=(
+        "Return the folders the last sweep found holding no audio. Only the outermost "
+        "one is listed: an artist folder of empty album folders counts once."
+    ),
+    responses={
+        200: {
+            "description": "Empty folders retrieved successfully",
+            "content": {
+                "application/json": {
+                    "example": {
+                        "success": True,
+                        "data": [
+                            {"path": "The Weeknd/After Hours"},
+                            {"path": "Daft Punk"},
+                        ],
+                    }
+                }
+            },
+        }
+    },
+)
+def _list_empty_folders(session: SessionDep) -> list[dict]:
+    return [folder.to_dict() for folder in get_empty_folders(session)]
+
+
+@router.delete(
+    path="/folders",
+    summary="Delete every empty folder",
+    description=(
+        "Delete the folders holding no audio, along with any non-audio leftovers inside them."
+    ),
+    responses={
+        200: {
+            "description": "Empty folders deleted successfully",
+            "content": {
+                "application/json": {
+                    "example": {
+                        "success": True,
+                        "data": {
+                            "deleted": ["The Weeknd/After Hours", "Daft Punk"],
+                            "kept": [],
+                        },
+                    }
+                }
+            },
+        }
+    },
+)
+def _delete_empty_folders(session: SessionDep) -> dict:
+    return delete_empty_folders(session)
 
 
 @router.get(

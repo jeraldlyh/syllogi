@@ -10,7 +10,9 @@ from db.library import get_track_fingerprints, summarize_library
 from db.models.library import LibraryTrack
 from lib import library
 from lib.library import (
+    delete_empty_folders,
     read_library_track,
+    resolve_library_folder,
     resolve_library_path,
     sweep_library,
     trigger_library_sweep,
@@ -271,6 +273,113 @@ class TestWalkLibrary:
         _, empty = walk_library()
 
         assert empty == []
+
+
+class TestDeleteEmptyFolders:
+    @staticmethod
+    def _sweep(session) -> None:
+        with patch("lib.library.read_audio_tags", return_value=(AudioTags(), 100)):
+            sweep_library(session)
+
+    @patch("lib.library.get_library_directory")
+    def test_deletes_the_folders_the_sweep_found(
+        self, mock_directory, tmp_path, session
+    ):
+        mock_directory.return_value = tmp_path
+        (tmp_path / "Artist").mkdir()
+        (tmp_path / "Artist" / "Track.flac").write_bytes(b"")
+        (tmp_path / "Abandoned" / "Album").mkdir(parents=True)
+        self._sweep(session)
+
+        result = delete_empty_folders(session)
+
+        assert result["deleted"] == ["Abandoned"]
+        assert result["kept"] == []
+        assert not (tmp_path / "Abandoned").exists()
+        assert (tmp_path / "Artist" / "Track.flac").exists()
+
+    @patch("lib.library.get_library_directory")
+    def test_takes_non_audio_leftovers_with_the_folder(
+        self, mock_directory, tmp_path, session
+    ):
+        mock_directory.return_value = tmp_path
+        (tmp_path / "Artwork Only").mkdir()
+        (tmp_path / "Artwork Only" / "cover.jpg").write_bytes(b"")
+        self._sweep(session)
+
+        assert delete_empty_folders(session)["deleted"] == ["Artwork Only"]
+        assert not (tmp_path / "Artwork Only").exists()
+
+    @patch("lib.library.get_library_directory")
+    def test_keeps_a_folder_that_gained_audio_since_the_sweep(
+        self, mock_directory, tmp_path, session
+    ):
+        mock_directory.return_value = tmp_path
+        (tmp_path / "Abandoned").mkdir()
+        self._sweep(session)
+        (tmp_path / "Abandoned" / "Track.flac").write_bytes(b"")
+
+        result = delete_empty_folders(session)
+
+        assert result["deleted"] == []
+        assert result["kept"] == ["Abandoned"]
+        assert (tmp_path / "Abandoned" / "Track.flac").exists()
+
+    @patch("lib.library.get_library_directory")
+    def test_clears_the_stored_list_once_the_folders_are_gone(
+        self, mock_directory, tmp_path, session
+    ):
+        mock_directory.return_value = tmp_path
+        (tmp_path / "Abandoned").mkdir()
+        self._sweep(session)
+
+        delete_empty_folders(session)
+
+        assert summarize_library(session)["empty_directories"] == 0
+
+    @patch("lib.library.get_library_directory")
+    def test_ignores_a_folder_deleted_outside_the_app(
+        self, mock_directory, tmp_path, session
+    ):
+        mock_directory.return_value = tmp_path
+        (tmp_path / "Abandoned").mkdir()
+        self._sweep(session)
+        (tmp_path / "Abandoned").rmdir()
+
+        result = delete_empty_folders(session)
+
+        assert result["deleted"] == []
+        assert result["kept"] == []
+
+
+class TestResolveLibraryFolder:
+    @patch("lib.library.get_library_directory")
+    def test_refuses_a_path_outside_the_library(self, mock_directory, tmp_path):
+        mock_directory.return_value = tmp_path / "library"
+        (tmp_path / "library").mkdir()
+        (tmp_path / "outside").mkdir()
+
+        assert resolve_library_folder("../outside") is None
+
+    @patch("lib.library.get_library_directory")
+    def test_refuses_the_library_root(self, mock_directory, tmp_path):
+        mock_directory.return_value = tmp_path
+
+        assert resolve_library_folder("") is None
+
+    @patch("lib.library.get_library_directory")
+    def test_refuses_a_file(self, mock_directory, tmp_path):
+        mock_directory.return_value = tmp_path
+        (tmp_path / "Track.flac").write_bytes(b"")
+
+        assert resolve_library_folder("Track.flac") is None
+
+    @patch("lib.library.get_library_directory")
+    def test_returns_the_folder(self, mock_directory, tmp_path):
+        mock_directory.return_value = tmp_path
+        (tmp_path / "Artist").mkdir()
+
+        assert resolve_library_folder("Artist") == tmp_path / "Artist"
 
 
 class TestSweepLibrary:

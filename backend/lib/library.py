@@ -1,5 +1,6 @@
 import logging
 import os
+import shutil
 import threading
 import time
 from datetime import datetime
@@ -10,6 +11,7 @@ from sqlmodel import Session
 
 from db.library import (
     delete_tracks_by_paths,
+    get_empty_folders,
     get_track_fingerprints,
     replace_empty_folders,
     upsert_tracks,
@@ -149,6 +151,67 @@ def _collect_empty_directories(
             or holds_audio.get(os.path.dirname(directory), True)
         )
     )
+
+
+def _contains_audio(directory: Path) -> bool:
+    """Check whether any audio file sits anywhere beneath a folder."""
+
+    for _, _, filenames in os.walk(directory):
+        if any(
+            filename.lower().endswith(SUPPORTED_EXTENSIONS) for filename in filenames
+        ):
+            return True
+    return False
+
+
+def resolve_library_folder(path: str) -> Path | None:
+    """Resolve a library-relative folder path to the folder it names on disk.
+
+    Returns None if the path escapes the library, names the library root itself,
+    or no longer points at a folder.
+    """
+
+    library_directory = get_library_directory()
+    resolved = Path(resolve_existing_path(os.path.realpath(library_directory / path)))
+
+    if library_directory not in resolved.parents:
+        return None
+    return resolved if resolved.is_dir() else None
+
+
+def delete_empty_folders(session: Session) -> dict:
+    """Delete every folder the last sweep found holding no audio.
+
+    Returns the paths deleted and the paths kept.
+    """
+
+    deleted: list[str] = []
+    kept: list[str] = []
+
+    for folder in get_empty_folders(session):
+        target = resolve_library_folder(folder.path)
+
+        if target is None:
+            logger.info(f"Empty folder is already gone: {folder.path}")
+            continue
+
+        if _contains_audio(target):
+            logger.info(f"Keeping folder that contains audio: {folder.path}")
+            kept.append(folder.path)
+            continue
+
+        try:
+            shutil.rmtree(target)
+            deleted.append(folder.path)
+        except OSError as e:
+            logger.warning(f"Could not delete empty folder {folder.path}: {e}")
+            kept.append(folder.path)
+
+    replace_empty_folders(session, kept)
+
+    logger.info(f"Deleted {len(deleted)} empty folders, kept {len(kept)}")
+
+    return {"deleted": deleted, "kept": kept}
 
 
 def walk_library() -> tuple[dict[str, tuple[float, int, str]], list[str]]:
