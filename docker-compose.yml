@@ -28,7 +28,7 @@ services:
     volumes:
       - ./backend:/app/backend:delegated
       - ./web:/app/web:delegated
-      - ./downloads:/downloads
+      - library:/downloads
       - web_node_modules:/app/web/node_modules
     healthcheck:
       <<: *default-healthcheck
@@ -56,3 +56,9 @@ services:
 
 volumes:
   web_node_modules:
+  library:
+    driver: local
+    driver_opts:
+      type: cifs
+      device: //${SMB_HOST}/${SMB_SHARE}
+      o: "username=${SMB_USERNAME},password=${SMB_PASSWORD},uid=0,gid=0,file_mode=0664,dir_mode=0775,iocharset=utf8,vers=3.0"
