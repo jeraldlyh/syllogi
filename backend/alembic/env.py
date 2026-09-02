@@ -10,6 +10,7 @@ from alembic import context
 load_dotenv()
 
 from db.models.download_session import DownloadSession  # noqa: F401
+from db.models.library import LibraryFolder, LibraryTrack  # noqa: F401
 from db.models.music_server_user import MusicServerUser  # noqa: F401
 from db.models.notification import Notification  # noqa: F401
 from db.models.recommendation import (  # noqa: F401
