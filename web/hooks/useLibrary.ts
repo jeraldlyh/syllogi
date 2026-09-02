@@ -68,6 +68,9 @@ export interface LibrarySummary {
 
 export interface LibraryResponse {
   directory: string;
+  scanning: boolean;
+  last_scanned_at: string | null;
+  error: string | null;
   summary: LibrarySummary;
   matched: number;
   tracks: LibraryTrack[];
@@ -105,8 +108,8 @@ export interface LibraryFilters {
 }
 
 export const LIBRARY_PAGE_SIZE = 50;
-
 export const SEARCH_DEBOUNCE_MS = 300;
+export const SCAN_POLL_MS = 3000;
 
 const useDebounced = <T>(value: T, delay: number): T => {
   const [settled, setSettled] = useState(value);
@@ -136,6 +139,8 @@ export const useLibraryTracks = (filters: LibraryFilters, page: number) => {
   >(`/library/tracks?${params.toString()}`, fetcher, {
     keepPreviousData: true,
     revalidateOnFocus: false,
+    refreshInterval: (latest?: ApiResponse<LibraryResponse>) =>
+      latest?.data?.scanning ? SCAN_POLL_MS : 0,
   });
 
   return {
@@ -144,6 +149,10 @@ export const useLibraryTracks = (filters: LibraryFilters, page: number) => {
     isError: error,
     refresh: mutate,
   };
+};
+
+export const rescanLibrary = async (): Promise<void> => {
+  await fetcher("/library/scan", { method: "POST" });
 };
 
 export const useLibraryTrack = (path: string | null) => {

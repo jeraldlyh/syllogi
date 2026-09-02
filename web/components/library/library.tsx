@@ -1,4 +1,5 @@
 import { Text } from "@/components/common/text";
+import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import {
@@ -19,10 +20,11 @@ import {
 import {
   LIBRARY_PAGE_SIZE,
   LibraryFilters,
+  rescanLibrary,
   useLibraryTracks,
 } from "@/hooks/useLibrary";
 import { cn } from "@/lib/utils";
-import { FileAudio, Loader2, Search } from "lucide-react";
+import { FileAudio, Loader2, RefreshCw, Search } from "lucide-react";
 import { useEffect, useState } from "react";
 import { LibraryEditor } from "./library-editor";
 import { LibraryPagination } from "./library-pagination";
@@ -119,6 +121,11 @@ export const Library = () => {
     setFilters((previous) => ({ ...previous, ...patch }));
   };
 
+  const handleRescan = async (): Promise<void> => {
+    await rescanLibrary();
+    await refresh();
+  };
+
   const renderContent = (): React.JSX.Element => {
     if (isLoading && !data) {
       return (
@@ -145,6 +152,19 @@ export const Library = () => {
       const isFiltered = Boolean(
         filters.query || filters.format || filters.missing,
       );
+
+      if (data?.scanning && !isFiltered) {
+        return (
+          <div className="flex flex-col items-center justify-center gap-2 py-14 text-center">
+            <RefreshCw className="h-8 w-8 animate-spin text-muted-foreground/40" />
+            <Text variant="sm" muted value="Scanning the library" />
+            <Text
+              className="text-muted-foreground/70"
+              value="Files appear as they are read. This takes a while the first time."
+            />
+          </div>
+        );
+      }
 
       return (
         <div className="flex flex-col items-center justify-center gap-2 py-14 text-center">
@@ -283,6 +303,15 @@ export const Library = () => {
                 />
                 <StatDivider />
                 <StatCount value={data.summary.lossless} label="lossless" />
+                {data.scanning && (
+                  <>
+                    <StatDivider />
+                    <span className="flex shrink-0 items-center gap-1.5 text-primary">
+                      <RefreshCw className="h-3 w-3 animate-spin" />
+                      <span>scanning</span>
+                    </span>
+                  </>
+                )}
                 <span className="hidden min-w-0 max-w-full truncate text-muted-foreground/60 md:ml-auto md:inline">
                   {data.directory.slice(0, data.directory.lastIndexOf("/") + 1)}
                   <span className="text-foreground">
@@ -342,6 +371,17 @@ export const Library = () => {
                 })
               }
             />
+            <Button
+              variant="outline"
+              size="icon"
+              onClick={handleRescan}
+              disabled={data?.scanning}
+              aria-label="Rescan the library"
+              title="Rescan the library"
+              className="shrink-0"
+            >
+              <RefreshCw className={cn(data?.scanning && "animate-spin")} />
+            </Button>
           </div>
         </CardHeader>
         <CardContent>{renderContent()}</CardContent>
