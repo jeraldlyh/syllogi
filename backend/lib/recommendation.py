@@ -1,5 +1,6 @@
 import logging
 import uuid
+from itertools import zip_longest
 from typing import Any
 
 import httpx
@@ -38,6 +39,24 @@ logger = logging.getLogger(__name__)
 FAMILIAR_TRACK_RATIO = 0.25
 
 
+def interleave_tracks(
+    track_lists: list[list[RecommendationTrack]],
+) -> list[RecommendationTrack]:
+    """Round-robin merge per-user track lists so every user contributes evenly, keeping each list's order and dropping duplicates."""
+
+    merged: list[RecommendationTrack] = []
+    seen: set[RecommendationTrack] = set()
+
+    for tracks in zip_longest(*track_lists):
+        for track in tracks:
+            if track is None or track in seen:
+                continue
+
+            seen.add(track)
+            merged.append(track)
+    return merged
+
+
 async def get_recommendations(
     recommendation_provider: RecommendationSourceProvider,
     music_provider: MusicPlaylistProvider,
@@ -48,6 +67,28 @@ async def get_recommendations(
 ) -> tuple[list[RecommendationTrack], list[RecommendationTrack], list[ProviderTrack]]:
     """Generate track recomendations based on the specified strategy and user listening history."""
 
+    if strategy == RecommendationStrategy.blend:
+        if not blend_users:
+            raise ValueError("blend_users required for blend strategy")
+
+        seed_usernames = [
+            recommendation_provider_username
+            for _, recommendation_provider_username in blend_users
+        ]
+    else:
+        seed_usernames = [username]
+
+    recent_tracks_by_user: dict[str, list[RecommendationTrack]] = {}
+
+    for seed_username in seed_usernames:
+        seed_recent_tracks = await recommendation_provider.get_recent_tracks(
+            username=seed_username,
+            limit=num_recommendations,
+        )
+        recent_tracks_by_user[seed_username] = seed_recent_tracks
+
+    recent_tracks = interleave_tracks(list(recent_tracks_by_user.values()))
+
     match strategy:
         case RecommendationStrategy.top_tracks:
             all_tracks = await recommendation_provider.get_top_tracks(
@@ -55,36 +96,24 @@ async def get_recommendations(
                 limit=num_recommendations,
             )
         case RecommendationStrategy.recent_tracks:
-            all_tracks = await recommendation_provider.get_recent_tracks(
-                username=username,
-                limit=num_recommendations,
-            )
+            all_tracks = recent_tracks
         case RecommendationStrategy.mixed:
             recent_limit = round(num_recommendations * 0.5)
 
-            recent_tracks = await recommendation_provider.get_recent_tracks(
-                username=username,
-                limit=recent_limit,
-            )
             top_tracks = await recommendation_provider.get_top_tracks(
                 username=username,
                 limit=num_recommendations - recent_limit,
             )
 
-            all_tracks = recent_tracks + top_tracks
+            all_tracks = recent_tracks[:recent_limit] + top_tracks
         case RecommendationStrategy.blend:
-            if not blend_users:
-                raise ValueError("blend_users required for blend strategy")
-
-            per_user_limit = max(1, num_recommendations // (2 * len(blend_users)))
+            per_user_limit = max(1, num_recommendations // (2 * len(seed_usernames)))
             all_tracks = []
 
-            for _, recommendation_provider_username in blend_users:
-                recent = await recommendation_provider.get_recent_tracks(
-                    username=recommendation_provider_username, limit=per_user_limit
-                )
+            for seed_username in seed_usernames:
+                recent = recent_tracks_by_user[seed_username][:per_user_limit]
                 top = await recommendation_provider.get_top_tracks(
-                    username=recommendation_provider_username, limit=per_user_limit
+                    username=seed_username, limit=per_user_limit
                 )
                 all_tracks.extend(recent + top)
 
@@ -131,7 +160,7 @@ async def get_recommendations(
                 missing.add(similar_track)
                 has_missing = True
 
-    for track in all_tracks:
+    for track in recent_tracks:
         if len(found) + len(missing) >= num_recommendations:
             break
 
