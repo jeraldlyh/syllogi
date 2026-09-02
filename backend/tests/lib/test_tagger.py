@@ -1,9 +1,16 @@
+import unicodedata
 from unittest.mock import AsyncMock, patch
 
 import pytest
 
 from lib.models.library import AudioTags, LyricsCandidate
-from lib.tagger import get_tag_frames, is_valid_lyrics, tag_audio_file
+from lib.tagger import (
+    get_tag_frames,
+    is_synced_lyrics,
+    is_valid_lyrics,
+    resolve_existing_path,
+    tag_audio_file,
+)
 
 
 def make_candidate(**overrides) -> LyricsCandidate:
@@ -50,6 +57,56 @@ class TestIsValidLyrics:
     )
     def test_accepts_meaningful_content(self, text):
         assert is_valid_lyrics(text) is True
+
+
+class TestIsSyncedLyrics:
+    def test_returns_true_for_lrc_timestamps(self):
+        assert is_synced_lyrics("[00:12.34] I've been tryna call") is True
+
+    def test_returns_false_for_plain_lyrics(self):
+        assert is_synced_lyrics("I've been tryna call\nFor a while now") is False
+
+    def test_returns_false_for_empty_lyrics(self):
+        assert is_synced_lyrics("") is False
+
+    def test_returns_false_for_bracketed_section_labels(self):
+        assert is_synced_lyrics("[Chorus]\nI've been tryna call") is False
+
+    def test_returns_true_for_timestamps_without_fractions(self):
+        assert is_synced_lyrics("[Verse 1]\n[00:12] I've been tryna call") is True
+
+
+class TestResolveExistingPath:
+    def test_returns_the_path_unchanged_when_it_opens(self, tmp_path):
+        track = tmp_path / "Track.flac"
+        track.write_bytes(b"")
+
+        assert resolve_existing_path(str(track)) == str(track)
+
+    def test_recovers_a_file_the_share_listed_in_the_other_normalisation(self):
+        composed = f"/downloads/{unicodedata.normalize('NFC', '아이와 나의 바다.flac')}"
+        decomposed = (
+            f"/downloads/{unicodedata.normalize('NFD', '아이와 나의 바다.flac')}"
+        )
+
+        with patch("lib.tagger.os.path.exists", lambda path: path == composed):
+            assert resolve_existing_path(decomposed) == composed
+
+    def test_prefers_the_listed_spelling_when_both_resolve(self, tmp_path):
+        decomposed = str(
+            tmp_path / unicodedata.normalize("NFD", "아이와 나의 바다.flac")
+        )
+        (tmp_path / unicodedata.normalize("NFC", "아이와 나의 바다.flac")).write_bytes(
+            b""
+        )
+
+        with patch("lib.tagger.os.path.exists", return_value=True):
+            assert resolve_existing_path(decomposed) == decomposed
+
+    def test_returns_the_original_when_no_spelling_exists(self, tmp_path):
+        missing = str(tmp_path / "Absent.flac")
+
+        assert resolve_existing_path(missing) == missing
 
 
 class TestGetTagFrames:

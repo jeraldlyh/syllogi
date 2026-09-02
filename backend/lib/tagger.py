@@ -1,5 +1,7 @@
 import logging
+import os
 import re
+import unicodedata
 
 from mutagen import MutagenError
 from mutagen.flac import FLAC
@@ -14,6 +16,8 @@ logger = logging.getLogger(__name__)
 
 
 LRC_TIMESTAMP = re.compile(r"(?:\[\d{1,3}:\d{2}(?:[.:]\d{1,3})?\]\s*)+")
+
+LRC_LINE_TIMESTAMP = re.compile(r"^\[\d{1,3}:\d{2}(?:[.:]\d{1,3})?\]")
 
 MUSICBRAINZ_UFID_OWNER = "http://musicbrainz.org"
 
@@ -38,6 +42,29 @@ ID3_FRAMES = {
     "lyrics": "USLT",
     "musicbrainz_id": "UFID",
 }
+
+
+def resolve_existing_path(file_path: str) -> str:
+    """Returns the path that exists on disk, normalizing Unicode if necessary."""
+
+    if os.path.exists(file_path):
+        return file_path
+
+    for form in ("NFC", "NFD"):
+        candidate = unicodedata.normalize(form, file_path)
+
+        if candidate != file_path and os.path.exists(candidate):
+            return candidate
+    return file_path
+
+
+def is_synced_lyrics(text: str) -> bool:
+    """Check whether the lyrics carry LRC timestamps."""
+
+    if not text:
+        return False
+
+    return any(LRC_LINE_TIMESTAMP.match(line.strip()) for line in text.splitlines())
 
 
 def get_tag_frames(file_path: str) -> dict[str, str]:
@@ -156,14 +183,16 @@ def read_audio_tags(file_path: str) -> tuple[AudioTags, int] | None:
     """
 
     try:
+        readable_path = resolve_existing_path(file_path)
+
         if file_path.endswith(".flac"):
-            audio = FLAC(file_path)
+            audio = FLAC(readable_path)
             tags = _read_vorbis_tags(audio.tags)
         elif file_path.endswith(".opus"):
-            audio = OggOpus(file_path)
+            audio = OggOpus(readable_path)
             tags = _read_vorbis_tags(audio.tags)
         elif file_path.endswith(".mp3"):
-            audio = MP3(file_path)
+            audio = MP3(readable_path)
             tags = _read_id3_tags(audio.tags)
         else:
             return None
@@ -251,12 +280,14 @@ def write_audio_tags(file_path: str, tags: AudioTags) -> None:
         MutagenError, OSError: If the file cannot be written.
     """
 
+    writable_path = resolve_existing_path(file_path)
+
     if file_path.endswith(".flac"):
-        _write_vorbis_tags(FLAC(file_path), tags)
+        _write_vorbis_tags(FLAC(writable_path), tags)
     elif file_path.endswith(".opus"):
-        _write_vorbis_tags(OggOpus(file_path), tags)
+        _write_vorbis_tags(OggOpus(writable_path), tags)
     elif file_path.endswith(".mp3"):
-        _write_id3_tags(MP3(file_path), tags)
+        _write_id3_tags(MP3(writable_path), tags)
     else:
         raise ValueError(f"Unsupported file format: {file_path}")
 
