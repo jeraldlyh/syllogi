@@ -5,9 +5,11 @@ import pytest
 
 from lib.models.library import AudioTags, LyricsCandidate
 from lib.tagger import (
+    get_extension,
     get_tag_frames,
     is_synced_lyrics,
     is_valid_lyrics,
+    read_audio_tags,
     resolve_existing_path,
     tag_audio_file,
 )
@@ -109,9 +111,22 @@ class TestResolveExistingPath:
         assert resolve_existing_path(missing) == missing
 
 
+class TestGetExtension:
+    @pytest.mark.parametrize(
+        "file_path",
+        ["Artist/Track.mp3", "Artist/Track.MP3", "Artist/Track.Mp3"],
+    )
+    def test_lowercases_the_extension(self, file_path):
+        assert get_extension(file_path) == ".mp3"
+
+    def test_returns_empty_for_a_file_without_one(self):
+        assert get_extension("Artist/Track") == ""
+
+
 class TestGetTagFrames:
-    def test_reports_id3_frames_for_mp3(self):
-        frames = get_tag_frames("Artist/Track.mp3")
+    @pytest.mark.parametrize("file_path", ["Artist/Track.mp3", "Artist/Track.MP3"])
+    def test_reports_id3_frames_for_mp3(self, file_path):
+        frames = get_tag_frames(file_path)
 
         assert frames["title"] == "TIT2"
         assert frames["musicbrainz_id"] == "UFID"
@@ -122,6 +137,27 @@ class TestGetTagFrames:
 
         assert frames["title"] == "TITLE"
         assert frames["musicbrainz_id"] == "MUSICBRAINZ_TRACKID"
+
+
+class TestReadAudioTags:
+    def test_reads_an_upper_case_extension(self, tmp_path):
+        file_path = tmp_path / "Track.MP3"
+        file_path.write_bytes(b"")
+
+        with patch("lib.tagger.MP3") as mp3:
+            mp3.return_value.tags = None
+            mp3.return_value.info.length = 220.5
+
+            result = read_audio_tags(str(file_path))
+
+        assert result is not None
+        assert result[1] == 220
+
+    def test_returns_none_for_an_unsupported_format(self, tmp_path):
+        file_path = tmp_path / "Track.wav"
+        file_path.write_bytes(b"")
+
+        assert read_audio_tags(str(file_path)) is None
 
 
 class TestTagAudioFile:

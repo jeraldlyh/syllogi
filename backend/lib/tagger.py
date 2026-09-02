@@ -16,13 +16,9 @@ logger = logging.getLogger(__name__)
 
 
 LRC_TIMESTAMP = re.compile(r"(?:\[\d{1,3}:\d{2}(?:[.:]\d{1,3})?\]\s*)+")
-
 LRC_LINE_TIMESTAMP = re.compile(r"^\[\d{1,3}:\d{2}(?:[.:]\d{1,3})?\]")
-
 MUSICBRAINZ_UFID_OWNER = "http://musicbrainz.org"
-
 SUPPORTED_EXTENSIONS = (".flac", ".mp3", ".opus")
-
 VORBIS_FRAMES = {
     "title": "TITLE",
     "artist": "ARTIST",
@@ -32,7 +28,6 @@ VORBIS_FRAMES = {
     "lyrics": "LYRICS",
     "musicbrainz_id": "MUSICBRAINZ_TRACKID",
 }
-
 ID3_FRAMES = {
     "title": "TIT2",
     "artist": "TPE1",
@@ -58,6 +53,12 @@ def resolve_existing_path(file_path: str) -> str:
     return file_path
 
 
+def get_extension(file_path: str) -> str:
+    """Return the lowercased file extension."""
+
+    return os.path.splitext(file_path)[1].lower()
+
+
 def is_synced_lyrics(text: str) -> bool:
     """Check whether the lyrics carry LRC timestamps."""
 
@@ -73,7 +74,7 @@ def get_tag_frames(file_path: str) -> dict[str, str]:
     FLAC and Opus store Vorbis comments; MP3 stores ID3v2 frames.
     """
 
-    if file_path.endswith(".mp3"):
+    if get_extension(file_path) == ".mp3":
         return dict(ID3_FRAMES)
     return dict(VORBIS_FRAMES)
 
@@ -184,14 +185,15 @@ def read_audio_tags(file_path: str) -> tuple[AudioTags, int] | None:
 
     try:
         readable_path = resolve_existing_path(file_path)
+        extension = get_extension(file_path)
 
-        if file_path.endswith(".flac"):
+        if extension == ".flac":
             audio = FLAC(readable_path)
             tags = _read_vorbis_tags(audio.tags)
-        elif file_path.endswith(".opus"):
+        elif extension == ".opus":
             audio = OggOpus(readable_path)
             tags = _read_vorbis_tags(audio.tags)
-        elif file_path.endswith(".mp3"):
+        elif extension == ".mp3":
             audio = MP3(readable_path)
             tags = _read_id3_tags(audio.tags)
         else:
@@ -281,12 +283,13 @@ def write_audio_tags(file_path: str, tags: AudioTags) -> None:
     """
 
     writable_path = resolve_existing_path(file_path)
+    extension = get_extension(file_path)
 
-    if file_path.endswith(".flac"):
+    if extension == ".flac":
         _write_vorbis_tags(FLAC(writable_path), tags)
-    elif file_path.endswith(".opus"):
+    elif extension == ".opus":
         _write_vorbis_tags(OggOpus(writable_path), tags)
-    elif file_path.endswith(".mp3"):
+    elif extension == ".mp3":
         _write_id3_tags(MP3(writable_path), tags)
     else:
         raise ValueError(f"Unsupported file format: {file_path}")
