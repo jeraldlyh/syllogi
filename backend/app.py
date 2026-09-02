@@ -24,6 +24,7 @@ from db.session import get_isolated_session
 from db.sync import get_syncs
 from lib.cron import create_job, scheduler
 from lib.env import get_environment_variable
+from lib.library import trigger_library_sweep
 from lib.providers import get_provider
 from lib.providers.playlist.navidrome import NavidromeProvider
 from lib.recommendation import generate_recommendations
@@ -245,6 +246,7 @@ def create_app() -> FastAPI:
             await ensure_navidrome_user(provider)
 
         create_cron_jobs()
+        trigger_library_sweep(force=True)
 
     @app.on_event("shutdown")
     def shutdown_event():
