@@ -81,7 +81,7 @@ const StatCount = ({
     <Button
       variant="link"
       onClick={onClick}
-      className="h-auto items-baseline p-0 font-mono text-xs"
+      className="h-auto items-baseline p-0 font-mono text-xs text-muted-foreground"
     >
       {content}
     </Button>
