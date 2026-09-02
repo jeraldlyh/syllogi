@@ -181,6 +181,15 @@ def normalize(text: str) -> str:
     return unicodedata.normalize("NFKC", text).casefold().strip()
 
 
+def normalize_unicode(text: str) -> str:
+    """Normalize text to NFC, the form used for everything stored in the database.
+
+    NFD file names such as `아이` arrives as a base letter plus combining jamo.
+    """
+
+    return unicodedata.normalize("NFC", text)
+
+
 def truncate(text: str, max_length: int) -> str:
     """Truncate text to a maximum length"""
 
