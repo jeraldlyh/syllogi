@@ -95,9 +95,7 @@ export const LibraryEmptyFolders = ({
             key={folder.path}
             className="border-b border-border px-3 py-2 font-mono text-xs last:border-b-0"
           >
-            <span className="block truncate" title={folder.path}>
-              {folder.path}
-            </span>
+            <Text variant="xs" muted disableViewport value={folder.path} />
           </li>
         ))}
       </ul>
@@ -126,7 +124,7 @@ export const LibraryEmptyFolders = ({
             <Text
               variant="sm"
               className="text-amber-400"
-              value={`${kept.length} folder${kept.length === 1 ? "" : "s"} could not be deleted. They may have gained audio since the last scan.`}
+              value={`${kept.length} folder${kept.length === 1 ? "" : "s"} could not be deleted. There might be new audio files since the last scan.`}
             />
           )}
           <DialogFooter>
