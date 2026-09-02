@@ -2,26 +2,40 @@ import logging
 import os
 import threading
 import time
+from datetime import datetime
 from pathlib import Path
 
 from fastapi import HTTPException, status
+from sqlmodel import Session
 
+from db.library import (
+    delete_tracks_by_paths,
+    get_track_fingerprints,
+    replace_empty_folders,
+    upsert_tracks,
+)
+from db.models.library import LibraryTrack
+from db.session import get_isolated_session
 from lib.env import get_environment_variable
-from lib.models.library import LibraryTrack
 from lib.tagger import (
     SUPPORTED_EXTENSIONS,
+    is_synced_lyrics,
     is_valid_lyrics,
     read_audio_tags,
+    resolve_existing_path,
 )
-from lib.utils import normalize
+from lib.utils import get_now, normalize_unicode, truncate
 
 logger = logging.getLogger(__name__)
 
-SCAN_CACHE_TTL = 60.0
+SWEEP_INTERVAL = 900
+UPSERT_BATCH_SIZE = 100
 
-_track_cache: dict[str, tuple[float, LibraryTrack]] = {}
-_scan_cache: tuple[float, list[LibraryTrack], list[str]] | None = None
-_scan_lock = threading.Lock()
+_sweep_lock = threading.Lock()
+_sweeping = False
+_last_swept_at: float | None = None
+_last_swept_on: datetime | None = None
+_last_error: str | None = None
 
 
 def get_library_directory() -> Path:
@@ -38,7 +52,7 @@ def resolve_library_path(path: str) -> Path:
     """
 
     library_directory = get_library_directory()
-    resolved = Path(os.path.realpath(library_directory / path))
+    resolved = Path(resolve_existing_path(os.path.realpath(library_directory / path)))
 
     if resolved != library_directory and library_directory not in resolved.parents:
         raise HTTPException(
@@ -61,8 +75,17 @@ def resolve_library_path(path: str) -> Path:
     return resolved
 
 
-def read_library_track(file_path: Path) -> LibraryTrack | None:
-    """Read a single audio file into a LibraryTrack, or None if its tags cannot be read."""
+def read_library_track(file_path: Path) -> tuple[LibraryTrack, str] | None:
+    """Read an audio file into an unsaved LibraryTrack and its lyrics body.
+
+    Returns None if the tags cannot be read. The lyrics come back alongside the
+    row rather than on it: the editor needs the text, but storing it on every row
+    would bloat the table for a field no list query ever reads.
+
+    `file_path` must be the path as it exists on disk. Everything stored on the row
+    is normalised to NFC, so the database holds one spelling of a name regardless
+    of how the filesystem chose to hand it over.
+    """
 
     library_directory = get_library_directory()
 
@@ -70,12 +93,6 @@ def read_library_track(file_path: Path) -> LibraryTrack | None:
         stat = file_path.stat()
     except OSError:
         return None
-
-    relative_path = str(file_path.relative_to(library_directory))
-    cached = _track_cache.get(relative_path)
-
-    if cached and cached[0] == stat.st_mtime:
-        return cached[1]
 
     result = read_audio_tags(str(file_path))
 
@@ -86,27 +103,28 @@ def read_library_track(file_path: Path) -> LibraryTrack | None:
     directory = str(file_path.parent.relative_to(library_directory))
 
     track = LibraryTrack(
-        path=relative_path,
-        filename=file_path.name,
-        directory="" if directory == "." else directory,
+        path=truncate(
+            normalize_unicode(str(file_path.relative_to(library_directory))), 1024
+        ),
+        filename=truncate(normalize_unicode(file_path.name), 512),
+        directory=(
+            "" if directory == "." else truncate(normalize_unicode(directory), 1024)
+        ),
         format=file_path.suffix.lower().lstrip("."),
         size=stat.st_size,
         duration=duration,
-        tags=tags,
+        mtime=stat.st_mtime,
+        title=truncate(normalize_unicode(tags.title), 512),
+        artist=truncate(normalize_unicode(tags.artist), 512),
+        album=truncate(normalize_unicode(tags.album), 512),
+        date=truncate(tags.date, 32),
+        genres=[normalize_unicode(genre) for genre in tags.genres],
+        musicbrainz_id=truncate(tags.musicbrainz_id, 64),
         has_lyrics=is_valid_lyrics(tags.lyrics),
+        is_synced_lyrics=is_synced_lyrics(tags.lyrics),
     )
-    _track_cache[relative_path] = (stat.st_mtime, track)
 
-    return track
-
-
-def invalidate_track(path: str) -> None:
-    """Drop a file from the caches so its next read comes from disk."""
-
-    global _scan_cache
-
-    _track_cache.pop(path, None)
-    _scan_cache = None
+    return track, tags.lyrics
 
 
 def _collect_empty_directories(
@@ -122,7 +140,7 @@ def _collect_empty_directories(
     root = str(library_directory)
 
     return sorted(
-        str(Path(directory).relative_to(library_directory))
+        normalize_unicode(str(Path(directory).relative_to(library_directory)))
         for directory, audio in holds_audio.items()
         if not audio
         and directory != root
@@ -133,22 +151,21 @@ def _collect_empty_directories(
     )
 
 
-def _walk_library() -> tuple[list[LibraryTrack], list[str]]:
-    """Walk the library directory, reading every supported file and noting dead folders.
+def walk_library() -> tuple[dict[str, tuple[float, int, str]], list[str]]:
+    """Stat every audio file in the library and note the folders holding none.
 
-    The walk runs bottom-up so a folder's audio flag can fold in the flags of the
-    subfolders below it, which have already been visited.
+    Returns a map of library-relative path to (mtime, size, on-disk path),
+    plus the empty folders.
     """
 
     library_directory = get_library_directory()
 
     if not library_directory.is_dir():
         logger.warning(f"Library directory does not exist: {library_directory}")
-        return [], []
+        return {}, []
 
     started_at = time.monotonic()
-    tracks: list[LibraryTrack] = []
-    seen: set[str] = set()
+    files: dict[str, tuple[float, int, str]] = {}
     holds_audio: dict[str, bool] = {}
 
     for root, directories, filenames in os.walk(library_directory, topdown=False):
@@ -159,147 +176,147 @@ def _walk_library() -> tuple[list[LibraryTrack], list[str]]:
         ]
 
         for filename in audio_filenames:
-            track = read_library_track(file_path=Path(root) / filename)
+            file_path = Path(root) / filename
 
-            if track:
-                tracks.append(track)
-                seen.add(track.path)
+            try:
+                stat = file_path.stat()
+            except OSError:
+                logger.warning(f"Could not stat library file: {file_path}")
+                continue
+
+            relative_path = normalize_unicode(
+                str(file_path.relative_to(library_directory))
+            )
+            files[relative_path] = (stat.st_mtime, stat.st_size, str(file_path))
 
         holds_audio[root] = bool(audio_filenames) or any(
             holds_audio.get(os.path.join(root, directory), False)
             for directory in directories
         )
 
-    for stale in set(_track_cache) - seen:
-        _track_cache.pop(stale, None)
-
     empty_directories = _collect_empty_directories(library_directory, holds_audio)
 
     logger.info(
-        f"Scanned {len(tracks)} files and {len(empty_directories)} empty folders "
+        f"Walked {len(files)} files and {len(empty_directories)} empty folders "
         f"in {library_directory} in {time.monotonic() - started_at:.2f}s"
     )
-    return sorted(tracks, key=lambda track: track.path.casefold()), empty_directories
+    return files, empty_directories
 
 
-def _cached_scan() -> tuple[list[LibraryTrack], list[str]]:
-    """Return the cached walk of the library, rewalking it when the cache is cold.
+def sweep_library(session: Session) -> dict[str, int]:
+    """Reconcile the database against the filesystem, reading only what changed.
 
-    This blocks on disk I/O for as long as the walk takes, so it must never be
-    called from the event loop. Route handlers that need it are declared `def`
-    so FastAPI runs them in a worker thread.
-
-    Results are cached for SCAN_CACHE_TTL and the walk is serialised, so a
-    burst of requests costs one walk rather than one each. Within a walk, files
-    whose modification time is unchanged are served from the per-file cache.
+    Files whose modification time and size still match their row are left alone,
+    so a repeat sweep costs one stat per file rather than one tag read per file.
     """
 
-    global _scan_cache
+    library_directory = get_library_directory()
+    started_at = time.monotonic()
 
-    with _scan_lock:
-        cached = _scan_cache
+    files, empty_directories = walk_library()
+    known = get_track_fingerprints(session=session)
 
-        if cached and (time.monotonic() - cached[0]) < SCAN_CACHE_TTL:
-            return cached[1], cached[2]
+    removed = delete_tracks_by_paths(
+        session=session, paths=sorted(set(known) - set(files))
+    )
 
-        tracks, empty_directories = _walk_library()
-        _scan_cache = (time.monotonic(), tracks, empty_directories)
+    changed = [
+        (path, on_disk_path)
+        for path, (mtime, size, on_disk_path) in files.items()
+        if known.get(path) != (mtime, size)
+    ]
 
-        return tracks, empty_directories
+    read = 0
+    unreadable = 0
+    batch: list[LibraryTrack] = []
 
+    for path, on_disk_path in changed:
+        result = read_library_track(Path(on_disk_path))
 
-def scan_library() -> list[LibraryTrack]:
-    """Read every supported audio file in the library, ordered by path."""
+        if result is None:
+            logger.warning(f"Skipping unreadable library file: {path}")
+            unreadable += 1
+            continue
 
-    return _cached_scan()[0]
+        batch.append(result[0])
+        read += 1
 
+        if len(batch) >= UPSERT_BATCH_SIZE:
+            upsert_tracks(session, batch)
+            batch = []
 
-def scan_empty_directories() -> list[str]:
-    """List the library folders that hold no audio file, outermost first."""
+    upsert_tracks(session, batch)
+    replace_empty_folders(session, empty_directories)
 
-    return _cached_scan()[1]
-
-
-def filter_tracks(
-    tracks: list[LibraryTrack],
-    *,
-    query: str = "",
-    file_format: str = "",
-    missing: str = "",
-) -> list[LibraryTrack]:
-    """Filter scanned tracks by free text, container format, and missing tags."""
-
-    results = tracks
-
-    if query:
-        needle = normalize(query)
-        results = [
-            track
-            for track in results
-            if needle in normalize(track.filename)
-            or needle in normalize(track.tags.title)
-            or needle in normalize(track.tags.artist)
-            or needle in normalize(track.tags.album)
-            or needle in normalize(track.directory)
-        ]
-
-    if file_format:
-        results = [track for track in results if track.format == file_format.lower()]
-
-    if missing == "lyrics":
-        results = [track for track in results if not track.has_lyrics]
-    elif missing == "musicbrainz_id":
-        results = [track for track in results if not track.tags.musicbrainz_id]
-    elif missing == "any":
-        results = [track for track in results if len(track.filled_fields()) < 7]
-
-    return results
-
-
-def _duplicate_key(track: LibraryTrack) -> str:
-    """Build the identity a track shares with its copies in other formats.
-
-    Tagged files are keyed on artist and title, so the same recording is caught
-    wherever it sits on disk. Untagged files fall back to their folder and file
-    name, which keeps two albums that both open with an `01` file apart.
-    """
-
-    title = normalize(track.tags.title)
-
-    if not title:
-        return f"{normalize(track.directory)}\0{normalize(Path(track.filename).stem)}"
-
-    return f"{normalize(track.tags.artist)}\0{title}"
-
-
-def count_duplicate_tracks(tracks: list[LibraryTrack]) -> int:
-    """Count the tracks the library holds more than one file for.
-
-    A track downloaded as both Opus and FLAC counts once, not twice: the number
-    answers "how many tracks are duplicated", not "how many files are spare".
-    """
-
-    counts: dict[str, int] = {}
-
-    for track in tracks:
-        key = _duplicate_key(track)
-        counts[key] = counts.get(key, 0) + 1
-
-    return sum(1 for count in counts.values() if count > 1)
-
-
-def summarize_library(
-    tracks: list[LibraryTrack], empty_directories: int = 0
-) -> dict[str, int]:
-    """Count the library-wide gaps worth acting on."""
+    logger.info(
+        f"Swept {library_directory}: {len(files)} files, {read} read, "
+        f"{removed} removed, {unreadable} unreadable, "
+        f"{len(empty_directories)} empty folders in {time.monotonic() - started_at:.2f}s"
+    )
 
     return {
-        "total": len(tracks),
-        "missing_lyrics": sum(1 for track in tracks if not track.has_lyrics),
-        "missing_musicbrainz_id": sum(
-            1 for track in tracks if not track.tags.musicbrainz_id
-        ),
-        "lossless": sum(1 for track in tracks if track.format == "flac"),
-        "duplicates": count_duplicate_tracks(tracks),
-        "empty_directories": empty_directories,
+        "total": len(files),
+        "read": read,
+        "removed": removed,
+        "unreadable": unreadable,
+        "empty_directories": len(empty_directories),
     }
+
+
+def get_scan_state() -> dict:
+    """Report whether a sweep is running and when one last finished."""
+
+    with _sweep_lock:
+        return {
+            "scanning": _sweeping,
+            "last_scanned_at": _last_swept_on.isoformat() if _last_swept_on else None,
+            "error": _last_error,
+        }
+
+
+def _run_sweep() -> None:
+    """Run one sweep on its own session, then release the running flag."""
+
+    global _sweeping, _last_swept_at, _last_swept_on, _last_error
+
+    try:
+        with get_isolated_session() as session:
+            sweep_library(session)
+
+        error = None
+    except Exception as e:
+        logger.exception("Library sweep failed")
+        error = str(e)
+
+    with _sweep_lock:
+        _sweeping = False
+        _last_swept_at = time.monotonic()
+        _last_swept_on = get_now()
+        _last_error = error
+
+
+def trigger_library_sweep(force: bool = False) -> bool:
+    """Start a sweep in the background unless one is running or the last is still fresh.
+
+    Returns whether a sweep was started. The walk blocks on network I/O for as
+    long as it takes, so it never runs inside a request.
+    """
+
+    global _sweeping
+
+    with _sweep_lock:
+        if _sweeping:
+            return False
+
+        if (
+            not force
+            and _last_swept_at is not None
+            and (time.monotonic() - _last_swept_at) < SWEEP_INTERVAL
+        ):
+            return False
+
+        _sweeping = True
+
+    threading.Thread(target=_run_sweep, name="library-sweep", daemon=True).start()
+
+    return True

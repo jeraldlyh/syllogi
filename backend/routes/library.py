@@ -5,15 +5,18 @@ from fastapi import APIRouter, BackgroundTasks, HTTPException, Query, status
 from mutagen import MutagenError
 from pydantic import BaseModel, Field
 
+from db.library import (
+    query_tracks,
+    summarize_library,
+    upsert_tracks,
+)
+from db.session import SessionDep
 from lib.library import (
-    filter_tracks,
     get_library_directory,
-    invalidate_track,
+    get_scan_state,
     read_library_track,
     resolve_library_path,
-    scan_empty_directories,
-    scan_library,
-    summarize_library,
+    trigger_library_sweep,
 )
 from lib.models.library import AudioTags
 from lib.providers import get_provider
@@ -50,6 +53,9 @@ class UpdateTagsRequest(BaseModel):
                         "success": True,
                         "data": {
                             "directory": "/downloads",
+                            "scanning": False,
+                            "last_scanned_at": "2026-09-01T13:46:02+08:00",
+                            "error": None,
                             "summary": {
                                 "total": 412,
                                 "missing_lyrics": 96,
@@ -88,6 +94,7 @@ class UpdateTagsRequest(BaseModel):
     },
 )
 def _list_library_tracks(
+    session: SessionDep,
     q: Annotated[
         str, Query(description="Filter by file name, title, artist or album")
     ] = "",
@@ -103,15 +110,58 @@ def _list_library_tracks(
     ] = 100,
     offset: Annotated[int, Query(description="Number of files to skip", ge=0)] = 0,
 ) -> dict:
-    tracks = scan_library()
-    matched = filter_tracks(tracks, query=q, file_format=file_format, missing=missing)
+    trigger_library_sweep()
+
+    tracks, matched = query_tracks(
+        session,
+        query=q,
+        file_format=file_format,
+        missing=missing,
+        limit=limit,
+        offset=offset,
+    )
 
     return {
         "directory": str(get_library_directory()),
-        "summary": summarize_library(tracks, len(scan_empty_directories())),
-        "matched": len(matched),
-        "tracks": [track.to_dict() for track in matched[offset : offset + limit]],
+        **get_scan_state(),
+        "summary": summarize_library(session),
+        "matched": matched,
+        "tracks": [track.to_dict() for track in tracks],
     }
+
+
+@router.post(
+    path="/scan",
+    summary="Rescan the library",
+    description=(
+        "Start a sweep of the download directory in the background. Returns immediately; "
+        "poll the track list to watch `scanning` clear as the sweep lands."
+    ),
+    responses={
+        200: {
+            "description": "Scan state reported successfully",
+            "content": {
+                "application/json": {
+                    "example": {
+                        "success": True,
+                        "data": {
+                            "started": True,
+                            "scanning": True,
+                            "last_scanned_at": "2026-09-01T13:46:02+08:00",
+                            "error": None,
+                        },
+                    }
+                }
+            },
+        }
+    },
+)
+async def _scan_library(
+    force: Annotated[
+        bool, Query(description="Sweep even if the last one is still fresh")
+    ] = True,
+) -> dict:
+    return {"started": trigger_library_sweep(force=force), **get_scan_state()}
 
 
 @router.get(
@@ -153,20 +203,23 @@ def _list_library_tracks(
     },
 )
 def _get_library_track(
+    session: SessionDep,
     path: Annotated[str, Query(description="File path relative to the library root")],
 ) -> dict:
     file_path = resolve_library_path(path)
-    invalidate_track(path)
-    track = read_library_track(file_path)
+    result = read_library_track(file_path)
 
-    if not track:
+    if not result:
         raise HTTPException(
             status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
             detail=f"Unable to read tags from {path}",
         )
 
+    track, lyrics = result
+    upsert_tracks(session, [track])
+
     return {
-        **track.to_dict(include_lyrics=True),
+        **track.to_dict(lyrics=lyrics),
         "frames": get_tag_frames(str(file_path)),
     }
 
@@ -196,6 +249,7 @@ def _get_library_track(
     },
 )
 def _update_library_track(
+    session: SessionDep,
     item: UpdateTagsRequest,
     background_tasks: BackgroundTasks,
 ) -> dict:
@@ -221,20 +275,22 @@ def _update_library_track(
             detail=f"Unable to write tags to {item.path}",
         )
 
-    invalidate_track(item.path)
-    track = read_library_track(file_path)
+    result = read_library_track(file_path)
     provider = get_provider()
 
     background_tasks.add_task(provider.rescan_library)
 
-    if not track:
+    if not result:
         raise HTTPException(
             status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
             detail=f"Unable to read tags from {item.path}",
         )
 
+    track, lyrics = result
+    upsert_tracks(session, [track])
+
     return {
-        **track.to_dict(include_lyrics=True),
+        **track.to_dict(lyrics=lyrics),
         "frames": get_tag_frames(str(file_path)),
     }
 

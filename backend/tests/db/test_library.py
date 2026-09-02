@@ -1,10 +1,15 @@
-from sqlmodel import Session
+import re
+
+import sqlalchemy as sa
+from sqlalchemy.dialects import postgresql
+from sqlmodel import Session, select
 
 from db.library import (
     PRESERVED_COLUMNS,
     TRACK_COLUMNS,
     count_duplicate_tracks,
     delete_tracks_by_paths,
+    duplicate_groups,
     get_empty_folders,
     get_track_by_path,
     get_track_fingerprints,
@@ -253,6 +258,17 @@ class TestQueryTracks:
         tracks, _ = query_tracks(session)
 
         assert [track.path for track in tracks] == ["A.flac", "b.flac", "c.flac"]
+
+
+class TestDuplicateGroupsSql:
+    def test_groups_by_the_very_expression_it_selects(self):
+        statement = select(sa.func.count()).select_from(duplicate_groups())
+        sql = str(statement.compile(dialect=postgresql.dialect()))
+
+        cases = re.findall(r"CASE WHEN.*?END", sql, re.DOTALL)
+
+        assert len(cases) == 2, "expected the key in both the SELECT and GROUP BY"
+        assert cases[0] == cases[1], "GROUP BY must reuse the selected expression"
 
 
 class TestCountDuplicateTracks:

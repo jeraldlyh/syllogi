@@ -1,91 +1,71 @@
 import inspect
 from pathlib import Path
-from unittest.mock import MagicMock, patch
+from unittest.mock import patch
 
 import pytest
 from fastapi import HTTPException
+from sqlmodel import Session, SQLModel, create_engine
 
+from db.library import get_track_fingerprints, summarize_library
+from db.models.library import LibraryTrack
 from lib import library
 from lib.library import (
-    count_duplicate_tracks,
-    filter_tracks,
-    invalidate_track,
     read_library_track,
     resolve_library_path,
-    scan_empty_directories,
-    scan_library,
-    summarize_library,
+    sweep_library,
+    trigger_library_sweep,
+    walk_library,
 )
-from lib.models.library import AudioTags, LibraryTrack
+from lib.models.library import AudioTags
 
 
 @pytest.fixture(autouse=True)
-def clear_library_caches():
-    """Start every test from a cold library, so cached scans do not leak between them."""
-
-    library._scan_cache = None
-    library._track_cache.clear()
+def reset_sweep_state():
+    library._sweeping = False
+    library._last_swept_at = None
+    library._last_swept_on = None
+    library._last_error = None
     yield
-    library._scan_cache = None
-    library._track_cache.clear()
+    library._sweeping = False
+    library._last_swept_at = None
+
+
+@pytest.fixture(name="session")
+def session_fixture():
+    engine = create_engine("sqlite:///:memory:")
+    SQLModel.metadata.create_all(engine)
+
+    with Session(engine) as session:
+        yield session
 
 
 def make_track(
     path: str = "Artist/Album/Track.flac",
     file_format: str = "flac",
-    has_lyrics: bool = True,
-    **tag_overrides,
+    **overrides,
 ) -> LibraryTrack:
-    tags = AudioTags(
-        title="Blinding Lights",
-        artist="The Weeknd",
-        album="After Hours",
-        date="2020",
-        genres=["synth-pop"],
-        lyrics="Yeah" if has_lyrics else "",
-        musicbrainz_id="9b1a2b3c",
-    )
-
-    for key, value in tag_overrides.items():
-        setattr(tags, key, value)
-
-    return LibraryTrack(
+    track = LibraryTrack(
         path=path,
         filename=Path(path).name,
         directory=str(Path(path).parent),
         format=file_format,
         size=1024,
         duration=200,
-        tags=tags,
-        has_lyrics=has_lyrics,
+        mtime=1.0,
+        title="Blinding Lights",
+        artist="The Weeknd",
+        album="After Hours",
+        date="2020",
+        genres=["synth-pop"],
+        musicbrainz_id="9b1a2b3c",
+        has_lyrics=True,
+        is_synced_lyrics=False,
     )
 
+    for key, value in overrides.items():
+        setattr(track, key, value)
 
-class TestIsSyncedLyrics:
-    def test_returns_true_for_lrc_timestamps(self):
-        track = make_track(lyrics="[00:12.34] I've been tryna call")
-
-        assert track.is_synced_lyrics() is True
-
-    def test_returns_false_for_plain_lyrics(self):
-        track = make_track(lyrics="I've been tryna call\nFor a while now")
-
-        assert track.is_synced_lyrics() is False
-
-    def test_returns_false_for_empty_lyrics(self):
-        track = make_track(lyrics="")
-
-        assert track.is_synced_lyrics() is False
-
-    def test_returns_false_for_bracketed_section_labels(self):
-        track = make_track(lyrics="[Chorus]\nI've been tryna call")
-
-        assert track.is_synced_lyrics() is False
-
-    def test_returns_true_for_timestamps_without_fractions(self):
-        track = make_track(lyrics="[Verse 1]\n[00:12] I've been tryna call")
-
-        assert track.is_synced_lyrics() is True
+    return track
 
 
 class TestResolveLibraryPath:
@@ -139,11 +119,11 @@ class TestReadLibraryTrack:
             AudioTags(title="Blinding Lights", lyrics="[00:01.00] Yeah"),
             200,
         )
-        invalidate_track("The Weeknd/After Hours/Blinding Lights.flac")
 
-        track = read_library_track(track_path)
+        result = read_library_track(track_path)
 
-        assert track is not None
+        assert result is not None
+        track, lyrics = result
         assert track.path == "The Weeknd/After Hours/Blinding Lights.flac"
         assert track.filename == "Blinding Lights.flac"
         assert track.directory == "The Weeknd/After Hours"
@@ -151,7 +131,59 @@ class TestReadLibraryTrack:
         assert track.size == 32
         assert track.duration == 200
         assert track.has_lyrics is True
-        assert track.is_synced_lyrics() is True
+        assert track.is_synced_lyrics is True
+        assert track.mtime == track_path.stat().st_mtime
+        assert lyrics == "[00:01.00] Yeah"
+
+    @patch("lib.library.read_audio_tags")
+    @patch("lib.library.get_library_directory")
+    def test_returns_the_lyrics_body_without_storing_it(
+        self, mock_directory, mock_read, tmp_path
+    ):
+        """Lyrics ride alongside the row for the editor, but never onto it."""
+
+        mock_directory.return_value = tmp_path
+        track_path = tmp_path / "Track.flac"
+        track_path.write_bytes(b"")
+        mock_read.return_value = (AudioTags(title="Track", lyrics="Yeah"), 100)
+
+        result = read_library_track(track_path)
+
+        assert result is not None
+        track, lyrics = result
+        assert lyrics == "Yeah"
+        assert not hasattr(track, "lyrics")
+
+    @patch("lib.library.read_audio_tags")
+    @patch("lib.library.get_library_directory")
+    def test_stores_names_in_composed_form(self, mock_directory, mock_read, tmp_path):
+        """SMB hands back decomposed names; the row must hold the composed one."""
+
+        mock_directory.return_value = tmp_path
+        decomposed = "아이".encode().decode()
+        track_path = tmp_path / f"{decomposed}.flac"
+        track_path.write_bytes(b"")
+        mock_read.return_value = (AudioTags(title="한"), 100)
+
+        result = read_library_track(track_path)
+
+        assert result is not None
+        assert result[0].title == "한"
+
+    @patch("lib.library.read_audio_tags")
+    @patch("lib.library.get_library_directory")
+    def test_reports_which_tag_fields_are_filled(
+        self, mock_directory, mock_read, tmp_path
+    ):
+        mock_directory.return_value = tmp_path
+        track_path = tmp_path / "Track.flac"
+        track_path.write_bytes(b"")
+        mock_read.return_value = (AudioTags(title="Track", artist="Someone"), 100)
+
+        result = read_library_track(track_path)
+
+        assert result is not None
+        assert result[0].filled_fields() == ["title", "artist"]
 
     @patch("lib.library.read_audio_tags")
     @patch("lib.library.get_library_directory")
@@ -162,95 +194,219 @@ class TestReadLibraryTrack:
         track_path = tmp_path / "Broken.flac"
         track_path.write_bytes(b"")
         mock_read.return_value = None
-        invalidate_track("Broken.flac")
 
         assert read_library_track(track_path) is None
 
-    @patch("lib.library.read_audio_tags")
     @patch("lib.library.get_library_directory")
-    def test_serves_unchanged_files_from_the_cache(
-        self, mock_directory, mock_read, tmp_path
-    ):
+    def test_returns_none_when_the_file_is_gone(self, mock_directory, tmp_path):
         mock_directory.return_value = tmp_path
-        track_path = tmp_path / "Cached.flac"
-        track_path.write_bytes(b"")
-        mock_read.return_value = (AudioTags(title="Cached"), 100)
-        invalidate_track("Cached.flac")
 
-        read_library_track(track_path)
-        read_library_track(track_path)
-
-        assert mock_read.call_count == 1
+        assert read_library_track(tmp_path / "Absent.flac") is None
 
 
-class TestScanLibrary:
+class TestWalkLibrary:
     @patch("lib.library.get_library_directory")
     def test_returns_nothing_when_the_directory_is_missing(
         self, mock_directory, tmp_path
     ):
         mock_directory.return_value = tmp_path / "absent"
 
-        assert scan_library() == []
+        assert walk_library() == ({}, [])
+
+    @patch("lib.library.get_library_directory")
+    def test_stats_supported_files_and_skips_the_rest(self, mock_directory, tmp_path):
+        mock_directory.return_value = tmp_path
+        (tmp_path / "Artist").mkdir()
+        (tmp_path / "Artist" / "Track.flac").write_bytes(b"xyz")
+        (tmp_path / "Artist" / "Track.mp3").write_bytes(b"")
+        (tmp_path / "Artist" / "cover.jpg").write_bytes(b"")
+
+        files, _ = walk_library()
+
+        assert sorted(files) == ["Artist/Track.flac", "Artist/Track.mp3"]
+        assert files["Artist/Track.flac"][1] == 3
 
     @patch("lib.library.read_audio_tags")
     @patch("lib.library.get_library_directory")
-    def test_finds_supported_files_and_skips_the_rest(
-        self, mock_directory, mock_read, tmp_path
-    ):
+    def test_does_not_read_tags(self, mock_directory, mock_read, tmp_path):
+        """The walk is stat-only; opening a file on a share costs far more."""
+
+        mock_directory.return_value = tmp_path
+        (tmp_path / "Track.flac").write_bytes(b"")
+
+        walk_library()
+
+        mock_read.assert_not_called()
+
+    @patch("lib.library.get_library_directory")
+    def test_reports_folders_holding_no_audio(self, mock_directory, tmp_path):
         mock_directory.return_value = tmp_path
         (tmp_path / "Artist").mkdir()
         (tmp_path / "Artist" / "Track.flac").write_bytes(b"")
-        (tmp_path / "Artist" / "Track.mp3").write_bytes(b"")
-        (tmp_path / "Artist" / "cover.jpg").write_bytes(b"")
-        mock_read.return_value = (AudioTags(title="Track"), 100)
+        (tmp_path / "Abandoned").mkdir()
+        (tmp_path / "Artwork Only").mkdir()
+        (tmp_path / "Artwork Only" / "cover.jpg").write_bytes(b"")
 
-        tracks = scan_library()
+        _, empty = walk_library()
 
-        assert [track.path for track in tracks] == [
-            "Artist/Track.flac",
-            "Artist/Track.mp3",
-        ]
+        assert empty == ["Abandoned", "Artwork Only"]
 
-
-class TestScanLibraryCaching:
-    @patch("lib.library.read_audio_tags")
     @patch("lib.library.get_library_directory")
-    def test_repeat_scans_do_not_rewalk_the_directory(
-        self, mock_directory, mock_read, tmp_path
+    def test_reports_only_the_outermost_dead_folder(self, mock_directory, tmp_path):
+        mock_directory.return_value = tmp_path
+        (tmp_path / "Artist" / "Album").mkdir(parents=True)
+
+        _, empty = walk_library()
+
+        assert empty == ["Artist"]
+
+    @patch("lib.library.get_library_directory")
+    def test_keeps_a_folder_whose_audio_sits_in_a_subfolder(
+        self, mock_directory, tmp_path
     ):
         mock_directory.return_value = tmp_path
-        (tmp_path / "Track.flac").write_bytes(b"")
+        (tmp_path / "Artist" / "Album").mkdir(parents=True)
+        (tmp_path / "Artist" / "Album" / "Track.flac").write_bytes(b"")
+
+        _, empty = walk_library()
+
+        assert empty == []
+
+
+class TestSweepLibrary:
+    @patch("lib.library.read_audio_tags")
+    @patch("lib.library.get_library_directory")
+    def test_fills_an_empty_library(self, mock_directory, mock_read, tmp_path, session):
+        mock_directory.return_value = tmp_path
+        (tmp_path / "Artist").mkdir()
+        (tmp_path / "Artist" / "Track.flac").write_bytes(b"")
+        (tmp_path / "Dead").mkdir()
         mock_read.return_value = (AudioTags(title="Track"), 100)
 
-        with patch("lib.library._walk_library", wraps=library._walk_library) as walk:
-            scan_library()
-            scan_library()
-            scan_library()
+        result = sweep_library(session)
 
-        assert walk.call_count == 1
+        assert result["total"] == 1
+        assert result["read"] == 1
+        assert summarize_library(session)["total"] == 1
+        assert summarize_library(session)["empty_directories"] == 1
 
     @patch("lib.library.read_audio_tags")
     @patch("lib.library.get_library_directory")
-    def test_writing_a_file_forces_the_next_scan_to_rewalk(
-        self, mock_directory, mock_read, tmp_path
+    def test_reads_only_files_whose_fingerprint_moved(
+        self, mock_directory, mock_read, tmp_path, session
     ):
         mock_directory.return_value = tmp_path
-        (tmp_path / "Track.flac").write_bytes(b"")
+        (tmp_path / "One.flac").write_bytes(b"")
+        (tmp_path / "Two.flac").write_bytes(b"")
         mock_read.return_value = (AudioTags(title="Track"), 100)
 
-        with patch("lib.library._walk_library", wraps=library._walk_library) as walk:
-            scan_library()
-            invalidate_track("Track.flac")
-            scan_library()
+        sweep_library(session)
+        mock_read.reset_mock()
 
-        assert walk.call_count == 2
+        result = sweep_library(session)
+
+        assert result["read"] == 0
+        assert mock_read.call_count == 0
+
+    @patch("lib.library.read_audio_tags")
+    @patch("lib.library.get_library_directory")
+    def test_rereads_a_file_whose_size_changed(
+        self, mock_directory, mock_read, tmp_path, session
+    ):
+        mock_directory.return_value = tmp_path
+        track = tmp_path / "One.flac"
+        track.write_bytes(b"")
+        mock_read.return_value = (AudioTags(title="Track"), 100)
+
+        sweep_library(session)
+        track.write_bytes(b"changed")
+        mock_read.reset_mock()
+
+        assert sweep_library(session)["read"] == 1
+
+    @patch("lib.library.read_audio_tags")
+    @patch("lib.library.get_library_directory")
+    def test_drops_rows_for_files_that_vanished(
+        self, mock_directory, mock_read, tmp_path, session
+    ):
+        mock_directory.return_value = tmp_path
+        (tmp_path / "One.flac").write_bytes(b"")
+        (tmp_path / "Two.flac").write_bytes(b"")
+        mock_read.return_value = (AudioTags(title="Track"), 100)
+
+        sweep_library(session)
+        (tmp_path / "Two.flac").unlink()
+
+        result = sweep_library(session)
+
+        assert result["removed"] == 1
+        assert sorted(get_track_fingerprints(session)) == ["One.flac"]
+
+    @patch("lib.library.read_audio_tags")
+    @patch("lib.library.get_library_directory")
+    def test_counts_files_it_could_not_read(
+        self, mock_directory, mock_read, tmp_path, session
+    ):
+        mock_directory.return_value = tmp_path
+        (tmp_path / "Broken.flac").write_bytes(b"")
+        mock_read.return_value = None
+
+        result = sweep_library(session)
+
+        assert result["unreadable"] == 1
+        assert summarize_library(session)["total"] == 0
+
+    @patch("lib.library.read_audio_tags")
+    @patch("lib.library.get_library_directory")
+    def test_refreshes_empty_folders_rather_than_accumulating_them(
+        self, mock_directory, mock_read, tmp_path, session
+    ):
+        mock_directory.return_value = tmp_path
+        (tmp_path / "Dead").mkdir()
+        mock_read.return_value = (AudioTags(title="Track"), 100)
+
+        sweep_library(session)
+        (tmp_path / "Dead" / "Track.flac").write_bytes(b"")
+
+        sweep_library(session)
+
+        assert summarize_library(session)["empty_directories"] == 0
+
+
+class TestTriggerLibrarySweep:
+    def test_refuses_to_start_a_second_sweep_while_one_runs(self):
+        library._sweeping = True
+
+        assert trigger_library_sweep() is False
+
+    def test_skips_a_sweep_while_the_last_one_is_still_fresh(self):
+        import time
+
+        library._last_swept_at = time.monotonic()
+
+        assert trigger_library_sweep() is False
+
+    def test_forces_a_sweep_past_the_freshness_window(self):
+        import time
+
+        library._last_swept_at = time.monotonic()
+
+        with patch("lib.library.threading.Thread") as thread:
+            assert trigger_library_sweep(force=True) is True
+
+        thread.assert_called_once()
+
+    def test_reports_the_scan_state(self):
+        state = library.get_scan_state()
+
+        assert state == {"scanning": False, "last_scanned_at": None, "error": None}
 
 
 class TestRouteHandlersStayOffTheEventLoop:
-    """The library routes block on disk I/O for as long as the walk takes.
+    """The single-file library routes block on disk I/O for as long as the read takes.
 
     Declaring them `async def` puts that blocking work on the event loop and
-    stalls every other request until the scan finishes, which reads as the whole
+    stalls every other request until it finishes, which reads as the whole
     server hanging. FastAPI runs plain `def` handlers in a worker thread instead.
     """
 
@@ -265,189 +421,15 @@ class TestRouteHandlersStayOffTheEventLoop:
 
         assert not inspect.iscoroutinefunction(handler)
 
-    @pytest.mark.parametrize("handler_name", ["_search_lyrics", "_search_recordings"])
-    def test_network_handlers_stay_async(self, handler_name):
+    @pytest.mark.parametrize(
+        "handler_name", ["_search_lyrics", "_search_recordings", "_scan_library"]
+    )
+    def test_handlers_that_never_touch_disk_stay_async(self, handler_name):
         import routes.library
 
         handler = getattr(routes.library, handler_name)
 
         assert inspect.iscoroutinefunction(handler)
-
-
-class TestFilterTracks:
-    def test_matches_free_text_against_tags_and_filenames(self):
-        tracks = [
-            make_track(),
-            make_track(path="Other/Other/Other.flac", title="Other"),
-        ]
-
-        results = filter_tracks(tracks, query="weeknd")
-
-        assert len(results) == 2
-
-        results = filter_tracks(tracks, query="blinding")
-
-        assert len(results) == 1
-
-    def test_filters_by_format(self):
-        tracks = [make_track(), make_track(path="A/B/C.mp3", file_format="mp3")]
-
-        results = filter_tracks(tracks, file_format="mp3")
-
-        assert [track.format for track in results] == ["mp3"]
-
-    def test_filters_by_missing_lyrics(self):
-        tracks = [make_track(), make_track(path="A/B/C.flac", has_lyrics=False)]
-
-        results = filter_tracks(tracks, missing="lyrics")
-
-        assert [track.path for track in results] == ["A/B/C.flac"]
-
-    def test_filters_by_missing_musicbrainz_id(self):
-        tracks = [make_track(), make_track(path="A/B/C.flac", musicbrainz_id="")]
-
-        results = filter_tracks(tracks, missing="musicbrainz_id")
-
-        assert [track.path for track in results] == ["A/B/C.flac"]
-
-    def test_filters_by_any_missing_tag(self):
-        tracks = [make_track(), make_track(path="A/B/C.flac", album="")]
-
-        results = filter_tracks(tracks, missing="any")
-
-        assert [track.path for track in results] == ["A/B/C.flac"]
-
-
-class TestSummarizeLibrary:
-    def test_counts_the_gaps_worth_acting_on(self):
-        tracks = [
-            make_track(),
-            make_track(
-                path="A/B/C.mp3", file_format="mp3", has_lyrics=False, title="C"
-            ),
-            make_track(path="A/B/D.flac", musicbrainz_id="", title="D"),
-        ]
-
-        assert summarize_library(tracks, 4) == {
-            "total": 3,
-            "missing_lyrics": 1,
-            "missing_musicbrainz_id": 1,
-            "lossless": 2,
-            "duplicates": 0,
-            "empty_directories": 4,
-        }
-
-    def test_reports_no_empty_folders_when_none_are_passed(self):
-        assert summarize_library([make_track()])["empty_directories"] == 0
-
-
-class TestCountDuplicateTracks:
-    def test_counts_a_track_held_in_two_formats_once(self):
-        tracks = [
-            make_track(path="Artist/Album/Track.flac"),
-            make_track(path="Artist/Album/Track.opus", file_format="opus"),
-        ]
-
-        assert count_duplicate_tracks(tracks) == 1
-
-    def test_matches_the_same_recording_across_folders(self):
-        tracks = [
-            make_track(path="Artist/Album/Track.flac"),
-            make_track(path="Artist/Greatest Hits/Track.opus", file_format="opus"),
-        ]
-
-        assert count_duplicate_tracks(tracks) == 1
-
-    def test_ignores_case_and_accents_when_matching(self):
-        tracks = [
-            make_track(path="A/B/C.flac", title="Blinding Lights"),
-            make_track(path="A/B/D.opus", file_format="opus", title="BLINDING LIGHTS"),
-        ]
-
-        assert count_duplicate_tracks(tracks) == 1
-
-    def test_keeps_different_artists_apart(self):
-        tracks = [
-            make_track(path="A/B/C.flac"),
-            make_track(path="D/E/F.flac", artist="Someone Else"),
-        ]
-
-        assert count_duplicate_tracks(tracks) == 0
-
-    def test_counts_each_duplicated_track_once_however_many_copies(self):
-        tracks = [
-            make_track(path="A/B/C.flac"),
-            make_track(path="A/B/C.mp3", file_format="mp3"),
-            make_track(path="A/B/C.opus", file_format="opus"),
-        ]
-
-        assert count_duplicate_tracks(tracks) == 1
-
-    def test_falls_back_to_the_folder_and_file_name_when_untagged(self):
-        tracks = [
-            make_track(path="A/Album One/01.flac", title="", artist=""),
-            make_track(path="A/Album Two/01.flac", title="", artist=""),
-        ]
-
-        assert count_duplicate_tracks(tracks) == 0
-
-    def test_matches_untagged_files_sharing_a_folder_and_name(self):
-        tracks = [
-            make_track(path="A/Album One/01.flac", title="", artist=""),
-            make_track(
-                path="A/Album One/01.opus", file_format="opus", title="", artist=""
-            ),
-        ]
-
-        assert count_duplicate_tracks(tracks) == 1
-
-
-class TestScanEmptyDirectories:
-    @patch("lib.library.read_audio_tags")
-    @patch("lib.library.get_library_directory")
-    def test_reports_folders_holding_no_audio(
-        self, mock_directory, mock_read, tmp_path
-    ):
-        mock_directory.return_value = tmp_path
-        (tmp_path / "Artist").mkdir()
-        (tmp_path / "Artist" / "Track.flac").write_bytes(b"")
-        (tmp_path / "Abandoned").mkdir()
-        (tmp_path / "Artwork Only").mkdir()
-        (tmp_path / "Artwork Only" / "cover.jpg").write_bytes(b"")
-        mock_read.return_value = (AudioTags(title="Track"), 100)
-
-        assert scan_empty_directories() == ["Abandoned", "Artwork Only"]
-
-    @patch("lib.library.read_audio_tags")
-    @patch("lib.library.get_library_directory")
-    def test_reports_only_the_outermost_dead_folder(
-        self, mock_directory, mock_read, tmp_path
-    ):
-        mock_directory.return_value = tmp_path
-        (tmp_path / "Artist" / "Album").mkdir(parents=True)
-        mock_read.return_value = (AudioTags(title="Track"), 100)
-
-        assert scan_empty_directories() == ["Artist"]
-
-    @patch("lib.library.read_audio_tags")
-    @patch("lib.library.get_library_directory")
-    def test_keeps_a_folder_whose_audio_sits_in_a_subfolder(
-        self, mock_directory, mock_read, tmp_path
-    ):
-        mock_directory.return_value = tmp_path
-        (tmp_path / "Artist" / "Album").mkdir(parents=True)
-        (tmp_path / "Artist" / "Album" / "Track.flac").write_bytes(b"")
-        mock_read.return_value = (AudioTags(title="Track"), 100)
-
-        assert scan_empty_directories() == []
-
-    @patch("lib.library.get_library_directory")
-    def test_reports_nothing_when_the_directory_is_missing(
-        self, mock_directory, tmp_path
-    ):
-        mock_directory.return_value = tmp_path / "absent"
-
-        assert scan_empty_directories() == []
 
 
 class TestLibraryTrackSerialization:
@@ -456,8 +438,8 @@ class TestLibraryTrackSerialization:
 
         assert "lyrics" not in payload["tags"]
 
-    def test_includes_lyrics_when_asked(self):
-        payload = make_track().to_dict(include_lyrics=True)
+    def test_includes_lyrics_when_given(self):
+        payload = make_track().to_dict(lyrics="Yeah")
 
         assert payload["tags"]["lyrics"] == "Yeah"
 
@@ -488,17 +470,3 @@ class TestAudioTagsSerialization:
             "lyrics": "Yeah",
             "musicbrainz_id": "9b1a2b3c",
         }
-
-
-class TestReadIdTagsFallback:
-    def test_reads_the_musicbrainz_id_from_a_txxx_frame(self):
-        from lib.tagger import _read_id3_tags
-
-        txxx = MagicMock()
-        txxx.desc = "MusicBrainz Track Id"
-        txxx.text = ["9b1a2b3c"]
-        tags = MagicMock()
-        tags.get.return_value = None
-        tags.getall.side_effect = lambda key: [txxx] if key == "TXXX" else []
-
-        assert _read_id3_tags(tags).musicbrainz_id == "9b1a2b3c"

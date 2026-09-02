@@ -209,17 +209,23 @@ def _duplicate_key_expression():
     )
 
 
-def count_duplicate_tracks(session: Session) -> int:
-    """Count the tracks the library holds more than one file for."""
+def duplicate_groups():
+    """Select the duplicate keys the library holds more than one file for."""
 
-    groups = (
-        select(_duplicate_key_expression())
-        .group_by(_duplicate_key_expression())
+    duplicate_key = _duplicate_key_expression().label("duplicate_key")
+
+    return (
+        select(duplicate_key)
+        .group_by(duplicate_key)
         .having(sa.func.count() > 1)
         .subquery()
     )
 
-    return session.exec(select(sa.func.count()).select_from(groups)).one()
+
+def count_duplicate_tracks(session: Session) -> int:
+    """Count the tracks the library holds more than one file for."""
+
+    return session.exec(select(sa.func.count()).select_from(duplicate_groups())).one()
 
 
 def summarize_library(session: Session) -> dict[str, int]:
