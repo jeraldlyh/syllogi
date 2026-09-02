@@ -27,6 +27,7 @@ import { cn } from "@/lib/utils";
 import { FileAudio, Loader2, RefreshCw, Search } from "lucide-react";
 import { useEffect, useState } from "react";
 import { LibraryEditor } from "./library-editor";
+import { LibraryEmptyFolders } from "./library-empty-folders";
 import { LibraryPagination } from "./library-pagination";
 import { LibraryRow } from "./library-row";
 
@@ -56,16 +57,36 @@ const StatCount = ({
   value,
   label,
   className,
+  onClick,
 }: {
   value: number;
   label: string;
   className?: string;
-}) => (
-  <span className="flex shrink-0 items-baseline gap-1.5">
-    <span className={cn("text-sm tabular-nums", className)}>{value}</span>
-    <span className="text-muted-foreground">{label}</span>
-  </span>
-);
+  onClick?: () => void;
+}) => {
+  const content = (
+    <>
+      <span className={cn("text-sm tabular-nums", className)}>{value}</span>
+      <span className="text-muted-foreground">{label}</span>
+    </>
+  );
+
+  if (!onClick) {
+    return (
+      <span className="flex shrink-0 items-baseline gap-1.5">{content}</span>
+    );
+  }
+
+  return (
+    <Button
+      variant="link"
+      onClick={onClick}
+      className="h-auto items-baseline p-0 font-mono text-xs"
+    >
+      {content}
+    </Button>
+  );
+};
 
 const FilterSelect = ({
   value,
@@ -101,6 +122,7 @@ export const Library = () => {
     missing: "",
   });
   const [openPath, setOpenPath] = useState<string | null>(null);
+  const [isReviewingFolders, setIsReviewingFolders] = useState(false);
   const [page, setPage] = useState(0);
   const { data, isLoading, isError, refresh } = useLibraryTracks(filters, page);
   const FilterActivityIcon = isLoading ? Loader2 : Search;
@@ -296,6 +318,11 @@ export const Library = () => {
                 <StatCount
                   value={data.summary.empty_directories}
                   label="empty folders"
+                  onClick={
+                    data.summary.empty_directories > 0
+                      ? () => setIsReviewingFolders(true)
+                      : undefined
+                  }
                   className={cn({
                     "text-amber-400": data.summary.empty_directories > 0,
                     "text-primary": data.summary.empty_directories == 0,
@@ -390,6 +417,11 @@ export const Library = () => {
         path={openPath}
         onClose={() => setOpenPath(null)}
         onSaved={refresh}
+      />
+      <LibraryEmptyFolders
+        open={isReviewingFolders}
+        onOpenChange={setIsReviewingFolders}
+        onDeleted={refresh}
       />
     </>
   );

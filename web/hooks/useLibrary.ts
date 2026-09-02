@@ -66,6 +66,15 @@ export interface LibrarySummary {
   empty_directories: number;
 }
 
+export interface LibraryFolder {
+  path: string;
+}
+
+export interface DeletedFolders {
+  deleted: string[];
+  kept: string[];
+}
+
 export interface LibraryResponse {
   directory: string;
   scanning: boolean;
@@ -153,6 +162,28 @@ export const useLibraryTracks = (filters: LibraryFilters, page: number) => {
 
 export const rescanLibrary = async (): Promise<void> => {
   await fetcher("/library/scan", { method: "POST" });
+};
+
+export const useEmptyFolders = (enabled: boolean) => {
+  const { data, error, isLoading, mutate } = useSWR<
+    ApiResponse<LibraryFolder[]>
+  >(enabled ? "/library/folders" : null, fetcher, { revalidateOnFocus: false });
+
+  return {
+    data: data?.data,
+    isLoading,
+    isError: error,
+    refresh: mutate,
+  };
+};
+
+export const deleteEmptyFolders = async (): Promise<DeletedFolders> => {
+  const response = await fetcher<ApiResponse<DeletedFolders>>(
+    "/library/folders",
+    { method: "DELETE" },
+  );
+
+  return response.data as DeletedFolders;
 };
 
 export const useLibraryTrack = (path: string | null) => {

@@ -1,0 +1,165 @@
+import { Text } from "@/components/common/text";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+import { Button } from "@/components/ui/button";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { Skeleton } from "@/components/ui/skeleton";
+import { deleteEmptyFolders, useEmptyFolders } from "@/hooks/useLibrary";
+import { FolderCheck, Loader2, Trash2 } from "lucide-react";
+import { useState } from "react";
+
+const PLACEHOLDER_ROWS = [0, 1, 2, 3, 4];
+
+interface IProps {
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+  onDeleted: () => void;
+}
+
+export const LibraryEmptyFolders = ({
+  open,
+  onOpenChange,
+  onDeleted,
+}: IProps) => {
+  const { data, isLoading, isError, refresh } = useEmptyFolders(open);
+  const [isConfirming, setIsConfirming] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
+  const [kept, setKept] = useState<string[]>([]);
+  const folders = data ?? [];
+
+  const handleDelete = async (): Promise<void> => {
+    setIsConfirming(false);
+    setIsDeleting(true);
+
+    try {
+      const result = await deleteEmptyFolders();
+
+      setKept(result.kept);
+      await refresh();
+      onDeleted();
+
+      if (result.kept.length === 0) onOpenChange(false);
+    } finally {
+      setIsDeleting(false);
+    }
+  };
+
+  const renderContent = (): React.JSX.Element => {
+    if (isLoading && !data) {
+      return (
+        <div className="flex flex-col gap-2">
+          {PLACEHOLDER_ROWS.map((row) => (
+            <Skeleton key={row} className="h-6 w-full" />
+          ))}
+        </div>
+      );
+    }
+
+    if (isError) {
+      return (
+        <Text
+          className="italic text-red-400"
+          value="Could not read the empty folder list"
+        />
+      );
+    }
+
+    if (folders.length === 0) {
+      return (
+        <div className="flex flex-col items-center gap-2 py-10 text-center">
+          <FolderCheck className="h-8 w-8 text-muted-foreground/40" />
+          <Text variant="sm" muted value="Every folder holds audio" />
+        </div>
+      );
+    }
+
+    return (
+      <ul className="max-h-[50vh] overflow-y-auto rounded-md border border-border">
+        {folders.map((folder) => (
+          <li
+            key={folder.path}
+            className="border-b border-border px-3 py-2 font-mono text-xs last:border-b-0"
+          >
+            <span className="block truncate" title={folder.path}>
+              {folder.path}
+            </span>
+          </li>
+        ))}
+      </ul>
+    );
+  };
+
+  return (
+    <>
+      <Dialog
+        open={open}
+        onOpenChange={(next) => {
+          if (!next) setKept([]);
+
+          onOpenChange(next);
+        }}
+      >
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Empty folders</DialogTitle>
+            <DialogDescription>
+              These folders hold no audio anywhere beneath them.
+            </DialogDescription>
+          </DialogHeader>
+          {renderContent()}
+          {kept.length > 0 && (
+            <Text
+              variant="sm"
+              className="text-amber-400"
+              value={`${kept.length} folder${kept.length === 1 ? "" : "s"} could not be deleted. They may have gained audio since the last scan.`}
+            />
+          )}
+          <DialogFooter>
+            <Button
+              variant="destructive"
+              onClick={() => setIsConfirming(true)}
+              disabled={folders.length === 0 || isDeleting}
+            >
+              {isDeleting ? <Loader2 className="animate-spin" /> : <Trash2 />}
+              Delete
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+      <AlertDialog open={isConfirming} onOpenChange={setIsConfirming}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>
+              Delete {folders.length} folder{folders.length === 1 ? "" : "s"}?
+            </AlertDialogTitle>
+            <AlertDialogDescription>
+              This removes them from disk for good. Any folder that has gained
+              audio since the last scan will be left alone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Keep them</AlertDialogCancel>
+            <AlertDialogAction onClick={handleDelete}>
+              Delete them
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+    </>
+  );
+};
