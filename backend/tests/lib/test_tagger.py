@@ -1,9 +1,18 @@
+import unicodedata
 from unittest.mock import AsyncMock, patch
 
 import pytest
 
 from lib.models.library import AudioTags, LyricsCandidate
-from lib.tagger import get_tag_frames, is_valid_lyrics, tag_audio_file
+from lib.tagger import (
+    get_extension,
+    get_tag_frames,
+    is_synced_lyrics,
+    is_valid_lyrics,
+    read_audio_tags,
+    resolve_existing_path,
+    tag_audio_file,
+)
 
 
 def make_candidate(**overrides) -> LyricsCandidate:
@@ -52,9 +61,72 @@ class TestIsValidLyrics:
         assert is_valid_lyrics(text) is True
 
 
+class TestIsSyncedLyrics:
+    def test_returns_true_for_lrc_timestamps(self):
+        assert is_synced_lyrics("[00:12.34] I've been tryna call") is True
+
+    def test_returns_false_for_plain_lyrics(self):
+        assert is_synced_lyrics("I've been tryna call\nFor a while now") is False
+
+    def test_returns_false_for_empty_lyrics(self):
+        assert is_synced_lyrics("") is False
+
+    def test_returns_false_for_bracketed_section_labels(self):
+        assert is_synced_lyrics("[Chorus]\nI've been tryna call") is False
+
+    def test_returns_true_for_timestamps_without_fractions(self):
+        assert is_synced_lyrics("[Verse 1]\n[00:12] I've been tryna call") is True
+
+
+class TestResolveExistingPath:
+    def test_returns_the_path_unchanged_when_it_opens(self, tmp_path):
+        track = tmp_path / "Track.flac"
+        track.write_bytes(b"")
+
+        assert resolve_existing_path(str(track)) == str(track)
+
+    def test_recovers_a_file_the_share_listed_in_the_other_normalisation(self):
+        composed = f"/downloads/{unicodedata.normalize('NFC', '아이와 나의 바다.flac')}"
+        decomposed = (
+            f"/downloads/{unicodedata.normalize('NFD', '아이와 나의 바다.flac')}"
+        )
+
+        with patch("lib.tagger.os.path.exists", lambda path: path == composed):
+            assert resolve_existing_path(decomposed) == composed
+
+    def test_prefers_the_listed_spelling_when_both_resolve(self, tmp_path):
+        decomposed = str(
+            tmp_path / unicodedata.normalize("NFD", "아이와 나의 바다.flac")
+        )
+        (tmp_path / unicodedata.normalize("NFC", "아이와 나의 바다.flac")).write_bytes(
+            b""
+        )
+
+        with patch("lib.tagger.os.path.exists", return_value=True):
+            assert resolve_existing_path(decomposed) == decomposed
+
+    def test_returns_the_original_when_no_spelling_exists(self, tmp_path):
+        missing = str(tmp_path / "Absent.flac")
+
+        assert resolve_existing_path(missing) == missing
+
+
+class TestGetExtension:
+    @pytest.mark.parametrize(
+        "file_path",
+        ["Artist/Track.mp3", "Artist/Track.MP3", "Artist/Track.Mp3"],
+    )
+    def test_lowercases_the_extension(self, file_path):
+        assert get_extension(file_path) == ".mp3"
+
+    def test_returns_empty_for_a_file_without_one(self):
+        assert get_extension("Artist/Track") == ""
+
+
 class TestGetTagFrames:
-    def test_reports_id3_frames_for_mp3(self):
-        frames = get_tag_frames("Artist/Track.mp3")
+    @pytest.mark.parametrize("file_path", ["Artist/Track.mp3", "Artist/Track.MP3"])
+    def test_reports_id3_frames_for_mp3(self, file_path):
+        frames = get_tag_frames(file_path)
 
         assert frames["title"] == "TIT2"
         assert frames["musicbrainz_id"] == "UFID"
@@ -65,6 +137,27 @@ class TestGetTagFrames:
 
         assert frames["title"] == "TITLE"
         assert frames["musicbrainz_id"] == "MUSICBRAINZ_TRACKID"
+
+
+class TestReadAudioTags:
+    def test_reads_an_upper_case_extension(self, tmp_path):
+        file_path = tmp_path / "Track.MP3"
+        file_path.write_bytes(b"")
+
+        with patch("lib.tagger.MP3") as mp3:
+            mp3.return_value.tags = None
+            mp3.return_value.info.length = 220.5
+
+            result = read_audio_tags(str(file_path))
+
+        assert result is not None
+        assert result[1] == 220
+
+    def test_returns_none_for_an_unsupported_format(self, tmp_path):
+        file_path = tmp_path / "Track.wav"
+        file_path.write_bytes(b"")
+
+        assert read_audio_tags(str(file_path)) is None
 
 
 class TestTagAudioFile:

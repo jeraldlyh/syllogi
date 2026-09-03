@@ -90,7 +90,9 @@ class TestStrategies:
         recommendation_provider.get_top_tracks.assert_awaited_once_with(
             username="user", limit=10
         )
-        recommendation_provider.get_recent_tracks.assert_not_awaited()
+        recommendation_provider.get_recent_tracks.assert_awaited_once_with(
+            username="user", limit=10
+        )
         recommendation_provider.get_similar_tracks.assert_not_awaited()
         assert found == []
         assert missing == []
@@ -128,7 +130,7 @@ class TestStrategies:
         )
 
         recommendation_provider.get_recent_tracks.assert_awaited_once_with(
-            username="user", limit=5
+            username="user", limit=10
         )
         recommendation_provider.get_top_tracks.assert_awaited_once_with(
             username="user", limit=5
@@ -148,11 +150,38 @@ class TestStrategies:
         )
 
         recommendation_provider.get_recent_tracks.assert_awaited_once_with(
-            username="user", limit=4
+            username="user", limit=7
         )
         recommendation_provider.get_top_tracks.assert_awaited_once_with(
             username="user", limit=3
         )
+
+    async def test_mixed_strategy_seeds_half_of_the_recent_tracks(self):
+        """The recent tracks are fetched once and only half of them seed similar tracks."""
+        recent_tracks = [
+            _make_recommendation_track(track_name=f"Recent Track {index}")
+            for index in range(10)
+        ]
+
+        recommendation_provider = _make_recommendation_provider()
+        recommendation_provider.get_recent_tracks.return_value = recent_tracks
+        music_provider = _make_music_provider()
+
+        await get_recommendations(
+            recommendation_provider=recommendation_provider,
+            music_provider=music_provider,
+            strategy=RecommendationStrategy.mixed,
+            num_recommendations=10,
+            username="user",
+            blend_users=None,
+        )
+
+        seeded_track_names = [
+            await_call.kwargs["track_name"]
+            for await_call in recommendation_provider.get_similar_tracks.await_args_list
+        ]
+
+        assert seeded_track_names == [track.track_name for track in recent_tracks[:5]]
 
     async def test_blend_strategy(self):
         recommendation_provider = _make_recommendation_provider()
@@ -169,13 +198,51 @@ class TestStrategies:
         )
 
         assert recommendation_provider.get_recent_tracks.await_args_list == [
-            call(username="alice-prov", limit=2),
-            call(username="bob-prov", limit=2),
+            call(username="alice-prov", limit=10),
+            call(username="bob-prov", limit=10),
         ]
         assert recommendation_provider.get_top_tracks.await_args_list == [
             call(username="alice-prov", limit=2),
             call(username="bob-prov", limit=2),
         ]
+
+    async def test_blend_strategy_fills_from_every_blend_user(self):
+        """The familiar tracks are drawn from all blend users, not just the requesting user."""
+        alice_tracks = [
+            _make_recommendation_track(track_name=f"Alice Track {index}")
+            for index in range(4)
+        ]
+        bob_tracks = [
+            _make_recommendation_track(track_name=f"Bob Track {index}")
+            for index in range(4)
+        ]
+        recent_tracks_by_user = {
+            "alice-prov": alice_tracks,
+            "bob-prov": bob_tracks,
+        }
+
+        recommendation_provider = _make_recommendation_provider()
+        recommendation_provider.get_recent_tracks = AsyncMock(
+            side_effect=lambda *, username, limit: recent_tracks_by_user[username]
+        )
+        music_provider = _make_music_provider_with_tracks(alice_tracks + bob_tracks)
+
+        found, missing, _ = await get_recommendations(
+            recommendation_provider=recommendation_provider,
+            music_provider=music_provider,
+            strategy=RecommendationStrategy.blend,
+            num_recommendations=4,
+            username="user",
+            blend_users=[("alice", "alice-prov"), ("bob", "bob-prov")],
+        )
+
+        assert missing == []
+        assert set(found) == {
+            alice_tracks[0],
+            bob_tracks[0],
+            alice_tracks[1],
+            bob_tracks[1],
+        }
 
     async def test_blend_strategy_uses_user_mapping(self):
         recommendation_provider = _make_recommendation_provider()
@@ -191,7 +258,7 @@ class TestStrategies:
         )
 
         recommendation_provider.get_recent_tracks.assert_awaited_once_with(
-            username="carol_provider", limit=2
+            username="carol_provider", limit=5
         )
         recommendation_provider.get_top_tracks.assert_awaited_once_with(
             username="carol_provider", limit=2
@@ -299,9 +366,9 @@ class TestTrackMatching:
 
 
 class TestFamiliarTracks:
-    async def test_fills_a_quarter_of_recommendations_with_top_tracks(self):
-        top_tracks = [
-            _make_recommendation_track(track_name=f"Top Track {index}")
+    async def test_fills_a_quarter_of_recommendations_with_recent_tracks(self):
+        recent_tracks = [
+            _make_recommendation_track(track_name=f"Recent Track {index}")
             for index in range(8)
         ]
         similar_tracks = [
@@ -310,10 +377,15 @@ class TestFamiliarTracks:
         ]
 
         recommendation_provider = _make_recommendation_provider()
-        recommendation_provider.get_top_tracks.return_value = top_tracks
+        recommendation_provider.get_top_tracks.return_value = [
+            _make_recommendation_track(track_name="Top Track")
+        ]
+        recommendation_provider.get_recent_tracks.return_value = recent_tracks
         recommendation_provider.get_similar_tracks.return_value = similar_tracks
 
-        music_provider = _make_music_provider_with_tracks(top_tracks + similar_tracks)
+        music_provider = _make_music_provider_with_tracks(
+            recent_tracks + similar_tracks
+        )
 
         found, missing, provider_tracks = await get_recommendations(
             recommendation_provider=recommendation_provider,
@@ -324,52 +396,54 @@ class TestFamiliarTracks:
             blend_users=None,
         )
 
-        familiar_tracks = [track for track in found if track in top_tracks]
+        familiar_tracks = [track for track in found if track in recent_tracks]
 
         assert len(found) == 8
         assert len(familiar_tracks) == 2
-        assert set(familiar_tracks) == {top_tracks[0], top_tracks[1]}
+        assert set(familiar_tracks) == {recent_tracks[0], recent_tracks[1]}
         assert len(provider_tracks) == 8
         assert missing == []
 
     async def test_familiar_track_still_seeds_similar_tracks(self):
-        top_tracks = [
-            _make_recommendation_track(track_name=f"Top Track {index}")
+        recent_tracks = [
+            _make_recommendation_track(track_name=f"Recent Track {index}")
             for index in range(4)
         ]
         similar_track = _make_recommendation_track(track_name="Similar Track")
 
         recommendation_provider = _make_recommendation_provider()
-        recommendation_provider.get_top_tracks.return_value = top_tracks
+        recommendation_provider.get_recent_tracks.return_value = recent_tracks
         recommendation_provider.get_similar_tracks.return_value = [similar_track]
 
-        music_provider = _make_music_provider_with_tracks(top_tracks + [similar_track])
+        music_provider = _make_music_provider_with_tracks(
+            recent_tracks + [similar_track]
+        )
 
         found, _, _ = await get_recommendations(
             recommendation_provider=recommendation_provider,
             music_provider=music_provider,
-            strategy=RecommendationStrategy.top_tracks,
+            strategy=RecommendationStrategy.recent_tracks,
             num_recommendations=4,
             username="user",
             blend_users=None,
         )
 
-        assert top_tracks[0] in found
+        assert recent_tracks[0] in found
         assert similar_track in found
         recommendation_provider.get_similar_tracks.assert_any_await(
-            artist_name=top_tracks[0].artist_name,
-            track_name=top_tracks[0].track_name,
-            musicbrainz_id=top_tracks[0].musicbrainz_id,
+            artist_name=recent_tracks[0].artist_name,
+            track_name=recent_tracks[0].track_name,
+            musicbrainz_id=recent_tracks[0].musicbrainz_id,
         )
 
     async def test_familiar_track_missing_when_not_in_provider(self):
-        top_tracks = [
-            _make_recommendation_track(track_name=f"Top Track {index}")
+        recent_tracks = [
+            _make_recommendation_track(track_name=f"Recent Track {index}")
             for index in range(4)
         ]
 
         recommendation_provider = _make_recommendation_provider()
-        recommendation_provider.get_top_tracks.return_value = top_tracks
+        recommendation_provider.get_recent_tracks.return_value = recent_tracks
         recommendation_provider.get_similar_tracks.return_value = []
 
         music_provider = _make_music_provider_with_tracks([])
@@ -377,28 +451,35 @@ class TestFamiliarTracks:
         found, missing, provider_tracks = await get_recommendations(
             recommendation_provider=recommendation_provider,
             music_provider=music_provider,
-            strategy=RecommendationStrategy.top_tracks,
+            strategy=RecommendationStrategy.recent_tracks,
             num_recommendations=4,
             username="user",
             blend_users=None,
         )
 
         assert found == []
-        assert set(missing) == set(top_tracks)
+        assert set(missing) == set(recent_tracks)
         assert provider_tracks == []
 
-    async def test_familiar_tracks_fill_slots_left_by_similar_tracks(self):
+    async def test_familiar_tracks_fill_slots_left_by_recent_tracks(self):
         top_tracks = [
             _make_recommendation_track(track_name=f"Top Track {index}")
+            for index in range(8)
+        ]
+        recent_tracks = [
+            _make_recommendation_track(track_name=f"Recent Track {index}")
             for index in range(8)
         ]
         similar_track = _make_recommendation_track(track_name="Similar Track")
 
         recommendation_provider = _make_recommendation_provider()
         recommendation_provider.get_top_tracks.return_value = top_tracks
+        recommendation_provider.get_recent_tracks.return_value = recent_tracks
         recommendation_provider.get_similar_tracks.return_value = [similar_track]
 
-        music_provider = _make_music_provider_with_tracks(top_tracks + [similar_track])
+        music_provider = _make_music_provider_with_tracks(
+            recent_tracks + [similar_track]
+        )
 
         found, missing, provider_tracks = await get_recommendations(
             recommendation_provider=recommendation_provider,
@@ -409,7 +490,7 @@ class TestFamiliarTracks:
             blend_users=None,
         )
 
-        familiar_tracks = [track for track in found if track in top_tracks]
+        familiar_tracks = [track for track in found if track in recent_tracks]
 
         assert len(found) == 8
         assert similar_track in found

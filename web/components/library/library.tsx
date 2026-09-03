@@ -1,4 +1,5 @@
 import { Text } from "@/components/common/text";
+import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import {
@@ -19,12 +20,14 @@ import {
 import {
   LIBRARY_PAGE_SIZE,
   LibraryFilters,
+  rescanLibrary,
   useLibraryTracks,
 } from "@/hooks/useLibrary";
 import { cn } from "@/lib/utils";
-import { FileAudio, Loader2, Search } from "lucide-react";
+import { FileAudio, Loader2, RefreshCw, Search } from "lucide-react";
 import { useEffect, useState } from "react";
 import { LibraryEditor } from "./library-editor";
+import { LibraryEmptyFolders } from "./library-empty-folders";
 import { LibraryPagination } from "./library-pagination";
 import { LibraryRow } from "./library-row";
 
@@ -54,16 +57,36 @@ const StatCount = ({
   value,
   label,
   className,
+  onClick,
 }: {
   value: number;
   label: string;
   className?: string;
-}) => (
-  <span className="flex shrink-0 items-baseline gap-1.5">
-    <span className={cn("text-sm tabular-nums", className)}>{value}</span>
-    <span className="text-muted-foreground">{label}</span>
-  </span>
-);
+  onClick?: () => void;
+}) => {
+  const content = (
+    <>
+      <span className={cn("text-sm tabular-nums", className)}>{value}</span>
+      <span className="text-muted-foreground">{label}</span>
+    </>
+  );
+
+  if (!onClick) {
+    return (
+      <span className="flex shrink-0 items-baseline gap-1.5">{content}</span>
+    );
+  }
+
+  return (
+    <Button
+      variant="link"
+      onClick={onClick}
+      className="h-auto items-baseline p-0 font-mono text-xs text-muted-foreground"
+    >
+      {content}
+    </Button>
+  );
+};
 
 const FilterSelect = ({
   value,
@@ -99,6 +122,7 @@ export const Library = () => {
     missing: "",
   });
   const [openPath, setOpenPath] = useState<string | null>(null);
+  const [isReviewingFolders, setIsReviewingFolders] = useState(false);
   const [page, setPage] = useState(0);
   const { data, isLoading, isError, refresh } = useLibraryTracks(filters, page);
   const FilterActivityIcon = isLoading ? Loader2 : Search;
@@ -117,6 +141,11 @@ export const Library = () => {
   const patchFilters = (patch: Partial<LibraryFilters>): void => {
     setPage(0);
     setFilters((previous) => ({ ...previous, ...patch }));
+  };
+
+  const handleRescan = async (): Promise<void> => {
+    await rescanLibrary();
+    await refresh();
   };
 
   const renderContent = (): React.JSX.Element => {
@@ -145,6 +174,19 @@ export const Library = () => {
       const isFiltered = Boolean(
         filters.query || filters.format || filters.missing,
       );
+
+      if (data?.scanning && !isFiltered) {
+        return (
+          <div className="flex flex-col items-center justify-center gap-2 py-14 text-center">
+            <RefreshCw className="h-8 w-8 animate-spin text-muted-foreground/40" />
+            <Text variant="sm" muted value="Scanning the library" />
+            <Text
+              className="text-muted-foreground/70"
+              value="Files appear as they are read. This takes a while the first time."
+            />
+          </div>
+        );
+      }
 
       return (
         <div className="flex flex-col items-center justify-center gap-2 py-14 text-center">
@@ -264,7 +306,39 @@ export const Library = () => {
                   })}
                 />
                 <StatDivider />
+                <StatCount
+                  value={data.summary.duplicates}
+                  label="duplicated"
+                  className={cn({
+                    "text-amber-400": data.summary.duplicates > 0,
+                    "text-primary": data.summary.duplicates == 0,
+                  })}
+                />
+                <StatDivider />
+                <StatCount
+                  value={data.summary.empty_directories}
+                  label="empty folders"
+                  onClick={
+                    data.summary.empty_directories > 0
+                      ? () => setIsReviewingFolders(true)
+                      : undefined
+                  }
+                  className={cn({
+                    "text-amber-400": data.summary.empty_directories > 0,
+                    "text-primary": data.summary.empty_directories == 0,
+                  })}
+                />
+                <StatDivider />
                 <StatCount value={data.summary.lossless} label="lossless" />
+                {data.scanning && (
+                  <>
+                    <StatDivider />
+                    <span className="flex shrink-0 items-center gap-1.5 text-primary">
+                      <RefreshCw className="h-3 w-3 animate-spin" />
+                      <span>scanning</span>
+                    </span>
+                  </>
+                )}
                 <span className="hidden min-w-0 max-w-full truncate text-muted-foreground/60 md:ml-auto md:inline">
                   {data.directory.slice(0, data.directory.lastIndexOf("/") + 1)}
                   <span className="text-foreground">
@@ -324,6 +398,17 @@ export const Library = () => {
                 })
               }
             />
+            <Button
+              variant="outline"
+              size="icon"
+              onClick={handleRescan}
+              disabled={data?.scanning}
+              aria-label="Rescan the library"
+              title="Rescan the library"
+              className="shrink-0"
+            >
+              <RefreshCw className={cn(data?.scanning && "animate-spin")} />
+            </Button>
           </div>
         </CardHeader>
         <CardContent>{renderContent()}</CardContent>
@@ -332,6 +417,11 @@ export const Library = () => {
         path={openPath}
         onClose={() => setOpenPath(null)}
         onSaved={refresh}
+      />
+      <LibraryEmptyFolders
+        open={isReviewingFolders}
+        onOpenChange={setIsReviewingFolders}
+        onDeleted={refresh}
       />
     </>
   );

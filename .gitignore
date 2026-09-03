@@ -1,4 +1,5 @@
 postgres
 downloads
+.env
 .DS_Store
 dist
