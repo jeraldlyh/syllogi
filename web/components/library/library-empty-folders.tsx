@@ -40,11 +40,13 @@ export const LibraryEmptyFolders = ({
   const [isConfirming, setIsConfirming] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
   const [kept, setKept] = useState<string[]>([]);
+  const [hasFailed, setHasFailed] = useState(false);
   const folders = data ?? [];
 
   const handleDelete = async (): Promise<void> => {
     setIsConfirming(false);
     setIsDeleting(true);
+    setHasFailed(false);
 
     try {
       const result = await deleteEmptyFolders();
@@ -54,6 +56,8 @@ export const LibraryEmptyFolders = ({
       onDeleted();
 
       if (result.kept.length === 0) onOpenChange(false);
+    } catch {
+      setHasFailed(true);
     } finally {
       setIsDeleting(false);
     }
@@ -107,7 +111,10 @@ export const LibraryEmptyFolders = ({
       <Dialog
         open={open}
         onOpenChange={(next) => {
-          if (!next) setKept([]);
+          if (!next) {
+            setKept([]);
+            setHasFailed(false);
+          }
 
           onOpenChange(next);
         }}
@@ -120,6 +127,13 @@ export const LibraryEmptyFolders = ({
             </DialogDescription>
           </DialogHeader>
           {renderContent()}
+          {hasFailed && (
+            <Text
+              variant="sm"
+              className="text-red-400"
+              value="Could not delete the empty folders. Try again in a moment."
+            />
+          )}
           {kept.length > 0 && (
             <Text
               variant="sm"
