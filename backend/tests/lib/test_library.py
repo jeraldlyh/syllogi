@@ -1,4 +1,5 @@
 import inspect
+import unicodedata
 from pathlib import Path
 from unittest.mock import patch
 
@@ -162,7 +163,7 @@ class TestReadLibraryTrack:
         """SMB hands back decomposed names; the row must hold the composed one."""
 
         mock_directory.return_value = tmp_path
-        decomposed = "아이".encode().decode()
+        decomposed = unicodedata.normalize("NFD", "아이")
         track_path = tmp_path / f"{decomposed}.flac"
         track_path.write_bytes(b"")
         mock_read.return_value = (AudioTags(title="한"), 100)
@@ -170,6 +171,8 @@ class TestReadLibraryTrack:
         result = read_library_track(track_path)
 
         assert result is not None
+        assert result[0].filename == "아이.flac"
+        assert result[0].path == "아이.flac"
         assert result[0].title == "한"
 
     @patch("lib.library.read_audio_tags")
