@@ -126,7 +126,7 @@ export const LibraryDuplicates = ({
 
     if (groups.length === 0) {
       return (
-        <div className="flex flex-col items-center gap-2 py-10 text-center">
+        <div className="flex flex-col items-center gap-2 py-5 text-center">
           <CopyCheck className="h-8 w-8 text-muted-foreground/40" />
           <Text variant="sm" muted value="Every track has a single copy" />
         </div>

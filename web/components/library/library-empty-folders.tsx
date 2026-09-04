@@ -85,7 +85,7 @@ export const LibraryEmptyFolders = ({
 
     if (folders.length === 0) {
       return (
-        <div className="flex flex-col items-center gap-2 py-10 text-center">
+        <div className="flex flex-col items-center gap-2 py-5 text-center">
           <FolderCheck className="h-8 w-8 text-muted-foreground/40" />
           <Text variant="sm" muted value="Every folder holds audio" />
         </div>
