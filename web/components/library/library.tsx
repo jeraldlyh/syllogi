@@ -67,14 +67,19 @@ const StatCount = ({
 }) => {
   const content = (
     <>
-      <span className={cn("text-sm tabular-nums", className)}>{value}</span>
-      <span className="text-muted-foreground">{label}</span>
+      <Text
+        mono
+        variant="sm"
+        className={cn("tabular-nums", className)}
+        value={value.toString()}
+      />
+      <Text muted value={label} />
     </>
   );
 
   if (!onClick) {
     return (
-      <span className="flex shrink-0 items-baseline gap-1.5">{content}</span>
+      <div className="flex shrink-0 items-baseline gap-1.5">{content}</div>
     );
   }
 
@@ -82,7 +87,7 @@ const StatCount = ({
     <Button
       variant="link"
       onClick={onClick}
-      className="h-auto items-baseline p-0 font-mono text-xs text-muted-foreground"
+      className="justify-start h-auto items-baseline p-0 font-mono text-xs text-muted-foreground"
     >
       {content}
     </Button>
