@@ -516,11 +516,11 @@ export const Recommendations = () => {
                       {user.name}
                       {!hasRequiredUsername(user.name, form.provider) && (
                         <span className="text-muted-foreground ml-1">
-                          (no&nbps;
+                          (no&nbsp;
                           {form.provider === "lastfm"
                             ? "Last.fm"
                             : "ListenBrainz"}
-                          username)
+                          &nbsp;username)
                         </span>
                       )}
                     </SelectItem>
