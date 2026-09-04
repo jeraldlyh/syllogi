@@ -75,6 +75,17 @@ export interface DeletedFolders {
   kept: string[];
 }
 
+export interface DuplicateGroup {
+  title: string;
+  artist: string;
+  tracks: LibraryTrack[];
+}
+
+export interface DeletedTracks {
+  deleted: string[];
+  kept: string[];
+}
+
 export interface LibraryResponse {
   directory: string;
   scanning: boolean;
@@ -184,6 +195,32 @@ export const deleteEmptyFolders = async (): Promise<DeletedFolders> => {
   );
 
   return response.data as DeletedFolders;
+};
+
+export const useDuplicateTracks = (enabled: boolean) => {
+  const { data, error, isLoading, mutate } = useSWR<
+    ApiResponse<DuplicateGroup[]>
+  >(enabled ? "/library/duplicates" : null, fetcher, {
+    revalidateOnFocus: false,
+  });
+
+  return {
+    data: data?.data,
+    isLoading,
+    isError: error,
+    refresh: mutate,
+  };
+};
+
+export const deleteLibraryTracks = async (
+  paths: string[],
+): Promise<DeletedTracks> => {
+  const response = await fetcher<ApiResponse<DeletedTracks>>(
+    "/library/tracks",
+    { method: "DELETE", body: JSON.stringify({ paths }) },
+  );
+
+  return response.data as DeletedTracks;
 };
 
 export const useLibraryTrack = (path: string | null) => {

@@ -49,6 +49,7 @@ export const TagComb = ({ filled, className }: IProps) => {
         ) : (
           <>
             <Text
+              disableViewport
               value={`Missing ${missing.length} of ${TAG_FIELDS.length} tags`}
             />
             <ul className="mt-1.5 flex flex-col gap-0.5 text-amber-400">

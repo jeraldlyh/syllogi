@@ -12,6 +12,7 @@ from db.models.library import LibraryTrack
 from lib import library
 from lib.library import (
     delete_empty_folders,
+    delete_library_tracks,
     read_library_track,
     resolve_library_folder,
     resolve_library_path,
@@ -353,6 +354,125 @@ class TestDeleteEmptyFolders:
 
         assert result["deleted"] == []
         assert result["kept"] == []
+
+
+class TestDeleteLibraryTracks:
+    @staticmethod
+    def _sweep(session) -> None:
+        with patch("lib.library.read_audio_tags", return_value=(AudioTags(), 100)):
+            sweep_library(session)
+
+    @patch("lib.library.get_library_directory")
+    def test_deletes_only_the_files_it_is_given(
+        self, mock_directory, tmp_path, session
+    ):
+        mock_directory.return_value = tmp_path
+        (tmp_path / "Artist").mkdir()
+        (tmp_path / "Artist" / "Track.flac").write_bytes(b"")
+        (tmp_path / "Artist" / "Track.opus").write_bytes(b"")
+        self._sweep(session)
+
+        result = delete_library_tracks(session, ["Artist/Track.opus"])
+
+        assert result == {"deleted": ["Artist/Track.opus"], "kept": []}
+        assert not (tmp_path / "Artist" / "Track.opus").exists()
+        assert (tmp_path / "Artist" / "Track.flac").exists()
+
+    @patch("lib.library.get_library_directory")
+    def test_drops_the_rows_of_the_files_it_deleted(
+        self, mock_directory, tmp_path, session
+    ):
+        mock_directory.return_value = tmp_path
+        (tmp_path / "Artist").mkdir()
+        (tmp_path / "Artist" / "Track.flac").write_bytes(b"")
+        (tmp_path / "Artist" / "Track.opus").write_bytes(b"")
+        self._sweep(session)
+
+        delete_library_tracks(session, ["Artist/Track.opus"])
+
+        assert list(get_track_fingerprints(session)) == ["Artist/Track.flac"]
+
+    @patch("lib.library.get_library_directory")
+    def test_drops_the_row_of_a_file_named_by_a_detour(
+        self, mock_directory, tmp_path, session
+    ):
+        mock_directory.return_value = tmp_path
+        (tmp_path / "Artist").mkdir()
+        (tmp_path / "Artist" / "Track.flac").write_bytes(b"")
+        self._sweep(session)
+
+        result = delete_library_tracks(session, ["Artist/../Artist/Track.flac"])
+
+        assert result == {"deleted": ["Artist/../Artist/Track.flac"], "kept": []}
+        assert not (tmp_path / "Artist" / "Track.flac").exists()
+        assert get_track_fingerprints(session) == {}
+
+    @patch("lib.library.get_library_directory")
+    def test_drops_the_row_of_a_file_named_by_an_absolute_path(
+        self, mock_directory, tmp_path, session
+    ):
+        mock_directory.return_value = tmp_path
+        (tmp_path / "Artist").mkdir()
+        (tmp_path / "Artist" / "Track.flac").write_bytes(b"")
+        self._sweep(session)
+
+        result = delete_library_tracks(session, [str(tmp_path / "Artist" / "Track.flac")])
+
+        assert result == {"deleted": [str(tmp_path / "Artist" / "Track.flac")], "kept": []}
+        assert not (tmp_path / "Artist" / "Track.flac").exists()
+        assert get_track_fingerprints(session) == {}
+
+    @patch("lib.library.get_library_directory")
+    def test_drops_the_row_of_a_file_deleted_outside_the_app(
+        self, mock_directory, tmp_path, session
+    ):
+        mock_directory.return_value = tmp_path
+        (tmp_path / "Artist").mkdir()
+        (tmp_path / "Artist" / "Track.flac").write_bytes(b"")
+        self._sweep(session)
+        (tmp_path / "Artist" / "Track.flac").unlink()
+
+        result = delete_library_tracks(session, ["Artist/Track.flac"])
+
+        assert result == {"deleted": ["Artist/Track.flac"], "kept": []}
+        assert get_track_fingerprints(session) == {}
+
+    @patch("lib.library.get_library_directory")
+    def test_keeps_a_path_that_escapes_the_library(
+        self, mock_directory, tmp_path, session
+    ):
+        mock_directory.return_value = tmp_path / "library"
+        (tmp_path / "library").mkdir()
+        (tmp_path / "outside.flac").write_bytes(b"")
+
+        result = delete_library_tracks(session, ["../outside.flac"])
+
+        assert result == {"deleted": [], "kept": ["../outside.flac"]}
+        assert (tmp_path / "outside.flac").exists()
+
+    @patch("lib.library.get_library_directory")
+    def test_keeps_a_file_that_is_not_audio(self, mock_directory, tmp_path, session):
+        mock_directory.return_value = tmp_path
+        (tmp_path / "cover.jpg").write_bytes(b"")
+
+        result = delete_library_tracks(session, ["cover.jpg"])
+
+        assert result == {"deleted": [], "kept": ["cover.jpg"]}
+        assert (tmp_path / "cover.jpg").exists()
+
+    @patch("lib.library.get_library_directory")
+    def test_keeps_the_files_it_could_not_delete(
+        self, mock_directory, tmp_path, session
+    ):
+        mock_directory.return_value = tmp_path
+        (tmp_path / "Track.flac").write_bytes(b"")
+        self._sweep(session)
+
+        with patch.object(Path, "unlink", side_effect=OSError("read-only")):
+            result = delete_library_tracks(session, ["Track.flac"])
+
+        assert result == {"deleted": [], "kept": ["Track.flac"]}
+        assert list(get_track_fingerprints(session)) == ["Track.flac"]
 
 
 class TestResolveLibraryFolder:

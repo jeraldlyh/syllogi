@@ -10,6 +10,7 @@ from db.library import (
     count_duplicate_tracks,
     delete_tracks_by_paths,
     duplicate_groups,
+    get_duplicate_tracks,
     get_empty_folders,
     get_track_by_path,
     get_track_fingerprints,
@@ -395,6 +396,63 @@ class TestCountDuplicateTracks:
         )
 
         assert count_duplicate_tracks(session) == 0
+
+
+class TestGetDuplicateTracks:
+    def test_returns_every_copy_of_a_duplicated_track(self, session: Session):
+        upsert_tracks(
+            session,
+            [
+                _make_track(path="Artist/Album/Track.flac"),
+                _make_track(path="Artist/Album/Track.mp3", format="mp3"),
+                _make_track(path="Artist/Album/Track.opus", format="opus"),
+            ],
+        )
+
+        groups = get_duplicate_tracks(session)
+
+        assert len(groups) == 1
+        assert [track.path for track in groups[0]] == [
+            "Artist/Album/Track.flac",
+            "Artist/Album/Track.mp3",
+            "Artist/Album/Track.opus",
+        ]
+
+    def test_leaves_out_tracks_the_library_holds_once(self, session: Session):
+        upsert_tracks(
+            session,
+            [
+                _make_track(path="A/B/C.flac"),
+                _make_track(path="A/B/C.opus", format="opus"),
+                _make_track(path="D/E/F.flac", title="Alone"),
+            ],
+        )
+
+        groups = get_duplicate_tracks(session)
+
+        assert len(groups) == 1
+        assert all(track.title != "Alone" for track in groups[0])
+
+    def test_keeps_each_duplicated_track_in_its_own_group(self, session: Session):
+        upsert_tracks(
+            session,
+            [
+                _make_track(path="A/B/C.flac"),
+                _make_track(path="A/B/C.opus", format="opus"),
+                _make_track(path="A/B/D.flac", title="Save Your Tears"),
+                _make_track(path="A/B/D.opus", format="opus", title="Save Your Tears"),
+            ],
+        )
+
+        groups = get_duplicate_tracks(session)
+
+        assert len(groups) == 2
+        assert all(len(group) == 2 for group in groups)
+
+    def test_returns_nothing_for_a_library_without_duplicates(self, session: Session):
+        upsert_tracks(session, [_make_track()])
+
+        assert get_duplicate_tracks(session) == []
 
 
 class TestEmptyFolders:

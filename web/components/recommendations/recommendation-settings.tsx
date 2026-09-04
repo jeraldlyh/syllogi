@@ -108,8 +108,11 @@ export const Recommendations = () => {
   const [recommendationToGenerate, setRecommendationToGenerate] =
     useState<Recommendation | null>(null);
 
-  const { data: users } = useMusicServerUsers();
+  const { data: allUsers } = useMusicServerUsers();
   const { data: userConfigs } = useMusicServerUserConfigs();
+  const users = allUsers?.filter((user) =>
+    userConfigs?.some((config) => config.username === user.name),
+  );
   const {
     data: recommendations,
     isLoading,
@@ -513,11 +516,11 @@ export const Recommendations = () => {
                       {user.name}
                       {!hasRequiredUsername(user.name, form.provider) && (
                         <span className="text-muted-foreground ml-1">
-                          (no&nbps;
+                          (no&nbsp;
                           {form.provider === "lastfm"
                             ? "Last.fm"
                             : "ListenBrainz"}
-                          username)
+                          &nbsp;username)
                         </span>
                       )}
                     </SelectItem>

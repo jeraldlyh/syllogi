@@ -228,6 +228,33 @@ def count_duplicate_tracks(session: Session) -> int:
     return session.exec(select(sa.func.count()).select_from(duplicate_groups())).one()
 
 
+def get_duplicate_tracks(session: Session) -> list[list[LibraryTrack]]:
+    """Group every file that shares its identity with another into its copies.
+
+    Groups come back ordered by the identity they share, and the files inside a
+    group by path, so the same library always lists in the same order.
+    """
+
+    duplicate_key = _duplicate_key_expression().label("duplicate_key")
+
+    rows = session.exec(
+        select(LibraryTrack, duplicate_key)
+        .where(
+            _duplicate_key_expression().in_(select(duplicate_groups().c.duplicate_key))
+        )
+        .order_by(duplicate_key, sa.func.lower(col(LibraryTrack.path)))
+    ).all()
+
+    groups: dict[str, list[LibraryTrack]] = {}
+
+    for track, key in rows:
+        if key not in groups:
+            groups[key] = []
+        groups[key].append(track)
+
+    return list(groups.values())
+
+
 def summarize_library(session: Session) -> dict[str, int]:
     """Count the library-wide gaps worth acting on, in a single pass over the table."""
 

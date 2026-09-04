@@ -50,6 +50,7 @@ import {
   useSyncConfigs,
 } from "@/hooks/useSync";
 import { useMusicServerUsers } from "@/hooks/useUsers";
+import { useMusicServerUserConfigs } from "@/hooks/useMusicServerUsers";
 import { CRON_PRESETS, PROVIDERS } from "@/lib/types";
 import { capitaliseFirstLetter, cn } from "@/lib/utils";
 import { Info, Loader2, Pencil, Play, Plus, Trash2 } from "lucide-react";
@@ -100,7 +101,11 @@ export const SyncSettings = () => {
     null,
   );
 
-  const { data: users } = useMusicServerUsers();
+  const { data: allUsers } = useMusicServerUsers();
+  const { data: userConfigs } = useMusicServerUserConfigs();
+  const users = allUsers?.filter((user) =>
+    userConfigs?.some((config) => config.username === user.name),
+  );
   const {
     data: playlists,
     isLoading,

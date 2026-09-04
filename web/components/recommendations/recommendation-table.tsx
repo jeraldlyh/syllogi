@@ -39,6 +39,7 @@ import { RefreshCw, Search } from "lucide-react";
 import { useState } from "react";
 import { SortDirection, SortIcon } from "../common/sort-icon";
 import { RecommendationStrategyBadge } from "./recommendation-strategy-badge";
+import { TrackList } from "./recommendation-track-list";
 
 type SortColumn =
   | "time"
@@ -185,7 +186,7 @@ export const RecommendationTable = () => {
               <StatusBadge status={selectedSession.status} />
             </DialogTitle>
           </DialogHeader>
-          <div className="p-4 bg-red-500/5 rounded-md text-red-400">
+          <div className="min-w-0 p-4 bg-red-500/5 rounded-md text-red-400">
             <Text value="Stacktrace:" variant="sm" />
             <ScrollArea className="max-h-64 mt-2 rounded-md border bg-secondary/50 p-2 overflow-y-scroll">
               <pre className="text-xs text-wrap">
@@ -464,7 +465,6 @@ export const RecommendationTable = () => {
           {renderTable()}
         </CardContent>
       </Card>
-
       <Dialog
         open={selectedSession !== null}
         onOpenChange={(open) => !open && setSelectedSession(null)}
@@ -480,47 +480,6 @@ const DialogItem = ({ label, value }: { label: string; value: string }) => {
     <div>
       <Text muted disableViewport value={label} />
       <Text className="truncate" value={value} />
-    </div>
-  );
-};
-
-const TrackList = ({
-  title,
-  tracks,
-  accent,
-}: {
-  title: string;
-  tracks: string[];
-  accent: HTMLParagraphElement["className"];
-}) => {
-  const renderTracks = (): React.JSX.Element => {
-    if (tracks.length === 0) {
-      return <Text muted value="None" />;
-    }
-
-    const uniqueTracks = Array.from(new Set(tracks));
-
-    return (
-      <ScrollArea className="h-32 rounded-md border bg-secondary/50 p-2">
-        <ul className="flex flex-col gap-1">
-          {uniqueTracks.map((track) => (
-            <li key={track} className="border-b last:border-0 py-1">
-              <Text mono muted value={track} />
-            </li>
-          ))}
-        </ul>
-      </ScrollArea>
-    );
-  };
-
-  return (
-    <div>
-      <Text
-        disableViewport
-        className={cn("mb-2 font-semibold", accent)}
-        value={title}
-      />
-      {renderTracks()}
     </div>
   );
 };

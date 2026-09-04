@@ -292,7 +292,7 @@ async def sync_playlist_task(
 
 async def sync_playlist(
     provider: MusicPlaylistProvider, sync_config: Sync
-) -> dict[str, str]:
+) -> dict[str, str] | None:
     """Sync a playlist (Spotify/Youtube) to the music provider."""
 
     with get_isolated_session() as session:
@@ -303,6 +303,12 @@ async def sync_playlist(
                 status_code=status.HTTP_404_NOT_FOUND,
                 detail=f"Unable to find sync config: {sync_config.playlist_id}",
             )
+
+        if not internal_sync.enable_sync:
+            logger.info(
+                f"Skipping cron-triggered sync for disabled sync config: {internal_sync.id}"
+            )
+            return
 
         playlist_id = internal_sync.playlist_id
         username = internal_sync.username

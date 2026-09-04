@@ -186,7 +186,7 @@ export const SyncSessionTable = () => {
               <StatusBadge status={selectedSession.status} />
             </DialogTitle>
           </DialogHeader>
-          <div className="p-4 bg-red-500/5 rounded-md text-red-400">
+          <div className="min-w-0 p-4 bg-red-500/5 rounded-md text-red-400">
             <Text value="Stacktrace:" variant="sm" />
             <ScrollArea className="max-h-64 mt-2 rounded-md border bg-secondary/50 p-2 overflow-y-scroll">
               <pre className="text-xs text-wrap">

@@ -26,6 +26,7 @@ import {
 import { cn } from "@/lib/utils";
 import { FileAudio, Loader2, RefreshCw, Search } from "lucide-react";
 import { useEffect, useState } from "react";
+import { LibraryDuplicates } from "./library-duplicates";
 import { LibraryEditor } from "./library-editor";
 import { LibraryEmptyFolders } from "./library-empty-folders";
 import { LibraryPagination } from "./library-pagination";
@@ -66,14 +67,19 @@ const StatCount = ({
 }) => {
   const content = (
     <>
-      <span className={cn("text-sm tabular-nums", className)}>{value}</span>
-      <span className="text-muted-foreground">{label}</span>
+      <Text
+        mono
+        variant="sm"
+        className={cn("tabular-nums", className)}
+        value={value.toString()}
+      />
+      <Text muted value={label} />
     </>
   );
 
   if (!onClick) {
     return (
-      <span className="flex shrink-0 items-baseline gap-1.5">{content}</span>
+      <div className="flex shrink-0 items-baseline gap-1.5">{content}</div>
     );
   }
 
@@ -81,7 +87,7 @@ const StatCount = ({
     <Button
       variant="link"
       onClick={onClick}
-      className="h-auto items-baseline p-0 font-mono text-xs text-muted-foreground"
+      className="justify-start h-auto items-baseline p-0 font-mono text-xs text-muted-foreground"
     >
       {content}
     </Button>
@@ -123,6 +129,7 @@ export const Library = () => {
   });
   const [openPath, setOpenPath] = useState<string | null>(null);
   const [isReviewingFolders, setIsReviewingFolders] = useState(false);
+  const [isReviewingDuplicates, setIsReviewingDuplicates] = useState(false);
   const [page, setPage] = useState(0);
   const { data, isLoading, isError, refresh } = useLibraryTracks(filters, page);
   const FilterActivityIcon = isLoading ? Loader2 : Search;
@@ -138,7 +145,7 @@ export const Library = () => {
     if (page > lastPage) setPage(lastPage);
   }, [data, page]);
 
-  const patchFilters = (patch: Partial<LibraryFilters>): void => {
+  const handlePatchFilters = (patch: Partial<LibraryFilters>): void => {
     setPage(0);
     setFilters((previous) => ({ ...previous, ...patch }));
   };
@@ -308,7 +315,12 @@ export const Library = () => {
                 <StatDivider />
                 <StatCount
                   value={data.summary.duplicates}
-                  label="duplicated"
+                  label="duplicates"
+                  onClick={
+                    data.summary.duplicates > 0
+                      ? () => setIsReviewingDuplicates(true)
+                      : undefined
+                  }
                   className={cn({
                     "text-amber-400": data.summary.duplicates > 0,
                     "text-primary": data.summary.duplicates == 0,
@@ -355,7 +367,7 @@ export const Library = () => {
             </div>
           )}
           <div className="flex flex-col gap-2 md:flex-row">
-            <div className="relative flex-1">
+            <div className="relative flex flex-1 gap-x-1">
               <span className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2">
                 <FilterActivityIcon
                   className={cn(
@@ -367,12 +379,23 @@ export const Library = () => {
               <Input
                 value={filters.query}
                 onChange={(event) =>
-                  patchFilters({ query: event.target.value })
+                  handlePatchFilters({ query: event.target.value })
                 }
                 placeholder="Search by title, artist, album or file name"
                 aria-label="Search library files"
                 className="pl-9"
               />
+              <Button
+                variant="outline"
+                size="icon"
+                onClick={handleRescan}
+                disabled={data?.scanning}
+                aria-label="Rescan the library"
+                title="Rescan the library"
+                className="inline-flex md:hidden"
+              >
+                <RefreshCw className={cn(data?.scanning && "animate-spin")} />
+              </Button>
             </div>
             <FilterSelect
               value={filters.format || ALL}
@@ -380,7 +403,7 @@ export const Library = () => {
               label="Filter by format"
               className="md:w-40"
               onChange={(value) =>
-                patchFilters({
+                handlePatchFilters({
                   format:
                     value === ALL ? "" : (value as LibraryFilters["format"]),
                 })
@@ -392,7 +415,7 @@ export const Library = () => {
               label="Filter by missing tags"
               className="md:w-56"
               onChange={(value) =>
-                patchFilters({
+                handlePatchFilters({
                   missing:
                     value === ALL ? "" : (value as LibraryFilters["missing"]),
                 })
@@ -405,7 +428,7 @@ export const Library = () => {
               disabled={data?.scanning}
               aria-label="Rescan the library"
               title="Rescan the library"
-              className="shrink-0"
+              className="md:inline-flex hidden"
             >
               <RefreshCw className={cn(data?.scanning && "animate-spin")} />
             </Button>
@@ -421,6 +444,11 @@ export const Library = () => {
       <LibraryEmptyFolders
         open={isReviewingFolders}
         onOpenChange={setIsReviewingFolders}
+        onDeleted={refresh}
+      />
+      <LibraryDuplicates
+        open={isReviewingDuplicates}
+        onOpenChange={setIsReviewingDuplicates}
         onDeleted={refresh}
       />
     </>
