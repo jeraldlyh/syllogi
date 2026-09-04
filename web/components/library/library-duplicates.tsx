@@ -24,9 +24,10 @@ import {
   deleteLibraryTracks,
   useDuplicateTracks,
 } from "@/hooks/useLibrary";
-import { CopyCheck, Loader2, Trash2 } from "lucide-react";
+import { CopyCheck, CopyX, Loader2, Trash2 } from "lucide-react";
 import { useMemo, useState } from "react";
 import { LibraryDuplicateRow } from "./library-duplicate-row";
+import { cn } from "@/lib/utils";
 
 const PLACEHOLDER_ROWS = [0, 1, 2, 3, 4];
 
@@ -117,10 +118,14 @@ export const LibraryDuplicates = ({
 
     if (isError) {
       return (
-        <Text
-          className="italic text-red-400"
-          value="Could not read the duplicate list"
-        />
+        <div className="flex flex-col items-center gap-2 py-5 text-center">
+          <CopyX className="h-8 w-8 text-red-400/40" />
+          <Text
+            variant="sm"
+            className="italic text-red-400"
+            value="Could not read the duplicate list"
+          />
+        </div>
       );
     }
 
@@ -192,7 +197,11 @@ export const LibraryDuplicates = ({
           onOpenChange(next);
         }}
       >
-        <DialogContent className="md:max-w-2xl">
+        <DialogContent
+          className={cn({
+            "md:max-w-2xl": groups.length > 0,
+          })}
+        >
           <DialogHeader>
             <DialogTitle>Duplicated tracks</DialogTitle>
             <DialogDescription>

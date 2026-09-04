@@ -20,7 +20,7 @@ import {
 } from "@/components/ui/dialog";
 import { Skeleton } from "@/components/ui/skeleton";
 import { deleteEmptyFolders, useEmptyFolders } from "@/hooks/useLibrary";
-import { FolderCheck, Loader2, Trash2 } from "lucide-react";
+import { FolderCheck, FolderX, Loader2, Trash2 } from "lucide-react";
 import { useState } from "react";
 
 const PLACEHOLDER_ROWS = [0, 1, 2, 3, 4];
@@ -76,10 +76,14 @@ export const LibraryEmptyFolders = ({
 
     if (isError) {
       return (
-        <Text
-          className="italic text-red-400"
-          value="Could not read the empty folder list"
-        />
+        <div className="flex flex-col items-center gap-2 py-5 text-center">
+          <FolderX className="h-8 w-8 text-red-400/40" />
+          <Text
+            variant="sm"
+            className="italic text-red-400"
+            value="Could not read the empty folder list"
+          />
+        </div>
       );
     }
 
