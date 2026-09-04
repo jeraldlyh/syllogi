@@ -108,8 +108,11 @@ export const Recommendations = () => {
   const [recommendationToGenerate, setRecommendationToGenerate] =
     useState<Recommendation | null>(null);
 
-  const { data: users } = useMusicServerUsers();
+  const { data: allUsers } = useMusicServerUsers();
   const { data: userConfigs } = useMusicServerUserConfigs();
+  const users = allUsers?.filter((user) =>
+    userConfigs?.some((config) => config.username === user.name),
+  );
   const {
     data: recommendations,
     isLoading,
