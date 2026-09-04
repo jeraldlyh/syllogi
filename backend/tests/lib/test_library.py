@@ -393,6 +393,36 @@ class TestDeleteLibraryTracks:
         assert list(get_track_fingerprints(session)) == ["Artist/Track.flac"]
 
     @patch("lib.library.get_library_directory")
+    def test_drops_the_row_of_a_file_named_by_a_detour(
+        self, mock_directory, tmp_path, session
+    ):
+        mock_directory.return_value = tmp_path
+        (tmp_path / "Artist").mkdir()
+        (tmp_path / "Artist" / "Track.flac").write_bytes(b"")
+        self._sweep(session)
+
+        result = delete_library_tracks(session, ["Artist/../Artist/Track.flac"])
+
+        assert result == {"deleted": ["Artist/../Artist/Track.flac"], "kept": []}
+        assert not (tmp_path / "Artist" / "Track.flac").exists()
+        assert get_track_fingerprints(session) == {}
+
+    @patch("lib.library.get_library_directory")
+    def test_drops_the_row_of_a_file_named_by_an_absolute_path(
+        self, mock_directory, tmp_path, session
+    ):
+        mock_directory.return_value = tmp_path
+        (tmp_path / "Artist").mkdir()
+        (tmp_path / "Artist" / "Track.flac").write_bytes(b"")
+        self._sweep(session)
+
+        result = delete_library_tracks(session, [str(tmp_path / "Artist" / "Track.flac")])
+
+        assert result == {"deleted": [str(tmp_path / "Artist" / "Track.flac")], "kept": []}
+        assert not (tmp_path / "Artist" / "Track.flac").exists()
+        assert get_track_fingerprints(session) == {}
+
+    @patch("lib.library.get_library_directory")
     def test_drops_the_row_of_a_file_deleted_outside_the_app(
         self, mock_directory, tmp_path, session
     ):
