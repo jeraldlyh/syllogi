@@ -6,6 +6,7 @@ from mutagen import MutagenError
 from pydantic import BaseModel, Field
 
 from db.library import (
+    get_duplicate_tracks,
     get_empty_folders,
     query_tracks,
     summarize_library,
@@ -14,6 +15,7 @@ from db.library import (
 from db.session import SessionDep
 from lib.library import (
     delete_empty_folders,
+    delete_library_tracks,
     get_library_directory,
     get_scan_state,
     read_library_track,
@@ -29,6 +31,12 @@ from lib.tagger import get_tag_frames, write_audio_tags
 logger = logging.getLogger(__name__)
 
 router = APIRouter()
+
+
+class DeleteTracksRequest(BaseModel):
+    paths: list[Annotated[str, Field(min_length=1, max_length=4096)]] = Field(
+        min_length=1, max_length=500
+    )
 
 
 class UpdateTagsRequest(BaseModel):
@@ -219,6 +227,102 @@ def _list_empty_folders(session: SessionDep) -> list[dict]:
 )
 def _delete_empty_folders(session: SessionDep) -> dict:
     return delete_empty_folders(session)
+
+
+@router.get(
+    path="/duplicates",
+    summary="List duplicated tracks",
+    description=(
+        "Return the tracks the library holds more than one file for, grouped by the "
+        "recording they share. Files are matched on artist and title, falling back to "
+        "the folder and file name when a file carries no title."
+    ),
+    responses={
+        200: {
+            "description": "Duplicated tracks retrieved successfully",
+            "content": {
+                "application/json": {
+                    "example": {
+                        "success": True,
+                        "data": [
+                            {
+                                "title": "Blinding Lights",
+                                "artist": "The Weeknd",
+                                "tracks": [
+                                    {
+                                        "path": "The Weeknd/After Hours/Blinding Lights.flac",
+                                        "filename": "Blinding Lights.flac",
+                                        "directory": "The Weeknd/After Hours",
+                                        "format": "flac",
+                                        "size": 32145678,
+                                        "duration": 200,
+                                        "has_lyrics": True,
+                                        "is_synced_lyrics": True,
+                                        "filled_fields": ["title", "artist", "album"],
+                                        "tags": {
+                                            "title": "Blinding Lights",
+                                            "artist": "The Weeknd",
+                                            "album": "After Hours",
+                                            "date": "2020",
+                                            "genres": ["synth-pop"],
+                                            "musicbrainz_id": "",
+                                        },
+                                    }
+                                ],
+                            }
+                        ],
+                    }
+                }
+            },
+        }
+    },
+)
+def _list_duplicate_tracks(session: SessionDep) -> list[dict]:
+    return [
+        {
+            "title": group[0].title or group[0].filename,
+            "artist": group[0].artist,
+            "tracks": [track.to_dict() for track in group],
+        }
+        for group in get_duplicate_tracks(session)
+    ]
+
+
+@router.delete(
+    path="/tracks",
+    summary="Delete library files",
+    description=(
+        "Delete the named audio files from disk and drop them from the library, then "
+        "trigger a music server rescan. A file already gone is reported as deleted."
+    ),
+    responses={
+        200: {
+            "description": "Files deleted successfully",
+            "content": {
+                "application/json": {
+                    "example": {
+                        "success": True,
+                        "data": {
+                            "deleted": ["The Weeknd/After Hours/Blinding Lights.opus"],
+                            "kept": [],
+                        },
+                    }
+                }
+            },
+        }
+    },
+)
+def _delete_library_tracks(
+    session: SessionDep,
+    item: DeleteTracksRequest,
+    background_tasks: BackgroundTasks,
+) -> dict:
+    result = delete_library_tracks(session, item.paths)
+
+    if result["deleted"]:
+        background_tasks.add_task(get_provider().rescan_library)
+
+    return result
 
 
 @router.get(

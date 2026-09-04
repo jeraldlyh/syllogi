@@ -3,6 +3,7 @@ import os
 import shutil
 import threading
 import time
+from collections.abc import Sequence
 from datetime import datetime
 from pathlib import Path
 
@@ -210,6 +211,41 @@ def delete_empty_folders(session: Session) -> dict:
     replace_empty_folders(session, kept)
 
     logger.info(f"Deleted {len(deleted)} empty folders, kept {len(kept)}")
+
+    return {"deleted": deleted, "kept": kept}
+
+
+def delete_library_tracks(session: Session, paths: Sequence[str]) -> dict:
+    """Delete the named audio files from disk and drop their rows.
+
+    Returns the paths deleted and the paths kept.
+    """
+
+    deleted: list[str] = []
+    kept: list[str] = []
+
+    for path in paths:
+        try:
+            target = resolve_library_path(path)
+        except HTTPException as e:
+            if e.status_code == status.HTTP_404_NOT_FOUND:
+                logger.info(f"Library file is already gone: {path}")
+                deleted.append(path)
+            else:
+                logger.warning(f"Refusing to delete {path}: {e.detail}")
+                kept.append(path)
+            continue
+
+        try:
+            target.unlink()
+            deleted.append(path)
+        except OSError as e:
+            logger.warning(f"Could not delete library file {path}: {e}")
+            kept.append(path)
+
+    delete_tracks_by_paths(session, deleted)
+
+    logger.info(f"Deleted {len(deleted)} library files, kept {len(kept)}")
 
     return {"deleted": deleted, "kept": kept}
 
