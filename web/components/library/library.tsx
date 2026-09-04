@@ -26,6 +26,7 @@ import {
 import { cn } from "@/lib/utils";
 import { FileAudio, Loader2, RefreshCw, Search } from "lucide-react";
 import { useEffect, useState } from "react";
+import { LibraryDuplicates } from "./library-duplicates";
 import { LibraryEditor } from "./library-editor";
 import { LibraryEmptyFolders } from "./library-empty-folders";
 import { LibraryPagination } from "./library-pagination";
@@ -123,6 +124,7 @@ export const Library = () => {
   });
   const [openPath, setOpenPath] = useState<string | null>(null);
   const [isReviewingFolders, setIsReviewingFolders] = useState(false);
+  const [isReviewingDuplicates, setIsReviewingDuplicates] = useState(false);
   const [page, setPage] = useState(0);
   const { data, isLoading, isError, refresh } = useLibraryTracks(filters, page);
   const FilterActivityIcon = isLoading ? Loader2 : Search;
@@ -308,7 +310,12 @@ export const Library = () => {
                 <StatDivider />
                 <StatCount
                   value={data.summary.duplicates}
-                  label="duplicated"
+                  label="duplicates"
+                  onClick={
+                    data.summary.duplicates > 0
+                      ? () => setIsReviewingDuplicates(true)
+                      : undefined
+                  }
                   className={cn({
                     "text-amber-400": data.summary.duplicates > 0,
                     "text-primary": data.summary.duplicates == 0,
@@ -421,6 +428,11 @@ export const Library = () => {
       <LibraryEmptyFolders
         open={isReviewingFolders}
         onOpenChange={setIsReviewingFolders}
+        onDeleted={refresh}
+      />
+      <LibraryDuplicates
+        open={isReviewingDuplicates}
+        onOpenChange={setIsReviewingDuplicates}
         onDeleted={refresh}
       />
     </>
