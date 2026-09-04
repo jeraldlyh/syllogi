@@ -151,7 +151,7 @@ def create_cron_jobs():
         recommendations = get_recommendations(session=session)
 
     for sync_config in syncs:
-        if sync_config.cron_expression:
+        if sync_config.enable_sync and sync_config.cron_expression:
             logger.info(
                 f"Registering cron job for sync config {sync_config.id} with cron expression: {sync_config.cron_expression}"
             )
