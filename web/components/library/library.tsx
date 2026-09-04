@@ -145,7 +145,7 @@ export const Library = () => {
     if (page > lastPage) setPage(lastPage);
   }, [data, page]);
 
-  const patchFilters = (patch: Partial<LibraryFilters>): void => {
+  const handlePatchFilters = (patch: Partial<LibraryFilters>): void => {
     setPage(0);
     setFilters((previous) => ({ ...previous, ...patch }));
   };
@@ -367,7 +367,7 @@ export const Library = () => {
             </div>
           )}
           <div className="flex flex-col gap-2 md:flex-row">
-            <div className="relative flex-1">
+            <div className="relative flex flex-1 gap-x-1">
               <span className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2">
                 <FilterActivityIcon
                   className={cn(
@@ -379,12 +379,23 @@ export const Library = () => {
               <Input
                 value={filters.query}
                 onChange={(event) =>
-                  patchFilters({ query: event.target.value })
+                  handlePatchFilters({ query: event.target.value })
                 }
                 placeholder="Search by title, artist, album or file name"
                 aria-label="Search library files"
                 className="pl-9"
               />
+              <Button
+                variant="outline"
+                size="icon"
+                onClick={handleRescan}
+                disabled={data?.scanning}
+                aria-label="Rescan the library"
+                title="Rescan the library"
+                className="inline-flex md:hidden"
+              >
+                <RefreshCw className={cn(data?.scanning && "animate-spin")} />
+              </Button>
             </div>
             <FilterSelect
               value={filters.format || ALL}
@@ -392,7 +403,7 @@ export const Library = () => {
               label="Filter by format"
               className="md:w-40"
               onChange={(value) =>
-                patchFilters({
+                handlePatchFilters({
                   format:
                     value === ALL ? "" : (value as LibraryFilters["format"]),
                 })
@@ -404,7 +415,7 @@ export const Library = () => {
               label="Filter by missing tags"
               className="md:w-56"
               onChange={(value) =>
-                patchFilters({
+                handlePatchFilters({
                   missing:
                     value === ALL ? "" : (value as LibraryFilters["missing"]),
                 })
@@ -417,7 +428,7 @@ export const Library = () => {
               disabled={data?.scanning}
               aria-label="Rescan the library"
               title="Rescan the library"
-              className="shrink-0"
+              className="md:inline-flex hidden"
             >
               <RefreshCw className={cn(data?.scanning && "animate-spin")} />
             </Button>
