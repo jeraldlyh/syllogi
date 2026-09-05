@@ -3,6 +3,7 @@ import json
 import logging
 import os
 import re
+import traceback
 import unicodedata
 from datetime import datetime
 from pathlib import Path
@@ -191,8 +192,17 @@ def normalize_unicode(text: str) -> str:
 
 
 def truncate(text: str, max_length: int) -> str:
-    """Truncate text to a maximum length"""
+    """Truncate text to a maximum length."""
 
     if len(text) <= max_length:
         return text
     return text[:max_length]
+
+
+def format_exception(e: BaseException, max_length: int = 1024) -> str:
+    """Format an exception with its traceback."""
+
+    text = "".join(traceback.format_exception(e)).strip() or repr(e)
+    if len(text) <= max_length:
+        return text
+    return "...\n" + text[-(max_length - 4) :]

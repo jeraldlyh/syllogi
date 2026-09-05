@@ -3,7 +3,6 @@ import uuid
 from itertools import zip_longest
 from typing import Any
 
-import httpx
 from fastapi import HTTPException, status
 
 from db.models.recommendation import (
@@ -32,7 +31,7 @@ from lib.providers import get_provider_enum, get_recommendation_provider
 from lib.providers.playlist.base import MusicPlaylistProvider
 from lib.providers.recommendation.base import RecommendationSourceProvider
 from lib.track import find_track, reconcile_after_download, resolve_tracks
-from lib.utils import get_now, truncate
+from lib.utils import format_exception, get_now
 
 logger = logging.getLogger(__name__)
 
@@ -423,7 +422,8 @@ async def generate_recommendations_task(
                 password=decrypted_password,
             )
 
-        except (HTTPException, httpx.HTTPError, OSError, ValueError) as e:
+        except Exception as e:
+            logger.exception("Recommendation session failed")
             if recommendation_session:
                 finished_at = get_now()
                 recommendation_session.status = RecommendationStatus.failed
@@ -431,9 +431,7 @@ async def generate_recommendations_task(
                 recommendation_session.duration_seconds = int(
                     finished_at.timestamp() - started_at.timestamp()
                 )
-                recommendation_session.error_message = truncate(
-                    text=str(e), max_length=1024
-                )
+                recommendation_session.error_message = format_exception(e)
         finally:
             if recommendation_session:
                 update_recommendation_session(

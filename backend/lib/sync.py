@@ -2,7 +2,6 @@ import asyncio
 import logging
 import uuid
 
-import httpx
 from fastapi import HTTPException, status
 
 from db.models.sync import (
@@ -34,7 +33,7 @@ from lib.providers import get_provider_enum
 from lib.providers.playlist.base import MusicPlaylistProvider
 from lib.spotify import get_spotify_playlist, get_spotify_playlist_songs
 from lib.track import reconcile_after_download, resolve_tracks
-from lib.utils import get_now, truncate
+from lib.utils import format_exception, get_now
 from lib.youtube import get_youtube_playlist, get_youtube_playlist_songs
 
 logger = logging.getLogger(__name__)
@@ -272,7 +271,8 @@ async def sync_playlist_task(
                     type=SyncSessionTrackType.downloaded,
                 )
             )
-        except (HTTPException, httpx.HTTPError, OSError, ValueError) as e:
+        except Exception as e:
+            logger.exception(f"Sync session {sync_session_id} failed")
             if sync_session:
                 finished_at = get_now()
                 sync_session.status = SyncStatus.failed
@@ -280,7 +280,7 @@ async def sync_playlist_task(
                 sync_session.duration_seconds = int(
                     finished_at.timestamp() - started_at.timestamp()
                 )
-                sync_session.error_message = truncate(text=str(e), max_length=1024)
+                sync_session.error_message = format_exception(e)
                 sync_session.target_playlist_name = (
                     internal_sync.playlist_name if internal_sync else ""
                 )
