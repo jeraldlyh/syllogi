@@ -1,3 +1,4 @@
+import asyncio
 import logging
 import re
 from typing import Any
@@ -21,7 +22,8 @@ from lib.rate_limit import TokenBucketRateLimiter
 
 logger = logging.getLogger(__name__)
 
-_musicbrainz_limiter = TokenBucketRateLimiter(rate=50, per=1.0)
+_musicbrainz_limiter = TokenBucketRateLimiter(rate=1, per=1.0)
+_musicbrainz_retry_attempts = 3
 
 
 class MusicBrainzMetadataProvider(MetadataProvider):
@@ -42,15 +44,28 @@ class MusicBrainzMetadataProvider(MetadataProvider):
 
         query_params = {"fmt": "json", **(params or {})}
 
-        await _musicbrainz_limiter.acquire()
-
         async with httpx.AsyncClient(timeout=10) as client:
-            response = await client.get(url, params=query_params, headers=headers)
-            response.raise_for_status()
+            for attempt in range(_musicbrainz_retry_attempts):
+                await _musicbrainz_limiter.acquire()
 
-            if response.content:
-                return response.json()
-            return None
+                response = await client.get(url, params=query_params, headers=headers)
+
+                if (
+                    response.status_code == 503
+                    and attempt < _musicbrainz_retry_attempts - 1
+                ):
+                    delay = float(response.headers.get("Retry-After", 1))
+                    logger.warning(
+                        f"[{attempt + 1}/{_musicbrainz_retry_attempts}] MusicBrainz rate limited, retrying in {delay}s: {path}"
+                    )
+                    await asyncio.sleep(delay)
+                    continue
+
+                response.raise_for_status()
+
+                if response.content:
+                    return response.json()
+                return None
 
     def _escape_lucene(self, value: str) -> str:
         """Escape the characters Lucene reads as operators, so a value stays literal."""
