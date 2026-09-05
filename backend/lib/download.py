@@ -2,7 +2,6 @@ import logging
 import os
 import uuid
 
-import httpx
 from fastapi import HTTPException, status
 
 from db.download_session import get_download_session_by_id, update_download_session
@@ -17,11 +16,11 @@ from lib.slskd import download_track_slskd
 from lib.tagger import tag_audio_file
 from lib.track import find_track
 from lib.utils import (
+    format_exception,
     get_existing_track_path,
     get_now,
     is_track_exists_in_path,
     is_track_lossless,
-    truncate,
 )
 from lib.youtube import download_track_youtube
 
@@ -237,11 +236,12 @@ async def download_single_track(
 
             download_session.finished_at = get_now()
 
-        except (HTTPException, httpx.HTTPError, OSError) as e:
+        except Exception as e:
+            logger.exception("Download session failed")
             if download_session:
                 download_session.status = DownloadSessionStatus.failed
                 download_session.finished_at = get_now()
-                download_session.error_message = truncate(text=str(e), max_length=1024)
+                download_session.error_message = format_exception(e)
         finally:
             if download_session:
                 update_download_session(session, download_session)

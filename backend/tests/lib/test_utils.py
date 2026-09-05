@@ -2,6 +2,7 @@ import pytest
 
 from lib.utils import (
     convert_seconds_to_readable_time,
+    format_exception,
     get_clean_name,
     normalize,
     parse_cron_expression,
@@ -127,3 +128,60 @@ class TestTruncate:
 
     def test_zero_max_length(self):
         assert truncate("hello", 0) == ""
+
+
+class TestFormatException:
+    def test_includes_type_message_and_traceback(self):
+        try:
+            raise ValueError("boom")
+        except ValueError as e:
+            formatted = format_exception(e)
+
+        assert "ValueError: boom" in formatted
+        assert "Traceback (most recent call last)" in formatted
+        assert "test_includes_type_message_and_traceback" in formatted
+
+    def test_exception_without_message(self):
+        try:
+            raise OSError()
+        except OSError as e:
+            formatted = format_exception(e)
+
+        assert "OSError" in formatted
+
+    def test_includes_chained_cause(self):
+        try:
+            try:
+                raise ValueError("inner")
+            except ValueError as inner:
+                raise RuntimeError("outer") from inner
+        except RuntimeError as e:
+            formatted = format_exception(e)
+
+        assert "ValueError: inner" in formatted
+        assert "RuntimeError: outer" in formatted
+
+    def test_truncates_to_max_length(self):
+        try:
+            raise ValueError("x" * 3000)
+        except ValueError as e:
+            formatted = format_exception(e, max_length=1024)
+
+        assert len(formatted) == 1024
+
+    def test_truncation_keeps_the_tail(self):
+        try:
+            raise ValueError("x" * 3000 + "END")
+        except ValueError as e:
+            formatted = format_exception(e, max_length=1024)
+
+        assert formatted.startswith("...\n")
+        assert formatted.endswith("END")
+
+    def test_no_truncation_marker_when_within_limit(self):
+        try:
+            raise ValueError("boom")
+        except ValueError as e:
+            formatted = format_exception(e)
+
+        assert not formatted.startswith("...")

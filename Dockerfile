@@ -41,7 +41,7 @@ WORKDIR /app
 COPY entrypoint.dev.sh /app/entrypoint.dev.sh
 RUN chmod +x /app/entrypoint.dev.sh
 
-EXPOSE 5173 8000
+EXPOSE 8000
 
 ENTRYPOINT ["/app/entrypoint.dev.sh"]
 
