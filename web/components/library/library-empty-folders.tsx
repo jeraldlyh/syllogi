@@ -22,6 +22,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { deleteEmptyFolders, useEmptyFolders } from "@/hooks/useLibrary";
 import { FolderCheck, FolderX, Loader2, Trash2 } from "lucide-react";
 import { useState } from "react";
+import { toast } from "sonner";
 
 const PLACEHOLDER_ROWS = [0, 1, 2, 3, 4];
 
@@ -55,9 +56,24 @@ export const LibraryEmptyFolders = ({
       await refresh();
       onDeleted();
 
+      if (result.deleted.length > 0) {
+        toast.success(
+          `${result.deleted.length} folder${result.deleted.length === 1 ? "" : "s"} deleted`,
+          {
+            description:
+              result.kept.length > 0
+                ? `${result.kept.length} folder${result.kept.length === 1 ? "" : "s"} could not be deleted.`
+                : "The library no longer holds empty folders.",
+          },
+        );
+      }
+
       if (result.kept.length === 0) onOpenChange(false);
     } catch {
       setHasFailed(true);
+      toast.error("Could not delete the empty folders", {
+        description: "Unable to reach the server right now.",
+      });
     } finally {
       setIsDeleting(false);
     }

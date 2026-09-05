@@ -26,6 +26,7 @@ import {
 } from "@/hooks/useLibrary";
 import { CopyCheck, CopyX, Loader2, Trash2 } from "lucide-react";
 import { useMemo, useState } from "react";
+import { toast } from "sonner";
 import { LibraryDuplicateRow } from "./library-duplicate-row";
 import { cn } from "@/lib/utils";
 
@@ -97,9 +98,24 @@ export const LibraryDuplicates = ({
       await refresh();
       onDeleted();
 
+      if (result.deleted.length > 0) {
+        toast.success(
+          `${result.deleted.length} duplicate${result.deleted.length === 1 ? "" : "s"} deleted`,
+          {
+            description:
+              result.kept.length > 0
+                ? `${result.kept.length} file${result.kept.length === 1 ? "" : "s"} could not be deleted.`
+                : "The library no longer holds these tracks.",
+          },
+        );
+      }
+
       if (result.kept.length === 0) onOpenChange(false);
     } catch {
       setHasFailed(true);
+      toast.error("Could not delete the selected files", {
+        description: "Unable to reach the server right now.",
+      });
     } finally {
       setIsDeleting(false);
     }
