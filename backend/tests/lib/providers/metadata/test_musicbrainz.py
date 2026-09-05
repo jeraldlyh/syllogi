@@ -1,4 +1,7 @@
+import asyncio
+
 import httpx
+import pytest
 import respx
 
 from lib.providers.metadata.musicbrainz import MusicBrainzMetadataProvider
@@ -7,6 +10,10 @@ from tests.lib.providers.conftest import load_fixture
 
 def _make_provider() -> MusicBrainzMetadataProvider:
     return MusicBrainzMetadataProvider()
+
+
+async def _no_sleep(_delay: float) -> None:
+    """Stand-in for asyncio.sleep so retry tests do not wait on the backoff."""
 
 
 class TestGetArtistInfo:
@@ -229,3 +236,36 @@ class TestGetArtistAlias:
         result = await provider.get_artist_alias(artist_name="Olivia Rodrigo")
 
         assert result == "Olivia Rodrigo"
+
+
+class TestRateLimitRetry:
+    @respx.mock
+    async def test_retries_on_503(self, monkeypatch):
+        monkeypatch.setattr(asyncio, "sleep", _no_sleep)
+        route = respx.get("https://musicbrainz.org/ws/2/artist").mock(
+            side_effect=[
+                httpx.Response(503, headers={"Retry-After": "1"}),
+                httpx.Response(200, json=load_fixture("musicbrainz/artist")),
+            ]
+        )
+
+        provider = _make_provider()
+        result = await provider.get_artist_info(artist_name="Olivia Rodrigo")
+
+        assert route.call_count == 2
+        assert result is not None
+        assert result.name == "Olivia Rodrigo"
+
+    @respx.mock
+    async def test_raises_after_exhausting_attempts(self, monkeypatch):
+        monkeypatch.setattr(asyncio, "sleep", _no_sleep)
+        route = respx.get("https://musicbrainz.org/ws/2/artist").mock(
+            return_value=httpx.Response(503)
+        )
+
+        provider = _make_provider()
+
+        with pytest.raises(httpx.HTTPStatusError):
+            await provider.get_artist_info(artist_name="Olivia Rodrigo")
+
+        assert route.call_count == 3
