@@ -269,3 +269,31 @@ class TestRateLimitRetry:
             await provider.get_artist_info(artist_name="Olivia Rodrigo")
 
         assert route.call_count == 3
+
+    @respx.mock
+    async def test_retries_on_read_timeout(self):
+        route = respx.get("https://musicbrainz.org/ws/2/artist").mock(
+            side_effect=[
+                httpx.ReadTimeout("timed out"),
+                httpx.Response(200, json=load_fixture("musicbrainz/artist")),
+            ]
+        )
+
+        provider = _make_provider()
+        result = await provider.get_artist_info(artist_name="Olivia Rodrigo")
+
+        assert route.call_count == 2
+        assert result is not None
+
+    @respx.mock
+    async def test_raises_after_exhausting_timeout_attempts(self):
+        route = respx.get("https://musicbrainz.org/ws/2/artist").mock(
+            side_effect=httpx.ReadTimeout("timed out")
+        )
+
+        provider = _make_provider()
+
+        with pytest.raises(httpx.ReadTimeout):
+            await provider.get_artist_info(artist_name="Olivia Rodrigo")
+
+        assert route.call_count == 3
