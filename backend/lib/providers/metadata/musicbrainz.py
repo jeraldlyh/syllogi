@@ -44,11 +44,21 @@ class MusicBrainzMetadataProvider(MetadataProvider):
 
         query_params = {"fmt": "json", **(params or {})}
 
-        async with httpx.AsyncClient(timeout=10) as client:
+        async with httpx.AsyncClient(timeout=30) as client:
             for attempt in range(_musicbrainz_retry_attempts):
                 await _musicbrainz_limiter.acquire()
 
-                response = await client.get(url, params=query_params, headers=headers)
+                try:
+                    response = await client.get(
+                        url, params=query_params, headers=headers
+                    )
+                except httpx.TimeoutException:
+                    if attempt == _musicbrainz_retry_attempts - 1:
+                        raise
+                    logger.warning(
+                        f"[{attempt + 1}/{_musicbrainz_retry_attempts}] MusicBrainz timed out, retrying: {path}"
+                    )
+                    continue
 
                 if (
                     response.status_code == 503
