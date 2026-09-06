@@ -1,7 +1,6 @@
 import asyncio
 
 import httpx
-import pytest
 import respx
 
 from lib.providers.metadata.musicbrainz import MusicBrainzMetadataProvider
@@ -257,7 +256,7 @@ class TestRateLimitRetry:
         assert result.name == "Olivia Rodrigo"
 
     @respx.mock
-    async def test_raises_after_exhausting_attempts(self, monkeypatch):
+    async def test_returns_none_after_exhausting_attempts(self, monkeypatch):
         monkeypatch.setattr(asyncio, "sleep", _no_sleep)
         route = respx.get("https://musicbrainz.org/ws/2/artist").mock(
             return_value=httpx.Response(503)
@@ -265,9 +264,7 @@ class TestRateLimitRetry:
 
         provider = _make_provider()
 
-        with pytest.raises(httpx.HTTPStatusError):
-            await provider.get_artist_info(artist_name="Olivia Rodrigo")
-
+        assert await provider.get_artist_info(artist_name="Olivia Rodrigo") is None
         assert route.call_count == 3
 
     @respx.mock
@@ -286,14 +283,12 @@ class TestRateLimitRetry:
         assert result is not None
 
     @respx.mock
-    async def test_raises_after_exhausting_timeout_attempts(self):
+    async def test_returns_none_after_exhausting_timeout_attempts(self):
         route = respx.get("https://musicbrainz.org/ws/2/artist").mock(
             side_effect=httpx.ReadTimeout("timed out")
         )
 
         provider = _make_provider()
 
-        with pytest.raises(httpx.ReadTimeout):
-            await provider.get_artist_info(artist_name="Olivia Rodrigo")
-
+        assert await provider.get_artist_info(artist_name="Olivia Rodrigo") is None
         assert route.call_count == 3

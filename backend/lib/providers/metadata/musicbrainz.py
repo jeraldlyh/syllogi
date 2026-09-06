@@ -54,17 +54,19 @@ class MusicBrainzMetadataProvider(MetadataProvider):
                     )
                 except httpx.TimeoutException:
                     if attempt == _musicbrainz_retry_attempts - 1:
-                        raise
+                        logger.warning(f"MusicBrainz timed out, giving up: {path}")
+                        return None
                     logger.warning(
                         f"[{attempt + 1}/{_musicbrainz_retry_attempts}] MusicBrainz timed out, retrying: {path}"
                     )
                     continue
 
-                if (
-                    response.status_code == 503
-                    and attempt < _musicbrainz_retry_attempts - 1
-                ):
-                    delay = float(response.headers.get("Retry-After", 1))
+                if response.status_code == 503:
+                    if attempt == _musicbrainz_retry_attempts - 1:
+                        logger.warning(f"MusicBrainz rate limited, giving up: {path}")
+                        return None
+
+                    delay = float(response.headers.get("Retry-After", 1)) * 2**attempt
                     logger.warning(
                         f"[{attempt + 1}/{_musicbrainz_retry_attempts}] MusicBrainz rate limited, retrying in {delay}s: {path}"
                     )
@@ -145,7 +147,7 @@ class MusicBrainzMetadataProvider(MetadataProvider):
                     for tag in artist.get("tags", [])
                 ],
             )
-            for artist in result.get("artists", [])
+            for artist in (result or {}).get("artists", [])
         ]
 
     @cached_method(ttl=604800)
