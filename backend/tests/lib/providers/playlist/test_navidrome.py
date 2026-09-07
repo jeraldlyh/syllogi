@@ -583,6 +583,32 @@ class TestAddSongsToPlaylist:
             "track-2",
         ]
 
+    @respx.mock
+    async def test_splits_into_multiple_batches(self):
+        route = respx.post(f"{_NAVIDROME_URL}/rest/updatePlaylist")
+        route.mock(return_value=httpx.Response(200, json=_subsonic_ok()))
+
+        provider = _make_provider()
+        await provider.add_songs_to_playlist(
+            playlist_id="playlist-1",
+            user_id="user-1",
+            track_ids=["track-1", "track-2", "track-3"],
+            username="admin",
+            password="adminpass",
+            batch_size=2,
+        )
+
+        assert route.call_count == 2
+        assert route.calls[0].request.url.params.get("playlistId") == "playlist-1"
+        assert route.calls[0].request.url.params.get_list("songIdToAdd") == [
+            "track-1",
+            "track-2",
+        ]
+        assert route.calls[1].request.url.params.get("playlistId") == "playlist-1"
+        assert route.calls[1].request.url.params.get_list("songIdToAdd") == [
+            "track-3"
+        ]
+
 
 class TestDeleteSongsFromPlaylist:
     @respx.mock

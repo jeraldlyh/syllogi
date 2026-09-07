@@ -426,19 +426,27 @@ class NavidromeProvider(MusicPlaylistProvider):
         track_ids: list[str],
         username: str = "",
         password: str = "",
+        batch_size: int = 50,
     ) -> None:
-        """Append tracks to an existing Navidrome playlist."""
+        """Append tracks to an existing Navidrome playlist.
 
-        await self._subsonic(
-            "updatePlaylist",
-            params={
-                "playlistId": playlist_id,
-                "songIdToAdd": track_ids,
-            },
-            http_method="POST",
-            username=username,
-            password=password,
-        )
+        Splits requests into batches to avoid HTTP 414 Request-URI Too Large
+        errors when there are many tracks.
+        """
+
+        for i in range(0, len(track_ids), batch_size):
+            batch = track_ids[i : i + batch_size]
+
+            await self._subsonic(
+                "updatePlaylist",
+                params={
+                    "playlistId": playlist_id,
+                    "songIdToAdd": batch,
+                },
+                http_method="POST",
+                username=username,
+                password=password,
+            )
 
     async def delete_songs_from_playlist(
         self,
