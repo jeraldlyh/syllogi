@@ -15,6 +15,7 @@ from db.sync import (
 )
 from db.sync_session import create_sync_session
 from lib.cron import create_job, delete_job, update_job
+from lib.crypto import decrypt
 from lib.models.common import ExternalSync, ExternalTrack
 from lib.providers import get_provider, get_provider_enum
 from lib.spotify import (
@@ -192,7 +193,7 @@ async def _update_sync_config(
         playlist_name=sync.playlist_name,
         is_public=sync.is_public,
         username=music_server_user.username,
-        password=music_server_user.password,
+        password=decrypt(music_server_user.password),
     )
 
     if not sync.enable_sync:

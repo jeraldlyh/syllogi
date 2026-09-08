@@ -201,7 +201,7 @@ async def sync_playlist_task(
                     playlist_id=existing_playlist_id,
                     entry_ids=removed_entry_ids,
                     username=music_server_user.username,
-                    password=music_server_user.password,
+                    password=decrypted_password,
                 )
 
             if num_of_added_tracks > 0:
@@ -219,7 +219,7 @@ async def sync_playlist_task(
                     user_id=provider_user_id,
                     track_ids=added_track_ids,
                     username=music_server_user.username,
-                    password=music_server_user.password,
+                    password=decrypted_password,
                 )
 
             spotify_playlist_thumbnail_url = external_playlist.thumbnail_url

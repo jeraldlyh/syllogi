@@ -16,6 +16,7 @@ services:
       - DATABASE_URL=syllogi-postgres:5432
       - DOWNLOAD_LIBRARY_NAME=Downloads
       - DOWNLOAD_DIR=/downloads
+      - LOG_DIR=/logs
       - DISCORD_WEBHOOK_URL=
       - JELLYFIN_API_KEY=
       - JELLYFIN_URL=
@@ -32,6 +33,7 @@ services:
       - 8000:80
     volumes:
       - ./downloads:/downloads
+      - ./logs:/logs
     healthcheck:
       <<: *default-healthcheck
       test: curl --fail http://localhost:8000/api/health || exit 1
