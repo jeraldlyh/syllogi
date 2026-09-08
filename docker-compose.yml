@@ -18,6 +18,7 @@ services:
       - DATABASE_NAME=syllogi
       - DATABASE_URL=syllogi-postgres:5432
       - DOWNLOAD_DIR=/downloads
+      - LOG_DIR=/logs
       - DOWNLOAD_LIBRARY_NAME=Downloads
       - VITE_API_URL=http://localhost:8000
       - ENVIRONMENT=development
@@ -29,6 +30,7 @@ services:
       - ./backend:/app/backend:delegated
       - ./web:/app/web:delegated
       - library:/downloads
+      - ./logs:/logs
       - web_node_modules:/app/web/node_modules
     healthcheck:
       <<: *default-healthcheck
