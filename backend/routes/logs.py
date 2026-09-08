@@ -1,4 +1,4 @@
-from fastapi import APIRouter
+from fastapi import APIRouter, Query, Response
 
 from lib.logs import read_logs
 
@@ -30,5 +30,6 @@ router = APIRouter()
         }
     },
 )
-async def _get_logs(limit: int = 500):
+async def _get_logs(response: Response, limit: int = Query(default=500, ge=1, le=5000)):
+    response.headers["Cache-Control"] = "no-store"
     return read_logs(limit=limit)

@@ -39,12 +39,10 @@ class JsonFormatter(logging.Formatter):
 
 def read_logs(limit: int = 500) -> list[dict[str, str]]:
     """Read the most recent log records from the log file."""
-    log_file = _resolve_log_file()
-
-    if not os.path.exists(log_file):
+    if not os.path.exists(LOG_FILE):
         return []
 
-    with open(log_file, encoding="utf-8", errors="replace") as file:
+    with open(LOG_FILE, encoding="utf-8", errors="replace") as file:
         lines = deque(file, maxlen=limit)
 
     records: list[dict[str, str]] = []
