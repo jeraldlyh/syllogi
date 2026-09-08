@@ -25,6 +25,7 @@ from db.sync import get_syncs
 from lib.cron import create_job, scheduler
 from lib.env import get_environment_variable
 from lib.library import trigger_library_sweep
+from lib.logs import LOG_BACKUP_COUNT, LOG_FILE, LOG_MAX_BYTES
 from lib.providers import get_provider
 from lib.providers.playlist.navidrome import NavidromeProvider
 from lib.recommendation import generate_recommendations
@@ -47,8 +48,18 @@ logging.config.dictConfig(
             "access": {
                 "format": "[%(asctime)s] %(levelname)s [%(module)s]: %(message)s",
             },
+            "json": {
+                "()": "lib.logs.JsonFormatter",
+            },
         },
         "handlers": {
+            "file": {
+                "formatter": "json",
+                "class": "logging.handlers.RotatingFileHandler",
+                "filename": LOG_FILE,
+                "maxBytes": LOG_MAX_BYTES,
+                "backupCount": LOG_BACKUP_COUNT,
+            },
             "default": {
                 "formatter": "default",
                 "class": "logging.StreamHandler",
@@ -63,18 +74,18 @@ logging.config.dictConfig(
         "loggers": {
             "uvicorn.error": {
                 "level": LOG_LEVEL,
-                "handlers": ["default"],
+                "handlers": ["default", "file"],
                 "propagate": False,
             },
             "uvicorn.access": {
                 "level": LOG_LEVEL,
-                "handlers": ["default"],
+                "handlers": ["default", "file"],
                 "propagate": False,
             },
         },
         "root": {
             "level": LOG_LEVEL,
-            "handlers": ["default"],
+            "handlers": ["default", "file"],
         },
     }
 )
