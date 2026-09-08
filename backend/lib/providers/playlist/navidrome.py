@@ -75,7 +75,9 @@ class NavidromeProvider(MusicPlaylistProvider):
         status = subsonic_response.get("status")
 
         if status != "ok":
-            return {}
+            error = subsonic_response.get("error", {})
+            message = error.get("message", "Unknown Subsonic error")
+            raise ProviderError(f"Navidrome {method} failed (status={status}): {message}")
         return {
             k: v for k, v in subsonic_response.items() if k not in ("status", "version")
         }

@@ -46,7 +46,7 @@ class TestSubsonic:
         assert params.get("s")
 
     @respx.mock
-    async def test_returns_empty_dict_on_non_ok_status(self):
+    async def test_raises_on_non_ok_status(self):
         respx.get(f"{_NAVIDROME_URL}/rest/getPlaylists").mock(
             return_value=httpx.Response(
                 200,
@@ -64,11 +64,12 @@ class TestSubsonic:
         )
 
         provider = _make_provider()
-        data = await provider._subsonic(
-            "getPlaylists", username="admin", password="adminpass"
-        )
-
-        assert data == {}
+        with pytest.raises(
+            ProviderError, match="Wrong username or password"
+        ):
+            await provider._subsonic(
+                "getPlaylists", username="admin", password="adminpass"
+            )
 
     @respx.mock
     async def test_raises_on_http_error(self):
