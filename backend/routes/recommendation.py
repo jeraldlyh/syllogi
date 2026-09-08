@@ -18,6 +18,7 @@ from db.recommendation import (
 )
 from db.recommendation_session import create_recommendation_session
 from db.session import SessionDep
+from lib.crypto import decrypt
 from lib.cron import create_job, delete_job, update_job
 from lib.providers import (
     get_provider,
@@ -223,7 +224,7 @@ async def _update_recommendation(
         playlist_name=recommendation.playlist_name,
         is_public=recommendation.is_public,
         username=music_server_user.username,
-        password=music_server_user.password,
+        password=decrypt(music_server_user.password),
     )
     update_job(
         func=generate_recommendations,
