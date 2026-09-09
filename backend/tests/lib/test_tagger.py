@@ -195,6 +195,22 @@ class TestTagAudioFile:
         assert written.date == "2020"
         assert written.genres == ["synth-pop"]
 
+    async def test_falls_back_to_the_track_name_when_the_album_is_unknown(self):
+        read, write, search = self._patch(AudioTags())
+
+        with read, write as mock_write, search:
+            await tag_audio_file(
+                file_path="Track.flac",
+                artist_name="The Weeknd",
+                track_name="Blinding Lights",
+                album_name="",
+                year="2020",
+                genres=[],
+                duration=200,
+            )
+
+        assert mock_write.call_args.kwargs["tags"].album == "Blinding Lights"
+
     async def test_keeps_lyrics_already_on_the_file(self):
         existing = AudioTags(lyrics="[00:03.45] I've been tryna call")
         read, write, search = self._patch(existing)
