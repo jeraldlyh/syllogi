@@ -571,7 +571,7 @@ export const ChartTrending = () => {
           <TableHeader>
             <TableRow className="hover:bg-transparent text-xs text-muted-foreground">
               <TableHead>Track</TableHead>
-              <TableHead>Album</TableHead>
+              <TableHead className="hidden md:table-cell">Album</TableHead>
               <TableHead className="hidden lg:table-cell">Artist</TableHead>
               <TableHead className="hidden md:table-cell">Duration</TableHead>
               <TableHead className="hidden lg:table-cell">Playcount</TableHead>
