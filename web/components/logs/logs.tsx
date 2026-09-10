@@ -108,7 +108,7 @@ export const Logs = () => {
               mono
               noWrap
               disableViewport
-              className="hidden truncate sm:block"
+              className="hidden truncate md:block"
               value={log.module}
             />
             <p className="font-mono text-xs whitespace-pre-wrap break-all">

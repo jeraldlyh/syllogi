@@ -57,7 +57,7 @@ export const RecordingPanel = ({ initialQuery, linkedId, onApply }: IProps) => {
                     {match.title}
                     {match.disambiguation && (
                       <span className="text-muted-foreground">
-                        &nbsp; ({match.disambiguation})
+                        &nbsp;({match.disambiguation})
                       </span>
                     )}
                   </p>
