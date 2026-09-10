@@ -150,6 +150,10 @@ export const Library = () => {
     setFilters((previous) => ({ ...previous, ...patch }));
   };
 
+  const handleToggleMissing = (value: LibraryFilters["missing"]): void => {
+    handlePatchFilters({ missing: filters.missing === value ? "" : value });
+  };
+
   const handleRescan = async (): Promise<void> => {
     await rescanLibrary();
     await refresh();
@@ -298,6 +302,11 @@ export const Library = () => {
                 <StatCount
                   value={data.summary.missing_lyrics}
                   label="without lyrics"
+                  onClick={
+                    data.summary.missing_lyrics > 0
+                      ? () => handleToggleMissing("lyrics")
+                      : undefined
+                  }
                   className={cn({
                     "text-amber-400": data.summary.missing_lyrics > 0,
                     "text-primary": data.summary.missing_lyrics == 0,
@@ -307,6 +316,11 @@ export const Library = () => {
                 <StatCount
                   value={data.summary.missing_musicbrainz_id}
                   label="not linked"
+                  onClick={
+                    data.summary.missing_musicbrainz_id > 0
+                      ? () => handleToggleMissing("musicbrainz_id")
+                      : undefined
+                  }
                   className={cn({
                     "text-amber-400": data.summary.missing_musicbrainz_id > 0,
                     "text-primary": data.summary.missing_musicbrainz_id == 0,

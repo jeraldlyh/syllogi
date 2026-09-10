@@ -29,7 +29,7 @@ export const LyricsPanel = ({ initialQuery, onApply }: IProps) => {
       candidate.instrumental ? "instrumental" : "",
     ]
       .filter(Boolean)
-      .join(" · ");
+      .join(" | ");
   };
 
   const renderPreview = (candidate: LyricsCandidate): string => {
@@ -72,7 +72,7 @@ export const LyricsPanel = ({ initialQuery, onApply }: IProps) => {
               className="truncate"
               value={[candidate.artist_name, candidate.album_name]
                 .filter(Boolean)
-                .join(" — ")}
+                .join(" - ")}
             />
             <Text mono muted className="mt-1.5" value={renderMeta(candidate)} />
             {!candidate.instrumental && (

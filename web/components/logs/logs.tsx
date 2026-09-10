@@ -9,7 +9,6 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { useLogs } from "@/hooks/useLogs";
-import { cn } from "@/lib/utils";
 import { ScrollText } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 
@@ -88,7 +87,7 @@ export const Logs = () => {
         {logs.map((log, index) => (
           <div
             key={`${log.timestamp}-${index}`}
-            className="flex gap-3 border-b border-border/50 px-3 py-1.5 last:border-b-0"
+            className="grid grid-cols-[4rem_4rem_1fr] gap-3 border-b border-border/50 px-3 py-1.5 last:border-b-0 md:grid-cols-[4rem_4rem_8rem_1fr]"
           >
             <Text
               muted
@@ -101,7 +100,7 @@ export const Logs = () => {
               mono
               noWrap
               disableViewport
-              className={cn("w-16", LEVEL_COLOURS[log.level])}
+              className={LEVEL_COLOURS[log.level]}
               value={log.level}
             />
             <Text
@@ -109,7 +108,7 @@ export const Logs = () => {
               mono
               noWrap
               disableViewport
-              className="hidden w-32 truncate sm:block"
+              className="hidden truncate md:block"
               value={log.module}
             />
             <p className="font-mono text-xs whitespace-pre-wrap break-all">

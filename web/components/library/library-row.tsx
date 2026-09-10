@@ -63,7 +63,7 @@ export const LibraryRow = ({
     <TagCell
       value={track.tags.artist}
       fallback="No artist"
-      className="hidden sm:table-cell"
+      className="hidden md:table-cell"
     />
     <TagCell
       value={track.tags.album}

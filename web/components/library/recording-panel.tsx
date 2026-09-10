@@ -57,8 +57,7 @@ export const RecordingPanel = ({ initialQuery, linkedId, onApply }: IProps) => {
                     {match.title}
                     {match.disambiguation && (
                       <span className="text-muted-foreground">
-                        {" "}
-                        ({match.disambiguation})
+                        &nbsp;({match.disambiguation})
                       </span>
                     )}
                   </p>
@@ -67,7 +66,7 @@ export const RecordingPanel = ({ initialQuery, linkedId, onApply }: IProps) => {
                     className="truncate"
                     value={[match.artist_name, match.album_name]
                       .filter(Boolean)
-                      .join(" — ")}
+                      .join(" - ")}
                   />
                 </div>
                 {isLinked && (

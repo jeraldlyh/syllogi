@@ -332,7 +332,7 @@ async def tag_audio_file(
             tags=AudioTags(
                 title=track_name or current.title,
                 artist=artist_name or current.artist,
-                album=album_name or current.album,
+                album=album_name or current.album or track_name,
                 date=year or current.date,
                 genres=genres or current.genres,
                 lyrics=lyrics,
