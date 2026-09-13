@@ -7,7 +7,7 @@ import httpx
 
 from lib.cache import cached_method
 from lib.env import get_environment_variable
-from lib.models.metadata import AlbumInfo, ArtistTrack
+from lib.models.metadata import AlbumInfo, ArtistAlbum, ArtistTrack
 from lib.models.musicbrainz import (
     MusicbrainzArtist,
     MusicbrainzArtistAlias,
@@ -184,6 +184,37 @@ class MusicBrainzMetadataProvider(MetadataProvider):
                 )
             )
         return list(unique)
+
+    @cached_method(ttl=604800)
+    async def get_artist_albums(
+        self,
+        *,
+        artist_mbid: str,
+        limit: int = 100,
+    ) -> list[ArtistAlbum]:
+        """Browse MusicBrainz release groups for an artist, newest first."""
+
+        result = await self._http(
+            "/release-group",
+            params={"artist": artist_mbid, "limit": limit},
+        )
+
+        if not result:
+            return []
+
+        albums = [
+            ArtistAlbum(
+                id=release_group.get("id", ""),
+                title=release_group.get("title", ""),
+                primary_type=release_group.get("primary-type") or "",
+                secondary_types=release_group.get("secondary-types") or [],
+                release_date=release_group.get("first-release-date") or "",
+                image_url=f"https://coverartarchive.org/release-group/{release_group.get('id', '')}/front-250",
+            )
+            for release_group in result.get("release-groups", [])
+        ]
+
+        return sorted(albums, key=lambda album: album.release_date, reverse=True)
 
     @cached_method(ttl=604800)
     async def get_artist_track(

@@ -6,7 +6,7 @@ import httpx
 from lib.cache import cached_method
 from lib.env import get_environment_variable
 from lib.models.chart import ChartTrendingTrack
-from lib.models.metadata import AlbumInfo, ArtistInfo, ArtistTrack
+from lib.models.metadata import AlbumInfo, ArtistAlbum, ArtistInfo, ArtistTrack
 from lib.providers.metadata.base import MetadataProvider
 
 logger = logging.getLogger(__name__)
@@ -77,6 +77,16 @@ class DeezerMetadataProvider(MetadataProvider):
     ) -> list[ArtistTrack]:
         raise NotImplementedError(
             "Deezer does not support fetching tracks by MusicBrainz ID. Use artist_id instead."
+        )
+
+    async def get_artist_albums(
+        self,
+        *,
+        artist_mbid: str,
+        limit: int = 100,
+    ) -> list[ArtistAlbum]:
+        raise NotImplementedError(
+            "Deezer does not support fetching albums by MusicBrainz ID. Use album_id instead."
         )
 
     @cached_method(ttl=86400)
@@ -158,7 +168,8 @@ class DeezerMetadataProvider(MetadataProvider):
                         disambiguation="",
                         album_name=album.get("title", ""),
                         genres=[],
-                        image_url=album.get("cover_big") or album.get("cover_medium")
+                        image_url=album.get("cover_big")
+                        or album.get("cover_medium")
                         or "",
                     )
                 )

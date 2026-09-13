@@ -1,6 +1,6 @@
 from abc import ABC, abstractmethod
 
-from lib.models.metadata import AlbumInfo, ArtistInfo, ArtistTrack
+from lib.models.metadata import AlbumInfo, ArtistAlbum, ArtistInfo, ArtistTrack
 
 
 class MetadataProvider(ABC):
@@ -35,6 +35,21 @@ class MetadataProvider(ABC):
 
         Returns:
             List of ArtistTrack.
+        """
+        ...
+
+    @abstractmethod
+    async def get_artist_albums(
+        self, *, artist_mbid: str, limit: int = 100
+    ) -> list[ArtistAlbum]:
+        """Get an artist's release groups by MusicBrainz ID.
+
+        Args:
+            artist_mbid: MusicBrainz ID to browse for.
+            limit: Maximum number of release groups to return.
+
+        Returns:
+            List of ArtistAlbum, newest release first.
         """
         ...
 

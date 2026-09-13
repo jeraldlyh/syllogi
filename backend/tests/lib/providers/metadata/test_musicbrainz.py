@@ -198,6 +198,65 @@ class TestGetAlbumInfo:
             assert track.album_name is not None
 
 
+class TestGetArtistAlbums:
+    @respx.mock
+    async def test_returns_albums_newest_first(self):
+        route = respx.get("https://musicbrainz.org/ws/2/release-group").mock(
+            return_value=httpx.Response(
+                200, json=load_fixture("musicbrainz/release-groups")
+            )
+        )
+
+        provider = _make_provider()
+        result = await provider.get_artist_albums(artist_mbid="artist-mbid")
+
+        assert route.calls.last.request.url.params["artist"] == "artist-mbid"
+        assert len(result) == 25
+        assert result[0].title == "Create a new release group"
+        assert result[1].title == "Group"
+        assert result[2].secondary_types == ["Compilation", "Soundtrack"]
+        dates = [album.release_date for album in result]
+        assert dates == sorted(dates, reverse=True)
+        assert result[-1].release_date == ""
+
+    @respx.mock
+    async def test_maps_album_fields(self):
+        respx.get("https://musicbrainz.org/ws/2/release-group").mock(
+            return_value=httpx.Response(
+                200, json=load_fixture("musicbrainz/release-groups")
+            )
+        )
+
+        provider = _make_provider()
+        result = await provider.get_artist_albums(artist_mbid="artist-mbid")
+
+        newest = result[0].to_dict()
+        assert newest["title"] == "Create a new release group"
+        assert newest["type"] == "EP"
+        assert newest["secondary_types"] == []
+        assert newest["release_date"] == "2025-05-24"
+        assert newest["year"] == "2025"
+        assert (
+            newest["image_url"]
+            == "https://coverartarchive.org/release-group/4ac99850-1e56-4882-b12f-c602834b006b/front-250"
+        )
+        assert result[-1].to_dict()["year"] == ""
+        assert all(album.title and album.id and album.image_url for album in result)
+
+    @respx.mock
+    async def test_returns_empty_when_no_matches(self):
+        respx.get("https://musicbrainz.org/ws/2/release-group").mock(
+            return_value=httpx.Response(
+                200, json={"release-group-count": 0, "release-groups": []}
+            )
+        )
+
+        provider = _make_provider()
+        result = await provider.get_artist_albums(artist_mbid="artist-mbid")
+
+        assert result == []
+
+
 class TestSearchArtists:
     @respx.mock
     async def test_returns_multiple_artists(self):

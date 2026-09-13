@@ -43,6 +43,141 @@ class TestGetArtistInfo:
         assert ["k-pop", "Korean", "female vocalists", "Kpop", "pop"] == result.tags
 
 
+class TestGetArtistAlbums:
+    MBID = "b9545342-1e6d-4dae-84ac-013374ad8d7c"
+
+    @respx.mock
+    async def test_returns_albums(self):
+        respx.get("https://ws.audioscrobbler.com/2.0/").mock(
+            return_value=httpx.Response(
+                200, json=load_fixture("lastfm/artist-getTopAlbums")
+            )
+        )
+
+        provider = _make_provider()
+        result = await provider.get_artist_albums(artist_mbid=self.MBID)
+
+        assert len(result) == 50
+        assert result[0].title == "IU 5th Album 'LILAC'"
+        assert result[1].title == "Palette"
+        assert result[1].id == "373e9186-e1a8-44fc-b16c-c7de57439a7e"
+        assert (
+            result[1].image_url
+            == "https://lastfm-img.freetls.fastly.net/i/u/300x300/454afc10638676ca9b76882868be16bc.png"
+        )
+        assert all(album.title and album.image_url for album in result)
+
+    @respx.mock
+    async def test_missing_mbid_becomes_empty_id(self):
+        respx.get("https://ws.audioscrobbler.com/2.0/").mock(
+            return_value=httpx.Response(
+                200, json=load_fixture("lastfm/artist-getTopAlbums")
+            )
+        )
+
+        provider = _make_provider()
+        result = await provider.get_artist_albums(artist_mbid=self.MBID)
+
+        assert result[0].id == ""
+        assert result[1].id == "373e9186-e1a8-44fc-b16c-c7de57439a7e"
+
+    @respx.mock
+    async def test_leaves_musicbrainz_only_fields_empty(self):
+        respx.get("https://ws.audioscrobbler.com/2.0/").mock(
+            return_value=httpx.Response(
+                200, json=load_fixture("lastfm/artist-getTopAlbums")
+            )
+        )
+
+        provider = _make_provider()
+        result = await provider.get_artist_albums(artist_mbid=self.MBID)
+
+        assert result[0].primary_type == ""
+        assert result[0].secondary_types == []
+        assert result[0].release_date == ""
+        assert result[0].to_dict()["year"] == ""
+
+    @respx.mock
+    async def test_requests_top_albums_for_mbid(self):
+        route = respx.get("https://ws.audioscrobbler.com/2.0/").mock(
+            return_value=httpx.Response(
+                200, json=load_fixture("lastfm/artist-getTopAlbums")
+            )
+        )
+
+        provider = _make_provider()
+        await provider.get_artist_albums(artist_mbid=self.MBID)
+
+        params = route.calls.last.request.url.params
+
+        assert params["method"] == "artist.getTopAlbums"
+        assert params["mbid"] == self.MBID
+
+    @respx.mock
+    async def test_returns_empty_when_no_data(self):
+        respx.get("https://ws.audioscrobbler.com/2.0/").mock(
+            return_value=httpx.Response(204)
+        )
+
+        provider = _make_provider()
+        result = await provider.get_artist_albums(artist_mbid=self.MBID)
+
+        assert result == []
+
+    @respx.mock
+    async def test_returns_empty_when_no_albums(self):
+        respx.get("https://ws.audioscrobbler.com/2.0/").mock(
+            return_value=httpx.Response(200, json={})
+        )
+
+        provider = _make_provider()
+        result = await provider.get_artist_albums(artist_mbid=self.MBID)
+
+        assert result == []
+
+    @respx.mock
+    async def test_forwards_limit(self):
+        route = respx.get("https://ws.audioscrobbler.com/2.0/").mock(
+            return_value=httpx.Response(
+                200, json=load_fixture("lastfm/artist-getTopAlbums")
+            )
+        )
+
+        provider = _make_provider()
+        await provider.get_artist_albums(artist_mbid=self.MBID, limit=10)
+
+        params = route.calls.last.request.url.params
+
+        assert params["limit"] == "10"
+        assert params["method"] == "artist.getTopAlbums"
+        assert params["mbid"] == self.MBID
+
+    @respx.mock
+    async def test_handles_albums_without_images(self):
+        payload = {
+            "topalbums": {
+                "album": [
+                    {"name": "No Image Key", "mbid": "aaaa"},
+                    {"name": "Null Image", "mbid": "bbbb", "image": None},
+                    {"name": "Empty Image List", "mbid": "cccc", "image": []},
+                ]
+            }
+        }
+        respx.get("https://ws.audioscrobbler.com/2.0/").mock(
+            return_value=httpx.Response(200, json=payload)
+        )
+
+        provider = _make_provider()
+        result = await provider.get_artist_albums(artist_mbid=self.MBID)
+
+        assert [album.title for album in result] == [
+            "No Image Key",
+            "Null Image",
+            "Empty Image List",
+        ]
+        assert all(album.image_url == "" for album in result)
+
+
 class TestGetArtistTrack:
     @respx.mock
     async def test_returns_matching_track(self):
