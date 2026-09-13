@@ -102,7 +102,7 @@ export const ChartArtistDrawer = ({
           onClick={onClose}
           className="absolute right-3 top-3 z-30 h-8 w-8 rounded-full border border-white/10 bg-black/40 text-muted-foreground backdrop-blur transition-colors hover:bg-black/60 hover:text-foreground"
         >
-          <X className="h-4 w-4" />
+          <X className="size-4" />
         </Button>
         {artistName && (
           <ArtistContent key={artistName} artistName={artistName} />

@@ -111,7 +111,7 @@ const AlbumContent = ({ artistName, albumName }: IProps) => {
     if (isStarting || status === "pending" || status === "downloading") {
       return (
         <Button disabled variant="ghost" size="icon" className="h-7 w-7">
-          <Loader2 className="h-4 w-4 animate-spin text-amber-400" />
+          <Loader2 className="size-4 animate-spin text-amber-400" />
         </Button>
       );
     }
@@ -128,9 +128,9 @@ const AlbumContent = ({ artistName, albumName }: IProps) => {
         className="h-7 w-7 text-muted-foreground hover:text-foreground"
       >
         {isFailed ? (
-          <RotateCcw className="h-4 w-4" />
+          <RotateCcw className="size-4" />
         ) : (
-          <Download className="h-4 w-4" />
+          <Download className="size-4" />
         )}
       </Button>
     );

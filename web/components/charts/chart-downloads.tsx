@@ -74,7 +74,7 @@ export const ChartDownloads = () => {
     if (!data || data.length === 0) {
       return (
         <div className="flex flex-col items-center justify-center gap-2 py-8">
-          <Music2 className="h-8 w-8 text-muted-foreground/40" />
+          <Music2 className="size-8 text-muted-foreground/40" />
           <Text
             variant="sm"
             muted

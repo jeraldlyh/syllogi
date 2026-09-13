@@ -46,7 +46,7 @@ export const ChartArtistHero = ({
 
   if (typeAndGender) {
     metaItems.push({
-      icon: <Music2 className="h-3.5 w-3.5 text-primary/70" />,
+      icon: <Music2 className="size-3.5 text-primary/70" />,
       label: typeAndGender,
     });
   }
@@ -55,21 +55,21 @@ export const ChartArtistHero = ({
 
   if (location) {
     metaItems.push({
-      icon: <MapPin className="h-3.5 w-3.5 text-primary/70" />,
+      icon: <MapPin className="size-3.5 text-primary/70" />,
       label: location,
     });
   }
 
   if (artist.life_span?.begin) {
     metaItems.push({
-      icon: <Calendar className="h-3.5 w-3.5 text-primary/70" />,
+      icon: <Calendar className="size-3.5 text-primary/70" />,
       label: `${artist.life_span.begin} – ${artist.life_span.end ?? "present"}`,
     });
   }
 
   if (artist.num_of_fans) {
     metaItems.push({
-      icon: <Users className="h-3.5 w-3.5 text-primary/70" />,
+      icon: <Users className="size-3.5 text-primary/70" />,
       label: `${artist.num_of_fans.toLocaleString()} fans`,
     });
   }

@@ -115,7 +115,7 @@ export const ChartArtistTracks = ({ data }: { data: ArtistInfo }) => {
     if (isStarting || status === "pending" || status === "downloading") {
       return (
         <Button disabled variant="ghost">
-          <Loader2 className="h-4 w-4 animate-spin text-amber-400" />
+          <Loader2 className="size-4 animate-spin text-amber-400" />
         </Button>
       );
     }
@@ -132,9 +132,9 @@ export const ChartArtistTracks = ({ data }: { data: ArtistInfo }) => {
         size="sm"
       >
         {isFailed ? (
-          <RotateCcw className="h-4 w-4" />
+          <RotateCcw className="size-4" />
         ) : (
-          <Download className="h-4 w-4" />
+          <Download className="size-4" />
         )}
       </Button>
     );

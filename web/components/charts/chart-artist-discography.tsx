@@ -82,7 +82,7 @@ export const ChartArtistDiscography = ({
               className="h-8 w-8 text-muted-foreground hover:text-foreground"
               onClick={() => scrollByPage(-1)}
             >
-              <ChevronLeft className="h-4 w-4" />
+              <ChevronLeft className="size-4" />
             </Button>
             <Button
               variant="ghost"
@@ -90,7 +90,7 @@ export const ChartArtistDiscography = ({
               className="h-8 w-8 text-muted-foreground hover:text-foreground"
               onClick={() => scrollByPage(1)}
             >
-              <ChevronRight className="h-4 w-4" />
+              <ChevronRight className="size-4" />
             </Button>
           </div>
         )}
