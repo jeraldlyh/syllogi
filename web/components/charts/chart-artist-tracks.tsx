@@ -15,7 +15,14 @@ import {
 } from "@/hooks/useDownloadSessions";
 import { api } from "@/lib/api";
 import { cn, formatDuration } from "@/lib/utils";
-import { Download, LayoutGrid, List, Loader2, RotateCcw } from "lucide-react";
+import {
+  Dot,
+  Download,
+  LayoutGrid,
+  List,
+  Loader2,
+  RotateCcw,
+} from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
 import { ChartBadge } from "./chart-badge";
@@ -148,9 +155,11 @@ export const ChartArtistTracks = ({ data }: { data: ArtistInfo }) => {
         <div>
           <h2 className="text-base font-semibold">Top Tracks</h2>
           {tracks.length > 0 && (
-            <p className="mt-1 text-xs text-muted-foreground">
-              {tracks.length} tracks · {inLibrary} in library
-            </p>
+            <div className="mt-1 flex text-muted-foreground">
+              <Text value={`${tracks.length} tracks`} disableViewport />
+              <Dot className="size-3 shrink-0 fill-current" />
+              <Text value={`${inLibrary} in library`} disableViewport />
+            </div>
           )}
         </div>
         <div className="flex items-center gap-2">
@@ -168,7 +177,7 @@ export const ChartArtistTracks = ({ data }: { data: ArtistInfo }) => {
               <Button
                 variant={viewMode === "grid" ? "secondary" : "ghost"}
                 size="icon"
-                className="h-7 w-7"
+                className="size-7"
                 onClick={() => setViewMode("grid")}
                 aria-label="Grid view"
               >

@@ -42,7 +42,11 @@ export const ChartArtistAlbumCard = ({
           {album.type || "Release"}
         </Badge>
       </div>
-      <Text value={album.title} variant="sm" className="truncate font-medium" />
+      <Text
+        value={album.title}
+        variant="sm"
+        className="truncate font-medium mt-2"
+      />
       <div className="flex min-w-0 items-center">
         {subtitleParts.length > 0 ? (
           subtitleParts.map((part, index) => (
