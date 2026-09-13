@@ -23,7 +23,7 @@ export const ChartImage = ({
   return (
     <div
       className={cn(
-        "relative min-w-56 min-h-56 aspect-square overflow-hidden bg-secondary",
+        "relative aspect-square overflow-hidden bg-secondary",
         className,
       )}
     >

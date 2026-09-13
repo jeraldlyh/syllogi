@@ -31,7 +31,6 @@ export const ChartArtistAlbumCard = ({
         <ChartImage
           imageUrl={album.image_url}
           alt={album.title}
-          className="min-h-0 min-w-0"
           textClassName="text-4xl font-bold"
         />
         <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />

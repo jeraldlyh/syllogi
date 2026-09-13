@@ -175,7 +175,11 @@ const AlbumContent = ({ artistName, albumName }: IProps) => {
     <div className="flex-1 overflow-y-auto px-4 pb-8">
       <div className="py-6">
         <div className="flex flex-col gap-6 md:flex-row md:items-start">
-          <ChartImage imageUrl={data.image_url} alt={data.title} />
+          <ChartImage
+            imageUrl={data.image_url}
+            alt={data.title}
+            className="w-full shrink-0 md:h-56 md:w-56"
+          />
           <div className="flex flex-1 flex-col justify-center gap-2">
             <h1 className="text-3xl font-bold tracking-tight">{data.title}</h1>
             <Text className="font-semibold" value={data.artist_name} />

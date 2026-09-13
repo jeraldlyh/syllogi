@@ -80,7 +80,11 @@ export const ChartArtistHero = ({
       {...animationProps}
       transition={{ duration: 0.6, ease: "easeOut" as const }}
     >
-      <ChartImage imageUrl={artist.image_url} alt={artist.name} />
+      <ChartImage
+        imageUrl={artist.image_url}
+        alt={artist.name}
+        className="w-full shrink-0 md:h-56 md:w-56"
+      />
       <div className="flex flex-1 flex-col justify-center">
         <div className="flex flex-wrap items-baseline gap-x-3">
           <h1 className="text-4xl font-bold tracking-tight">{artist.name}</h1>

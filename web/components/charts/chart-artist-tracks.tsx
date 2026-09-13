@@ -275,7 +275,7 @@ export const ChartArtistTracks = ({ data }: { data: ArtistInfo }) => {
                             <ChartImage
                               imageUrl={track.image_url}
                               alt={track.track_name}
-                              className="h-10 w-10 min-h-10 min-w-10 rounded-md"
+                              className="h-10 w-10 rounded-md"
                               textClassName="text-sm"
                             />
                             <div className="flex min-w-0 flex-col gap-1">
