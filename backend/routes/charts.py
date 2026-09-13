@@ -329,20 +329,20 @@ async def _get_artist_info(
     if not artist_info:
         return {"artist": None, "tracks": [], "albums": []}
 
-    await artist_info.ensure_metadata()
-
-    mb_tracks = await mb_provider.get_artist_tracks(
-        artist_mbid=artist_info.id, limit=10
+    _, mb_tracks, albums = await asyncio.gather(
+        artist_info.ensure_metadata(),
+        mb_provider.get_artist_tracks(artist_mbid=artist_info.id, limit=10),
+        mb_provider.get_artist_albums(artist_mbid=artist_info.id),
     )
     mb_tracks = list(set(mb_tracks))
 
     await asyncio.gather(*[track.ensure_metadata() for track in mb_tracks])
 
-    albums = await mb_provider.get_artist_albums(artist_mbid=artist_info.id)
+    tracks = await asyncio.gather(*[track.to_dict() for track in mb_tracks])
 
     return {
         "artist": artist_info.to_dict(),
-        "tracks": [await track.to_dict() for track in mb_tracks],
+        "tracks": tracks,
         "albums": [album.to_dict() for album in albums],
     }
 
