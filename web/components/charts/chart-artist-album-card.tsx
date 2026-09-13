@@ -59,7 +59,7 @@ export const ChartArtistAlbumCard = ({
             </Fragment>
           ))
         ) : (
-          <Text value="—" muted disableViewport className="truncate" />
+          <Text value="-" muted disableViewport className="truncate" />
         )}
       </div>
     </Button>

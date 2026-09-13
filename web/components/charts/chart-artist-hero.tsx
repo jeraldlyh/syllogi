@@ -76,7 +76,7 @@ export const ChartArtistHero = ({
 
   return (
     <motion.div
-      className="flex flex-col gap-6 md:flex-row md:items-start"
+      className="flex flex-col gap-6 md:flex-row"
       {...animationProps}
       transition={{ duration: 0.6, ease: "easeOut" as const }}
     >
@@ -90,25 +90,25 @@ export const ChartArtistHero = ({
             </span>
           )}
         </div>
-        {metaItems.length > 0 && (
-          <div className="flex mt-auto flex-wrap items-center gap-x-3 gap-y-1.5 text-xs text-muted-foreground">
-            {metaItems.map((item, i) => (
-              <React.Fragment key={item.label}>
-                {i > 0 && <span aria-hidden className="h-3 w-px bg-border" />}
-                <span className="inline-flex items-center gap-1.5">
-                  {item.icon}
-                  {item.label}
-                </span>
-              </React.Fragment>
-            ))}
-          </div>
-        )}
         {artist.tags && artist.tags.length > 0 && (
-          <div className="flex flex-wrap gap-2">
+          <div className="flex mt-2 flex-wrap gap-2">
             {artist.tags.slice(0, 10).map((tag) => (
               <Badge key={tag} variant="secondary" className="text-xs">
                 {tag}
               </Badge>
+            ))}
+          </div>
+        )}
+        {metaItems.length > 0 && (
+          <div className="flex md:mt-auto mt-2 flex-wrap items-center gap-x-3 gap-y-1.5 text-xs text-muted-foreground">
+            {metaItems.map((item, i) => (
+              <React.Fragment key={item.label}>
+                {i > 0 && <span aria-hidden className="h-3 w-px bg-border" />}
+                <span className="text-sm inline-flex items-center gap-1.5">
+                  {item.icon}
+                  {item.label}
+                </span>
+              </React.Fragment>
             ))}
           </div>
         )}
