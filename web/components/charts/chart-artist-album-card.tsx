@@ -43,19 +43,14 @@ export const ChartArtistAlbumCard = ({
         </Badge>
       </div>
       <Text value={album.title} variant="sm" className="truncate font-medium" />
-      <div className="flex min-w-0 items-center gap-1.5">
+      <div className="flex min-w-0 items-center">
         {subtitleParts.length > 0 ? (
           subtitleParts.map((part, index) => (
             <Fragment key={part}>
               {index > 0 && (
                 <Dot className="size-3 shrink-0 fill-current text-muted-foreground" />
               )}
-              <Text
-                value={part}
-                muted
-                disableViewport
-                className="min-w-0 truncate"
-              />
+              <Text value={part} muted disableViewport className="truncate" />
             </Fragment>
           ))
         ) : (
