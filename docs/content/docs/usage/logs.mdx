@@ -1,0 +1,19 @@
+---
+title: Logs
+description: Admin-only log viewer.
+---
+
+The **Logs** tab (admin only) shows recent entries from the log file (`syllogi.log`) and refreshes automatically. Log files rotate when they grow large.
+
+## Filters
+
+- Search by message or module name.
+- Log level filter: 
+    - `ALL` 
+    - `DEBUG` 
+    - `INFO` 
+    - `WARNING` 
+    - `ERROR` 
+    - `CRITICAL`
+
+Set `LOG_LEVEL` (`DEBUG`, `INFO`, `WARNING`, `ERROR`) and mount `./logs:/logs` so logs survive restarts, refer to [Configuration](/docs/configuration).
