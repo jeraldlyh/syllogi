@@ -53,6 +53,28 @@ class MetadataProvider(ABC):
         """
         ...
 
+    async def get_artist_recordings_and_albums(
+        self,
+        *,
+        artist_mbid: str,
+        limit: int = 100,
+    ) -> tuple[list[ArtistTrack], list[ArtistAlbum]]:
+        """Fetch an artist's recordings and release groups in one call.
+
+        Default implementation for providers without a combined endpoint.
+        Providers that can fetch both in a single request override this.
+
+        Args:
+            artist_mbid: MusicBrainz ID to browse for.
+            limit: Maximum number of release groups to return.
+
+        Returns:
+            Tuple of (tracks, albums), albums newest release first.
+        """
+        tracks = await self.get_artist_tracks(artist_mbid=artist_mbid, limit=limit)
+        albums = await self.get_artist_albums(artist_mbid=artist_mbid, limit=limit)
+        return tracks, albums
+
     @abstractmethod
     async def get_artist_track(
         self, *, artist_name: str, track_name: str
