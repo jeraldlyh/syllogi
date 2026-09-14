@@ -1,0 +1,47 @@
+---
+title: Authentik OIDC
+description: Use Authentik for single sign-on into the syllogi dashboard.
+---
+
+Use Authentik for SSO by creating an OIDC provider and setting the variables below.
+
+<Steps>
+
+<Step>
+
+### Create an OAuth2/OIDC provider in Authentik
+
+- **Client type**: `Confidential`
+- **Redirect URI**: `<public-url-of-syllogi>/oauth/callback`
+
+</Step>
+
+<Step>
+
+### Create an Authentik application and attach the provider
+
+</Step>
+
+<Step>
+
+### Copy the credentials
+
+Copy the **Client ID**, **Client Secret**, and **OpenID Configuration URL** (issuer).
+
+</Step>
+
+<Step>
+
+### Set the environment variables
+
+```yaml title="docker-compose.yml"
+environment:
+  AUTHENTIK_CLIENT_ID: "<client-id>"
+  AUTHENTIK_SECRET: "<client-secret>"
+  AUTHENTIK_ISSUER: "<issuer-url>"
+  NEXT_PUBLIC_URL: "<public-url-of-syllogi>"
+```
+
+</Step>
+
+</Steps>

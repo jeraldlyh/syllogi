@@ -1,0 +1,38 @@
+---
+title: Playlist Sync
+description: Mirror external Spotify or YouTube playlists into your music server.
+---
+
+<Tabs items={['Desktop', 'Mobile']}>
+
+<Tab value="Desktop">
+
+![Playlist sync dashboard on desktop](/assets/sync.jpeg)
+
+</Tab>
+
+<Tab value="Mobile">
+
+<div className="flex justify-center [&_img]:max-h-[70vh] [&_img]:w-auto">
+
+![Playlist sync dashboard on mobile](/assets/sync-mobile.jpeg)
+
+</div>
+
+</Tab>
+
+</Tabs>
+
+Mirrors external Spotify or YouTube playlists into your music server. Each sync run diffs the source playlist against your library and produces a per-run breakdown:
+
+| Column     | Description                                          |
+| ---------- | ---------------------------------------------------- |
+| Total      | Total tracks in the source playlist                  |
+| New        | Tracks added to the music server playlist this run   |
+| Removed    | Tracks removed because they left the source playlist |
+| Missing    | Tracks not found in the library and not downloaded   |
+| Downloaded | Tracks that were downloaded and added this run       |
+
+Each playlist requires a **music server username** (the exact username of the account that will own the playlist) and a **cron schedule**.
+
+Tracks that are missing from your library are handed to the [download providers](/docs/features/downloads).

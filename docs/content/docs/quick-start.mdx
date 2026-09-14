@@ -1,0 +1,76 @@
+---
+title: Quick Start
+description: Run syllogi with Docker Compose and create your first sync.
+---
+
+## Requirements
+
+- A running [Jellyfin](https://github.com/jellyfin/jellyfin) or [Navidrome](https://github.com/navidrome/navidrome) server.
+- A music library that includes your local music.
+- A Last.fm account that contains your music scrobbles.
+- Docker and Docker Compose.
+
+## Install
+
+<Steps>
+
+<Step>
+
+### Copy the example compose file
+
+```bash
+cp docker-compose.example.yml docker-compose.yml
+```
+
+</Step>
+
+<Step>
+
+### Fill in the environment variables
+
+See [Configuration](/docs/configuration) for the full list. At minimum you need the `DATABASE_*` variables, `NEXT_PUBLIC_URL`, `AUTH_SECRET_KEY`, and one music server.
+
+</Step>
+
+<Step>
+
+### Start the stack
+
+```bash
+docker compose up -d
+```
+
+</Step>
+
+<Step>
+
+### Register your first account
+
+Open the dashboard at `http://localhost:8000`.
+
+</Step>
+
+<Step>
+
+### Add a playlist
+
+Set a sync schedule, set up recommendations, and **syllogi** will take it from there.
+
+</Step>
+
+</Steps>
+
+## Building from source
+
+If you want to build the image locally instead of using the pre-built one, clone the repository:
+
+```bash
+git clone https://github.com/jeraldlyh/syllogi.git
+cd syllogi
+```
+
+Then use the development compose file, which builds from source with hot-reload:
+
+```bash
+docker compose up -d
+```
