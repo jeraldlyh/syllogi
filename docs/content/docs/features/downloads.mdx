@@ -13,3 +13,9 @@ Downloaded files are placed in `DOWNLOAD_DIR` and the music server library is re
 <Callout>
 `DOWNLOAD_DIR` should match the library path your music server scans, otherwise downloaded tracks will never show up. See [Configuration](/docs/configuration).
 </Callout>
+
+## How it works
+
+See [Download pipeline](/docs/concepts/downloads-pipeline) for the full flow: slskd first with YouTube fallback, post-download tagging, and file layout.
+
+The dashboard header shows whether slskd is configured and reachable. Non-`flac` files are upgraded to lossless on a later sync when slskd is configured.

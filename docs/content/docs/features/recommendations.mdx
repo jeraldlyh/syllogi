@@ -23,7 +23,16 @@ description: Generate a playlist from your Last.fm listening history.
 
 </Tabs>
 
-Generates a playlist in your music server based on your [Last.fm](https://www.last.fm/) scrobble history (requires `LASTFM_API_KEY`). The existing playlist is replaced with fresh recommendations daily.
+Generates a playlist in your music server from your scrobble history. The existing playlist is **replaced** (not merged) with fresh recommendations on each run.
+
+## Sources
+
+Each rule picks one listening-history source:
+
+- **Last.fm** (requires `LASTFM_API_KEY`): top tracks, recents, similar tracks, charts.
+- **ListenBrainz** (requires `LISTENBRAINZ_API_KEY`): same strategies against your ListenBrainz history.
+
+The Play button is disabled until the music-server user has the matching Last.fm or ListenBrainz username set (see [Users & Auth](/docs/usage/users-auth)).
 
 ## Strategies
 
@@ -34,4 +43,4 @@ Generates a playlist in your music server based on your [Last.fm](https://www.la
 | `mixed`         | 50% top tracks + 50% recent tracks                           |
 | `blend`         | Blend with other users in the music server                   |
 
-Each recommendation rule requires a **music server username**, a **Last.fm username**, the desired strategy, a track count, and a cron schedule.
+`blend` requires at least 2 blend users and forces public visibility. Every blended user contributes evenly; results are mostly similar tracks topped up with familiar recent tracks.

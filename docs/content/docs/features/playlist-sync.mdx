@@ -33,6 +33,27 @@ Mirrors external Spotify or YouTube playlists into your music server. Each sync 
 | Missing    | Tracks not found in the library and not downloaded   |
 | Downloaded | Tracks that were downloaded and added this run       |
 
-Each playlist requires a **music server username** (the exact username of the account that will own the playlist) and a **cron schedule**.
+Each playlist requires a **music server username** (the exact username of the account that will own the playlist, created under the Users tab) and a **cron schedule**.
+
+## Settings
+
+When adding or editing a sync:
+
+- **Provider**: `spotify` or `youtube`.
+- **Playlist ID**:
+  | Provider | Example | ID |
+  | -- | -- | -- |
+  | `youtube` | `https://www.youtube.com/playlist?list=FL_uORFouaCUXomw-XDwqBuQ` | `FL_uORFouaCUXomw-XDwqBuQ` |
+  | `spotify` | `https://open.spotify.com/playlist/2XNMDkEDwV8DDxy5ktJoun` | `2XNMDkEDwV8DDxy5ktJoun` |
+- **Playlist Name**: Target name created in your music server.
+- **Username**: Must already exist as a music-server user.
+- **Visibility**: Private or Public (pushed to the music server on save).
+- **Schedule**: Simple presets (Every 15/30 min, hourly, every 6/12 hours, daily midnight / 6 AM, weekly Sunday midnight) or Custom cron. Empty schedule means Manual only - see [Schedules](/docs/concepts/schedules).
+- **Enable sync**: When off, the schedule is removed and the Play button is disabled.
+- **Enable download**: When off, missing tracks stay Missing and are never sent to [download providers](/docs/features/downloads).
+
+## Process
+
+Each run matches tracks against the library (see [Matching](/docs/concepts/matching)), optionally downloads missing tracks and waits for a rescan, then adds new songs and removes outdated ones.
 
 Tracks that are missing from your library are handed to the [download providers](/docs/features/downloads).
