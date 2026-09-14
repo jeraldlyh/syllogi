@@ -26,8 +26,10 @@ _musicbrainz_limiter = TokenBucketRateLimiter(rate=1, per=1.0)
 _musicbrainz_retry_attempts = 3
 
 
-def _convert_recordings_to_tracks(result: dict) -> list[ArtistTrack]:
-    """Parse the recordings inlined in an artist lookup response into tracks."""
+def _convert_recordings_to_tracks(
+    result: dict,
+) -> list[ArtistTrack]:
+    """Parse the recordings in a lookup/browse response into tracks."""
 
     unique = set()
     for track in result.get("recordings", []):
@@ -239,7 +241,7 @@ class MusicBrainzMetadataProvider(MetadataProvider):
     ) -> tuple[list[ArtistTrack], list[ArtistAlbum]]:
         """Fetch an artist's recordings and release groups in one lookup.
 
-        The lookup inlines at most 25 release groups, so fall back to the
+        The lookup inlines at most 25 entities, so fall back to the
         browse endpoint when the inline page is full.
         """
 
@@ -251,17 +253,29 @@ class MusicBrainzMetadataProvider(MetadataProvider):
         if not result:
             return [], []
 
+        inline_page_size = 25
+        recordings = result.get("recordings") or []
         tracks = _convert_recordings_to_tracks(result)
         albums = _convert_release_groups_to_albums(result)
-        max_num_of_albums = 25
 
-        if len(albums) >= max_num_of_albums:
-            browse = await self._http(
-                "/release-group",
-                params={"artist": artist_mbid, "limit": limit},
-            )
-            if browse:
-                albums = _convert_release_groups_to_albums(browse)
+        if limit > inline_page_size:
+            if len(recordings) >= inline_page_size:
+                browse = await self._http(
+                    "/recording",
+                    params={"artist": artist_mbid, "limit": limit, "inc": "genres"},
+                )
+                if browse:
+                    tracks = _convert_recordings_to_tracks(
+                        {**browse, "name": result.get("name", "")},
+                    )
+
+            if len(albums) >= inline_page_size:
+                browse = await self._http(
+                    "/release-group",
+                    params={"artist": artist_mbid, "limit": limit},
+                )
+                if browse:
+                    albums = _convert_release_groups_to_albums(browse)
 
         albums = sorted(albums, key=lambda album: album.release_date, reverse=True)[
             :limit

@@ -261,6 +261,7 @@ class TestGetArtistRecordingsAndAlbums:
     @respx.mock
     async def test_returns_inline_tracks_and_albums_without_browse(self):
         fixture = load_fixture("musicbrainz/recordings-with-release-groups")
+        valid_recordings = [r for r in fixture["recordings"] if r.get("length")][:5]
         artist_route = respx.get(
             "https://musicbrainz.org/ws/2/artist/artist-mbid"
         ).mock(
@@ -268,42 +269,52 @@ class TestGetArtistRecordingsAndAlbums:
                 200,
                 json={
                     **fixture,
+                    "recordings": valid_recordings,
                     "release-groups": fixture["release-groups"][:2],
                 },
             )
         )
-        browse_route = respx.get("https://musicbrainz.org/ws/2/release-group").mock(
-            return_value=httpx.Response(200, json={"release-groups": []})
-        )
+        recording_browse_route = respx.get(
+            "https://musicbrainz.org/ws/2/recording"
+        ).mock(return_value=httpx.Response(200, json={"recordings": []}))
+        release_group_browse_route = respx.get(
+            "https://musicbrainz.org/ws/2/release-group"
+        ).mock(return_value=httpx.Response(200, json={"release-groups": []}))
 
         provider = _make_provider()
         tracks, albums = await provider.get_artist_recordings_and_albums(
             artist_mbid="artist-mbid"
         )
 
-        # NOTE: 17 length recordings dedup to 9 by casefolded track name
-        assert len(tracks) == 9
-        assert all(track.track_name and track.duration_ms for track in tracks)
-
-        track = next(track for track in tracks if track.track_name == "All I Want")
-        assert track.duration_ms == 177322
-
+        assert len(tracks) == 2
+        assert {track.track_name for track in tracks} == {
+            "1 step forward, 3 steps back",
+            "21st Century Girls",
+        }
         assert len(albums) == 2
         assert [album.title for album in albums] == ["GUTS", "SOUR"]
         assert artist_route.called
-        assert not browse_route.called
+        assert not recording_browse_route.called
+        assert not release_group_browse_route.called
 
     @respx.mock
     async def test_falls_back_to_browse_when_inline_hits_cap(self):
         fixture = load_fixture("musicbrainz/recordings-with-release-groups")
+        valid_recordings = [r for r in fixture["recordings"] if r.get("length")][:5]
         artist_route = respx.get(
             "https://musicbrainz.org/ws/2/artist/artist-mbid"
         ).mock(
             return_value=httpx.Response(
                 200,
-                json=fixture,
+                json={
+                    **fixture,
+                    "recordings": valid_recordings,
+                },
             )
         )
+        recording_browse_route = respx.get(
+            "https://musicbrainz.org/ws/2/recording"
+        ).mock(return_value=httpx.Response(200, json={"recordings": []}))
         browse_route = respx.get("https://musicbrainz.org/ws/2/release-group").mock(
             return_value=httpx.Response(
                 200,
@@ -334,13 +345,79 @@ class TestGetArtistRecordingsAndAlbums:
 
         assert artist_route.calls
         assert browse_route.calls
-        assert len(tracks) == 9
+        assert not recording_browse_route.called
+        assert len(tracks) == 2
         assert len(albums) == 2
         assert [album.title for album in albums] == [
             "Browse Only One",
             "Browse Only Two",
         ]
         assert all(album.title not in {"SOUR", "GUTS"} for album in albums)
+
+    @respx.mock
+    async def test_browses_recordings_when_inline_recording_cap_hit(self):
+        fixture = load_fixture("musicbrainz/recordings-with-release-groups")
+        artist_route = respx.get(
+            "https://musicbrainz.org/ws/2/artist/artist-mbid"
+        ).mock(
+            return_value=httpx.Response(
+                200,
+                json={
+                    **fixture,
+                    "release-groups": fixture["release-groups"][:2],
+                },
+            )
+        )
+        recording_browse_route = respx.get(
+            "https://musicbrainz.org/ws/2/recording"
+        ).mock(
+            return_value=httpx.Response(
+                200,
+                json={
+                    "recordings": [
+                        {
+                            "title": "Browse Track A",
+                            "length": 111000,
+                            "genres": [],
+                        },
+                        {
+                            "title": "Browse Track B",
+                            "length": 222000,
+                            "genres": [],
+                        },
+                        {
+                            "title": "Browse Track C",
+                            "length": 333000,
+                            "genres": [],
+                        },
+                    ]
+                },
+            )
+        )
+        release_group_browse_route = respx.get(
+            "https://musicbrainz.org/ws/2/release-group"
+        ).mock(return_value=httpx.Response(200, json={"release-groups": []}))
+
+        provider = _make_provider()
+        tracks, albums = await provider.get_artist_recordings_and_albums(
+            artist_mbid="artist-mbid"
+        )
+
+        assert artist_route.calls
+        assert recording_browse_route.calls
+        assert not release_group_browse_route.called
+        assert (
+            recording_browse_route.calls.last.request.url.params["artist"]
+            == "artist-mbid"
+        )
+        assert {track.track_name for track in tracks} == {
+            "Browse Track A",
+            "Browse Track B",
+            "Browse Track C",
+        }
+        assert all(track.artist_name == "Olivia Rodrigo" for track in tracks)
+        assert len(albums) == 2
+        assert [album.title for album in albums] == ["GUTS", "SOUR"]
 
 
 class TestSearchArtists:
