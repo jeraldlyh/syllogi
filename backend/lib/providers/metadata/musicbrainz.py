@@ -26,6 +26,44 @@ _musicbrainz_limiter = TokenBucketRateLimiter(rate=1, per=1.0)
 _musicbrainz_retry_attempts = 3
 
 
+def _convert_recordings_to_tracks(result: dict) -> list[ArtistTrack]:
+    """Parse the recordings inlined in an artist lookup response into tracks."""
+
+    unique = set()
+    for track in result.get("recordings", []):
+        if not track.get("length") or track.get("length") == 0:
+            continue
+
+        unique.add(
+            ArtistTrack(
+                artist_name=result.get("name", ""),
+                track_name=track.get("title", ""),
+                duration_ms=track.get("length"),
+                disambiguation=track.get("disambiguation", ""),
+                album_name="",
+                genres=[genre.get("name") for genre in track.get("genres", [])],
+                image_url="",
+            )
+        )
+    return list(unique)
+
+
+def _convert_release_groups_to_albums(result: dict) -> list[ArtistAlbum]:
+    """Parse the release-groups in an artist/browse response into albums."""
+
+    return [
+        ArtistAlbum(
+            id=release_group.get("id", ""),
+            title=release_group.get("title", ""),
+            primary_type=release_group.get("primary-type") or "",
+            secondary_types=release_group.get("secondary-types") or [],
+            release_date=release_group.get("first-release-date") or "",
+            image_url=f"https://coverartarchive.org/release-group/{release_group.get('id', '')}/front-250",
+        )
+        for release_group in result.get("release-groups", [])
+    ]
+
+
 class MusicBrainzMetadataProvider(MetadataProvider):
     """Metadata provider backed by the MusicBrainz API."""
 
@@ -167,23 +205,7 @@ class MusicBrainzMetadataProvider(MetadataProvider):
         if not result:
             return []
 
-        unique = set()
-        for track in result.get("recordings", []):
-            if not track.get("length") or track.get("length") == 0:
-                continue
-
-            unique.add(
-                ArtistTrack(
-                    artist_name=result.get("name", ""),
-                    track_name=track.get("title", ""),
-                    duration_ms=track.get("length"),
-                    disambiguation=track.get("disambiguation", ""),
-                    album_name="",
-                    genres=[genre.get("name") for genre in track.get("genres", [])],
-                    image_url="",
-                )
-            )
-        return list(unique)
+        return _convert_recordings_to_tracks(result)
 
     @cached_method(ttl=604800)
     async def get_artist_albums(
@@ -202,19 +224,49 @@ class MusicBrainzMetadataProvider(MetadataProvider):
         if not result:
             return []
 
-        albums = [
-            ArtistAlbum(
-                id=release_group.get("id", ""),
-                title=release_group.get("title", ""),
-                primary_type=release_group.get("primary-type") or "",
-                secondary_types=release_group.get("secondary-types") or [],
-                release_date=release_group.get("first-release-date") or "",
-                image_url=f"https://coverartarchive.org/release-group/{release_group.get('id', '')}/front-250",
-            )
-            for release_group in result.get("release-groups", [])
-        ]
+        return sorted(
+            _convert_release_groups_to_albums(result),
+            key=lambda album: album.release_date,
+            reverse=True,
+        )
 
-        return sorted(albums, key=lambda album: album.release_date, reverse=True)
+    @cached_method(ttl=604800)
+    async def get_artist_recordings_and_albums(
+        self,
+        *,
+        artist_mbid: str,
+        limit: int = 100,
+    ) -> tuple[list[ArtistTrack], list[ArtistAlbum]]:
+        """Fetch an artist's recordings and release groups in one lookup.
+
+        The lookup inlines at most 25 release groups, so fall back to the
+        browse endpoint when the inline page is full.
+        """
+
+        result = await self._http(
+            f"/artist/{artist_mbid}",
+            params={"inc": "recordings+release-groups+genres"},
+        )
+
+        if not result:
+            return [], []
+
+        tracks = _convert_recordings_to_tracks(result)
+        albums = _convert_release_groups_to_albums(result)
+        max_num_of_albums = 25
+
+        if len(albums) >= max_num_of_albums:
+            browse = await self._http(
+                "/release-group",
+                params={"artist": artist_mbid, "limit": limit},
+            )
+            if browse:
+                albums = _convert_release_groups_to_albums(browse)
+
+        albums = sorted(albums, key=lambda album: album.release_date, reverse=True)[
+            :limit
+        ]
+        return tracks, albums
 
     @cached_method(ttl=604800)
     async def get_artist_track(

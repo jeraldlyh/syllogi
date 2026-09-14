@@ -257,6 +257,92 @@ class TestGetArtistAlbums:
         assert result == []
 
 
+class TestGetArtistRecordingsAndAlbums:
+    @respx.mock
+    async def test_returns_inline_tracks_and_albums_without_browse(self):
+        fixture = load_fixture("musicbrainz/recordings-with-release-groups")
+        artist_route = respx.get(
+            "https://musicbrainz.org/ws/2/artist/artist-mbid"
+        ).mock(
+            return_value=httpx.Response(
+                200,
+                json={
+                    **fixture,
+                    "release-groups": fixture["release-groups"][:2],
+                },
+            )
+        )
+        browse_route = respx.get("https://musicbrainz.org/ws/2/release-group").mock(
+            return_value=httpx.Response(200, json={"release-groups": []})
+        )
+
+        provider = _make_provider()
+        tracks, albums = await provider.get_artist_recordings_and_albums(
+            artist_mbid="artist-mbid"
+        )
+
+        # NOTE: 17 length recordings dedup to 9 by casefolded track name
+        assert len(tracks) == 9
+        assert all(track.track_name and track.duration_ms for track in tracks)
+
+        track = next(track for track in tracks if track.track_name == "All I Want")
+        assert track.duration_ms == 177322
+
+        assert len(albums) == 2
+        assert [album.title for album in albums] == ["GUTS", "SOUR"]
+        assert artist_route.called
+        assert not browse_route.called
+
+    @respx.mock
+    async def test_falls_back_to_browse_when_inline_hits_cap(self):
+        fixture = load_fixture("musicbrainz/recordings-with-release-groups")
+        artist_route = respx.get(
+            "https://musicbrainz.org/ws/2/artist/artist-mbid"
+        ).mock(
+            return_value=httpx.Response(
+                200,
+                json=fixture,
+            )
+        )
+        browse_route = respx.get("https://musicbrainz.org/ws/2/release-group").mock(
+            return_value=httpx.Response(
+                200,
+                json={
+                    "release-groups": [
+                        {
+                            "id": "browse-1",
+                            "title": "Browse Only One",
+                            "primary-type": "Album",
+                            "first-release-date": "2030-01-01",
+                        },
+                        {
+                            "id": "browse-2",
+                            "title": "Browse Only Two",
+                            "primary-type": "Album",
+                            "first-release-date": "2029-01-01",
+                        },
+                    ],
+                    "release-group-count": 2,
+                },
+            )
+        )
+
+        provider = _make_provider()
+        tracks, albums = await provider.get_artist_recordings_and_albums(
+            artist_mbid="artist-mbid"
+        )
+
+        assert artist_route.calls
+        assert browse_route.calls
+        assert len(tracks) == 9
+        assert len(albums) == 2
+        assert [album.title for album in albums] == [
+            "Browse Only One",
+            "Browse Only Two",
+        ]
+        assert all(album.title not in {"SOUR", "GUTS"} for album in albums)
+
+
 class TestSearchArtists:
     @respx.mock
     async def test_returns_multiple_artists(self):

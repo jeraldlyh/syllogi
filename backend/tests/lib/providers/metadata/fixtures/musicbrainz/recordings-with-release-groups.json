@@ -1,0 +1,1083 @@
+{
+  "begin-area": {
+    "id": "426eb20b-838d-43e7-911d-ba5826b8c19e",
+    "sort-name": "Murrieta",
+    "disambiguation": "",
+    "name": "Murrieta",
+    "type-id": null,
+    "type": null
+  },
+  "id": "6925db17-f35e-42f3-a4eb-84ee6bf5d4b0",
+  "sort-name": "Rodrigo, Olivia",
+  "disambiguation": "US singer‐songwriter",
+  "type": "Person",
+  "type-id": "b6e035f4-3ce9-331c-97df-83397230b0df",
+  "end-area": null,
+  "isnis": ["000000047619573X"],
+  "recordings": [
+    {
+      "id": "ee78545f-6f9a-4079-9878-128022a02e33",
+      "length": null,
+      "disambiguation": "live, 2025-01-30: Intuit Dome, Inglewood, CA, USA",
+      "video": false,
+      "genres": [],
+      "title": "[talk]"
+    },
+    {
+      "disambiguation": "live, 2025-01-30: Intuit Dome, Inglewood, CA, USA",
+      "video": false,
+      "id": "8ab2d01a-f42d-4375-b83f-a73f12c7ff91",
+      "length": null,
+      "title": "[talk]",
+      "genres": []
+    },
+    {
+      "genres": [],
+      "title": "[talk]",
+      "length": null,
+      "id": "d89ff94d-9ac3-4b42-b20b-e87b19e8d095",
+      "video": false,
+      "disambiguation": "live, 2025-01-30: Intuit Dome, Inglewood, CA, USA"
+    },
+    {
+      "title": "1 step forward, 3 steps back",
+      "genres": [],
+      "disambiguation": "clean",
+      "video": false,
+      "length": 163000,
+      "id": "390c8dac-40f7-46c8-ad0b-133d85530e30"
+    },
+    {
+      "title": "1 step forward, 3 steps back",
+      "genres": [],
+      "disambiguation": "Dolby Atmos mix, clean",
+      "video": false,
+      "length": 163000,
+      "id": "2aa86ccb-c84b-4a2c-992d-31881937374e"
+    },
+    {
+      "disambiguation": "Dolby Atmos mix, explicit",
+      "video": false,
+      "length": 163000,
+      "id": "3c3e2c84-770c-42d3-b0b6-a6757d74a5a1",
+      "title": "1 step forward, 3 steps back",
+      "genres": []
+    },
+    {
+      "video": false,
+      "disambiguation": "explicit",
+      "length": 163000,
+      "id": "2ac0d796-154a-4ca6-9c40-45e2dddb1a32",
+      "title": "1 step forward, 3 steps back",
+      "genres": [
+        {
+          "name": "indie pop",
+          "count": 1,
+          "disambiguation": "",
+          "id": "f390be72-360b-41bb-a310-6a2e638779d2"
+        },
+        {
+          "id": "911c7bbb-172d-4df8-9478-dbff4296e791",
+          "disambiguation": "",
+          "count": 1,
+          "name": "pop"
+        },
+        {
+          "disambiguation": "",
+          "count": 1,
+          "id": "797e2e85-5ffd-495c-a757-8b4079052f0e",
+          "name": "pop rock"
+        }
+      ]
+    },
+    {
+      "title": "1 step forward, 3 steps back",
+      "genres": [],
+      "video": false,
+      "disambiguation": "live, Olivia Rodrigo: driving home 2 u (a SOUR film), USA",
+      "length": null,
+      "id": "dda63865-d50b-4afb-a7bc-0f3a7329c60c"
+    },
+    {
+      "genres": [],
+      "title": "1 step forward, 3 steps back (demo)",
+      "id": "7ad2e7c0-d3ff-4aa8-8744-f50e26ac6a2e",
+      "length": null,
+      "disambiguation": "",
+      "video": false
+    },
+    {
+      "title": "21st century girls",
+      "genres": [],
+      "video": false,
+      "disambiguation": "",
+      "length": null,
+      "id": "3f7b6a98-ddbf-492c-a6cc-7158d074a676"
+    },
+    {
+      "disambiguation": "",
+      "video": false,
+      "length": 79000,
+      "id": "a051e9ae-b21d-49ce-a502-a56637352df2",
+      "title": "21st Century Girls",
+      "genres": []
+    },
+    {
+      "genres": [],
+      "title": "All I Want",
+      "id": "df19dcad-fbd6-407c-a6a6-dac601b8b13b",
+      "length": 177322,
+      "disambiguation": "",
+      "video": false
+    },
+    {
+      "id": "4966d193-bee2-4d45-97c0-d6d7d77cebc6",
+      "length": 176800,
+      "video": false,
+      "disambiguation": "",
+      "genres": [],
+      "title": "All I Want (instrumental)"
+    },
+    {
+      "length": 166000,
+      "id": "1c69192c-c65a-4c3d-b8e3-a4a2938ba8df",
+      "disambiguation": "",
+      "video": false,
+      "genres": [],
+      "title": "All I Want (live at Vevo)"
+    },
+    {
+      "title": "All I Want (Love That Lasts mix)",
+      "genres": [],
+      "video": false,
+      "disambiguation": "",
+      "id": "408a322d-9341-4f6a-90ec-28427fe9a866",
+      "length": 175388
+    },
+    {
+      "video": false,
+      "disambiguation": "live, 2025-03-23: Lollapalooza, Hipódromo de San Isidro, San Isidro, Argentina",
+      "id": "239319ea-823c-42db-95f7-f80959232ceb",
+      "length": 287000,
+      "title": "all-american bitch",
+      "genres": []
+    },
+    {
+      "id": "9902371b-2456-4d0f-b110-f702163da588",
+      "length": 314893,
+      "video": false,
+      "disambiguation": "live, 2025‐06‐29: Glastonbury Festival, Worthy Farm, Pilton, England, UK",
+      "genres": [],
+      "title": "all-american bitch"
+    },
+    {
+      "length": null,
+      "id": "e9619a9b-7a14-45ae-bb3b-5939bf3221f0",
+      "disambiguation": "live, 2025‐06‐29: BBC in Concert, Glastonbury Festival, Worthy Farm, Pilton, Britain",
+      "video": false,
+      "genres": [],
+      "title": "All-American Bitch"
+    },
+    {
+      "title": "all‐american bitch",
+      "genres": [],
+      "disambiguation": "clean",
+      "video": false,
+      "length": 165833,
+      "id": "71fedabb-0d94-4a21-b799-cefb9c4dec1c"
+    },
+    {
+      "video": false,
+      "disambiguation": "Dolby Atmos mix, clean",
+      "length": 166000,
+      "id": "487cbdd9-375e-4fce-8dae-dd0434da23a6",
+      "title": "all‐american bitch",
+      "genres": []
+    },
+    {
+      "disambiguation": "Dolby Atmos mix, explicit",
+      "video": false,
+      "id": "d069398b-e727-47ec-b844-bdcb265dac67",
+      "length": 166000,
+      "title": "all‐american bitch",
+      "genres": [
+        {
+          "disambiguation": "",
+          "count": 1,
+          "id": "ceeaa283-5d7b-4202-8d1d-e25d116b2a18",
+          "name": "alternative rock"
+        },
+        {
+          "id": "911c7bbb-172d-4df8-9478-dbff4296e791",
+          "count": 1,
+          "disambiguation": "",
+          "name": "pop"
+        },
+        {
+          "name": "pop punk",
+          "id": "60e21d01-ce21-4127-86b7-aada79558dab",
+          "count": 1,
+          "disambiguation": ""
+        },
+        {
+          "name": "pop rock",
+          "disambiguation": "",
+          "count": 1,
+          "id": "797e2e85-5ffd-495c-a757-8b4079052f0e"
+        },
+        {
+          "name": "rock",
+          "count": 1,
+          "disambiguation": "",
+          "id": "0e3fc579-2d24-4f20-9dae-736e1ec78798"
+        }
+      ]
+    },
+    {
+      "video": false,
+      "disambiguation": "explicit",
+      "length": 165826,
+      "id": "344d1446-2fd6-432f-85ff-a4a528b82fc2",
+      "title": "all‐american bitch",
+      "genres": [
+        {
+          "name": "grunge",
+          "disambiguation": "",
+          "count": 1,
+          "id": "3f08faa9-6c3e-4b6d-b4b8-08eea45954e2"
+        },
+        {
+          "name": "pop punk",
+          "id": "60e21d01-ce21-4127-86b7-aada79558dab",
+          "disambiguation": "",
+          "count": 1
+        },
+        {
+          "disambiguation": "",
+          "count": 2,
+          "id": "797e2e85-5ffd-495c-a757-8b4079052f0e",
+          "name": "pop rock"
+        },
+        {
+          "count": 1,
+          "disambiguation": "",
+          "id": "0e3fc579-2d24-4f20-9dae-736e1ec78798",
+          "name": "rock"
+        }
+      ]
+    },
+    {
+      "title": "all‐american bitch",
+      "genres": [],
+      "disambiguation": "live, 2023‐10‐09: The Theatre at Ace Hotel, Los Angeles, CA, USA",
+      "video": true,
+      "length": 169000,
+      "id": "2104feb7-7a7a-4a3c-af70-0405d25acdeb"
+    },
+    {
+      "length": null,
+      "id": "1a307fa1-d9dc-4a13-90f0-47c55e462934",
+      "disambiguation": "",
+      "video": false,
+      "genres": [],
+      "title": "apocalyptic crush"
+    },
+    {
+      "length": 81000,
+      "id": "5d0a1709-7d93-41f8-97d3-33ea67e70c47",
+      "video": false,
+      "disambiguation": "",
+      "genres": [],
+      "title": "Apocalyptic Crush"
+    }
+  ],
+  "release-groups": [
+    {
+      "title": "SOUR",
+      "secondary-types": [],
+      "primary-type-id": "f529b476-6e62-324f-b0aa-1f3e33d313fc",
+      "secondary-type-ids": [],
+      "genres": [
+        {
+          "id": "17b58d38-1110-4f5a-9412-b0314329622b",
+          "disambiguation": "",
+          "count": 2,
+          "name": "ballad"
+        },
+        {
+          "name": "pop",
+          "count": 7,
+          "disambiguation": "",
+          "id": "911c7bbb-172d-4df8-9478-dbff4296e791"
+        },
+        {
+          "disambiguation": "",
+          "count": 3,
+          "id": "60e21d01-ce21-4127-86b7-aada79558dab",
+          "name": "pop punk"
+        },
+        {
+          "name": "power pop",
+          "id": "618704fc-daac-44a2-92c9-89e3b1a2fc8c",
+          "count": 2,
+          "disambiguation": ""
+        },
+        {
+          "name": "rock",
+          "count": 6,
+          "disambiguation": "",
+          "id": "0e3fc579-2d24-4f20-9dae-736e1ec78798"
+        }
+      ],
+      "disambiguation": "",
+      "id": "2ae2e504-7116-4b4f-b632-9748bb18ccd2",
+      "first-release-date": "2021-05-21",
+      "primary-type": "Album"
+    },
+    {
+      "id": "83920a38-e749-4bbf-a7f6-8aaf77cb9475",
+      "disambiguation": "",
+      "primary-type": "Album",
+      "first-release-date": "2023-09-08",
+      "genres": [
+        {
+          "disambiguation": "",
+          "count": 3,
+          "id": "3f08faa9-6c3e-4b6d-b4b8-08eea45954e2",
+          "name": "grunge"
+        },
+        {
+          "count": 2,
+          "disambiguation": "",
+          "id": "911c7bbb-172d-4df8-9478-dbff4296e791",
+          "name": "pop"
+        },
+        {
+          "disambiguation": "",
+          "count": 3,
+          "id": "60e21d01-ce21-4127-86b7-aada79558dab",
+          "name": "pop punk"
+        },
+        {
+          "name": "pop rock",
+          "count": 7,
+          "disambiguation": "",
+          "id": "797e2e85-5ffd-495c-a757-8b4079052f0e"
+        }
+      ],
+      "title": "GUTS",
+      "secondary-types": [],
+      "primary-type-id": "f529b476-6e62-324f-b0aa-1f3e33d313fc",
+      "secondary-type-ids": []
+    },
+    {
+      "disambiguation": "",
+      "id": "4c4eee61-da1e-4115-8eb9-07e5b671fefe",
+      "first-release-date": "2026-06-12",
+      "primary-type": "Album",
+      "secondary-type-ids": [],
+      "title": "you seem pretty sad for a girl so in love",
+      "secondary-types": [],
+      "primary-type-id": "f529b476-6e62-324f-b0aa-1f3e33d313fc",
+      "genres": [
+        {
+          "name": "jangle pop",
+          "id": "6c207307-cac0-43cf-be8f-e2dde68a92f1",
+          "disambiguation": "",
+          "count": 1
+        },
+        {
+          "name": "new wave",
+          "id": "56407f9d-3398-4bf3-bbbd-ea372fa5adeb",
+          "count": 3,
+          "disambiguation": ""
+        },
+        {
+          "disambiguation": "",
+          "count": 1,
+          "id": "911c7bbb-172d-4df8-9478-dbff4296e791",
+          "name": "pop"
+        },
+        {
+          "name": "pop rock",
+          "id": "797e2e85-5ffd-495c-a757-8b4079052f0e",
+          "disambiguation": "",
+          "count": 3
+        },
+        {
+          "name": "post-punk revival",
+          "id": "b8495241-e3c7-445b-82db-cea5ebe9ea7a",
+          "disambiguation": "",
+          "count": 1
+        },
+        {
+          "disambiguation": "",
+          "count": 1,
+          "id": "455f264b-db00-4716-991d-fbd32dc24523",
+          "name": "singer-songwriter"
+        },
+        {
+          "count": 1,
+          "disambiguation": "",
+          "id": "988e91a3-3341-416d-b7f8-7dbef6848dac",
+          "name": "synth-pop"
+        }
+      ]
+    },
+    {
+      "genres": [
+        {
+          "name": "musical",
+          "id": "ff6d73e8-bf1a-431e-9911-88ae7ffcfdfb",
+          "disambiguation": "",
+          "count": 3
+        },
+        {
+          "disambiguation": "",
+          "count": 1,
+          "id": "911c7bbb-172d-4df8-9478-dbff4296e791",
+          "name": "pop"
+        }
+      ],
+      "title": "Best of High School Musical: The Musical: The Series",
+      "secondary-types": ["Compilation", "Soundtrack"],
+      "primary-type-id": "f529b476-6e62-324f-b0aa-1f3e33d313fc",
+      "secondary-type-ids": [
+        "dd2a21e1-0c00-3729-a7a0-de60b84eb5d1",
+        "22a628ad-c082-3c4f-b1b6-d41665107b88"
+      ],
+      "id": "772ac00b-0e62-4b4b-88e5-917347f0b08e",
+      "disambiguation": "",
+      "first-release-date": "2021-07-18",
+      "primary-type": "Album"
+    },
+    {
+      "genres": [
+        {
+          "name": "pop",
+          "disambiguation": "",
+          "count": 1,
+          "id": "911c7bbb-172d-4df8-9478-dbff4296e791"
+        }
+      ],
+      "secondary-type-ids": ["6fd474e2-6b58-3102-9d17-d6f7eb7da0a0"],
+      "title": "live from Glastonbury (a BBC recording)",
+      "secondary-types": ["Live"],
+      "primary-type-id": "f529b476-6e62-324f-b0aa-1f3e33d313fc",
+      "id": "90f3b78a-dff9-4edb-b976-2b46522370d2",
+      "disambiguation": "",
+      "primary-type": "Album",
+      "first-release-date": "2025-12-05"
+    },
+    {
+      "genres": [
+        {
+          "name": "country pop",
+          "id": "2de61e9c-de1d-47c8-999d-5b44c0cfeca1",
+          "disambiguation": "",
+          "count": 1
+        },
+        {
+          "name": "folk pop",
+          "count": 1,
+          "disambiguation": "",
+          "id": "abb2374f-30e5-4d3e-b417-2caf78ef1f6c"
+        },
+        {
+          "count": 1,
+          "disambiguation": "",
+          "id": "797e2e85-5ffd-495c-a757-8b4079052f0e",
+          "name": "pop rock"
+        }
+      ],
+      "secondary-type-ids": ["dd2a21e1-0c00-3729-a7a0-de60b84eb5d1"],
+      "secondary-types": ["Compilation"],
+      "title": "GUTS: the secret tracks",
+      "primary-type-id": "6d0c5bf6-7a33-3420-a519-44fc63eedebf",
+      "first-release-date": "2023-11-24",
+      "primary-type": "EP",
+      "id": "7835288c-7d1d-4f8f-a2e7-5104ff1cb836",
+      "disambiguation": ""
+    },
+    {
+      "disambiguation": "",
+      "id": "86eec85c-9378-42c3-b4f8-1b11d0602d7b",
+      "first-release-date": "2016-10-07",
+      "primary-type": "EP",
+      "secondary-type-ids": ["22a628ad-c082-3c4f-b1b6-d41665107b88"],
+      "primary-type-id": "6d0c5bf6-7a33-3420-a519-44fc63eedebf",
+      "secondary-types": ["Soundtrack"],
+      "title": "Bizaardvark",
+      "genres": [
+        {
+          "name": "children's music",
+          "disambiguation": "",
+          "count": 1,
+          "id": "6d76ba14-94f3-4677-a153-9263f8d50f95"
+        },
+        {
+          "id": "911c7bbb-172d-4df8-9478-dbff4296e791",
+          "count": 1,
+          "disambiguation": "",
+          "name": "pop"
+        }
+      ]
+    },
+    {
+      "first-release-date": "2021-01-08",
+      "primary-type": "Single",
+      "disambiguation": "",
+      "id": "b6085650-a88d-43a3-9b63-d907a33a1cc0",
+      "secondary-type-ids": [],
+      "title": "drivers license",
+      "secondary-types": [],
+      "primary-type-id": "d6038452-8ee0-3f68-affc-2de9a1ede0b9",
+      "genres": [
+        {
+          "id": "17b58d38-1110-4f5a-9412-b0314329622b",
+          "disambiguation": "",
+          "count": 3,
+          "name": "ballad"
+        },
+        {
+          "id": "f390be72-360b-41bb-a310-6a2e638779d2",
+          "count": 1,
+          "disambiguation": "",
+          "name": "indie pop"
+        },
+        {
+          "name": "pop",
+          "id": "911c7bbb-172d-4df8-9478-dbff4296e791",
+          "disambiguation": "",
+          "count": 3
+        },
+        {
+          "name": "power pop",
+          "disambiguation": "",
+          "count": 1,
+          "id": "618704fc-daac-44a2-92c9-89e3b1a2fc8c"
+        },
+        {
+          "count": 1,
+          "disambiguation": "",
+          "id": "455f264b-db00-4716-991d-fbd32dc24523",
+          "name": "singer-songwriter"
+        }
+      ]
+    },
+    {
+      "id": "b4c0b3a6-4a6a-47b7-a963-2311bf6bf6d3",
+      "disambiguation": "",
+      "first-release-date": "2021-04-01",
+      "primary-type": "Single",
+      "genres": [
+        {
+          "count": 2,
+          "disambiguation": "",
+          "id": "930ef127-3653-4677-9b95-ecc90c7c1a14",
+          "name": "art pop"
+        },
+        {
+          "name": "art rock",
+          "id": "b7ef058e-6d83-4ca4-8123-9724bff4648b",
+          "count": 1,
+          "disambiguation": ""
+        },
+        {
+          "id": "4a615a8e-8360-4209-9e68-e3df1641bcff",
+          "count": 1,
+          "disambiguation": "",
+          "name": "chillsynth"
+        },
+        {
+          "name": "dream pop",
+          "disambiguation": "",
+          "count": 1,
+          "id": "6242615b-5620-465b-b6fb-2e593e90cbad"
+        },
+        {
+          "name": "indie pop",
+          "count": 2,
+          "disambiguation": "",
+          "id": "f390be72-360b-41bb-a310-6a2e638779d2"
+        },
+        {
+          "id": "797e2e85-5ffd-495c-a757-8b4079052f0e",
+          "disambiguation": "",
+          "count": 2,
+          "name": "pop rock"
+        },
+        {
+          "name": "psychedelic pop",
+          "id": "2aeb5340-c474-4677-b9a6-35ddac9b6a58",
+          "count": 2,
+          "disambiguation": ""
+        },
+        {
+          "name": "psychedelic rock",
+          "id": "146ef761-5ad9-48b4-b0b3-483104f7da48",
+          "count": 1,
+          "disambiguation": ""
+        },
+        {
+          "count": 1,
+          "disambiguation": "",
+          "id": "455f264b-db00-4716-991d-fbd32dc24523",
+          "name": "singer-songwriter"
+        },
+        {
+          "name": "synth-pop",
+          "disambiguation": "",
+          "count": 1,
+          "id": "988e91a3-3341-416d-b7f8-7dbef6848dac"
+        }
+      ],
+      "secondary-types": [],
+      "primary-type-id": "d6038452-8ee0-3f68-affc-2de9a1ede0b9",
+      "title": "deja vu",
+      "secondary-type-ids": []
+    },
+    {
+      "primary-type": "Single",
+      "first-release-date": "2021-05-14",
+      "disambiguation": "",
+      "id": "32b48679-cf56-4ad9-9405-bcdb00bd878b",
+      "primary-type-id": "d6038452-8ee0-3f68-affc-2de9a1ede0b9",
+      "secondary-types": [],
+      "title": "good 4 u",
+      "secondary-type-ids": [],
+      "genres": [
+        {
+          "id": "e096efc6-6c9c-4240-b627-d7bbb5e8fa2a",
+          "count": 1,
+          "disambiguation": "",
+          "name": "alternative punk"
+        },
+        {
+          "count": 1,
+          "disambiguation": "",
+          "id": "ceeaa283-5d7b-4202-8d1d-e25d116b2a18",
+          "name": "alternative rock"
+        },
+        {
+          "id": "2c473395-9cd5-465d-8d85-c308de067c04",
+          "disambiguation": "",
+          "count": 1,
+          "name": "dance-rock"
+        },
+        {
+          "disambiguation": "",
+          "count": 1,
+          "id": "ef0c2769-9c8f-49fc-b66e-27b8242b004a",
+          "name": "emo"
+        },
+        {
+          "name": "emo pop",
+          "id": "17466ce1-b750-4f75-9341-c68b16531ba3",
+          "count": 1,
+          "disambiguation": ""
+        },
+        {
+          "id": "3f08faa9-6c3e-4b6d-b4b8-08eea45954e2",
+          "count": 1,
+          "disambiguation": "",
+          "name": "grunge"
+        },
+        {
+          "id": "911c7bbb-172d-4df8-9478-dbff4296e791",
+          "disambiguation": "",
+          "count": 1,
+          "name": "pop"
+        },
+        {
+          "name": "pop punk",
+          "disambiguation": "",
+          "count": 3,
+          "id": "60e21d01-ce21-4127-86b7-aada79558dab"
+        },
+        {
+          "name": "pop rock",
+          "disambiguation": "",
+          "count": 3,
+          "id": "797e2e85-5ffd-495c-a757-8b4079052f0e"
+        },
+        {
+          "id": "bd7e1d40-43b1-4ba5-97b3-05b891466962",
+          "disambiguation": "",
+          "count": 1,
+          "name": "punk rock"
+        }
+      ]
+    },
+    {
+      "primary-type": "Single",
+      "first-release-date": "2021-06-22",
+      "id": "56931b0f-c46f-42c7-a593-7101edb9725f",
+      "disambiguation": "",
+      "genres": [
+        {
+          "name": "indie pop",
+          "id": "f390be72-360b-41bb-a310-6a2e638779d2",
+          "disambiguation": "",
+          "count": 1
+        },
+        {
+          "name": "indie rock",
+          "count": 1,
+          "disambiguation": "",
+          "id": "ccd19ebf-052c-4afe-8ad9-fbb0a73f94a7"
+        }
+      ],
+      "secondary-type-ids": [],
+      "secondary-types": [],
+      "title": "traitor",
+      "primary-type-id": "d6038452-8ee0-3f68-affc-2de9a1ede0b9"
+    },
+    {
+      "primary-type": "Single",
+      "first-release-date": "2023-06-30",
+      "disambiguation": "",
+      "id": "fb0e9537-c835-4476-9943-c42210e8a59d",
+      "title": "vampire",
+      "secondary-types": [],
+      "primary-type-id": "d6038452-8ee0-3f68-affc-2de9a1ede0b9",
+      "secondary-type-ids": [],
+      "genres": [
+        {
+          "name": "ballad",
+          "id": "17b58d38-1110-4f5a-9412-b0314329622b",
+          "count": 1,
+          "disambiguation": ""
+        },
+        {
+          "id": "797e2e85-5ffd-495c-a757-8b4079052f0e",
+          "count": 3,
+          "disambiguation": "",
+          "name": "pop rock"
+        }
+      ]
+    },
+    {
+      "id": "ee271dd5-31d2-416b-8eea-90f7087b6b75",
+      "disambiguation": "",
+      "first-release-date": "2023-08-11",
+      "primary-type": "Single",
+      "genres": [],
+      "secondary-types": [],
+      "primary-type-id": "d6038452-8ee0-3f68-affc-2de9a1ede0b9",
+      "title": "bad idea right?",
+      "secondary-type-ids": []
+    },
+    {
+      "disambiguation": "",
+      "id": "9559de87-53c4-458c-bd1d-97a1cd419fdd",
+      "primary-type": "Single",
+      "first-release-date": "2026-01-08",
+      "secondary-type-ids": [],
+      "secondary-types": [],
+      "title": "drivers license",
+      "primary-type-id": "d6038452-8ee0-3f68-affc-2de9a1ede0b9",
+      "genres": [
+        {
+          "id": "d3ebe947-7c03-43f5-b333-09379881b0f6",
+          "disambiguation": "",
+          "count": 1,
+          "name": "alternative pop"
+        },
+        {
+          "count": 1,
+          "disambiguation": "",
+          "id": "930ef127-3653-4677-9b95-ecc90c7c1a14",
+          "name": "art pop"
+        },
+        {
+          "count": 1,
+          "disambiguation": "",
+          "id": "f0843e91-c025-4dd7-8aef-6fe3d35470d9",
+          "name": "chamber pop"
+        },
+        {
+          "name": "pop soul",
+          "id": "64e0bd76-822f-4549-a6fe-9858561282d1",
+          "disambiguation": "",
+          "count": 1
+        },
+        {
+          "id": "455f264b-db00-4716-991d-fbd32dc24523",
+          "disambiguation": "",
+          "count": 1,
+          "name": "singer-songwriter"
+        }
+      ]
+    },
+    {
+      "disambiguation": "",
+      "id": "6084af50-a1ab-42fe-9a27-fb67f517c02a",
+      "first-release-date": "2026-04-17",
+      "primary-type": "Single",
+      "secondary-types": [],
+      "title": "drop dead",
+      "primary-type-id": "d6038452-8ee0-3f68-affc-2de9a1ede0b9",
+      "secondary-type-ids": [],
+      "genres": [
+        {
+          "name": "pop",
+          "count": 2,
+          "disambiguation": "",
+          "id": "911c7bbb-172d-4df8-9478-dbff4296e791"
+        }
+      ]
+    },
+    {
+      "secondary-type-ids": [],
+      "secondary-types": [],
+      "primary-type-id": "d6038452-8ee0-3f68-affc-2de9a1ede0b9",
+      "title": "drop dead (acoustic)",
+      "genres": [],
+      "first-release-date": "2026-04-22",
+      "primary-type": "Single",
+      "disambiguation": "",
+      "id": "2c24295d-d2d1-40b9-8786-37a4462160d5"
+    },
+    {
+      "id": "ed290506-e7e4-416e-a7a5-c541e55eba20",
+      "disambiguation": "",
+      "primary-type": "Single",
+      "first-release-date": "2026-05-22",
+      "genres": [
+        {
+          "count": 1,
+          "disambiguation": "",
+          "id": "911c7bbb-172d-4df8-9478-dbff4296e791",
+          "name": "pop"
+        }
+      ],
+      "secondary-types": [],
+      "primary-type-id": "d6038452-8ee0-3f68-affc-2de9a1ede0b9",
+      "title": "the cure",
+      "secondary-type-ids": []
+    },
+    {
+      "id": "c31c2e48-5829-4991-bbd2-a5277e2497d6",
+      "disambiguation": "",
+      "first-release-date": "2026-06-12",
+      "primary-type": "Single",
+      "genres": [],
+      "secondary-type-ids": [],
+      "primary-type-id": "d6038452-8ee0-3f68-affc-2de9a1ede0b9",
+      "secondary-types": [],
+      "title": "honeybee / cigarette smoke"
+    },
+    {
+      "id": "733de4db-e503-4cb2-8d30-216a907ca16e",
+      "disambiguation": "",
+      "primary-type": "Single",
+      "first-release-date": "2026-06-12",
+      "genres": [],
+      "secondary-types": [],
+      "title": "stupid song",
+      "primary-type-id": "d6038452-8ee0-3f68-affc-2de9a1ede0b9",
+      "secondary-type-ids": []
+    },
+    {
+      "secondary-types": [],
+      "title": "serena joy",
+      "primary-type-id": "d6038452-8ee0-3f68-affc-2de9a1ede0b9",
+      "secondary-type-ids": [],
+      "genres": [],
+      "first-release-date": "2026-08-21",
+      "primary-type": "Single",
+      "disambiguation": "",
+      "id": "1558c73d-c380-40fb-b5a8-f4cde7beb393"
+    },
+    {
+      "secondary-type-ids": ["22a628ad-c082-3c4f-b1b6-d41665107b88"],
+      "title": "Let It Glow",
+      "secondary-types": ["Soundtrack"],
+      "primary-type-id": "d6038452-8ee0-3f68-affc-2de9a1ede0b9",
+      "genres": [
+        {
+          "id": "ff6d73e8-bf1a-431e-9911-88ae7ffcfdfb",
+          "disambiguation": "",
+          "count": 1,
+          "name": "musical"
+        },
+        {
+          "name": "pop",
+          "id": "911c7bbb-172d-4df8-9478-dbff4296e791",
+          "count": 1,
+          "disambiguation": ""
+        }
+      ],
+      "primary-type": "Single",
+      "first-release-date": "2016-11-11",
+      "disambiguation": "",
+      "id": "148782c7-b911-4b76-b834-6fd3ba9aae00"
+    },
+    {
+      "id": "3a329735-bd1e-492c-b9fe-24c9b9cfe4b2",
+      "disambiguation": "",
+      "first-release-date": "2019-11-08",
+      "primary-type": "Single",
+      "genres": [
+        {
+          "name": "musical",
+          "id": "ff6d73e8-bf1a-431e-9911-88ae7ffcfdfb",
+          "count": 1,
+          "disambiguation": ""
+        }
+      ],
+      "secondary-type-ids": ["22a628ad-c082-3c4f-b1b6-d41665107b88"],
+      "secondary-types": ["Soundtrack"],
+      "primary-type-id": "d6038452-8ee0-3f68-affc-2de9a1ede0b9",
+      "title": "I Think I Kinda, You Know"
+    },
+    {
+      "genres": [
+        {
+          "id": "ff6d73e8-bf1a-431e-9911-88ae7ffcfdfb",
+          "disambiguation": "",
+          "count": 1,
+          "name": "musical"
+        }
+      ],
+      "secondary-types": ["Soundtrack"],
+      "title": "Wondering",
+      "primary-type-id": "d6038452-8ee0-3f68-affc-2de9a1ede0b9",
+      "secondary-type-ids": ["22a628ad-c082-3c4f-b1b6-d41665107b88"],
+      "first-release-date": "2019-11-12",
+      "primary-type": "Single",
+      "id": "1b94d296-b1d7-44ff-8d5c-2bd39d94ff78",
+      "disambiguation": ""
+    },
+    {
+      "id": "c48b6971-cdd4-4b96-9dc9-2f20a5ba3d83",
+      "disambiguation": "",
+      "primary-type": "Single",
+      "first-release-date": "2019-11-27",
+      "genres": [
+        {
+          "count": 1,
+          "disambiguation": "",
+          "id": "17b58d38-1110-4f5a-9412-b0314329622b",
+          "name": "ballad"
+        },
+        {
+          "disambiguation": "",
+          "count": 2,
+          "id": "ff6d73e8-bf1a-431e-9911-88ae7ffcfdfb",
+          "name": "musical"
+        },
+        {
+          "name": "pop",
+          "id": "911c7bbb-172d-4df8-9478-dbff4296e791",
+          "disambiguation": "",
+          "count": 1
+        }
+      ],
+      "secondary-type-ids": ["22a628ad-c082-3c4f-b1b6-d41665107b88"],
+      "secondary-types": ["Soundtrack"],
+      "primary-type-id": "d6038452-8ee0-3f68-affc-2de9a1ede0b9",
+      "title": "All I Want"
+    },
+    {
+      "secondary-type-ids": ["22a628ad-c082-3c4f-b1b6-d41665107b88"],
+      "secondary-types": ["Soundtrack"],
+      "title": "Out of the Old",
+      "primary-type-id": "d6038452-8ee0-3f68-affc-2de9a1ede0b9",
+      "genres": [
+        {
+          "id": "ff6d73e8-bf1a-431e-9911-88ae7ffcfdfb",
+          "count": 1,
+          "disambiguation": "",
+          "name": "musical"
+        }
+      ],
+      "disambiguation": "",
+      "id": "a9b03b54-b4f6-48e3-8171-b30bfbe5c704",
+      "primary-type": "Single",
+      "first-release-date": "2019-12-18"
+    }
+  ],
+  "country": "US",
+  "ipis": ["00387176421"],
+  "name": "Olivia Rodrigo",
+  "genres": [
+    {
+      "name": "folk pop",
+      "id": "abb2374f-30e5-4d3e-b417-2caf78ef1f6c",
+      "disambiguation": "",
+      "count": 2
+    },
+    {
+      "id": "ff6d73e8-bf1a-431e-9911-88ae7ffcfdfb",
+      "disambiguation": "",
+      "count": 1,
+      "name": "musical"
+    },
+    {
+      "count": 1,
+      "disambiguation": "",
+      "id": "dd497eac-e915-49a9-b1e4-482792acf397",
+      "name": "new jack swing"
+    },
+    {
+      "name": "pop",
+      "id": "911c7bbb-172d-4df8-9478-dbff4296e791",
+      "count": 14,
+      "disambiguation": ""
+    },
+    {
+      "id": "60e21d01-ce21-4127-86b7-aada79558dab",
+      "disambiguation": "",
+      "count": 6,
+      "name": "pop punk"
+    },
+    {
+      "name": "pop rock",
+      "count": 9,
+      "disambiguation": "",
+      "id": "797e2e85-5ffd-495c-a757-8b4079052f0e"
+    },
+    {
+      "count": 5,
+      "disambiguation": "",
+      "id": "618704fc-daac-44a2-92c9-89e3b1a2fc8c",
+      "name": "power pop"
+    },
+    {
+      "id": "31be54b2-4d0c-42df-aa44-c496c7b4c3c3",
+      "count": 1,
+      "disambiguation": "",
+      "name": "r&b"
+    },
+    {
+      "id": "0e3fc579-2d24-4f20-9dae-736e1ec78798",
+      "count": 1,
+      "disambiguation": "",
+      "name": "rock"
+    },
+    {
+      "name": "singer-songwriter",
+      "disambiguation": "",
+      "count": 4,
+      "id": "455f264b-db00-4716-991d-fbd32dc24523"
+    }
+  ],
+  "gender-id": "93452b5a-a947-30c8-934f-6a4056b151c2",
+  "gender": "Female",
+  "life-span": {
+    "end": null,
+    "begin": "2003-02-20",
+    "ended": false
+  },
+  "area": {
+    "name": "United States",
+    "type-id": null,
+    "type": null,
+    "disambiguation": "",
+    "sort-name": "United States",
+    "id": "489ce91b-6658-3307-9877-795b68554c98",
+    "iso-3166-1-codes": ["US"]
+  }
+}
