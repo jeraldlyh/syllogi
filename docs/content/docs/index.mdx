@@ -10,7 +10,10 @@ It matches tracks against your indexed audio, automatically downloads missing tr
 <Cards>
   <Card title="Quick Start" href="/docs/quick-start" description="Get the stack running with Docker Compose." />
   <Card title="Features" href="/docs/features" description="Playlist sync, downloads, recommendations, charts and library management." />
+  <Card title="Usage" href="/docs/usage/users-auth" description="Accounts, music-server users, and the Logs viewer." />
+  <Card title="Concepts" href="/docs/concepts/matching" description="How matching, downloads, and schedules work." />
   <Card title="Configuration" href="/docs/configuration" description="Every environment variable, plus Authentik SSO." />
+  <Card title="Troubleshooting" href="/docs/troubleshooting" description="Fix common sync, download, and login issues." />
 </Cards>
 
 ## Supported playlist providers
@@ -25,14 +28,14 @@ It matches tracks against your indexed audio, automatically downloads missing tr
 | Server        | Requirements                                           |
 | ------------- | ------------------------------------------------------ |
 | **Jellyfin**  | API key with permission to create and manage playlists |
-| **Navidrome** | URL, username, and password for the Subsonic REST API  |
+| **Navidrome** | URL, username, and password |
 
 ## Caveats
 
 <Callout type="warn" title="Before you start">
 - Matching depends on metadata quality from the provider and music server.
 - Library refresh timing can delay newly downloaded tracks.
-- OAuth state is stored in-memory, so a restart invalidates in-flight OAuth flows.
+- A restart invalidates in-flight SSO logins.
 </Callout>
 
 ## Credits

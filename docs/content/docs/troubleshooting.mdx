@@ -1,0 +1,34 @@
+---
+title: Troubleshooting
+description: Common failure modes and where to look.
+---
+
+## Downloaded tracks never appear
+
+- `DOWNLOAD_DIR` must be a path your music server scans. Jellyfin also needs `DOWNLOAD_LIBRARY_NAME` to match the media folder.
+- New downloads appear after the library rescan finishes.
+
+## Sync shows many `Missing`
+
+- See [Track Matching](/docs/concepts/matching): metadata differences or notably different track lengths cause misses.
+- If downloads are disabled on the sync entry, missing tracks are never fetched, hence the fix is to turn downloads on.
+
+## slskd dot is red / downloads fail
+
+- The dashboard header shows whether slskd is configured and reachable. Unset `SLSKD_URL`/`SLSKD_API_KEY` means the YouTube fallback applies
+- Unavailable videos and live-only results show as `failed` in Download Activity and session details.
+
+## Play disabled / validation errors
+
+- Sync `Play` is disabled when syncing is turned off for that entry.
+- Recommendation `Play` is disabled when the music-server user lacks the matching Last.fm/ListenBrainz username.
+- `blend` needs at least 2 blend users and forces public visibility.
+
+## Auth / SSO
+
+- A restart invalidates in-flight SSO logins -> start the Authentik login again.
+- `NEXT_PUBLIC_URL` must match the public URL; the redirect URI is `<public-url>/oauth/callback`.
+
+## Still stuck
+
+Open the `Logs` tab (admin), filter by `ERROR`, and include the session details (open the failed row in `Recent Sessions`) when reporting an issue. `LOG_LEVEL=DEBUG` gives more verbose logs.

@@ -7,8 +7,8 @@ description: Run syllogi with Docker Compose and create your first sync.
 
 - A running [Jellyfin](https://github.com/jellyfin/jellyfin) or [Navidrome](https://github.com/navidrome/navidrome) server.
 - A music library that includes your local music.
-- A Last.fm account that contains your music scrobbles.
 - Docker and Docker Compose.
+- Optional: a [Last.fm](https://www.last.fm/) account (recommendations, charts) and/or a ListenBrainz account (recommendations).
 
 ## Install
 
@@ -48,13 +48,17 @@ docker compose up -d
 
 Open the dashboard at `http://localhost:8000`.
 
+The first account to register becomes **admin** automatically. Admins see the extra **Users** and **Logs** tabs. If you use Authentik SSO, the first OAuth login also becomes admin. See [Users & Auth](/docs/usage/users-auth).
+
 </Step>
 
 <Step>
 
-### Add a playlist
+### Add a music-server user, then a playlist
 
-Set a sync schedule, set up recommendations, and **syllogi** will take it from there.
+Create a music-server user under the **Users** tab (admin only), matching the exact Jellyfin/Navidrome username that will own playlists. If both Jellyfin and Navidrome are configured, set `MUSIC_PROVIDER` to disambiguate, refer to [Configuration](/docs/configuration).
+
+Then add a playlist, set a sync schedule, set up recommendations, and **syllogi** will take it from there.
 
 </Step>
 
