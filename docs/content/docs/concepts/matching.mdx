@@ -1,0 +1,16 @@
+---
+title: Track Matching
+description: How source tracks are matched against your music server library.
+---
+
+Every sync, recommendation run, and charts library badge uses the same matching.
+
+## What matters
+
+Each candidate from your music server is compared against the source track. Title matters most, then artist, then album, year, and duration. Names are cleaned up (punctuation, casing, extra whitespace) before comparing, and the best candidate wins when it is close enough overall, otherwise the track counts as missing.
+
+## Why tracks miss
+
+- Metadata quality differs between Spotify/YouTube and Jellyfin/Navidrome.
+- Different variations (live / extended / remaster) with notably different lengths.
+- Library refresh timing where newly downloaded tracks appear after the rescan completes.
