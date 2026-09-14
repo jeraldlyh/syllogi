@@ -144,13 +144,14 @@ class TestGetArtistAlbums:
         )
 
         provider = _make_provider()
-        await provider.get_artist_albums(artist_mbid=self.MBID, limit=10)
+        result = await provider.get_artist_albums(artist_mbid=self.MBID, limit=10)
 
         params = route.calls.last.request.url.params
 
         assert params["limit"] == "10"
         assert params["method"] == "artist.getTopAlbums"
         assert params["mbid"] == self.MBID
+        assert len(result) == 10
 
     @respx.mock
     async def test_handles_albums_without_images(self):

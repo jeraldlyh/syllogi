@@ -168,7 +168,7 @@ class LastFMMetadataProvider(MetadataProvider):
         raw_albums = self._get_nested_value(data, "topalbums.album") or []
         albums: list[ArtistAlbum] = []
 
-        for album in raw_albums:
+        for album in raw_albums[:limit]:
             images = album.get("image") or []
             image_url = next(
                 (img["#text"] for img in reversed(images) if img.get("#text")),
