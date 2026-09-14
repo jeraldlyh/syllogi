@@ -8,151 +8,21 @@
 
 It matches tracks against your indexed audio, automatically downloads missing tracks via [yt-dlp] or [slskd], generates personalized recommendations based on your listening history, and lets you browse trending charts, all from a single dashboard.
 
-Supported playlist providers:
+## Documentation
 
-| Provider    | Requirements                                                       |
-| ----------- | ------------------------------------------------------------------ |
-| **Spotify** | No API key or account needed, public playlists only, via [SpotAPI] |
-| **YouTube** | No API key needed, public playlists only, via [yt-dlp]             |
+Full documentation lives at **[docs.syllogi.dev](https://docs.syllogi.dev)**:
 
-Supported music servers:
-
-| Server        | Requirements                                           |
-| ------------- | ------------------------------------------------------ |
-| **Jellyfin**  | API key with permission to create and manage playlists |
-| **Navidrome** | URL, username, and password for the Subsonic REST API  |
-
-> [!WARNING]
->
-> - Matching depends on metadata quality from the provider and music server.
-> - Library refresh timing can delay newly downloaded tracks.
-> - OAuth state is stored in-memory, so a restart invalidates in-flight OAuth flows.
-
-## Quick Links
-
-- [Quick Start](#quick-start)
-- [Configuration](#configuration)
-- [Credits](#credits)
-
----
-
-## Screenshots
-
-### Desktop
-
-<table>
-  <tr>
-    <td width="50%" align="center">
-      <img src="assets/sync.jpeg" alt="Playlist sync dashboard on desktop" width="100%" />
-      <br />
-      <sub><b>Playlist Sync</b></sub>
-    </td>
-    <td width="50%" align="center">
-      <img src="assets/recommendations.jpeg" alt="Recommendations dashboard on desktop" width="100%" />
-      <br />
-      <sub><b>Recommendations</b></sub>
-    </td>
-  </tr>
-  <tr>
-    <td width="50%" align="center">
-      <img src="assets/charts.jpeg" alt="Trending charts on desktop" width="100%" />
-      <br />
-      <sub><b>Charts</b></sub>
-    </td>
-    <td width="50%" align="center">
-      <img src="assets/library.jpeg" alt="Library manager on desktop" width="100%" />
-      <br />
-      <sub><b>Library</b></sub>
-    </td>
-  </tr>
-</table>
-
-### Mobile
-
-<table>
-  <tr>
-    <td width="25%" align="center">
-      <img src="assets/sync-mobile.jpeg" alt="Playlist sync dashboard on mobile" width="100%" />
-      <br />
-      <sub><b>Playlist Sync</b></sub>
-    </td>
-    <td width="25%" align="center">
-      <img src="assets/recommendations-mobile.jpeg" alt="Recommendations dashboard on mobile" width="100%" />
-      <br />
-      <sub><b>Recommendations</b></sub>
-    </td>
-    <td width="25%" align="center">
-      <img src="assets/charts-mobile.jpeg" alt="Trending charts on mobile" width="100%" />
-      <br />
-      <sub><b>Charts</b></sub>
-    </td>
-    <td width="25%" align="center">
-      <img src="assets/library-mobile.jpeg" alt="Library manager on mobile" width="100%" />
-      <br />
-      <sub><b>Library</b></sub>
-    </td>
-  </tr>
-</table>
-
----
+- [Quick Start](https://docs.syllogi.dev/docs/quick-start) - run the stack with Docker Compose.
+- [Features](https://docs.syllogi.dev/docs/features) - how sync, downloads, recommendations, charts and library management work.
+- [Configuration](https://docs.syllogi.dev/docs/configuration) - every environment variable, plus Authentik SSO.
 
 ## Features
 
-### Playlist Sync
-
-Mirrors external Spotify or YouTube playlists into your music server. Each sync run diffs the source playlist against your library and produces a per-run breakdown:
-
-| Column     | Description                                          |
-| ---------- | ---------------------------------------------------- |
-| Total      | Total tracks in the source playlist                  |
-| New        | Tracks added to the music server playlist this run   |
-| Removed    | Tracks removed because they left the source playlist |
-| Missing    | Tracks not found in the library and not downloaded   |
-| Downloaded | Tracks that were downloaded and added this run       |
-
-Each playlist requires a **music server username** (the exact username of the account that will own the playlist) and a **cron schedule**.
-
-### Downloads
-
-Missing tracks are downloaded automatically via the following providers:
-
-1. [slskd] if `SLSKD_URL` and `SLSKD_API_KEY` are set.
-2. [yt-dlp] as a fallback.
-
-Downloaded files are placed in `DOWNLOAD_DIR` and the music server library is rescanned immediately after.
-
-### Recommendations
-
-Generates a playlist in your music server based on your [Last.fm] scrobble history (requires `LASTFM_API_KEY`). The existing playlist is replaced with fresh recommendations daily. Supports three strategies:
-
-| Strategy        | Description                                                  |
-| --------------- | ------------------------------------------------------------ |
-| `top_tracks`    | Seeds from your all-time Last.fm top tracks (6-month window) |
-| `recent_tracks` | Seeds from your recently scrobbled tracks                    |
-| `mixed`         | 50% top tracks + 50% recent tracks                           |
-| `blend`         | Blend with other users in the music server                   |
-
-Each recommendation rule requires a **music server username**, a **Last.fm username**, the desired strategy, a track count, and a cron schedule.
-
-### Charts
-
-Browse Last.fm globally trending tracks, and tracks can be queued for download directly from the Charts tab. The download activity log on the dashboard tracks the status of all in-progress and completed downloads.
-
-### Library Management
-
-Browse and retag the audio files found in `DOWNLOAD_DIR` from the dashboard. This tab lists every `.flac`, `.mp3` and `.opus` file with the tags it carries, searchable by file name, title, artist or album, and filterable by container or by the tags a file is missing.
-
-Each row shows how many of the seven editable tags the file has, so gaps are visible at a glance:
-
-| Tag       |
-| --------- |
-| Title     |
-| Artist    |
-| Album     |
-| Date      |
-| Genre     |
-| Lyrics    |
-| Recording |
+- **[Playlist Sync](https://docs.syllogi.dev/docs/features/playlist-sync)** - mirrors public Spotify and YouTube playlists into your music server on a cron schedule, with a per-run breakdown of what was added, removed, missing or downloaded.
+- **[Downloads](https://docs.syllogi.dev/docs/features/downloads)** - fetches tracks missing from your library via [slskd] or [yt-dlp] and triggers a library rescan.
+- **[Recommendations](https://docs.syllogi.dev/docs/features/recommendations)** - builds a daily playlist from your [Last.fm] scrobbles using one of four seeding strategies.
+- **[Charts](https://docs.syllogi.dev/docs/features/charts)** - browses globally trending tracks and queues any of them for download.
+- **[Library](https://docs.syllogi.dev/docs/features/library)** - browses and retags the audio files in your download directory from the dashboard.
 
 ## Quick Start
 
@@ -162,7 +32,7 @@ Each row shows how many of the seven editable tags the file has, so gaps are vis
    cp docker-compose.example.yml docker-compose.yml
    ```
 
-2. Fill in the required environment variables (see [Configuration](#configuration) below).
+2. Fill in the required environment variables (see [Configuration](https://docs.syllogi.dev/docs/configuration)).
 
 3. Start the stack:
 
@@ -174,127 +44,8 @@ Each row shows how many of the seven editable tags the file has, so gaps are vis
 
 5. Add a playlist, set a sync schedule, setup recommendations, and **syllogi** will take it from there.
 
-### Requirements
-
-- A running [Jellyfin] or [Navidrome] server.
-- A music library that includes your local music.
-- Last.fm account that contains your music scrobbles.
-- Docker and Docker Compose.
-
-### Building from source
-
-If you want to build the image locally instead of using the pre-built one, clone the repository **with submodules** (the Spotify client is a git submodule):
-
-```bash
-git clone --recurse-submodules https://github.com/jeraldlyh/syllogi.git
-cd syllogi
-```
-
-Then use the development compose file which builds from source with hot-reload:
-
-```bash
-docker compose up -d
-```
-
----
-
-## Configuration
-
-All configuration is supplied through environment variables on the `syllogi` container.
-
-### Environment variables
-
-#### Required
-
-| Name                | Description                                                                                   |
-| ------------------- | --------------------------------------------------------------------------------------------- |
-| `DATABASE_URL`      | PostgreSQL host and port, e.g. `syllogi-postgres:5432`.                                       |
-| `DATABASE_USERNAME` | PostgreSQL username.                                                                          |
-| `DATABASE_PASSWORD` | PostgreSQL password.                                                                          |
-| `DATABASE_NAME`     | PostgreSQL database name.                                                                     |
-| `NEXT_PUBLIC_URL`   | Public URL of the syllogi web UI, e.g. `http://localhost:8000`. Used for OAuth redirect URIs. |
-| `AUTH_SECRET_KEY`   | Secret used to sign JWT session tokens. Set to a long random string in production.            |
-
-#### Music Server
-
-Configure **one** of the following providers. If both are configured, set `MUSIC_PROVIDER` to disambiguate.
-
-**Jellyfin:**
-
-| Name               | Description                                                                                       |
-| ------------------ | ------------------------------------------------------------------------------------------------- |
-| `JELLYFIN_API_KEY` | Jellyfin API key for the target user with permission to create and manage playlists.              |
-| `JELLYFIN_URL`     | Base URL of your Jellyfin server, e.g. `https://jellyfin.example.com` or `http://localhost:8096`. |
-
-**Navidrome:**
-
-| Name                 | Description                                                      |
-| -------------------- | ---------------------------------------------------------------- |
-| `NAVIDROME_URL`      | Base URL of your Navidrome server, e.g. `http://localhost:4533`. |
-| `NAVIDROME_USERNAME` | Username for the Navidrome Subsonic API.                         |
-| `NAVIDROME_PASSWORD` | Password for the Navidrome Subsonic API (token-based auth).      |
-
-#### Optional
-
-| Name                     | Default                                                | Description                                                                                                                       |
-| ------------------------ | ------------------------------------------------------ | --------------------------------------------------------------------------------------------------------------------------------- |
-| `DOWNLOAD_LIBRARY_NAME`  | `Downloads`                                            | Name of the Jellyfin media folder that contains the yt-dlp downloads.                                                             |
-| `DOWNLOAD_DIR`           | `/downloads`                                           | Filesystem path inside the container where downloaded tracks are written. This path should also match Jellyfin's library path.    |
-| `DISCORD_WEBHOOK_URL`    | _(unset)_                                              | Discord webhook URL for sync summary notifications. Leave unset to disable.                                                       |
-| `LOG_LEVEL`              | `INFO`                                                 | Python logging level (`DEBUG`, `INFO`, `WARNING`, `ERROR`).                                                                       |
-| `LOG_DIR`                | `/logs`                                                | Directory inside the container where `syllogi.log` is written. Mount it as a volume so the Logs tab survives a restart.           |
-| `AUTHENTIK_CLIENT_ID`    | _(unset)_                                              | Authentik OAuth application client ID. Required only if you want SSO via Authentik.                                               |
-| `AUTHENTIK_SECRET`       | _(unset)_                                              | Authentik OAuth application client secret.                                                                                        |
-| `AUTHENTIK_ISSUER`       | _(unset)_                                              | Authentik OIDC issuer URL, e.g. `https://auth.example.com/application/o/syllogi/`.                                                |
-| `TZ`                     | _(unset)_                                              | Container timezone, e.g. `Asia/Singapore`. Affects cron scheduling.                                                               |
-| `ENVIRONMENT`            | `production`                                           | Set to `development` to enable debug features (raw API response dumps). Defaults to `production`.                                 |
-| `MUSICBRAINZ_URL`        | `https://musicbrainz.org/ws/2`                         | Base URL for MusicBrainz API.                                                                                                     |
-| `MUSICBRAINZ_USER_AGENT` | `syllogi/0.1.0 (https://github.com/jeraldlyh/syllogi)` | User agent string for MusicBrainz API requests.                                                                                   |
-| `LASTFM_API_KEY`         | _(unset)_                                              | Last.fm API key for generating recommendations based on your scrobbles. See [Last.fm API documentation](https://www.last.fm/api). |
-| `LASTFM_URL`             | `https://ws.audioscrobbler.com/2.0`                    | Base URL for Last.fm API.                                                                                                         |
-| `SLSKD_URL`              | _(unset)_                                              | Base URL for SLSKD API.                                                                                                           |
-| `SLSKD_API_KEY`          | _(unset)_                                              | API key for SLSKD for downloading audio when tracks are missing from library.                                                     |
-| `MUSIC_PROVIDER`         | _(unset)_                                              | Set to `navidrome` if both Jellyfin and Navidrome are configured.                                                                 |
-
-### Authentik OIDC
-
-Use Authentik for SSO by creating an OIDC provider and setting the variables below.
-
-1. Create an OAuth2/OIDC provider in Authentik with:
-   - **Client type**: `Confidential`
-   - **Redirect URI**: `<public-url-of-syllogi>/oauth/callback`
-2. Create an Authentik application and attach the provider.
-3. Copy the **Client ID**, **Client Secret**, and **OpenID Configuration URL** (issuer).
-4. Set these environment variables:
-
-```yaml
-environment:
-  AUTHENTIK_CLIENT_ID: "<client-id>"
-  AUTHENTIK_SECRET: "<client-secret>"
-  AUTHENTIK_ISSUER: "<issuer-url>"
-  NEXT_PUBLIC_URL: "<public-url-of-syllogi>"
-```
-
----
-
-## Credits
-
-Special thanks to the following projects for making **syllogi** possible:
-
-- [SpotAPI]
-- [yt-dlp]
-- [Jellyfin]
-- [Navidrome]
-- [Last.fm]
-- [slskd]
-- [MusicBrainz]
-- [LRCLIB]
-
-[SpotAPI]: https://github.com/Aran404/SpotAPI/tree/main
-[yt-dlp]: https://github.com/yt-dlp/yt-dlp
 [Jellyfin]: https://github.com/jellyfin/jellyfin
 [Navidrome]: https://github.com/navidrome/navidrome
-[Last.fm]: https://www.last.fm/
+[yt-dlp]: https://github.com/yt-dlp/yt-dlp
 [slskd]: https://github.com/slskd/slskd
-[MusicBrainz]: https://musicbrainz.org/
-[LRCLIB]: https://lrclib.net/
+[Last.fm]: https://www.last.fm/
