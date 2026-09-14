@@ -17,8 +17,8 @@ export const ChartImage = ({
   textClassName,
   children,
 }: IProps) => {
-  const [hasError, setHasError] = useState(false);
-  const showImage = !!imageUrl && !hasError;
+  const [failedUrl, setFailedUrl] = useState<string | null>(null);
+  const showImage = !!imageUrl && failedUrl !== imageUrl;
 
   return (
     <div
@@ -33,7 +33,7 @@ export const ChartImage = ({
           alt={alt}
           loading="lazy"
           decoding="async"
-          onError={() => setHasError(true)}
+          onError={() => setFailedUrl(imageUrl ?? null)}
           className="absolute h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
         />
       ) : (
