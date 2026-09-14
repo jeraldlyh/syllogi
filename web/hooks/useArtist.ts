@@ -28,9 +28,20 @@ export interface ArtistMetadata {
   num_of_fans: number | null;
 }
 
+export interface ArtistAlbum {
+  id: string;
+  title: string;
+  type: string;
+  secondary_types: string[];
+  release_date: string;
+  year: string;
+  image_url: string;
+}
+
 export interface ArtistInfo {
   artist: ArtistMetadata | null;
   tracks: ArtistTrack[];
+  albums: ArtistAlbum[];
 }
 
 export const useArtist = (artistName: string, locale?: string) => {

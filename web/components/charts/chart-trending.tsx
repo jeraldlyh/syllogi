@@ -153,7 +153,7 @@ export const ChartTrending = () => {
     return (
       <div className="mb-4 flex flex-col gap-3 sm:flex-row">
         <div className="relative flex-1">
-          <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+          <Search className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
           <Input
             placeholder="Search by track, artist, or album..."
             value={search}
@@ -363,7 +363,7 @@ export const ChartTrending = () => {
                     className="h-7 w-7 text-muted-foreground hover:text-foreground"
                     aria-label={`View ${artist.name}`}
                   >
-                    <Eye className="h-4 w-4" />
+                    <Eye className="size-4" />
                   </Button>
                 </TableCell>
               </TableRow>
@@ -438,7 +438,7 @@ export const ChartTrending = () => {
                       onClick={() => handleDownload(track)}
                       disabled={isDownloading || isExist}
                     >
-                      <Download className="h-4 w-4" />
+                      <Download className="size-4" />
                     </Button>
                   </TableCell>
                 </TableRow>
@@ -659,7 +659,7 @@ export const ChartTrending = () => {
                       onClick={() => handleDownload(track)}
                       disabled={isDownloading || isExist}
                     >
-                      <Download className="h-4 w-4" />
+                      <Download className="size-4" />
                     </Button>
                   </TableCell>
                 </TableRow>
@@ -680,7 +680,7 @@ export const ChartTrending = () => {
           </CardTitle>
           {!isCatalogSearch && (
             <Button size="sm" onClick={() => fetchTrendingTracks()}>
-              <RefreshCw className="w-4 h-4" />
+              <RefreshCw className="size-4" />
               Refresh
             </Button>
           )}

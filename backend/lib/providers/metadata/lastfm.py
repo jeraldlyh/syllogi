@@ -6,7 +6,7 @@ import httpx
 from lib.cache import cached_method
 from lib.env import get_environment_variable
 from lib.models.chart import ChartTrendingTrack
-from lib.models.metadata import AlbumInfo, ArtistInfo, ArtistTrack
+from lib.models.metadata import AlbumInfo, ArtistAlbum, ArtistInfo, ArtistTrack
 from lib.providers.metadata.base import MetadataProvider
 
 logger = logging.getLogger(__name__)
@@ -149,6 +149,42 @@ class LastFMMetadataProvider(MetadataProvider):
                 )
             )
         return tracks
+
+    @cached_method(ttl=86400)
+    async def get_artist_albums(
+        self,
+        *,
+        artist_mbid: str,
+        limit: int = 100,
+    ) -> list[ArtistAlbum]:
+        data = await self._http(
+            params={
+                "method": "artist.getTopAlbums",
+                "mbid": artist_mbid,
+                "limit": limit,
+            },
+        )
+
+        raw_albums = self._get_nested_value(data, "topalbums.album") or []
+        albums: list[ArtistAlbum] = []
+
+        for album in raw_albums[:limit]:
+            images = album.get("image") or []
+            image_url = next(
+                (img["#text"] for img in reversed(images) if img.get("#text")),
+                "",
+            )
+            albums.append(
+                ArtistAlbum(
+                    id=album.get("mbid", ""),
+                    title=album.get("name", ""),
+                    primary_type="",
+                    secondary_types=[],
+                    release_date="",
+                    image_url=image_url,
+                )
+            )
+        return albums
 
     @cached_method(ttl=86400)
     async def get_artist_track(

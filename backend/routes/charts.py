@@ -291,11 +291,22 @@ async def _search_catalog(
                                         "exists": True,
                                     },
                                 ],
+                                "albums": [
+                                    {
+                                        "id": "3d9f90fa-5d7c-38c2-9a1e-3dbf3d0c1e6a",
+                                        "title": "Pablo Honey",
+                                        "type": "Album",
+                                        "secondary_types": [],
+                                        "release_date": "1993-02-22",
+                                        "year": "1993",
+                                        "image_url": "https://coverartarchive.org/release-group/3d9f90fa-5d7c-38c2-9a1e-3dbf3d0c1e6a/front-250",
+                                    }
+                                ],
                             },
                         },
                         "not_found": {
                             "summary": "Artist not found",
-                            "value": {"artist": None, "tracks": []},
+                            "value": {"artist": None, "tracks": [], "albums": []},
                         },
                     },
                 }
@@ -316,20 +327,24 @@ async def _get_artist_info(
     )
 
     if not artist_info:
-        return {"artist": None, "tracks": []}
+        return {"artist": None, "tracks": [], "albums": []}
 
-    await artist_info.ensure_metadata()
-
-    mb_tracks = await mb_provider.get_artist_tracks(
-        artist_mbid=artist_info.id, limit=10
+    _, (mb_tracks, albums) = await asyncio.gather(
+        artist_info.ensure_metadata(),
+        mb_provider.get_artist_recordings_and_albums(
+            artist_mbid=artist_info.id, limit=100
+        ),
     )
     mb_tracks = list(set(mb_tracks))
 
     await asyncio.gather(*[track.ensure_metadata() for track in mb_tracks])
 
+    tracks = await asyncio.gather(*[track.to_dict() for track in mb_tracks])
+
     return {
         "artist": artist_info.to_dict(),
-        "tracks": [await track.to_dict() for track in mb_tracks],
+        "tracks": tracks,
+        "albums": [album.to_dict() for album in albums],
     }
 
 

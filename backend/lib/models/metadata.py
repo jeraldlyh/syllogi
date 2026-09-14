@@ -181,6 +181,31 @@ class ArtistInfo:
 
 
 @dataclass
+class ArtistAlbum:
+    """A release group (album, EP, single, ...) by an artist."""
+
+    id: str
+    title: str
+    primary_type: str
+    secondary_types: list[str]
+    release_date: str
+    image_url: str
+
+    def to_dict(self) -> dict[str, str | list[str]]:
+        """Convert the ArtistAlbum to a dictionary representation."""
+
+        return {
+            "id": self.id,
+            "title": self.title,
+            "type": self.primary_type,
+            "secondary_types": self.secondary_types,
+            "release_date": self.release_date,
+            "year": self.release_date.split("-")[0] if self.release_date else "",
+            "image_url": self.image_url,
+        }
+
+
+@dataclass
 class AlbumInfo:
     """Album metadata with tracklist."""
 
