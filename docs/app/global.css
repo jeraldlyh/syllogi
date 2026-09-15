@@ -25,6 +25,13 @@
 html {
   scrollbar-gutter: stable;
 }
+#nd-nav button[aria-label="Toggle Menu"] {
+  display: none;
+}
+
+#nd-nav ul:empty {
+  display: none;
+}
 
 html > body[data-scroll-locked] {
   margin-right: 0px !important;
