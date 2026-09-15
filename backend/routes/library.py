@@ -83,6 +83,7 @@ class UpdateTagsRequest(BaseModel):
                                     "format": "flac",
                                     "size": 32145678,
                                     "duration": 200,
+                                    "mtime": 1756700000.0,
                                     "has_lyrics": True,
                                     "is_synced_lyrics": True,
                                     "filled_fields": ["title", "artist", "album"],
@@ -119,6 +120,9 @@ def _list_library_tracks(
         int, Query(description="Number of files to return", ge=1, le=500)
     ] = 100,
     offset: Annotated[int, Query(description="Number of files to skip", ge=0)] = 0,
+    order: Annotated[
+        Literal["asc", "desc"], Query(description="Sort direction")
+    ] = "desc",
 ) -> dict:
     trigger_library_sweep()
 
@@ -129,6 +133,7 @@ def _list_library_tracks(
         missing=missing,
         limit=limit,
         offset=offset,
+        descending=order == "desc",
     )
 
     return {
