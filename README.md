@@ -47,8 +47,24 @@ Full documentation lives at **[docs.syllogi.dev](https://docs.syllogi.dev)**:
 
 5. Add a playlist, set a sync schedule, setup recommendations, and **syllogi** will take it from there.
 
+## Credits
+
+Special thanks to the following projects for making **syllogi** possible:
+
+- [SpotAPI]
+- [yt-dlp]
+- [Jellyfin]
+- [Navidrome]
+- [Last.fm]
+- [slskd]
+- [MusicBrainz]
+- [LRCLIB]
+
+[SpotAPI]: https://github.com/Aran404/SpotAPI/tree/main
 [Jellyfin]: https://github.com/jellyfin/jellyfin
 [Navidrome]: https://github.com/navidrome/navidrome
 [yt-dlp]: https://github.com/yt-dlp/yt-dlp
 [slskd]: https://github.com/slskd/slskd
 [Last.fm]: https://www.last.fm/
+[MusicBrainz]: https://musicbrainz.org/
+[LRCLIB]: https://lrclib.net/
