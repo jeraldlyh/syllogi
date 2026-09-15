@@ -35,7 +35,7 @@ export function Hero() {
             </span>
           </h1>
           <p
-            className="animate-rise mt-5 max-w-xl text-lg text-fd-muted-foreground"
+            className="animate-rise my-5 max-w-xl text-base text-fd-muted-foreground"
             style={{ animationDelay: "180ms" }}
           >
             Keep your Jellyfin or Navidrome library in sync with Spotify and
@@ -43,26 +43,26 @@ export function Hero() {
             recommendations from your listening history.
           </p>
           <div
-            className="animate-rise mt-8 flex flex-wrap items-center gap-3"
+            className="animate-rise flex flex-wrap items-center gap-3"
             style={{ animationDelay: "270ms" }}
           >
             <Link
               href="/docs"
-              className="group inline-flex items-center gap-2 rounded-xl bg-fd-primary px-5 py-2.5 font-medium text-fd-primary-foreground transition hover:opacity-90"
+              className="group inline-flex items-center gap-2 rounded-xl bg-fd-primary px-5 py-2.5 text-sm font-medium text-fd-primary-foreground transition hover:opacity-90"
             >
               Read the docs
               <ArrowRight className="size-4 transition-transform group-hover:translate-x-0.5" />
             </Link>
             <Link
               href="/docs/quick-start"
-              className="inline-flex items-center gap-2 rounded-xl border border-fd-border bg-fd-card px-5 py-2.5 font-medium transition hover:border-amber-500/60"
+              className="inline-flex items-center gap-2 rounded-xl border border-fd-border bg-fd-card px-5 py-2.5 text-sm font-medium transition hover:border-amber-500/60"
             >
               <Play className="size-4" />
               Quick start
             </Link>
             <a
               href="https://github.com/jeraldlyh/syllogi"
-              className="inline-flex items-center gap-2 rounded-xl px-3 py-2.5 font-medium text-fd-muted-foreground transition hover:text-fd-foreground"
+              className="inline-flex items-center gap-2 rounded-xl px-3 py-2.5 text-sm font-medium text-fd-muted-foreground transition hover:text-fd-foreground"
             >
               <ArrowUpRight className="size-4" />
               GitHub
@@ -103,17 +103,14 @@ export function Hero() {
               aria-hidden
               className="absolute inset-0 rounded-full bg-sy-shine"
             />
-            <div className="absolute inset-1/3 flex flex-col items-center justify-center gap-1.5 rounded-full bg-amber-400 text-stone-950 shadow-inner">
+            <div className="absolute inset-1/3 flex flex-col items-center justify-center gap-1.5 rounded-full shadow-inner">
               <Image
                 src="/assets/icon.png"
                 alt=""
-                width={64}
-                height={64}
+                width={96}
+                height={96}
                 className="rounded-full"
               />
-              <span className="font-chip text-xs font-semibold tracking-sy-wide">
-                67 RPM
-              </span>
             </div>
             <div className="absolute left-1/2 top-1/2 size-2.5 -translate-x-1/2 -translate-y-1/2 rounded-full bg-stone-950 ring-2 ring-amber-100" />
           </div>
