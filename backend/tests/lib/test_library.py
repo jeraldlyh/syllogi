@@ -680,6 +680,11 @@ class TestLibraryTrackSerialization:
 
         assert track.filled_fields() == ["title", "artist", "date", "genres", "lyrics"]
 
+    def test_includes_mtime_with_the_value_set_on_the_model(self):
+        payload = make_track(mtime=1756700000.0).to_dict()
+
+        assert payload["mtime"] == 1756700000.0
+
 
 class TestAudioTagsSerialization:
     def test_round_trips_every_field(self):

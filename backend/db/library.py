@@ -162,6 +162,7 @@ def query_tracks(
     missing: str = "",
     limit: int = 100,
     offset: int = 0,
+    descending: bool = True,
 ) -> tuple[Sequence[LibraryTrack], int]:
     """Return one page of matching tracks alongside the total match count."""
 
@@ -173,10 +174,15 @@ def query_tracks(
         select(sa.func.count()).select_from(LibraryTrack).where(*conditions)
     ).one()
 
+    order = [
+        col(LibraryTrack.mtime).desc() if descending else col(LibraryTrack.mtime).asc(),
+        col(LibraryTrack.path),
+    ]
+
     tracks = session.exec(
         select(LibraryTrack)
         .where(*conditions)
-        .order_by(sa.func.lower(col(LibraryTrack.path)))
+        .order_by(*order)
         .limit(limit)
         .offset(offset)
     ).all()
