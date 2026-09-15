@@ -20,6 +20,7 @@ export default function HomePage() {
     <div className={`${display.variable} ${syMono.variable}`}>
       <Hero />
       <Features />
+      <Steps />
     </div>
   );
 }
