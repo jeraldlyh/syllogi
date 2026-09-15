@@ -28,7 +28,7 @@ const steps = [
 export function Steps() {
   return (
     <section className="border-y border-fd-border bg-fd-card/40">
-      <div className="mx-auto max-w-6xl px-4 py-16 lg:py-20">
+      <div className="mx-auto max-w-6xl px-6 py-16 sm:px-8 lg:py-20">
         <p className="font-chip text-xs uppercase tracking-sy-wide text-emerald-600 dark:text-emerald-400">
           How it runs
         </p>

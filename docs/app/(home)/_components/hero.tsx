@@ -17,7 +17,7 @@ export function Hero() {
         aria-hidden
         className="pointer-events-none absolute inset-x-0 bottom-0 h-40 bg-linear-to-b from-transparent to-fd-background"
       />
-      <div className="relative mx-auto grid max-w-6xl items-center gap-12 px-4 pb-16 pt-14 sm:pt-20 lg:grid-cols-2 lg:pb-24">
+      <div className="relative mx-auto grid max-w-6xl items-center gap-12 px-6 pb-16 pt-14 sm:px-8 sm:pt-20 lg:grid-cols-2 lg:pb-24">
         <div>
           <p className="animate-rise inline-flex items-center gap-2 rounded-full border border-fd-border bg-fd-card px-3 py-1.5 text-xs font-mono">
             <span className="animate-blink inline-block h-2 w-2 rounded-full bg-red-500" />
