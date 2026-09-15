@@ -8,6 +8,9 @@
 
 It matches tracks against your indexed audio, automatically downloads missing tracks via [yt-dlp] or [slskd], generates personalized recommendations based on your listening history, and lets you browse trending charts, all from a single dashboard.
 
+> [!NOTE]
+> **AI Disclosure:** syllogi is primarily hand-written. AI assistance is mainly used for the documentation site and OpenAPI spec; CodeRabbit AI reviews merge requests, with human review before merge.
+
 ## Documentation
 
 Full documentation lives at **[docs.syllogi.dev](https://docs.syllogi.dev)**:
