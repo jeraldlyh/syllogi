@@ -72,9 +72,6 @@ export function Hero() {
             className="animate-rise mt-10 flex items-center gap-4"
             style={{ animationDelay: "360ms" }}
           >
-            <p className="font-chip text-xs uppercase tracking-widest text-fd-muted-foreground">
-              Now syncing
-            </p>
             <div aria-hidden className="flex h-8 flex-1 items-end gap-0.75">
               {Array.from({ length: 32 }).map((_, i) => (
                 <span
