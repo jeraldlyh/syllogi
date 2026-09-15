@@ -21,6 +21,7 @@ export default function HomePage() {
       <Hero />
       <Features />
       <Steps />
+      <Footer />
     </div>
   );
 }
