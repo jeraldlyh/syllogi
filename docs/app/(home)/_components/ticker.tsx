@@ -29,7 +29,7 @@ export function Ticker() {
                   className="font-chip flex items-center gap-8 whitespace-nowrap text-xs text-fd-muted-foreground"
                 >
                   {run}
-                  <span className="text-amber-500">///</span>
+                  <span className="text-emerald-600 dark:text-emerald-500">///</span>
                 </span>
               ))}
             </div>

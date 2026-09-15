@@ -14,7 +14,7 @@ export function Footer() {
               <li>
                 <Link
                   href="/docs/quick-start"
-                  className="transition hover:text-amber-600 dark:hover:text-amber-400"
+                  className="transition hover:text-emerald-600 dark:hover:text-emerald-400"
                 >
                   Quick start
                 </Link>
@@ -22,7 +22,7 @@ export function Footer() {
               <li>
                 <Link
                   href="/docs/features/playlist-sync"
-                  className="transition hover:text-amber-600 dark:hover:text-amber-400"
+                  className="transition hover:text-emerald-600 dark:hover:text-emerald-400"
                 >
                   Playlist sync
                 </Link>
@@ -30,7 +30,7 @@ export function Footer() {
               <li>
                 <Link
                   href="/docs/features/recommendations"
-                  className="transition hover:text-amber-600 dark:hover:text-amber-400"
+                  className="transition hover:text-emerald-600 dark:hover:text-emerald-400"
                 >
                   Recommendations
                 </Link>
@@ -38,7 +38,7 @@ export function Footer() {
               <li>
                 <Link
                   href="/docs/features/library"
-                  className="transition hover:text-amber-600 dark:hover:text-amber-400"
+                  className="transition hover:text-emerald-600 dark:hover:text-emerald-400"
                 >
                   Library
                 </Link>
@@ -53,7 +53,7 @@ export function Footer() {
               <li>
                 <Link
                   href="/docs/concepts/schedules"
-                  className="transition hover:text-amber-600 dark:hover:text-amber-400"
+                  className="transition hover:text-emerald-600 dark:hover:text-emerald-400"
                 >
                   Schedules
                 </Link>
@@ -61,7 +61,7 @@ export function Footer() {
               <li>
                 <Link
                   href="/docs/concepts/matching"
-                  className="transition hover:text-amber-600 dark:hover:text-amber-400"
+                  className="transition hover:text-emerald-600 dark:hover:text-emerald-400"
                 >
                   Track matching
                 </Link>
@@ -69,7 +69,7 @@ export function Footer() {
               <li>
                 <Link
                   href="/docs/usage/users-auth"
-                  className="transition hover:text-amber-600 dark:hover:text-amber-400"
+                  className="transition hover:text-emerald-600 dark:hover:text-emerald-400"
                 >
                   Users &amp; auth
                 </Link>
@@ -77,7 +77,7 @@ export function Footer() {
               <li>
                 <Link
                   href="/docs/troubleshooting"
-                  className="transition hover:text-amber-600 dark:hover:text-amber-400"
+                  className="transition hover:text-emerald-600 dark:hover:text-emerald-400"
                 >
                   Troubleshooting
                 </Link>
@@ -92,7 +92,7 @@ export function Footer() {
               <li>
                 <a
                   href="https://github.com/jeraldlyh/syllogi"
-                  className="group inline-flex items-center gap-1 transition hover:text-amber-600 dark:hover:text-amber-400"
+                  className="group inline-flex items-center gap-1 transition hover:text-emerald-600 dark:hover:text-emerald-400"
                 >
                   GitHub
                   <ArrowUpRight className="size-3.5 transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
@@ -101,7 +101,7 @@ export function Footer() {
               <li>
                 <Link
                   href="/docs/configuration"
-                  className="transition hover:text-amber-600 dark:hover:text-amber-400"
+                  className="transition hover:text-emerald-600 dark:hover:text-emerald-400"
                 >
                   Configuration
                 </Link>
@@ -109,7 +109,7 @@ export function Footer() {
               <li>
                 <Link
                   href="/docs/configuration/authentik"
-                  className="transition hover:text-amber-600 dark:hover:text-amber-400"
+                  className="transition hover:text-emerald-600 dark:hover:text-emerald-400"
                 >
                   Authentik SSO
                 </Link>
@@ -117,7 +117,7 @@ export function Footer() {
               <li>
                 <Link
                   href="/docs/usage/logs"
-                  className="transition hover:text-amber-600 dark:hover:text-amber-400"
+                  className="transition hover:text-emerald-600 dark:hover:text-emerald-400"
                 >
                   Logs
                 </Link>

@@ -1,6 +1,26 @@
 @import "tailwindcss";
-@import "fumadocs-ui/css/neutral.css";
+@import "fumadocs-ui/css/emerald.css";
 @import "fumadocs-ui/css/preset.css";
+
+.dark {
+  color-scheme: dark;
+  --color-fd-background: hsl(200 10% 4%);
+  --color-fd-foreground: hsl(0 0% 95%);
+  --color-fd-muted: hsl(200 6% 13%);
+  --color-fd-muted-foreground: hsl(0 0% 55%);
+  --color-fd-popover: hsl(200 8% 7%);
+  --color-fd-popover-foreground: hsl(0 0% 95%);
+  --color-fd-card: hsl(200 8% 7%);
+  --color-fd-card-foreground: hsl(0 0% 95%);
+  --color-fd-border: hsl(200 6% 16%);
+  --color-fd-primary: hsl(160 84% 39%);
+  --color-fd-primary-foreground: hsl(200 10% 4%);
+  --color-fd-secondary: hsl(200 6% 13%);
+  --color-fd-secondary-foreground: hsl(0 0% 85%);
+  --color-fd-accent: hsl(160 84% 39%);
+  --color-fd-accent-foreground: hsl(200 10% 4%);
+  --color-fd-ring: hsl(160 84% 39%);
+}
 
 html {
   scrollbar-gutter: stable;
@@ -33,7 +53,7 @@ html > body[data-scroll-locked] {
 
   --background-image-sy-hero-glow: radial-gradient(
     52rem 30rem at 50% -6rem,
-    rgb(245 158 11 / 0.14),
+    rgb(16 185 129 / 0.14),
     transparent 70%
   );
   --background-image-sy-dots: radial-gradient(

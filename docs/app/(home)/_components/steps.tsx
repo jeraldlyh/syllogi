@@ -29,7 +29,7 @@ export function Steps() {
   return (
     <section className="border-y border-fd-border bg-fd-card/40">
       <div className="mx-auto max-w-6xl px-4 py-16 lg:py-20">
-        <p className="font-chip text-xs uppercase tracking-sy-wide text-amber-600 dark:text-amber-400">
+        <p className="font-chip text-xs uppercase tracking-sy-wide text-emerald-600 dark:text-emerald-400">
           How it runs
         </p>
         <h2 className="font-display mt-2 text-3xl font-bold tracking-tight sm:text-4xl">
@@ -50,7 +50,7 @@ export function Steps() {
               <p className="mt-auto">
                 <Link
                   href={step.href}
-                  className="group inline-flex items-center gap-1 text-sm font-medium text-amber-700 hover:text-amber-600 dark:text-amber-400 dark:hover:text-amber-300"
+                  className="group inline-flex items-center gap-1 text-sm font-medium text-emerald-700 hover:text-emerald-600 dark:text-emerald-400 dark:hover:text-emerald-300"
                 >
                   {step.link}
                   <ArrowRight className="size-3.5 transition-transform group-hover:translate-x-0.5" />

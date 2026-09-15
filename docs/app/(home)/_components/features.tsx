@@ -46,7 +46,7 @@ export function Features() {
     <section className="mx-auto max-w-6xl px-4 py-16 lg:py-24">
       <div className="flex flex-wrap items-end justify-between gap-4">
         <div>
-          <p className="font-chip text-xs uppercase tracking-sy-wide text-amber-600 dark:text-amber-400">
+          <p className="font-chip text-xs uppercase tracking-sy-wide text-emerald-600 dark:text-emerald-400">
             What it does
           </p>
           <h2 className="font-display mt-2 text-3xl font-bold tracking-tight sm:text-4xl">
@@ -66,9 +66,9 @@ export function Features() {
           <Link
             key={feature.href}
             href={feature.href}
-            className="group relative overflow-hidden rounded-2xl border border-fd-border bg-fd-card p-6 transition duration-300 hover:-translate-y-1 hover:border-amber-500/60 hover:shadow-xl"
+            className="group relative overflow-hidden rounded-2xl border border-fd-border bg-fd-card p-6 transition duration-300 hover:-translate-y-1 hover:border-emerald-500/60 hover:shadow-xl"
           >
-            <span className="flex h-10 w-10 items-center justify-center rounded-xl border border-fd-border bg-fd-background transition group-hover:border-amber-500/50">
+            <span className="flex h-10 w-10 items-center justify-center rounded-xl border border-fd-border bg-fd-background transition group-hover:border-emerald-500/50">
               <feature.icon className="size-5" />
             </span>
             <h3 className="font-display mt-5 text-xl font-bold">
@@ -81,7 +81,7 @@ export function Features() {
         ))}
         <Link
           href="/docs/usage/logs"
-          className="group relative overflow-hidden rounded-2xl border border-dashed border-fd-border p-6 transition duration-300 hover:-translate-y-1 hover:border-amber-500/60 hover:shadow-xl"
+          className="group relative overflow-hidden rounded-2xl border border-dashed border-fd-border p-6 transition duration-300 hover:-translate-y-1 hover:border-emerald-500/60 hover:shadow-xl"
         >
           <h3 className="font-display mt-5 text-xl font-bold">
             Plus the receipts.

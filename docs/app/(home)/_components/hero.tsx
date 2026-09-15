@@ -30,7 +30,7 @@ export function Hero() {
             Your library,
             <br />
             on
-            <span className="text-amber-500 dark:text-amber-400">
+            <span className="text-emerald-600 dark:text-emerald-400">
               &nbsp;autopilot.
             </span>
           </h1>
@@ -55,7 +55,7 @@ export function Hero() {
             </Link>
             <Link
               href="/docs/quick-start"
-              className="inline-flex items-center gap-2 rounded-xl border border-fd-border bg-fd-card px-5 py-2.5 text-sm font-medium transition hover:border-amber-500/60"
+              className="inline-flex items-center gap-2 rounded-xl border border-fd-border bg-fd-card px-5 py-2.5 text-sm font-medium transition hover:border-emerald-500/60"
             >
               <Play className="size-4" />
               Quick start
@@ -79,7 +79,7 @@ export function Hero() {
               {Array.from({ length: 32 }).map((_, i) => (
                 <span
                   key={i}
-                  className={`origin-bottom animate-eq  w-full rounded-sm ${i % 5 === 0 ? "bg-fd-foreground/25" : "bg-amber-500/90"}`}
+                  className={`origin-bottom animate-eq  w-full rounded-sm ${i % 5 === 0 ? "bg-fd-foreground/25" : "bg-emerald-500/90"}`}
                   style={{
                     height: "100%",
                     animationDelay: `${((i * 137) % 1100) / 1000}s`,
@@ -96,7 +96,7 @@ export function Hero() {
         >
           <div
             aria-hidden
-            className="absolute -inset-10 rounded-full bg-amber-500/15 blur-3xl"
+            className="absolute -inset-10 rounded-full bg-emerald-500/15 blur-3xl"
           />
           <div className="animate-spin-slow pause-on-hover relative aspect-square rounded-full bg-sy-grooves shadow-2xl ring-1 ring-black/70">
             <div
@@ -112,7 +112,7 @@ export function Hero() {
                 className="rounded-full"
               />
             </div>
-            <div className="absolute left-1/2 top-1/2 size-2.5 -translate-x-1/2 -translate-y-1/2 rounded-full bg-stone-950 ring-2 ring-amber-100" />
+            <div className="absolute left-1/2 top-1/2 size-2.5 -translate-x-1/2 -translate-y-1/2 rounded-full bg-stone-950 ring-2 ring-emerald-100" />
           </div>
           <div className="absolute -right-3 top-8 hidden sm:block lg:-right-8">
             <p className="font-chip inline-flex items-center gap-2 whitespace-nowrap rounded-full border border-fd-border bg-fd-card px-3.5 py-1.5 text-xs text-fd-muted-foreground shadow-lg font-medium">
@@ -122,13 +122,13 @@ export function Hero() {
           </div>
           <div className="absolute -left-3 bottom-14 hidden sm:block lg:-left-10">
             <p className="font-chip inline-flex items-center gap-2 whitespace-nowrap rounded-full border border-fd-border bg-fd-card px-3.5 py-1.5 text-xs text-fd-muted-foreground shadow-lg font-medium">
-              <span className="animate-blink inline-block size-1.5 rounded-full bg-purple-500" />
+              <span className="animate-blink inline-block size-1.5 rounded-full bg-amber-500" />
               DOWNLOADING
             </p>
           </div>
           <div className="absolute -bottom-5 left-1/2 -translate-x-1/2">
             <p className="font-chip inline-flex items-center gap-2 whitespace-nowrap rounded-full border border-fd-border bg-fd-card px-3.5 py-1.5 text-xs text-fd-muted-foreground shadow-lg font-medium">
-              <span className="animate-blink inline-block size-1.5 rounded-full bg-amber-500" />
+              <span className="animate-blink inline-block size-1.5 rounded-full bg-emerald-500" />
               RECOMMENDING
             </p>
           </div>
