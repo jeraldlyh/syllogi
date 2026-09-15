@@ -17,6 +17,10 @@ html > body[data-scroll-locked] {
   }
 }
 
+@utility pause-animation {
+  animation-play-state: paused;
+}
+
 @utility bg-size-sy-dots {
   background-size: 22px 22px;
 }
