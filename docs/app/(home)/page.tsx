@@ -19,6 +19,7 @@ export default function HomePage() {
   return (
     <div className={`${display.variable} ${syMono.variable}`}>
       <Hero />
+      <Features />
     </div>
   );
 }
