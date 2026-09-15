@@ -1,0 +1,80 @@
+---
+title: Quick Start
+description: Run syllogi with Docker Compose and create your first sync.
+---
+
+## Requirements
+
+- A running [Jellyfin](https://github.com/jellyfin/jellyfin) or [Navidrome](https://github.com/navidrome/navidrome) server.
+- A music library that includes your local music.
+- Docker and Docker Compose.
+- Optional: a [Last.fm](https://www.last.fm/) account (recommendations, charts) and/or a ListenBrainz account (recommendations).
+
+## Install
+
+<Steps>
+
+<Step>
+
+### Copy the example compose file
+
+```bash
+cp docker-compose.example.yml docker-compose.yml
+```
+
+</Step>
+
+<Step>
+
+### Fill in the environment variables
+
+See [Configuration](/docs/configuration) for the full list. At minimum you need the `DATABASE_*` variables, `NEXT_PUBLIC_URL`, `AUTH_SECRET_KEY`, and one music server.
+
+</Step>
+
+<Step>
+
+### Start the stack
+
+```bash
+docker compose up -d
+```
+
+</Step>
+
+<Step>
+
+### Register your first account
+
+Open the dashboard at `http://localhost:8000`.
+
+The first account to register becomes **admin** automatically. Admins see the extra **Users** and **Logs** tabs. If you use Authentik SSO, the first OAuth login also becomes admin. See [Users & Auth](/docs/usage/users-auth).
+
+</Step>
+
+<Step>
+
+### Add a music-server user, then a playlist
+
+Create a music-server user under the **Users** tab (admin only), matching the exact Jellyfin/Navidrome username that will own playlists. If both Jellyfin and Navidrome are configured, set `MUSIC_PROVIDER` to disambiguate, refer to [Configuration](/docs/configuration).
+
+Then add a playlist, set a sync schedule, set up recommendations, and **syllogi** will take it from there.
+
+</Step>
+
+</Steps>
+
+## Building from source
+
+If you want to build the image locally instead of using the pre-built one, clone the repository:
+
+```bash
+git clone https://github.com/jeraldlyh/syllogi.git
+cd syllogi
+```
+
+Then use the development compose file, which builds from source with hot-reload:
+
+```bash
+docker compose up -d
+```

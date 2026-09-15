@@ -1,0 +1,28 @@
+---
+title: Download Pipeline
+description: How missing tracks are fetched and added to the library.
+---
+
+When a sync, recommendation, or charts download needs a track not in the library:
+
+1. Skip if the track already exists on disk.
+2. Attempt to download via **slskd** if configured; otherwise fall back to **yt-dlp**.
+3. Enrich tags via MusicBrainz and LRCLIB lyrics, save under `DOWNLOAD_DIR`, and rescan the music server.
+
+## slskd
+
+Searches by artist and title and prefers higher-quality candidates with available upload slots. Searches with no results retry with an alternate artist name.
+
+Lower-quality files are automatically upgraded to lossless on a later sync if slskd is configured.
+
+## yt-dlp fallback
+
+Searches YouTube for the track, skips live streams and unavailable videos, and prefers the most relevant official or audio upload. This also powers YouTube playlist imports (artist taken from the channel name).
+
+## File location
+
+Files are saved under `DOWNLOAD_DIR`, organized by artist and album: `{DOWNLOAD_DIR}/{Artist}/{Album}/{Track}.{ext}`
+
+## Tagging
+
+After downloading, the pipeline fills in title, album, genres, year, plus lyrics when the file lacks them. 

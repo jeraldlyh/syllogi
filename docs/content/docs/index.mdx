@@ -1,0 +1,52 @@
+---
+title: Overview
+description: Keep your Jellyfin or Navidrome music library in sync with Spotify and YouTube playlists.
+---
+
+**syllogi** is a self-hosted automation tool that keeps your [Jellyfin](https://github.com/jellyfin/jellyfin) or [Navidrome](https://github.com/navidrome/navidrome) music library in sync with external playlists from Spotify and YouTube.
+
+It matches tracks against your indexed audio, automatically downloads missing tracks via [yt-dlp](https://github.com/yt-dlp/yt-dlp) or [slskd](https://github.com/slskd/slskd), generates personalized recommendations based on your listening history, and lets you browse trending charts, all from a single dashboard.
+
+<Cards>
+  <Card title="Quick Start" href="/docs/quick-start" description="Get the stack running with Docker Compose." />
+  <Card title="Features" href="/docs/features" description="Playlist sync, downloads, recommendations, charts and library management." />
+  <Card title="Usage" href="/docs/usage/users-auth" description="Accounts, music-server users, and the Logs viewer." />
+  <Card title="Concepts" href="/docs/concepts/matching" description="How matching, downloads, and schedules work." />
+  <Card title="Configuration" href="/docs/configuration" description="Every environment variable, plus Authentik SSO." />
+  <Card title="Troubleshooting" href="/docs/troubleshooting" description="Fix common sync, download, and login issues." />
+</Cards>
+
+## Supported playlist providers
+
+| Provider    | Requirements                                                                                        |
+| ----------- | --------------------------------------------------------------------------------------------------- |
+| **Spotify** | No API key or account needed, public playlists only, via [SpotAPI](https://github.com/Aran404/SpotAPI) |
+| **YouTube** | No API key needed, public playlists only, via [yt-dlp](https://github.com/yt-dlp/yt-dlp)            |
+
+## Supported music servers
+
+| Server        | Requirements                                           |
+| ------------- | ------------------------------------------------------ |
+| **Jellyfin**  | API key with permission to create and manage playlists |
+| **Navidrome** | URL, username, and password |
+
+## Caveats
+
+<Callout type="warn" title="Before you start">
+- Matching depends on metadata quality from the provider and music server.
+- Library refresh timing can delay newly downloaded tracks.
+- A restart invalidates in-flight SSO logins.
+</Callout>
+
+## Credits
+
+Special thanks to the following projects for making **syllogi** possible:
+
+- [SpotAPI](https://github.com/Aran404/SpotAPI)
+- [yt-dlp](https://github.com/yt-dlp/yt-dlp)
+- [Jellyfin](https://github.com/jellyfin/jellyfin)
+- [Navidrome](https://github.com/navidrome/navidrome)
+- [Last.fm](https://www.last.fm/)
+- [slskd](https://github.com/slskd/slskd)
+- [MusicBrainz](https://musicbrainz.org/)
+- [LRCLIB](https://lrclib.net/)

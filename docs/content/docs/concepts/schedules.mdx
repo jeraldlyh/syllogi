@@ -1,0 +1,23 @@
+---
+title: Schedules
+description: Schedule presets, custom expressions, and manual runs.
+---
+
+Syncs and recommendations each carry a cron schedule (5 fields: minute, hour, day, month, day of week - e.g. `0 6 * * *`). `TZ` controls the scheduling timezone - refer to [Configuration](/docs/configuration).
+
+## Presets
+
+| Label                  | Expression      |
+| ---------------------- | --------------- |
+| Every 15 minutes       | `*/15 * * * *`  |
+| Every 30 minutes       | `*/30 * * * *`  |
+| Every hour             | `0 * * * *`     |
+| Every 6 hours          | `0 */6 * * *`   |
+| Every 12 hours         | `0 */12 * * *`  |
+| Daily at midnight      | `0 0 * * *`     |
+| Daily at 6 AM          | `0 6 * * *`     |
+| Weekly (Sunday midnight) | `0 0 * * 0`   |
+
+Choose `Simple` for a preset or `Custom` for any valid 5-field expression.
+
+To validate or preview a custom expression, use [crontab.guru](https://crontab.guru/).

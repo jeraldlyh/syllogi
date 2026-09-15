@@ -1,0 +1,46 @@
+---
+title: Recommendations
+description: Generate a playlist from your Last.fm listening history.
+---
+
+<Tabs items={['Desktop', 'Mobile']}>
+
+<Tab value="Desktop">
+
+![Recommendations dashboard on desktop](/assets/recommendations.jpeg)
+
+</Tab>
+
+<Tab value="Mobile">
+
+<div className="flex justify-center [&_img]:max-h-[70vh] [&_img]:w-auto">
+
+![Recommendations dashboard on mobile](/assets/recommendations-mobile.jpeg)
+
+</div>
+
+</Tab>
+
+</Tabs>
+
+Generates a playlist in your music server from your scrobble history. The existing playlist is **replaced** (not merged) with fresh recommendations on each run.
+
+## Sources
+
+Each rule picks one listening-history source:
+
+- **Last.fm** (requires `LASTFM_API_KEY`): top tracks, recents, similar tracks, charts.
+- **ListenBrainz** (requires `LISTENBRAINZ_API_KEY`): same strategies against your ListenBrainz history.
+
+The Play button is disabled until the music-server user has the matching Last.fm or ListenBrainz username set (see [Users & Auth](/docs/usage/users-auth)).
+
+## Strategies
+
+| Strategy        | Description                                                  |
+| --------------- | ------------------------------------------------------------ |
+| `top_tracks`    | Seeds from your all-time Last.fm top tracks (6-month window) |
+| `recent_tracks` | Seeds from your recently scrobbled tracks                    |
+| `mixed`         | 50% top tracks + 50% recent tracks                           |
+| `blend`         | Blend with other users in the music server                   |
+
+`blend` requires at least 2 blend users and forces public visibility. Every blended user contributes evenly; results are mostly similar tracks topped up with familiar recent tracks.

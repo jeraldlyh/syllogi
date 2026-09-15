@@ -1,0 +1,34 @@
+---
+title: Charts
+description: Browse globally trending tracks and queue them for download.
+---
+
+<Tabs items={['Desktop', 'Mobile']}>
+
+<Tab value="Desktop">
+
+![Trending charts on desktop](/assets/charts.jpeg)
+
+</Tab>
+
+<Tab value="Mobile">
+
+<div className="flex justify-center [&_img]:max-h-[70vh] [&_img]:w-auto">
+
+![Trending charts on mobile](/assets/charts-mobile.jpeg)
+
+</div>
+
+</Tab>
+
+</Tabs>
+
+Browse globally trending tracks. Tracks can be queued for [download](/docs/features/downloads) directly from the Charts tab, and the download activity log on the dashboard tracks the status of all in-progress and completed downloads.
+
+Trending tracks uses Last.fm when `LASTFM_API_KEY` is set, otherwise falls back to Deezer. Each track shows whether it already exists in your library.
+
+## Search and browse
+
+- Typing a few characters switches the view to Search Results covering artists and tracks.
+- Toggle List/Grid view and refresh manually.
+- Clicking a track's artist opens the artist drawer (bio, stats, discography, top tracks with library counts); clicking the album opens the album drawer (cover, release, per-track download status).

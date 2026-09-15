@@ -1,0 +1,50 @@
+---
+title: Library
+description: Browse and retag the audio files in your download directory.
+---
+
+<Tabs items={['Desktop', 'Mobile']}>
+
+<Tab value="Desktop">
+
+![Library manager on desktop](/assets/library.jpeg)
+
+</Tab>
+
+<Tab value="Mobile">
+
+<div className="flex justify-center [&_img]:max-h-[70vh] [&_img]:w-auto">
+
+![Library manager on mobile](/assets/library-mobile.jpeg)
+
+</div>
+
+</Tab>
+
+</Tabs>
+
+Browse and retag the audio files found in `DOWNLOAD_DIR` from the dashboard. This tab lists every `.flac`, `.mp3` and `.opus` file with the tags it carries, searchable by file name, title, artist or album, and filterable by container or by the tags a file is missing.
+
+The overall statistics show total, without-lyrics and unlinked counts, duplicates, empty folders, and lossless counts. Clicking on the statistics automatically filters the table.
+
+## Scanning
+
+Browsing the library scans in the background; use `Rescan` to force a fresh scan.
+
+## Editable tags
+
+Each row shows how many of the seven editable tags the file has, so gaps are visible at a glance:
+
+- Title
+- Artist
+- Album
+- Date
+- Genre
+- Lyrics
+- Recording
+
+## Duplicates and empty folders
+
+- **Duplicates** groups by artist + title (filename fallback). Delete removes from disk but never the last copy.
+  - `Keep-best` option selects the largest file, then most-filled tags
+- **Empty folders** lists outermost empty folders only, including non-audio leftovers. Deleting tracks triggers a provider library rescan.
