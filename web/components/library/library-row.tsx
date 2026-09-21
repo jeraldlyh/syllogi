@@ -11,12 +11,23 @@ import {
 import { ChevronRight } from "lucide-react";
 import { TagComb } from "./tag-comb";
 
-const TagText = ({ value, fallback }: { value: string; fallback: string }) => (
+const TagText = ({
+  value,
+  fallback,
+  emphasis,
+}: {
+  value: string;
+  fallback: string;
+  emphasis?: "artist" | "album";
+}) => (
   <Text
     value={value || fallback}
     className={cn(
       "truncate",
-      value ? "text-muted-foreground" : "text-amber-400/70",
+      !value && "text-amber-400/70",
+      value && emphasis === "artist" && "font-medium text-foreground",
+      value && emphasis === "album" && "italic text-muted-foreground",
+      value && !emphasis && "text-muted-foreground",
     )}
   />
 );
@@ -27,71 +38,85 @@ export const LibraryRow = ({
 }: {
   track: LibraryTrack;
   onOpen: (path: string) => void;
-}) => (
-  <TableRow
-    tabIndex={0}
-    role="button"
-    aria-label={`Edit tags for ${track.filename}`}
-    onClick={() => onOpen(track.path)}
-    onKeyDown={(event) => {
-      if (event.key !== "Enter" && event.key !== " ") return;
+}) => {
+  const incomplete = !track.tags.artist || !track.tags.album;
 
-      event.preventDefault();
-      onOpen(track.path);
-    }}
-    className="cursor-pointer focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
-  >
-    <TableCell className="max-w-0">
-      <Text
-        variant="sm"
-        className="truncate font-medium"
-        value={track.tags.title || removeFileExtension(track.filename)}
-      />
-      <Text
-        disableViewport
-        mono
-        muted
-        className="truncate"
-        value={track.directory}
-      />
-    </TableCell>
-    <TableCell className="hidden md:table-cell max-w-0">
-      <TagText value={track.tags.artist} fallback="No artist" />
-      <TagText value={track.tags.album} fallback="No album" />
-    </TableCell>
-    <TableCell className="hidden md:table-cell">
-      <div className="flex flex-col items-center gap-2">
-        <Badge
-          variant="outline"
-          className="border-border font-mono text-xs uppercase tracking-wider text-muted-foreground"
-        >
-          {track.format}
-        </Badge>
-        <Badge
-          className="border-border font-mono text-xs uppercase tracking-wider text-muted-foreground"
-          variant="outline"
-        >
-          {formatClock(track.duration)}
-        </Badge>
-      </div>
-    </TableCell>
-    <TableCell className="hidden md:table-cell">
-      <Text
-        mono
-        muted
-        className="text-xs"
-        value={
-          track.mtime
-            ? formatDateTime(new Date(track.mtime * 1000).toISOString())
-            : ""
-        }
-      />
-    </TableCell>
-    <TableCell>
-      <div className="flex items-center justify-end gap-3">
-        <TagComb filled={track.filled_fields} />
-        <ChevronRight className="h-4 w-4 shrink-0 text-muted-foreground/50" />
-      </div>
-    </TableCell>
-  </TableRow>
-);
+  return (
+    <TableRow
+      tabIndex={0}
+      role="button"
+      onClick={() => onOpen(track.path)}
+      onKeyDown={(event) => {
+        if (event.key !== "Enter" && event.key !== " ") return;
+
+        event.preventDefault();
+        onOpen(track.path);
+      }}
+      className={cn(
+        "cursor-pointer focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring",
+        incomplete && "bg-amber-500/5 hover:bg-amber-500/10",
+      )}
+    >
+      <TableCell className="max-w-0">
+        <Text
+          variant="sm"
+          className="truncate font-medium"
+          value={track.tags.title || removeFileExtension(track.filename)}
+        />
+        <Text
+          disableViewport
+          mono
+          muted
+          className="truncate"
+          value={track.directory}
+        />
+      </TableCell>
+      <TableCell className="hidden md:table-cell max-w-0">
+        <TagText
+          value={track.tags.artist}
+          fallback="No artist"
+          emphasis="artist"
+        />
+        <TagText
+          value={track.tags.album}
+          fallback="No album"
+          emphasis="album"
+        />
+      </TableCell>
+      <TableCell className="hidden md:table-cell">
+        <div className="flex flex-col items-center gap-2">
+          <Badge
+            variant="outline"
+            className="border-border font-mono text-xs uppercase tracking-wider text-muted-foreground"
+          >
+            {track.format}
+          </Badge>
+          <Badge
+            className="border-border font-mono text-xs uppercase tracking-wider text-muted-foreground"
+            variant="outline"
+          >
+            {formatClock(track.duration)}
+          </Badge>
+        </div>
+      </TableCell>
+      <TableCell className="hidden md:table-cell">
+        <Text
+          mono
+          muted
+          className="text-xs"
+          value={
+            track.mtime
+              ? formatDateTime(new Date(track.mtime * 1000).toISOString())
+              : ""
+          }
+        />
+      </TableCell>
+      <TableCell>
+        <div className="flex items-center justify-end gap-3">
+          <TagComb filled={track.filled_fields} />
+          <ChevronRight className="h-4 w-4 shrink-0 text-muted-foreground/50" />
+        </div>
+      </TableCell>
+    </TableRow>
+  );
+};
