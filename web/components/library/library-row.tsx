@@ -1,3 +1,4 @@
+import { TrackFormatBadge } from "@/components/common/track-format-badge";
 import { Text } from "@/components/common/text";
 import { Badge } from "@/components/ui/badge";
 import { TableCell, TableRow } from "@/components/ui/table";
@@ -85,12 +86,7 @@ export const LibraryRow = ({
       </TableCell>
       <TableCell className="hidden md:table-cell">
         <div className="flex flex-col items-center gap-2">
-          <Badge
-            variant="outline"
-            className="border-border font-mono text-xs uppercase tracking-wider text-muted-foreground"
-          >
-            {track.format}
-          </Badge>
+          <TrackFormatBadge format={track.format} />
           <Badge
             className="border-border font-mono text-xs uppercase tracking-wider text-muted-foreground"
             variant="outline"
