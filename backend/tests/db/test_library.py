@@ -5,6 +5,7 @@ from sqlalchemy.dialects import postgresql
 from sqlmodel import Session, select
 
 from db.library import (
+    PRESERVED_COLUMNS,
     TRACK_COLUMNS,
     count_duplicate_tracks,
     delete_tracks_by_paths,
@@ -65,6 +66,9 @@ class TestUpsertTracks:
         upsert_tracks(session, [])
 
         assert summarize_library(session)["total"] == 0
+
+    def test_only_row_identity_and_db_timestamps_are_preserved(self):
+        assert PRESERVED_COLUMNS == {"id", "path", "created_at", "updated_at"}
 
     def test_refreshes_every_column_except_the_preserved_ones(self, session: Session):
         upsert_tracks(session, [_make_track()])
@@ -236,25 +240,21 @@ class TestQueryTracks:
         assert matched == 5
         assert len(tracks) == 2
 
-    def test_orders_by_mtime_descending_by_default(self, session: Session):
+    def test_orders_by_path_case_insensitively(self, session: Session):
         upsert_tracks(
             session,
             [
-                _make_track(path="Old.flac", mtime=1.0),
-                _make_track(path="New.flac", mtime=3.0),
-                _make_track(path="Mid.flac", mtime=2.0),
+                _make_track(path="b.flac"),
+                _make_track(path="A.flac"),
+                _make_track(path="c.flac"),
             ],
         )
 
         tracks, _ = query_tracks(session)
 
-        assert [track.path for track in tracks] == [
-            "New.flac",
-            "Mid.flac",
-            "Old.flac",
-        ]
+        assert [track.path for track in tracks] == ["A.flac", "b.flac", "c.flac"]
 
-    def test_order_by_mtime_descending_newest_first(self, session: Session):
+    def test_sorts_by_mtime_descending_newest_first(self, session: Session):
         upsert_tracks(
             session,
             [
@@ -264,7 +264,7 @@ class TestQueryTracks:
             ],
         )
 
-        tracks, _ = query_tracks(session, descending=True)
+        tracks, _ = query_tracks(session, sort="mtime", descending=True)
 
         assert [track.path for track in tracks] == [
             "New.flac",
@@ -272,7 +272,7 @@ class TestQueryTracks:
             "Old.flac",
         ]
 
-    def test_order_by_mtime_ascending_oldest_first(self, session: Session):
+    def test_sorts_by_mtime_ascending_oldest_first(self, session: Session):
         upsert_tracks(
             session,
             [
@@ -282,7 +282,7 @@ class TestQueryTracks:
             ],
         )
 
-        tracks, _ = query_tracks(session, descending=False)
+        tracks, _ = query_tracks(session, sort="mtime", descending=False)
 
         assert [track.path for track in tracks] == [
             "Old.flac",
@@ -300,7 +300,7 @@ class TestQueryTracks:
             ],
         )
 
-        tracks, _ = query_tracks(session)
+        tracks, _ = query_tracks(session, sort="mtime")
 
         assert [track.path for track in tracks] == ["A.flac", "b.flac", "c.flac"]
 
