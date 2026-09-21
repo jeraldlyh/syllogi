@@ -2,28 +2,23 @@ import { Text } from "@/components/common/text";
 import { Badge } from "@/components/ui/badge";
 import { TableCell, TableRow } from "@/components/ui/table";
 import { LibraryTrack } from "@/hooks/useLibrary";
-import { cn, formatClock, removeFileExtension } from "@/lib/utils";
+import {
+  cn,
+  formatClock,
+  formatDateTime,
+  removeFileExtension,
+} from "@/lib/utils";
 import { ChevronRight } from "lucide-react";
 import { TagComb } from "./tag-comb";
 
-const TagCell = ({
-  value,
-  fallback,
-  className,
-}: {
-  value: string;
-  fallback: string;
-  className: string;
-}) => (
-  <TableCell className={cn("max-w-0", className)}>
-    <Text
-      value={value || fallback}
-      className={cn(
-        "truncate",
-        value ? "text-muted-foreground" : "text-amber-400/70",
-      )}
-    />
-  </TableCell>
+const TagText = ({ value, fallback }: { value: string; fallback: string }) => (
+  <Text
+    value={value || fallback}
+    className={cn(
+      "truncate",
+      value ? "text-muted-foreground" : "text-amber-400/70",
+    )}
+  />
 );
 
 export const LibraryRow = ({
@@ -60,28 +55,37 @@ export const LibraryRow = ({
         value={track.directory}
       />
     </TableCell>
-    <TagCell
-      value={track.tags.artist}
-      fallback="No artist"
-      className="hidden md:table-cell"
-    />
-    <TagCell
-      value={track.tags.album}
-      fallback="No album"
-      className="hidden lg:table-cell"
-    />
+    <TableCell className="hidden md:table-cell max-w-0">
+      <TagText value={track.tags.artist} fallback="No artist" />
+      <TagText value={track.tags.album} fallback="No album" />
+    </TableCell>
     <TableCell className="hidden md:table-cell">
-      <div className="flex items-center gap-2">
+      <div className="flex flex-col items-center gap-2">
         <Badge
           variant="outline"
           className="border-border font-mono text-xs uppercase tracking-wider text-muted-foreground"
         >
           {track.format}
         </Badge>
-        <span className="font-mono text-xs text-muted-foreground">
+        <Badge
+          className="border-border font-mono text-xs uppercase tracking-wider text-muted-foreground"
+          variant="outline"
+        >
           {formatClock(track.duration)}
-        </span>
+        </Badge>
       </div>
+    </TableCell>
+    <TableCell className="hidden md:table-cell">
+      <Text
+        mono
+        muted
+        className="text-xs"
+        value={
+          track.mtime
+            ? formatDateTime(new Date(track.mtime * 1000).toISOString())
+            : ""
+        }
+      />
     </TableCell>
     <TableCell>
       <div className="flex items-center justify-end gap-3">
