@@ -34,7 +34,7 @@ export const ChartSearchTrackCard = ({
       className={cn(
         "w-44 h-auto group relative flex flex-col overflow-hidden rounded-lg border border-border bg-card transition-colors hover:border-foreground/20",
         { "bg-primary/15 hover:bg-primary/30": isExist },
-        { "bg-yellow/15 hover:bg-yellow/30": isDownloading },
+        { "bg-amber-500/15 hover:bg-amber-500/30": isDownloading },
       )}
     >
       <ChartImage imageUrl={imageUrl} alt={trackName}>

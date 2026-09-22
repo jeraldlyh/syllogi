@@ -36,7 +36,7 @@ export const ChartArtistAlbumCard = ({
         <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
         <Badge
           variant="secondary"
-          className="absolute bottom-2 left-2 px-2 font-mono font-normal uppercase tracking-widest"
+          className="absolute bottom-2 left-2 px-2 font-mono uppercase tracking-widest"
         >
           {album.type || "Release"}
         </Badge>

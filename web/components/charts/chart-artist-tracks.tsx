@@ -15,14 +15,7 @@ import {
 } from "@/hooks/useDownloadSessions";
 import { api } from "@/lib/api";
 import { cn, formatDuration } from "@/lib/utils";
-import {
-  Dot,
-  Download,
-  LayoutGrid,
-  List,
-  Loader2,
-  RotateCcw,
-} from "lucide-react";
+import { Download, LayoutGrid, List, Loader2, RotateCcw } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
 import { ChartBadge } from "./chart-badge";
@@ -163,41 +156,42 @@ export const ChartArtistTracks = ({ data }: { data: ArtistInfo }) => {
             </div>
           )}
         </div>
-        <div className="flex items-center gap-2">
-          {tracks.length > 0 && (
-            <div className="hidden md:flex items-center gap-1 rounded-md border border-border p-1">
-              <Button
-                variant={viewMode === "list" ? "secondary" : "ghost"}
-                size="icon"
-                className="h-7 w-7"
-                onClick={() => setViewMode("list")}
-                aria-label="List view"
-              >
-                <List />
-              </Button>
-              <Button
-                variant={viewMode === "grid" ? "secondary" : "ghost"}
-                size="icon"
-                className="size-7"
-                onClick={() => setViewMode("grid")}
-                aria-label="Grid view"
-              >
-                <LayoutGrid />
-              </Button>
-            </div>
-          )}
-          {tracks.length > 0 && (
-            <div className="flex items-center gap-2 md:hidden">
-              <div className="flex items-center gap-1">
-                <span className="inline-block h-2 w-2 rounded-full bg-emerald-500/60" />
-                <Text value="In Library" muted />
+        <div className="flex md:items-center md:flex-row gap-2">
+          <div className="pointer-events-none flex h-8 items-center gap-2 text-xs text-muted-foreground">
+            <span className="inline-flex items-center gap-1">
+              <span className="inline-block h-2 w-2 rounded-full bg-emerald-500/60" />
+              In Library
+            </span>
+            <span className="inline-flex items-center gap-1">
+              <span className="inline-block h-2 w-2 rounded-full bg-amber-500/60" />
+              Downloading
+            </span>
+          </div>
+
+          <div className="flex items-center gap-2">
+            {tracks.length > 0 && (
+              <div className="hidden md:flex items-center gap-1 rounded-md border border-border p-1">
+                <Button
+                  variant={viewMode === "list" ? "secondary" : "ghost"}
+                  size="icon"
+                  className="h-7 w-7"
+                  onClick={() => setViewMode("list")}
+                  aria-label="List view"
+                >
+                  <List />
+                </Button>
+                <Button
+                  variant={viewMode === "grid" ? "secondary" : "ghost"}
+                  size="icon"
+                  className="size-7"
+                  onClick={() => setViewMode("grid")}
+                  aria-label="Grid view"
+                >
+                  <LayoutGrid />
+                </Button>
               </div>
-              <div className="flex items-center gap-1">
-                <span className="inline-block h-2 w-2 rounded-full bg-amber-500/60" />
-                <Text value="Downloading" muted />
-              </div>
-            </div>
-          )}
+            )}
+          </div>
         </div>
       </div>
 
