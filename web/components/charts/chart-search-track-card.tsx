@@ -1,8 +1,7 @@
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
 import { Text } from "@/components/common/text";
-import { formatDuration } from "@/lib/utils";
-import { ChartBadge } from "./chart-badge";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { cn, formatDuration } from "@/lib/utils";
 import { ChartImage } from "./chart-image";
 
 interface IProps {
@@ -31,15 +30,18 @@ export const ChartSearchTrackCard = ({
   children,
 }: IProps): React.JSX.Element => {
   return (
-    <div className="w-44 h-auto group relative flex flex-col overflow-hidden rounded-lg border border-border bg-card transition-colors hover:border-foreground/20">
+    <div
+      className={cn(
+        "w-44 h-auto group relative flex flex-col overflow-hidden rounded-lg border border-border bg-card transition-colors hover:border-foreground/20",
+        { "bg-primary/15 hover:bg-primary/30": isExist },
+        { "bg-yellow/15 hover:bg-yellow/30": isDownloading },
+      )}
+    >
       <ChartImage imageUrl={imageUrl} alt={trackName}>
         <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/70 to-transparent p-2.5">
           <Badge className="font-mono" variant="secondary">
             {formatDuration(duration).toUpperCase()}
           </Badge>
-        </div>
-        <div className="absolute top-2 right-2">
-          <ChartBadge isExist={isExist} isDownloading={isDownloading} />
         </div>
       </ChartImage>
       <div className="flex flex-1 flex-col gap-1 p-3">
