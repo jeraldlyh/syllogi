@@ -69,6 +69,17 @@ Configure **one** of the following providers. If both are configured, set `MUSIC
 | `SLSKD_API_KEY`          | _(unset)_                                              | API key for slskd, used for downloading audio when tracks are missing from the library.                                                     |
 | `MUSIC_PROVIDER`         | _(unset)_                                              | Required when both Jellyfin and Navidrome are configured: `jellyfin` or `navidrome`.                                              |
 
+## Metadata API
+
+Charts, track matching, and downloads fetch MusicBrainz data through BrainzMash by default, with the central MusicBrainz API as a fallback.
+
+### Running your own mirror
+
+The public BrainzMash pool is shared, so throughput depends on how busy the pool is. Point `BRAINZMASH_URL` at your own MusicBrainz-compatible mirror to lift that shared ceiling: requests are served by your own instance, so Charts, track matching, and downloads stay responsive instead of queueing behind the pool or falling back to the rate-limited central API.
+
+If you would rather help the pool on top of running your own instance, you can contribute a replica instead - see [brainzmash.cc](https://brainzmash.cc) and [brainzmash-hearing-aid](https://github.com/statichum/brainzmash-hearring-aid) for details.
+
+
 ## Single sign-on
 
 Authentik can be used as an OIDC provider, see [Authentik OIDC](/docs/configuration/authentik).
