@@ -1,5 +1,5 @@
+import { TrackFormatBadge } from "@/components/common/track-format-badge";
 import { Text } from "@/components/common/text";
-import { Badge } from "@/components/ui/badge";
 import { Checkbox } from "@/components/ui/checkbox";
 import { LibraryTrack } from "@/hooks/useLibrary";
 import { cn, formatClock, formatSize } from "@/lib/utils";
@@ -56,12 +56,7 @@ export const LibraryDuplicateRow = ({
           />
         </div>
         <div className="grid grid-cols-2 md:grid-cols-3 gap-x-2 place-items-center">
-          <Badge
-            variant="outline"
-            className="border-border font-mono uppercase text-muted-foreground"
-          >
-            {track.format}
-          </Badge>
+          <TrackFormatBadge format={track.format} />
           <Text
             disableViewport
             mono

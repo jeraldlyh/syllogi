@@ -1,5 +1,5 @@
+import { TrackFormatBadge } from "@/components/common/track-format-badge";
 import { Text } from "@/components/common/text";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -253,12 +253,7 @@ export const EditorBody = ({ detail, onSaved, onDirtyChange }: IProps) => {
           </h2>
           <Text mono muted className="mt-1 truncate" value={detail.path} />
           <div className="mt-2 flex flex-wrap items-center gap-1.5">
-            <Badge
-              variant="outline"
-              className="border-border font-mono text-xs uppercase tracking-wider"
-            >
-              {detail.format}
-            </Badge>
+            <TrackFormatBadge format={detail.format} />
             <span className="font-mono text-xs text-muted-foreground">
               {formatClock(detail.duration)} | {formatSize(detail.size)}
             </span>

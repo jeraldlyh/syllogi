@@ -68,12 +68,6 @@ class TestUpsertTracks:
         assert summarize_library(session)["total"] == 0
 
     def test_only_row_identity_and_db_timestamps_are_preserved(self):
-        """TRACK_COLUMNS is everything else, so a new model column is updated by default.
-
-        Adding a name here silently stops that column being refreshed on rows that
-        already exist, which shows up as stale data rather than as a failure.
-        """
-
         assert PRESERVED_COLUMNS == {"id", "path", "created_at", "updated_at"}
 
     def test_refreshes_every_column_except_the_preserved_ones(self, session: Session):
@@ -259,6 +253,69 @@ class TestQueryTracks:
         tracks, _ = query_tracks(session)
 
         assert [track.path for track in tracks] == ["A.flac", "b.flac", "c.flac"]
+
+    def test_sorts_by_mtime_descending_newest_first(self, session: Session):
+        upsert_tracks(
+            session,
+            [
+                _make_track(path="Old.flac", mtime=1.0),
+                _make_track(path="New.flac", mtime=3.0),
+                _make_track(path="Mid.flac", mtime=2.0),
+            ],
+        )
+
+        tracks, _ = query_tracks(session, sort="mtime", descending=True)
+
+        assert [track.path for track in tracks] == [
+            "New.flac",
+            "Mid.flac",
+            "Old.flac",
+        ]
+
+    def test_sorts_by_mtime_ascending_oldest_first(self, session: Session):
+        upsert_tracks(
+            session,
+            [
+                _make_track(path="Old.flac", mtime=1.0),
+                _make_track(path="New.flac", mtime=3.0),
+                _make_track(path="Mid.flac", mtime=2.0),
+            ],
+        )
+
+        tracks, _ = query_tracks(session, sort="mtime", descending=False)
+
+        assert [track.path for track in tracks] == [
+            "Old.flac",
+            "Mid.flac",
+            "New.flac",
+        ]
+
+    def test_pages_mtime_ties_by_path_secondarily(self, session: Session):
+        upsert_tracks(
+            session,
+            [
+                _make_track(path="B.flac", mtime=1.0),
+                _make_track(path="a.flac", mtime=1.0),
+                _make_track(path="c.flac", mtime=1.0),
+            ],
+        )
+
+        tracks, _ = query_tracks(session, sort="mtime")
+
+        assert [track.path for track in tracks] == ["a.flac", "B.flac", "c.flac"]
+
+    def test_orders_case_variant_paths_deterministically(self, session: Session):
+        upsert_tracks(
+            session,
+            [
+                _make_track(path="a.flac"),
+                _make_track(path="A.flac"),
+            ],
+        )
+
+        tracks, _ = query_tracks(session)
+
+        assert [track.path for track in tracks] == ["A.flac", "a.flac"]
 
 
 class TestDuplicateGroupsSql:

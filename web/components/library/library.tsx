@@ -17,9 +17,12 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { SortIcon } from "@/components/common/sort-icon";
 import {
   LIBRARY_PAGE_SIZE,
   LibraryFilters,
+  LibraryOrder,
+  LibrarySort,
   rescanLibrary,
   useLibraryTracks,
 } from "@/hooks/useLibrary";
@@ -131,7 +134,14 @@ export const Library = () => {
   const [isReviewingFolders, setIsReviewingFolders] = useState(false);
   const [isReviewingDuplicates, setIsReviewingDuplicates] = useState(false);
   const [page, setPage] = useState(0);
-  const { data, isLoading, isError, refresh } = useLibraryTracks(filters, page);
+  const [sort, setSort] = useState<LibrarySort>("mtime");
+  const [order, setOrder] = useState<LibraryOrder>("desc");
+  const { data, isLoading, isError, refresh } = useLibraryTracks(
+    filters,
+    page,
+    sort,
+    order,
+  );
   const FilterActivityIcon = isLoading ? Loader2 : Search;
 
   useEffect(() => {
@@ -152,6 +162,12 @@ export const Library = () => {
 
   const handleToggleMissing = (value: LibraryFilters["missing"]): void => {
     handlePatchFilters({ missing: filters.missing === value ? "" : value });
+  };
+
+  const handleSort = (column: LibrarySort): void => {
+    setOrder(sort === column && order === "desc" ? "asc" : "desc");
+    setSort(column);
+    setPage(0);
   };
 
   const handleRescan = async (): Promise<void> => {
@@ -236,15 +252,25 @@ export const Library = () => {
               <TableRow className="text-xs text-muted-foreground hover:bg-transparent">
                 <TableHead className="md:w-2/5">File</TableHead>
                 <TableHead className="hidden md:table-cell md:w-1/5">
-                  Artist
+                  Artist / Album
                 </TableHead>
-                <TableHead className="hidden lg:table-cell lg:w-1/5">
-                  Album
+                <TableHead className="hidden md:table-cell text-center">
+                  Format
                 </TableHead>
-                <TableHead className="hidden md:table-cell">Format</TableHead>
-                <TableHead className="text-right md:text-start w-px">
-                  Tags
+                <TableHead className="hidden md:table-cell cursor-pointer select-none">
+                  <button
+                    className="flex items-center"
+                    onClick={() => handleSort("mtime")}
+                  >
+                    Modified
+                    <SortIcon
+                      column="mtime"
+                      sortColumn={sort}
+                      sortDirection={order}
+                    />
+                  </button>
                 </TableHead>
+                <TableHead className="text-start w-px">Tags</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>

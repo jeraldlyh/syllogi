@@ -71,6 +71,7 @@ class LibraryTrack(TimestampMixin, SerializerMixin, SQLModel, table=True):
             "format": self.format,
             "size": self.size,
             "duration": self.duration,
+            "mtime": self.mtime,
             "has_lyrics": self.has_lyrics,
             "is_synced_lyrics": self.is_synced_lyrics,
             "filled_fields": self.filled_fields(),

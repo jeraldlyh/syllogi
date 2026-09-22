@@ -46,6 +46,7 @@ export interface LibraryTrack {
   format: LibraryFormat;
   size: number;
   duration: number;
+  mtime: number;
   has_lyrics: boolean;
   is_synced_lyrics: boolean;
   filled_fields: TagField[];
@@ -127,6 +128,9 @@ export interface LibraryFilters {
   missing: "" | "lyrics" | "musicbrainz_id" | "any";
 }
 
+export type LibrarySort = "path" | "mtime";
+export type LibraryOrder = "asc" | "desc";
+
 export const LIBRARY_PAGE_SIZE = 50;
 export const SEARCH_DEBOUNCE_MS = 300;
 export const SCAN_POLL_MS = 3000;
@@ -143,11 +147,18 @@ const useDebounced = <T>(value: T, delay: number): T => {
   return settled;
 };
 
-export const useLibraryTracks = (filters: LibraryFilters, page: number) => {
+export const useLibraryTracks = (
+  filters: LibraryFilters,
+  page: number,
+  sort: LibrarySort = "mtime",
+  order: LibraryOrder = "desc",
+) => {
   const query = useDebounced(filters.query, SEARCH_DEBOUNCE_MS);
   const params = new URLSearchParams({
     limit: String(LIBRARY_PAGE_SIZE),
     offset: String(page * LIBRARY_PAGE_SIZE),
+    sort,
+    order,
   });
 
   if (query.trim()) params.set("q", query.trim());
