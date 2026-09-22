@@ -1,6 +1,7 @@
 import asyncio
 
 import httpx
+import pytest
 import respx
 
 from lib.providers.metadata.musicbrainz import MusicBrainzMetadataProvider
@@ -18,7 +19,7 @@ async def _no_sleep(_delay: float) -> None:
 class TestGetArtistInfo:
     @respx.mock
     async def test_returns_artist(self):
-        respx.get("https://musicbrainz.org/ws/2/artist").mock(
+        respx.get("https://api.brainzmash.cc/ws/2/artist").mock(
             return_value=httpx.Response(200, json=load_fixture("musicbrainz/artist"))
         )
 
@@ -34,7 +35,7 @@ class TestGetArtistInfo:
 class TestGetArtistTrack:
     @respx.mock
     async def test_returns_track(self):
-        respx.get("https://musicbrainz.org/ws/2/recording").mock(
+        respx.get("https://api.brainzmash.cc/ws/2/recording").mock(
             return_value=httpx.Response(200, json=load_fixture("musicbrainz/recording"))
         )
 
@@ -51,7 +52,7 @@ class TestGetArtistTrack:
 class TestSearchTracks:
     @respx.mock
     async def test_returns_tracks_matching_artist_and_track(self):
-        respx.get("https://musicbrainz.org/ws/2/recording").mock(
+        respx.get("https://api.brainzmash.cc/ws/2/recording").mock(
             return_value=httpx.Response(200, json=load_fixture("musicbrainz/recording"))
         )
 
@@ -66,7 +67,7 @@ class TestSearchTracks:
 
     @respx.mock
     async def test_returns_tracks_by_track_name_only(self):
-        respx.get("https://musicbrainz.org/ws/2/recording").mock(
+        respx.get("https://api.brainzmash.cc/ws/2/recording").mock(
             return_value=httpx.Response(200, json=load_fixture("musicbrainz/recording"))
         )
 
@@ -84,7 +85,7 @@ class TestSearchTracks:
 
     @respx.mock
     async def test_returns_empty_when_no_matches(self):
-        respx.get("https://musicbrainz.org/ws/2/recording").mock(
+        respx.get("https://api.brainzmash.cc/ws/2/recording").mock(
             return_value=httpx.Response(200, json={"recordings": []})
         )
 
@@ -95,7 +96,7 @@ class TestSearchTracks:
 
     @respx.mock
     async def test_populates_recording_fields(self):
-        route = respx.get("https://musicbrainz.org/ws/2/recording").mock(
+        route = respx.get("https://api.brainzmash.cc/ws/2/recording").mock(
             return_value=httpx.Response(200, json=load_fixture("musicbrainz/recording"))
         )
 
@@ -108,7 +109,7 @@ class TestSearchTracks:
 
     @respx.mock
     async def test_builds_release_clause_from_album_name(self):
-        route = respx.get("https://musicbrainz.org/ws/2/recording").mock(
+        route = respx.get("https://api.brainzmash.cc/ws/2/recording").mock(
             return_value=httpx.Response(200, json=load_fixture("musicbrainz/recording"))
         )
 
@@ -125,7 +126,7 @@ class TestSearchTracks:
 
     @respx.mock
     async def test_free_text_query_replaces_field_clauses(self):
-        route = respx.get("https://musicbrainz.org/ws/2/recording").mock(
+        route = respx.get("https://api.brainzmash.cc/ws/2/recording").mock(
             return_value=httpx.Response(200, json=load_fixture("musicbrainz/recording"))
         )
 
@@ -138,7 +139,7 @@ class TestSearchTracks:
 
     @respx.mock
     async def test_escapes_lucene_operators_in_field_clauses(self):
-        route = respx.get("https://musicbrainz.org/ws/2/recording").mock(
+        route = respx.get("https://api.brainzmash.cc/ws/2/recording").mock(
             return_value=httpx.Response(200, json=load_fixture("musicbrainz/recording"))
         )
 
@@ -154,7 +155,7 @@ class TestSearchTracks:
 
     @respx.mock
     async def test_leaves_the_free_text_query_unescaped(self):
-        route = respx.get("https://musicbrainz.org/ws/2/recording").mock(
+        route = respx.get("https://api.brainzmash.cc/ws/2/recording").mock(
             return_value=httpx.Response(200, json=load_fixture("musicbrainz/recording"))
         )
 
@@ -169,13 +170,13 @@ class TestSearchTracks:
 class TestGetAlbumInfo:
     @respx.mock
     async def test_returns_album(self):
-        respx.get("https://musicbrainz.org/ws/2/release-group").mock(
+        respx.get("https://api.brainzmash.cc/ws/2/release-group").mock(
             return_value=httpx.Response(
                 200, json=load_fixture("musicbrainz/release-group")
             )
         )
         respx.get(
-            "https://musicbrainz.org/ws/2/release/d1560bef-8a26-46c0-8102-f5fd5edb0fd2"
+            "https://api.brainzmash.cc/ws/2/release/d1560bef-8a26-46c0-8102-f5fd5edb0fd2"
         ).mock(
             return_value=httpx.Response(200, json=load_fixture("musicbrainz/release"))
         )
@@ -201,7 +202,7 @@ class TestGetAlbumInfo:
 class TestGetArtistAlbums:
     @respx.mock
     async def test_returns_albums_newest_first(self):
-        route = respx.get("https://musicbrainz.org/ws/2/release-group").mock(
+        route = respx.get("https://api.brainzmash.cc/ws/2/release-group").mock(
             return_value=httpx.Response(
                 200, json=load_fixture("musicbrainz/release-groups")
             )
@@ -221,7 +222,7 @@ class TestGetArtistAlbums:
 
     @respx.mock
     async def test_maps_album_fields(self):
-        respx.get("https://musicbrainz.org/ws/2/release-group").mock(
+        respx.get("https://api.brainzmash.cc/ws/2/release-group").mock(
             return_value=httpx.Response(
                 200, json=load_fixture("musicbrainz/release-groups")
             )
@@ -245,7 +246,7 @@ class TestGetArtistAlbums:
 
     @respx.mock
     async def test_returns_empty_when_no_matches(self):
-        respx.get("https://musicbrainz.org/ws/2/release-group").mock(
+        respx.get("https://api.brainzmash.cc/ws/2/release-group").mock(
             return_value=httpx.Response(
                 200, json={"release-group-count": 0, "release-groups": []}
             )
@@ -263,7 +264,7 @@ class TestGetArtistRecordingsAndAlbums:
         fixture = load_fixture("musicbrainz/recordings-with-release-groups")
         valid_recordings = [r for r in fixture["recordings"] if r.get("length")][:5]
         artist_route = respx.get(
-            "https://musicbrainz.org/ws/2/artist/artist-mbid"
+            "https://api.brainzmash.cc/ws/2/artist/artist-mbid"
         ).mock(
             return_value=httpx.Response(
                 200,
@@ -275,10 +276,10 @@ class TestGetArtistRecordingsAndAlbums:
             )
         )
         recording_browse_route = respx.get(
-            "https://musicbrainz.org/ws/2/recording"
+            "https://api.brainzmash.cc/ws/2/recording"
         ).mock(return_value=httpx.Response(200, json={"recordings": []}))
         release_group_browse_route = respx.get(
-            "https://musicbrainz.org/ws/2/release-group"
+            "https://api.brainzmash.cc/ws/2/release-group"
         ).mock(return_value=httpx.Response(200, json={"release-groups": []}))
 
         provider = _make_provider()
@@ -302,7 +303,7 @@ class TestGetArtistRecordingsAndAlbums:
         fixture = load_fixture("musicbrainz/recordings-with-release-groups")
         valid_recordings = [r for r in fixture["recordings"] if r.get("length")][:5]
         artist_route = respx.get(
-            "https://musicbrainz.org/ws/2/artist/artist-mbid"
+            "https://api.brainzmash.cc/ws/2/artist/artist-mbid"
         ).mock(
             return_value=httpx.Response(
                 200,
@@ -313,9 +314,9 @@ class TestGetArtistRecordingsAndAlbums:
             )
         )
         recording_browse_route = respx.get(
-            "https://musicbrainz.org/ws/2/recording"
+            "https://api.brainzmash.cc/ws/2/recording"
         ).mock(return_value=httpx.Response(200, json={"recordings": []}))
-        browse_route = respx.get("https://musicbrainz.org/ws/2/release-group").mock(
+        browse_route = respx.get("https://api.brainzmash.cc/ws/2/release-group").mock(
             return_value=httpx.Response(
                 200,
                 json={
@@ -358,7 +359,7 @@ class TestGetArtistRecordingsAndAlbums:
     async def test_browses_recordings_when_inline_recording_cap_hit(self):
         fixture = load_fixture("musicbrainz/recordings-with-release-groups")
         artist_route = respx.get(
-            "https://musicbrainz.org/ws/2/artist/artist-mbid"
+            "https://api.brainzmash.cc/ws/2/artist/artist-mbid"
         ).mock(
             return_value=httpx.Response(
                 200,
@@ -369,7 +370,7 @@ class TestGetArtistRecordingsAndAlbums:
             )
         )
         recording_browse_route = respx.get(
-            "https://musicbrainz.org/ws/2/recording"
+            "https://api.brainzmash.cc/ws/2/recording"
         ).mock(
             return_value=httpx.Response(
                 200,
@@ -395,7 +396,7 @@ class TestGetArtistRecordingsAndAlbums:
             )
         )
         release_group_browse_route = respx.get(
-            "https://musicbrainz.org/ws/2/release-group"
+            "https://api.brainzmash.cc/ws/2/release-group"
         ).mock(return_value=httpx.Response(200, json={"release-groups": []}))
 
         provider = _make_provider()
@@ -423,7 +424,7 @@ class TestGetArtistRecordingsAndAlbums:
 class TestSearchArtists:
     @respx.mock
     async def test_returns_multiple_artists(self):
-        respx.get("https://musicbrainz.org/ws/2/artist").mock(
+        respx.get("https://api.brainzmash.cc/ws/2/artist").mock(
             return_value=httpx.Response(200, json=load_fixture("musicbrainz/artist"))
         )
 
@@ -436,7 +437,7 @@ class TestSearchArtists:
 
     @respx.mock
     async def test_returns_empty_when_no_matches(self):
-        respx.get("https://musicbrainz.org/ws/2/artist").mock(
+        respx.get("https://api.brainzmash.cc/ws/2/artist").mock(
             return_value=httpx.Response(200, json={"artists": []})
         )
 
@@ -449,7 +450,7 @@ class TestSearchArtists:
 class TestGetArtistAlias:
     @respx.mock
     async def test_returns_name(self):
-        respx.get("https://musicbrainz.org/ws/2/artist").mock(
+        respx.get("https://api.brainzmash.cc/ws/2/artist").mock(
             return_value=httpx.Response(200, json=load_fixture("musicbrainz/artist"))
         )
 
@@ -459,9 +460,98 @@ class TestGetArtistAlias:
         assert result == "Olivia Rodrigo"
 
 
+class TestBrainzmashFailover:
+    @respx.mock
+    async def test_uses_brainzmash_when_configured(self, monkeypatch):
+        monkeypatch.setenv("BRAINZMASH_USER_AGENT", "syllogi/0.1.0 (brainzmash-test)")
+        brainzmash_route = respx.get("https://api.brainzmash.cc/ws/2/artist").mock(
+            return_value=httpx.Response(200, json=load_fixture("musicbrainz/artist"))
+        )
+        musicbrainz_route = respx.get("https://musicbrainz.org/ws/2/artist").mock(
+            return_value=httpx.Response(200, json=load_fixture("musicbrainz/artist"))
+        )
+
+        provider = _make_provider()
+        result = await provider.get_artist_info(artist_name="Test Artist")
+
+        assert result is not None
+        assert musicbrainz_route.called is False
+
+        request = brainzmash_route.calls.last.request
+        assert request.headers["User-Agent"] == "syllogi/0.1.0 (brainzmash-test)"
+        assert request.url.params["fmt"] == "json"
+
+    @respx.mock
+    async def test_falls_back_when_brainzmash_rate_limited(self, monkeypatch):
+        monkeypatch.setattr(asyncio, "sleep", _no_sleep)
+        brainzmash_route = respx.get("https://api.brainzmash.cc/ws/2/artist").mock(
+            return_value=httpx.Response(503)
+        )
+        musicbrainz_route = respx.get("https://musicbrainz.org/ws/2/artist").mock(
+            return_value=httpx.Response(200, json=load_fixture("musicbrainz/artist"))
+        )
+
+        provider = _make_provider()
+        result = await provider.get_artist_info(artist_name="Olivia Rodrigo")
+
+        assert result is not None
+        assert brainzmash_route.call_count == 3
+        assert musicbrainz_route.call_count == 1
+
+    @respx.mock
+    async def test_falls_back_on_connection_error(self, monkeypatch):
+        brainzmash_route = respx.get("https://api.brainzmash.cc/ws/2/artist").mock(
+            side_effect=httpx.ConnectError("unreachable")
+        )
+        musicbrainz_route = respx.get("https://musicbrainz.org/ws/2/artist").mock(
+            return_value=httpx.Response(200, json=load_fixture("musicbrainz/artist"))
+        )
+
+        provider = _make_provider()
+        result = await provider.get_artist_info(artist_name="Olivia Rodrigo")
+
+        assert result is not None
+        assert brainzmash_route.call_count == 1
+        assert musicbrainz_route.call_count == 1
+
+    @respx.mock
+    async def test_does_not_fail_over_on_client_error(self, monkeypatch):
+        respx.get("https://api.brainzmash.cc/ws/2/artist").mock(
+            return_value=httpx.Response(400)
+        )
+        musicbrainz_route = respx.get("https://musicbrainz.org/ws/2/artist").mock(
+            return_value=httpx.Response(200, json=load_fixture("musicbrainz/artist"))
+        )
+
+        provider = _make_provider()
+
+        with pytest.raises(httpx.HTTPStatusError):
+            await provider.get_artist_info(artist_name="Test Artist")
+
+        assert musicbrainz_route.called is False
+
+    @respx.mock
+    async def test_returns_none_when_both_providers_fail(self, monkeypatch):
+        monkeypatch.setattr(asyncio, "sleep", _no_sleep)
+        brainzmash_route = respx.get("https://api.brainzmash.cc/ws/2/artist").mock(
+            return_value=httpx.Response(503)
+        )
+        musicbrainz_route = respx.get("https://musicbrainz.org/ws/2/artist").mock(
+            return_value=httpx.Response(503)
+        )
+
+        provider = _make_provider()
+        result = await provider.get_artist_info(artist_name="Olivia Rodrigo")
+
+        assert result is None
+        assert brainzmash_route.call_count == 3
+        assert musicbrainz_route.call_count == 3
+
+
 class TestRateLimitRetry:
     @respx.mock
     async def test_retries_on_503(self, monkeypatch):
+        monkeypatch.setenv("BRAINZMASH_URL", "")
         monkeypatch.setattr(asyncio, "sleep", _no_sleep)
         route = respx.get("https://musicbrainz.org/ws/2/artist").mock(
             side_effect=[
@@ -479,6 +569,7 @@ class TestRateLimitRetry:
 
     @respx.mock
     async def test_returns_none_after_exhausting_attempts(self, monkeypatch):
+        monkeypatch.setenv("BRAINZMASH_URL", "")
         monkeypatch.setattr(asyncio, "sleep", _no_sleep)
         route = respx.get("https://musicbrainz.org/ws/2/artist").mock(
             return_value=httpx.Response(503)
@@ -490,7 +581,8 @@ class TestRateLimitRetry:
         assert route.call_count == 3
 
     @respx.mock
-    async def test_retries_on_read_timeout(self):
+    async def test_retries_on_read_timeout(self, monkeypatch):
+        monkeypatch.setenv("BRAINZMASH_URL", "")
         route = respx.get("https://musicbrainz.org/ws/2/artist").mock(
             side_effect=[
                 httpx.ReadTimeout("timed out"),
@@ -505,7 +597,8 @@ class TestRateLimitRetry:
         assert result is not None
 
     @respx.mock
-    async def test_returns_none_after_exhausting_timeout_attempts(self):
+    async def test_returns_none_after_exhausting_timeout_attempts(self, monkeypatch):
+        monkeypatch.setenv("BRAINZMASH_URL", "")
         route = respx.get("https://musicbrainz.org/ws/2/artist").mock(
             side_effect=httpx.ReadTimeout("timed out")
         )

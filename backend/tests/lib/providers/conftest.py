@@ -8,6 +8,7 @@ from lib.providers.metadata.deezer import DeezerMetadataProvider
 from lib.providers.metadata.lastfm import LastFMMetadataProvider
 from lib.providers.metadata.musicbrainz import (
     MusicBrainzMetadataProvider,
+    _brainzmash_limiter,
     _musicbrainz_limiter,
 )
 from lib.providers.recommendation.lastfm import LastFMRecommendationProvider
@@ -44,14 +45,20 @@ def _provider_env(monkeypatch):
     monkeypatch.setenv("LISTENBRAINZ_API_KEY", "test-listenbrainz-api-key")
     monkeypatch.setenv("LISTENBRAINZ_URL", "https://api.listenbrainz.org")
     monkeypatch.setenv("MUSICBRAINZ_URL", "https://musicbrainz.org/ws/2")
+    monkeypatch.setenv("BRAINZMASH_URL", "https://api.brainzmash.cc/ws/2")
     monkeypatch.setenv("MUSICBRAINZ_USER_AGENT", "syllogi/0.1.0 (test)")
+    monkeypatch.setenv("BRAINZMASH_USER_AGENT", "syllogi/0.1.0 (test)")
 
 
 @pytest.fixture(autouse=True)
 def _set_musicbrainz_limiter(monkeypatch):
-    """Lift the MusicBrainz rate limit for tests."""
+    """Lift the MusicBrainz and BrainzMash rate limits for tests."""
     monkeypatch.setattr(_musicbrainz_limiter, "rate", 1000)
+    monkeypatch.setattr(_musicbrainz_limiter, "_capacity", 1000.0)
     monkeypatch.setattr(_musicbrainz_limiter, "_tokens", 1000.0)
+    monkeypatch.setattr(_brainzmash_limiter, "rate", 1000)
+    monkeypatch.setattr(_brainzmash_limiter, "_capacity", 1000.0)
+    monkeypatch.setattr(_brainzmash_limiter, "_tokens", 1000.0)
 
 
 @pytest.fixture(autouse=True)
