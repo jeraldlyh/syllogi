@@ -37,7 +37,7 @@
     "@radix-ui/react-toggle": "1.1.18",
     "@radix-ui/react-toggle-group": "1.1.19",
     "@radix-ui/react-tooltip": "1.2.16",
-    "autoprefixer": "^10.5.6",
+    "autoprefixer": "^10.6.1",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "cmdk": "1.1.1",
@@ -49,7 +49,7 @@
     "react": "19.3.0",
     "react-day-picker": "8.10.2",
     "react-dom": "19.3.0",
-    "react-hook-form": "^7.86.0",
+    "react-hook-form": "^7.88.0",
     "react-resizable-panels": "^2.1.7",
     "react-router-dom": "^7.18.3",
     "recharts": "2.15.0",
@@ -61,7 +61,7 @@
     "zod": "^3.24.1"
   },
   "devDependencies": {
-    "@types/node": "^22.20.2",
+    "@types/node": "^22.20.3",
     "@types/react": "^19.3.0",
     "@types/react-dom": "^19.2.7",
     "@vitejs/plugin-react": "^4.4.1",
