@@ -156,9 +156,10 @@ export const ChartArtistTracks = ({ data }: { data: ArtistInfo }) => {
           <h2 className="text-base font-semibold">Top Tracks</h2>
           {tracks.length > 0 && (
             <div className="mt-1 flex text-muted-foreground">
-              <Text value={`${tracks.length} tracks`} disableViewport />
-              <Dot className="size-3 shrink-0 fill-current" />
-              <Text value={`${inLibrary} in library`} disableViewport />
+              <Text
+                value={`${tracks.length} tracks, ${inLibrary} in library`}
+                disableViewport
+              />
             </div>
           )}
         </div>
@@ -203,7 +204,7 @@ export const ChartArtistTracks = ({ data }: { data: ArtistInfo }) => {
       <div className="mt-4">
         {tracks.length > 0 ? (
           viewMode === "grid" ? (
-            <div className="grid grid-cols-2 gap-3 md:grid-cols-5 max-h-[60vh] overflow-auto">
+            <div className="gap-3 flex flex-wrap max-h-[60vh] overflow-auto">
               {tracks.map((track, i) => {
                 const status = getTrackStatus(track);
                 const isStarting = downloadingTracks.has(getTrackKey(track));

@@ -31,10 +31,12 @@ export const ChartSearchTrackCard = ({
   children,
 }: IProps): React.JSX.Element => {
   return (
-    <div className="group relative flex flex-col overflow-hidden rounded-lg border border-border bg-card transition-colors hover:border-foreground/20">
+    <div className="w-44 h-auto group relative flex flex-col overflow-hidden rounded-lg border border-border bg-card transition-colors hover:border-foreground/20">
       <ChartImage imageUrl={imageUrl} alt={trackName}>
         <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/70 to-transparent p-2.5">
-          <Badge variant="secondary">{formatDuration(duration)}</Badge>
+          <Badge className="font-mono" variant="secondary">
+            {formatDuration(duration).toUpperCase()}
+          </Badge>
         </div>
         <div className="absolute top-2 right-2">
           <ChartBadge isExist={isExist} isDownloading={isDownloading} />
