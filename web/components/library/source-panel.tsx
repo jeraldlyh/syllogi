@@ -65,7 +65,7 @@ export const SourcePanel = ({
           Search
         </Button>
       </form>
-      <div className="max-h-72 min-h-0 flex-1 overflow-y-auto p-3 lg:max-h-none">
+      <div className="max-h-72 min-h-0 flex-1 overflow-y-auto p-3 lg:max-h-none no-scrollbar">
         {children}
       </div>
     </section>

@@ -127,7 +127,7 @@ export const ChartArtistDiscography = ({
           <div className="relative mt-4">
             <div
               ref={scrollRef}
-              className="-mx-4 flex snap-x snap-mandatory gap-3 overflow-x-auto px-4 pb-2 scroll-pl-4 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden md:-mx-6 md:px-6 md:scroll-pl-6"
+              className="-mx-4 flex snap-x snap-mandatory gap-3 overflow-x-auto px-4 pb-2 scroll-pl-4 no-scrollbar md:-mx-6 md:px-6 md:scroll-pl-6"
             >
               {visibleAlbums.map((album) => (
                 <ChartArtistAlbumCard

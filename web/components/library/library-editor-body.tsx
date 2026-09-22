@@ -246,7 +246,7 @@ export const EditorBody = ({ detail, onSaved, onDirtyChange }: IProps) => {
 
   return (
     <div className="flex flex-col">
-      <header className="flex flex-col gap-3 border-b border-border px-4 pb-4 pt-2 sm:flex-row sm:items-start sm:justify-between">
+      <div className="flex flex-col gap-3 border-b border-border px-4 pb-4 pt-2 md:flex-row md:items-start md:justify-between">
         <div className="min-w-0">
           <h2 className="truncate text-xl font-semibold tracking-tight">
             {draft.title || removeFileExtension(detail.filename)}
@@ -259,7 +259,7 @@ export const EditorBody = ({ detail, onSaved, onDirtyChange }: IProps) => {
             </span>
           </div>
         </div>
-        <div className="flex shrink-0 items-center gap-2">
+        <div className="flex items-center self-end gap-2">
           {isDirty && (
             <span className="font-mono text-xs uppercase tracking-widest text-amber-400">
               Unsaved
@@ -291,9 +291,9 @@ export const EditorBody = ({ detail, onSaved, onDirtyChange }: IProps) => {
             Save changes
           </Button>
         </div>
-      </header>
+      </div>
       <div className="flex flex-col gap-5 px-4 pb-8 pt-4 lg:grid lg:h-editor lg:grid-cols-2 lg:gap-6">
-        <div className="min-h-0 lg:overflow-y-auto lg:pr-2">
+        <div className="min-h-0 lg:overflow-y-auto lg:pr-2 no-scrollbar">
           {TEXT_FIELDS.map(({ field, key, placeholder, className }) => (
             <TagRow
               key={field}
@@ -347,7 +347,7 @@ export const EditorBody = ({ detail, onSaved, onDirtyChange }: IProps) => {
                 setField("lyrics", event.target.value, "lyrics")
               }
               placeholder="Paste lyrics, or take a match from LRCLIB"
-              className="min-h-48 resize-y font-mono text-xs leading-relaxed"
+              className="min-h-48 resize-y font-mono text-xs leading-relaxed no-scrollbar"
             />
           </TagRow>
         </div>
