@@ -5,10 +5,11 @@ import time
 class TokenBucketRateLimiter:
     """Token bucket rate limiter for async HTTP requests."""
 
-    def __init__(self, rate: int = 50, per: float = 1.0):
+    def __init__(self, rate: int = 50, per: float = 1.0, burst: int | None = None):
         self.rate = rate
         self.per = per
-        self._tokens = float(rate)
+        self._capacity = float(burst if burst is not None else rate)
+        self._tokens = self._capacity
         self._last_refill = time.monotonic()
         self._lock = asyncio.Lock()
 
@@ -18,7 +19,7 @@ class TokenBucketRateLimiter:
             elapsed = now - self._last_refill
 
             self._tokens = min(
-                self.rate, self._tokens + elapsed * (self.rate / self.per)
+                self._capacity, self._tokens + elapsed * (self.rate / self.per)
             )
             self._last_refill = now
 
