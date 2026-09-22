@@ -294,15 +294,28 @@ class TestQueryTracks:
         upsert_tracks(
             session,
             [
-                _make_track(path="b.flac", mtime=1.0),
-                _make_track(path="A.flac", mtime=1.0),
+                _make_track(path="B.flac", mtime=1.0),
+                _make_track(path="a.flac", mtime=1.0),
                 _make_track(path="c.flac", mtime=1.0),
             ],
         )
 
         tracks, _ = query_tracks(session, sort="mtime")
 
-        assert [track.path for track in tracks] == ["A.flac", "b.flac", "c.flac"]
+        assert [track.path for track in tracks] == ["a.flac", "B.flac", "c.flac"]
+
+    def test_orders_case_variant_paths_deterministically(self, session: Session):
+        upsert_tracks(
+            session,
+            [
+                _make_track(path="a.flac"),
+                _make_track(path="A.flac"),
+            ],
+        )
+
+        tracks, _ = query_tracks(session)
+
+        assert [track.path for track in tracks] == ["A.flac", "a.flac"]
 
 
 class TestDuplicateGroupsSql:

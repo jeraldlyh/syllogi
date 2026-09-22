@@ -175,16 +175,19 @@ def query_tracks(
         select(sa.func.count()).select_from(LibraryTrack).where(*conditions)
     ).one()
 
+    lower_path = sa.func.lower(col(LibraryTrack.path))
     order_columns = {
-        "path": sa.func.lower(col(LibraryTrack.path)),
+        "path": lower_path,
         "mtime": col(LibraryTrack.mtime),
     }
     order_column = order_columns.get(sort, order_columns["path"])
 
     order = [order_column.asc() if not descending else order_column.desc()]
 
-    if sort != "path":
+    if sort == "path":
         order.append(col(LibraryTrack.path))
+    else:
+        order.append(lower_path)
 
     tracks = session.exec(
         select(LibraryTrack)
