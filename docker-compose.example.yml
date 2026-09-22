@@ -25,7 +25,8 @@ services:
       - AUTHENTIK_SECRET=
       - AUTHENTIK_ISSUER=
       - ENVIRONMENT=production
-      - MUSICBRAINZ_URL=
+      - MUSICBRAINZ_URL=https://musicbrainz.org/ws/2
+      - BRAINZMASH_URL=https://api.brainzmash.cc/ws/2
       - LASTFM_URL=
       - LASTFM_API_KEY=
       - AUTH_SECRET_KEY=
