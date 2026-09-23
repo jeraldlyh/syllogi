@@ -198,7 +198,7 @@ export const ChartArtistTracks = ({ data }: { data: ArtistInfo }) => {
       <div className="mt-4">
         {tracks.length > 0 ? (
           viewMode === "grid" ? (
-            <div className="gap-3 flex flex-wrap max-h-[60vh] overflow-auto">
+            <div className="grid gap-3 grid-cols-[repeat(auto-fill,minmax(11rem,1fr))] max-h-[60vh] overflow-auto">
               {tracks.map((track, i) => {
                 const status = getTrackStatus(track);
                 const isStarting = downloadingTracks.has(getTrackKey(track));
