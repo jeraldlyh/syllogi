@@ -15,7 +15,7 @@ export const useAlbum = (
   artistName: string | null,
   albumName: string | null,
 ) => {
-  const { data, error, isLoading } = useSWR<ApiResponse<AlbumInfo>>(
+  const { data, error, isLoading, mutate } = useSWR<ApiResponse<AlbumInfo>>(
     artistName && albumName
       ? `/charts/album?artist_name=${encodeURIComponent(artistName)}&album_name=${encodeURIComponent(albumName)}`
       : null,
@@ -30,5 +30,6 @@ export const useAlbum = (
     data: data?.data,
     isLoading,
     isError: error,
+    mutate,
   };
 };
