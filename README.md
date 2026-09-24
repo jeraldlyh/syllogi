@@ -57,9 +57,11 @@ Special thanks to the following projects for making **syllogi** possible:
 - [Navidrome]
 - [Last.fm]
 - [slskd]
+- [Brainzmash]
 - [MusicBrainz]
 - [LRCLIB]
 
+[Brainzmash]: https://brainzmash.cc/
 [SpotAPI]: https://github.com/Aran404/SpotAPI/tree/main
 [Jellyfin]: https://github.com/jellyfin/jellyfin
 [Navidrome]: https://github.com/navidrome/navidrome

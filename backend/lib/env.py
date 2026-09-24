@@ -1,5 +1,7 @@
 import os
 
+DEFAULT_USER_AGENT = "syllogi/0.3.5"
+
 
 def get_environment_variables() -> dict[str, str | bool | None]:
     return {
@@ -23,9 +25,11 @@ def get_environment_variables() -> dict[str, str | bool | None]:
         "SLSKD_URL": os.getenv("SLSKD_URL", ""),
         "SLSKD_API_KEY": os.getenv("SLSKD_API_KEY", ""),
         "MUSICBRAINZ_URL": os.getenv("MUSICBRAINZ_URL", "https://musicbrainz.org/ws/2"),
+        "BRAINZMASH_URL": os.getenv("BRAINZMASH_URL", "https://api.brainzmash.cc/ws/2"),
+        "BRAINZMASH_USER_AGENT": os.getenv("BRAINZMASH_USER_AGENT", DEFAULT_USER_AGENT),
         "MUSICBRAINZ_USER_AGENT": os.getenv(
             "MUSICBRAINZ_USER_AGENT",
-            "syllogi/0.1.0 (https://github.com/jeraldlyh/syllogi)",
+            DEFAULT_USER_AGENT,
         ),
         "NAVIDROME_URL": os.getenv("NAVIDROME_URL", ""),
         "NAVIDROME_USERNAME": os.getenv("NAVIDROME_USERNAME", ""),

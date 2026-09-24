@@ -19,7 +19,7 @@ import {
 import { api } from "@/lib/api";
 import { cn, formatDuration } from "@/lib/utils";
 import { Download, Loader2, RotateCcw } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { Badge } from "../ui/badge";
 import { ChartBadge } from "./chart-badge";
@@ -31,10 +31,16 @@ interface IProps {
 }
 
 const AlbumContent = ({ artistName, albumName }: IProps) => {
-  const { data, isLoading, isError } = useAlbum(artistName, albumName);
+  const {
+    data,
+    isLoading,
+    isError,
+    mutate: refreshAlbum,
+  } = useAlbum(artistName, albumName);
   const [downloadingTracks, setDownloadingTracks] = useState<Set<string>>(
     new Set(),
   );
+  const [isDownloadingAll, setIsDownloadingAll] = useState(false);
   const { data: downloadSessions, mutate: refreshDownloads } =
     useDownloadSessions();
 
@@ -54,6 +60,45 @@ const AlbumContent = ({ artistName, albumName }: IProps) => {
     return session ? session.status : null;
   };
 
+  const isTrackInLibrary = (track: ArtistTrack): boolean => {
+    const status = getTrackStatus(track);
+
+    return track.exists || status === "completed" || status === "existed";
+  };
+
+  const isTrackBusy = (track: ArtistTrack): boolean => {
+    const status = getTrackStatus(track);
+
+    return (
+      downloadingTracks.has(getTrackKey(track)) ||
+      status === "pending" ||
+      status === "downloading"
+    );
+  };
+
+  const albumTracks = data?.tracks ?? [];
+  const staleCompletedCount = albumTracks.filter(
+    (track) => !track.exists && isTrackInLibrary(track),
+  ).length;
+
+  useEffect(() => {
+    if (staleCompletedCount > 0) {
+      refreshAlbum();
+    }
+  }, [staleCompletedCount, refreshAlbum]);
+
+  const startTrackDownload = async (track: ArtistTrack) =>
+    await api({
+      method: "POST",
+      service: "charts",
+      path: "track",
+      body: {
+        artist_name: artistName,
+        track_name: track.track_name,
+        image_url: "",
+      },
+    });
+
   const handleDownload = async (track: ArtistTrack): Promise<void> => {
     const key = getTrackKey(track);
     if (downloadingTracks.has(key)) return;
@@ -65,21 +110,12 @@ const AlbumContent = ({ artistName, albumName }: IProps) => {
     );
 
     try {
-      const response = await api({
-        method: "POST",
-        service: "charts",
-        path: "track",
-        body: {
-          artist_name: artistName,
-          track_name: track.track_name,
-          image_url: "",
-        },
-      });
+      const response = await startTrackDownload(track);
 
-      if (response.statusCode !== 200) {
+      if (response?.statusCode !== 200) {
         toast.error("Failed to start download", {
           description:
-            response.error?.message || `${artistName} - ${track.track_name}`,
+            response?.error?.message || `${artistName} - ${track.track_name}`,
           id: toastId,
         });
         return;
@@ -105,10 +141,7 @@ const AlbumContent = ({ artistName, albumName }: IProps) => {
   };
 
   const renderAction = (track: ArtistTrack) => {
-    const status = getTrackStatus(track);
-    const isStarting = downloadingTracks.has(getTrackKey(track));
-
-    if (isStarting || status === "pending" || status === "downloading") {
+    if (isTrackBusy(track)) {
       return (
         <Button disabled variant="ghost" size="icon" className="h-7 w-7">
           <Loader2 className="size-4 animate-spin text-amber-400" />
@@ -116,9 +149,9 @@ const AlbumContent = ({ artistName, albumName }: IProps) => {
       );
     }
 
-    if (track.exists) return null;
+    if (isTrackInLibrary(track)) return null;
 
-    const isFailed = status === "failed";
+    const isFailed = getTrackStatus(track) === "failed";
     return (
       <Button
         type="button"
@@ -171,6 +204,64 @@ const AlbumContent = ({ artistName, albumName }: IProps) => {
 
   const tracks = data.tracks;
 
+  const handleDownloadAll = async (): Promise<void> => {
+    if (isDownloadingAll) return;
+
+    const candidates = tracks.filter(
+      (track) => !isTrackInLibrary(track) && !isTrackBusy(track),
+    );
+
+    if (candidates.length === 0) {
+      toast.info("Nothing to download");
+      return;
+    }
+
+    setIsDownloadingAll(true);
+    setDownloadingTracks((prev) => {
+      const next = new Set(prev);
+
+      candidates.forEach((track) => next.add(getTrackKey(track)));
+      return next;
+    });
+
+    const toastId = toast.loading(`Starting ${candidates.length} downloads...`);
+    let started = 0;
+    let failed = 0;
+
+    try {
+      for (const track of candidates) {
+        try {
+          const response = await startTrackDownload(track);
+
+          if (response?.statusCode === 200) started += 1;
+          else failed += 1;
+        } catch {
+          failed += 1;
+        }
+      }
+
+      await refreshDownloads();
+    } finally {
+      setDownloadingTracks((prev) => {
+        const next = new Set(prev);
+        candidates.forEach((track) => next.delete(getTrackKey(track)));
+        return next;
+      });
+      setIsDownloadingAll(false);
+    }
+
+    if (started === 0) {
+      toast.error("Failed to start downloads", { id: toastId });
+      return;
+    }
+
+    toast.success(`Started ${started} download${started === 1 ? "" : "s"}`, {
+      id: toastId,
+      description:
+        failed > 0 ? `${failed} tracks failed to download` : undefined,
+    });
+  };
+
   return (
     <div className="flex-1 overflow-y-auto px-4 pb-8">
       <div className="py-6">
@@ -183,7 +274,7 @@ const AlbumContent = ({ artistName, albumName }: IProps) => {
           <div className="flex flex-1 flex-col justify-center gap-2">
             <h1 className="text-3xl font-bold tracking-tight">{data.title}</h1>
             <Text className="font-semibold" value={data.artist_name} />
-            <div className="flex gap-2">
+            <div className="flex flex-wrap items-center gap-2">
               {data.release_date && (
                 <Badge variant="secondary">{data.release_date}</Badge>
               )}
@@ -192,6 +283,28 @@ const AlbumContent = ({ artistName, albumName }: IProps) => {
               )}
             </div>
           </div>
+          {tracks.length > 0 && (
+            <Button
+              type="button"
+              size="sm"
+              variant="outline"
+              className="w-fit mt-auto"
+              onClick={handleDownloadAll}
+              disabled={
+                isDownloadingAll ||
+                !tracks.some(
+                  (track) => !isTrackInLibrary(track) && !isTrackBusy(track),
+                )
+              }
+            >
+              {isDownloadingAll ? (
+                <Loader2 className="size-4 animate-spin" />
+              ) : (
+                <Download className="size-4" />
+              )}
+              {isDownloadingAll ? "Starting..." : "Download all"}
+            </Button>
+          )}
         </div>
         <div className="mt-8">
           {tracks.length > 0 ? (
@@ -209,15 +322,13 @@ const AlbumContent = ({ artistName, albumName }: IProps) => {
                 </TableHeader>
                 <TableBody>
                   {tracks.map((track, i) => {
-                    const status = getTrackStatus(track);
-
                     return (
                       <TableRow
                         key={`${track.track_name}-${i}`}
                         className={cn({
-                          "md:bg-inherit bg-amber-500/10":
-                            status === "pending" || status === "downloading",
-                          "md:bg-inherit bg-emerald-500/10": track.exists,
+                          "md:bg-inherit bg-amber-500/10": isTrackBusy(track),
+                          "md:bg-inherit bg-emerald-500/10":
+                            isTrackInLibrary(track),
                         })}
                       >
                         <TableCell className="font-mono text-xs text-muted-foreground">
@@ -229,10 +340,8 @@ const AlbumContent = ({ artistName, albumName }: IProps) => {
                               {track.track_name}
                             </span>
                             <ChartBadge
-                              isExist={track.exists}
-                              isDownloading={
-                                status === "pending" || status === "downloading"
-                              }
+                              isExist={isTrackInLibrary(track)}
+                              isDownloading={isTrackBusy(track)}
                             />
                           </div>
                         </TableCell>

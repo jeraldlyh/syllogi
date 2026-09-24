@@ -1,6 +1,7 @@
 import pytest
 
 from lib.env import (
+    DEFAULT_USER_AGENT,
     get_environment_variable,
     get_environment_variables,
     is_jellyfin_configured,
@@ -68,7 +69,9 @@ class TestGetEnvironmentVariables:
             "SLSKD_URL",
             "SLSKD_API_KEY",
             "MUSICBRAINZ_URL",
+            "BRAINZMASH_URL",
             "MUSICBRAINZ_USER_AGENT",
+            "BRAINZMASH_USER_AGENT",
             "NAVIDROME_URL",
             "NAVIDROME_USERNAME",
             "NAVIDROME_PASSWORD",
@@ -87,6 +90,8 @@ class TestGetEnvironmentVariables:
         assert variables["DATABASE_NAME"] == "syllogi"
         assert variables["DISCORD_WEBHOOK_URL"] == ""
         assert variables["IS_DEVELOPMENT"] is False
+        assert variables["MUSICBRAINZ_USER_AGENT"] == DEFAULT_USER_AGENT
+        assert variables["BRAINZMASH_USER_AGENT"] == DEFAULT_USER_AGENT
 
     def test_reflects_set_environment_variables(self, monkeypatch):
         monkeypatch.setenv("JELLYFIN_URL", "https://jellyfin.example.com")

@@ -135,3 +135,18 @@ class TestTokenBucketRateLimiter:
         await limiter.acquire()
 
         sleep.assert_called_once_with(0.05)
+
+    async def test_burst_allows_capacity_before_waiting(self, monkeypatch):
+        clock = _FakeClock()
+        monkeypatch.setattr(time, "monotonic", clock)
+
+        sleep = AsyncMock()
+        monkeypatch.setattr(asyncio, "sleep", sleep)
+
+        limiter = TokenBucketRateLimiter(rate=2, per=1.0, burst=20)
+        for _ in range(20):
+            await limiter.acquire()
+        sleep.assert_not_called()
+
+        await limiter.acquire()
+        sleep.assert_called_once_with(0.5)

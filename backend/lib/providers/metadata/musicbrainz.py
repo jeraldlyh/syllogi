@@ -23,7 +23,8 @@ from lib.rate_limit import TokenBucketRateLimiter
 logger = logging.getLogger(__name__)
 
 _musicbrainz_limiter = TokenBucketRateLimiter(rate=1, per=1.0)
-_musicbrainz_retry_attempts = 3
+_brainzmash_limiter = TokenBucketRateLimiter(rate=2, per=1.0, burst=20)
+_retry_attempts = 3
 
 
 def _convert_recordings_to_tracks(
@@ -69,46 +70,50 @@ def _convert_release_groups_to_albums(result: dict) -> list[ArtistAlbum]:
 class MusicBrainzMetadataProvider(MetadataProvider):
     """Metadata provider backed by the MusicBrainz API."""
 
-    async def _http(
+    async def _request(
         self,
-        path: str,
         *,
-        params: dict[str, Any] | None = None,
+        base_url: str,
+        path: str,
+        params: dict[str, Any] | None,
+        user_agent: str,
+        limiter: TokenBucketRateLimiter,
+        provider_name: str,
     ) -> Any:
-        """HTTP helper for MusicBrainz API."""
+        """Request a MusicBrainz-compatible API, retrying on timeouts and 503s."""
 
-        url = str(get_environment_variable("MUSICBRAINZ_URL")) + path
-        headers = {
-            "User-Agent": str(get_environment_variable("MUSICBRAINZ_USER_AGENT")),
-        }
+        url = base_url.rstrip("/") + path
+        headers = {"User-Agent": user_agent}
 
         query_params = {"fmt": "json", **(params or {})}
 
         async with httpx.AsyncClient(timeout=30) as client:
-            for attempt in range(_musicbrainz_retry_attempts):
-                await _musicbrainz_limiter.acquire()
+            for attempt in range(_retry_attempts):
+                await limiter.acquire()
 
                 try:
                     response = await client.get(
                         url, params=query_params, headers=headers
                     )
                 except httpx.TimeoutException:
-                    if attempt == _musicbrainz_retry_attempts - 1:
-                        logger.warning(f"MusicBrainz timed out, giving up: {path}")
+                    if attempt == _retry_attempts - 1:
+                        logger.warning(f"{provider_name} timed out, giving up: {path}")
                         return None
                     logger.warning(
-                        f"[{attempt + 1}/{_musicbrainz_retry_attempts}] MusicBrainz timed out, retrying: {path}"
+                        f"[{attempt + 1}/{_retry_attempts}] {provider_name} timed out, retrying: {path}"
                     )
                     continue
 
                 if response.status_code == 503:
-                    if attempt == _musicbrainz_retry_attempts - 1:
-                        logger.warning(f"MusicBrainz rate limited, giving up: {path}")
+                    if attempt == _retry_attempts - 1:
+                        logger.warning(
+                            f"{provider_name} rate limited, giving up: {path}"
+                        )
                         return None
 
                     delay = float(response.headers.get("Retry-After", 1)) * 2**attempt
                     logger.warning(
-                        f"[{attempt + 1}/{_musicbrainz_retry_attempts}] MusicBrainz rate limited, retrying in {delay}s: {path}"
+                        f"[{attempt + 1}/{_retry_attempts}] {provider_name} rate limited, retrying in {delay}s: {path}"
                     )
                     await asyncio.sleep(delay)
                     continue
@@ -118,6 +123,74 @@ class MusicBrainzMetadataProvider(MetadataProvider):
                 if response.content:
                     return response.json()
                 return None
+
+    async def _http(
+        self,
+        path: str,
+        *,
+        params: dict[str, Any] | None = None,
+    ) -> Any:
+        """HTTP helper for MusicBrainz-compatible APIs.
+
+        BrainzMash is the primary source; MusicBrainz is the fallback.
+        """
+
+        candidates: list[tuple[str, str, TokenBucketRateLimiter, str]] = []
+
+        brainzmash_url = str(get_environment_variable("BRAINZMASH_URL")).strip()
+        if brainzmash_url:
+            candidates.append(
+                (
+                    "BrainzMash",
+                    brainzmash_url,
+                    _brainzmash_limiter,
+                    "BRAINZMASH_USER_AGENT",
+                )
+            )
+
+        musicbrainz_url = str(get_environment_variable("MUSICBRAINZ_URL")).strip()
+        if musicbrainz_url:
+            candidates.append(
+                (
+                    "MusicBrainz",
+                    musicbrainz_url,
+                    _musicbrainz_limiter,
+                    "MUSICBRAINZ_USER_AGENT",
+                )
+            )
+
+        if not candidates:
+            return None
+
+        for provider_name, base_url, limiter, user_agent_env in candidates:
+            try:
+                result = await self._request(
+                    base_url=base_url,
+                    path=path,
+                    params=params,
+                    user_agent=str(get_environment_variable(user_agent_env)),
+                    limiter=limiter,
+                    provider_name=provider_name,
+                )
+            except httpx.HTTPStatusError as error:
+                if error.response.status_code < 500:
+                    raise
+                logger.warning(
+                    f"{provider_name} error {error.response.status_code}, falling back: {path}"
+                )
+                continue
+            except httpx.RequestError as error:
+                logger.warning(
+                    f"{provider_name} unreachable, falling back: {path} ({error})"
+                )
+                continue
+
+            if result is None:
+                logger.warning(
+                    f"{provider_name} returned no data, falling back: {path}"
+                )
+                continue
+            return result
 
     def _escape_lucene(self, value: str) -> str:
         """Escape the characters Lucene reads as operators, so a value stays literal."""
