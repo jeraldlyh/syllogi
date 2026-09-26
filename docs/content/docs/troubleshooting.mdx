@@ -13,6 +13,11 @@ description: Common failure modes and where to look.
 - See [Track Matching](/docs/concepts/matching): metadata differences or notably different track lengths cause misses.
 - If downloads are disabled on the sync entry, missing tracks are never fetched, hence the fix is to turn downloads on.
 
+## Sync fails with invalid credentials
+
+- The failed session shows `Invalid credentials for Navidrome user '<username>'`. This means the saved password no longer matches the music-server account, for example after a password change on the server side.
+- The fix is to update the password for that user under the `Users` tab, then re-run the sync. The next run picks up the new credentials.
+
 ## slskd dot is red / downloads fail
 
 - The dashboard header shows whether slskd is configured and reachable. Unset `SLSKD_URL`/`SLSKD_API_KEY` means the YouTube fallback applies
