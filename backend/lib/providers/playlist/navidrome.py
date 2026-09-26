@@ -34,6 +34,7 @@ class NavidromeProvider(MusicPlaylistProvider):
         params: dict[str, Any] | None = None,
         http_method: str = "GET",
         timeout: float = 30.0,
+        is_admin: bool = False,
     ) -> Any:
         """HTTP helper for the Subsonic API (authenticated with explicit user credentials)."""
 
@@ -81,6 +82,13 @@ class NavidromeProvider(MusicPlaylistProvider):
             message = error.get("message", "Unknown Subsonic error")
 
             if code == 40:
+                if is_admin:
+                    raise ProviderAuthError(
+                        "Invalid credentials for the Navidrome admin account:"
+                        f" {message}. Check the NAVIDROME_USERNAME and"
+                        " NAVIDROME_PASSWORD environment variables."
+                    )
+
                 raise ProviderAuthError(
                     f"Invalid credentials for Navidrome user '{username}': {message}."
                     " Update the password for this user in the Users tab."
@@ -116,6 +124,7 @@ class NavidromeProvider(MusicPlaylistProvider):
             params=params,
             http_method=http_method,
             timeout=timeout,
+            is_admin=True,
         )
 
     async def _get_bearer_token(self) -> str | None:

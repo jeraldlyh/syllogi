@@ -77,6 +77,35 @@ class TestSubsonic:
         )
 
     @respx.mock
+    async def test_raise_auth_error_for_admin_credentials(self):
+        respx.get(f"{_NAVIDROME_URL}/rest/search3").mock(
+            return_value=httpx.Response(
+                200,
+                json={
+                    "subsonic-response": {
+                        "status": "failed",
+                        "version": "1.16.1",
+                        "error": {
+                            "code": 40,
+                            "message": "Wrong username or password",
+                        },
+                    }
+                },
+            )
+        )
+
+        provider = _make_provider()
+        with pytest.raises(
+            ProviderAuthError, match="NAVIDROME_USERNAME"
+        ) as exc_info:
+            await provider._subsonic_admin("search3")
+
+        message = str(exc_info.value)
+        assert "NAVIDROME_PASSWORD" in message
+        assert "'admin'" not in message
+        assert "Users tab" not in message
+
+    @respx.mock
     async def test_raise_non_auth_error(self):
         respx.get(f"{_NAVIDROME_URL}/rest/getPlaylists").mock(
             return_value=httpx.Response(

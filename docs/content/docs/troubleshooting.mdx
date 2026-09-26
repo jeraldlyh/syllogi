@@ -17,6 +17,7 @@ description: Common failure modes and where to look.
 
 - The failed session shows `Invalid credentials for Navidrome user '<username>'`. This means the saved password no longer matches the music-server account, for example after a password change on the server side.
 - The fix is to update the password for that user under the `Users` tab, then re-run the sync. The next run picks up the new credentials.
+- If the error reflects that the Navidrome admin account has some issues, `NAVIDROME_USERNAME`/`NAVIDROME_PASSWORD` environment credentials are being rejected. Verify if those credentials are valid.
 
 ## slskd dot is red / downloads fail
 
