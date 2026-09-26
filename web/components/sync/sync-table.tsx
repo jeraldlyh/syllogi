@@ -187,10 +187,10 @@ export const SyncSessionTable = () => {
             </DialogTitle>
           </DialogHeader>
           <div className="min-w-0 p-4 bg-red-500/5 rounded-md text-red-400">
-            <Text value="Stacktrace:" variant="sm" />
+            <Text value="Error:" variant="sm" />
             <ScrollArea className="max-h-64 mt-2 rounded-md border bg-secondary/50 p-2 overflow-y-scroll">
               <pre className="text-xs text-wrap">
-                {selectedSession.error_message || "No stacktrace available."}
+                {selectedSession.error_message || "No error details available."}
               </pre>
             </ScrollArea>
           </div>
