@@ -6,7 +6,7 @@ import httpx
 import pytest
 import respx
 
-from lib.models.provider import ProviderError
+from lib.models.provider import ProviderAuthError, ProviderError
 from lib.providers.playlist.navidrome import NavidromeProvider
 from tests.lib.providers.conftest import load_fixture
 
@@ -46,7 +46,7 @@ class TestSubsonic:
         assert params.get("s")
 
     @respx.mock
-    async def test_raises_on_non_ok_status(self):
+    async def test_raise_auth_error(self):
         respx.get(f"{_NAVIDROME_URL}/rest/getPlaylists").mock(
             return_value=httpx.Response(
                 200,
@@ -65,11 +65,44 @@ class TestSubsonic:
 
         provider = _make_provider()
         with pytest.raises(
-            ProviderError, match="Wrong username or password"
-        ):
+            ProviderAuthError, match="Wrong username or password"
+        ) as exc_info:
             await provider._subsonic(
                 "getPlaylists", username="admin", password="adminpass"
             )
+
+        assert "admin" in str(exc_info.value)
+        assert "Update the password for this user in the Users tab." in str(
+            exc_info.value
+        )
+
+    @respx.mock
+    async def test_raise_non_auth_error(self):
+        respx.get(f"{_NAVIDROME_URL}/rest/getPlaylists").mock(
+            return_value=httpx.Response(
+                200,
+                json={
+                    "subsonic-response": {
+                        "status": "failed",
+                        "version": "1.16.1",
+                        "error": {
+                            "code": 70,
+                            "message": "Something else went wrong",
+                        },
+                    }
+                },
+            )
+        )
+
+        provider = _make_provider()
+        with pytest.raises(ProviderError) as exc_info:
+            await provider._subsonic(
+                "getPlaylists", username="admin", password="adminpass"
+            )
+
+        assert not isinstance(exc_info.value, ProviderAuthError)
+        assert "Navidrome" in str(exc_info.value)
+        assert "Something else went wrong" in str(exc_info.value)
 
     @respx.mock
     async def test_raises_on_http_error(self):
@@ -606,9 +639,7 @@ class TestAddSongsToPlaylist:
             "track-2",
         ]
         assert route.calls[1].request.url.params.get("playlistId") == "playlist-1"
-        assert route.calls[1].request.url.params.get_list("songIdToAdd") == [
-            "track-3"
-        ]
+        assert route.calls[1].request.url.params.get_list("songIdToAdd") == ["track-3"]
 
 
 class TestDeleteSongsFromPlaylist:

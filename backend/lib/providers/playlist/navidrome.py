@@ -8,6 +8,7 @@ import httpx
 
 from lib.env import get_environment_variable
 from lib.models.provider import (
+    ProviderAuthError,
     ProviderError,
     ProviderPlaylist,
     ProviderTrack,
@@ -76,8 +77,18 @@ class NavidromeProvider(MusicPlaylistProvider):
 
         if status != "ok":
             error = subsonic_response.get("error", {})
+            code = error.get("code")
             message = error.get("message", "Unknown Subsonic error")
-            raise ProviderError(f"Navidrome {method} failed (status={status}): {message}")
+
+            if code == 40:
+                raise ProviderAuthError(
+                    f"Invalid credentials for Navidrome user '{username}': {message}."
+                    " Update the password for this user in the Users tab."
+                )
+
+            raise ProviderError(
+                f"Navidrome {method} failed (status={status}): {message}"
+            )
         return {
             k: v for k, v in subsonic_response.items() if k not in ("status", "version")
         }
