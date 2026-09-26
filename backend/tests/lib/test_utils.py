@@ -1,5 +1,6 @@
 import pytest
 
+from lib.models.provider import ProviderAuthError
 from lib.utils import (
     convert_seconds_to_readable_time,
     format_exception,
@@ -185,3 +186,27 @@ class TestFormatException:
             formatted = format_exception(e)
 
         assert not formatted.startswith("...")
+
+    def test_auth_error_returns_clean_message(self):
+        message = (
+            "Invalid credentials for Navidrome user 'syllogi'. Update the password "
+            "for this user in the Users tab."
+        )
+        try:
+            raise ProviderAuthError(message)
+        except ProviderAuthError as e:
+            formatted = format_exception(e)
+
+        assert formatted == message
+        assert "Traceback" not in formatted
+        assert "ProviderAuthError" not in formatted
+
+    def test_auth_error_respects_max_length(self):
+        try:
+            raise ProviderAuthError("x" * 100)
+        except ProviderAuthError as e:
+            formatted = format_exception(e, max_length=20)
+
+        assert len(formatted) == 20
+        assert formatted.startswith("...\n")
+        assert formatted.endswith("x")

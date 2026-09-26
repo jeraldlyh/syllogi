@@ -5,6 +5,10 @@ class ProviderError(Exception):
     """Raised when a music provider operation fails."""
 
 
+class ProviderAuthError(ProviderError):
+    """Raised when a provider rejects the given credentials."""
+
+
 @dataclass
 class ProviderUser:
     """A user in a music server."""

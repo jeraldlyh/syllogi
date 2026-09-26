@@ -1,6 +1,10 @@
+import uuid
+from unittest.mock import AsyncMock, MagicMock, patch
+
 from lib.models.common import ExternalTrack, ResolvedTrack
-from lib.models.provider import ProviderTrack
-from lib.sync import _diff_tracks
+from lib.models.provider import ProviderAuthError, ProviderTrack
+from lib.sync import _diff_tracks, sync_playlist_task
+from lib.utils import get_now
 
 
 def _make_provider_track(id="track-1", track_name="Song", artists=None):
@@ -106,3 +110,39 @@ class TestDiffTracks:
         assert [track.id for track in diff.removed] == ["track-3"]
         assert [track.provider_track_id for track in diff.unchanged] == ["track-1"]
 
+
+class TestSyncPlaylistTaskAuthError:
+    async def test_auth_error_stores_clean_message(self):
+        sync_session = MagicMock()
+        sync_session.started_at = get_now()
+        error = ProviderAuthError(
+            "Invalid credentials for Navidrome user 'syllogi': Wrong username or "
+            "password. Update the password for this user in the Users tab."
+        )
+        provider = MagicMock()
+        provider.get_or_create_playlist = AsyncMock(side_effect=error)
+
+        with (
+            patch("lib.sync.get_isolated_session") as get_isolated_session,
+            patch("lib.sync.get_sync_by_id", return_value=MagicMock()),
+            patch("lib.sync.get_sync_session_by_id", return_value=sync_session),
+            patch(
+                "lib.sync.get_music_server_user_by_username", return_value=MagicMock()
+            ),
+            patch("lib.sync.get_provider_enum", return_value=MagicMock()),
+            patch("lib.sync.decrypt", return_value="decrypted"),
+            patch("lib.sync.resolve_tracks", new=AsyncMock(return_value=([], []))),
+            patch("lib.sync.update_sync_session"),
+        ):
+            get_isolated_session.return_value.__enter__.return_value = MagicMock()
+
+            await sync_playlist_task(
+                provider=provider,
+                internal_playlist_id=uuid.uuid4(),
+                external_playlist=MagicMock(name="external"),
+                songs=[],
+                sync_session_id=uuid.uuid4(),
+            )
+
+        assert sync_session.error_message == str(error)
+        assert "Traceback" not in sync_session.error_message
