@@ -12,6 +12,7 @@ from time import gmtime, strftime
 import pytz
 
 from lib.env import get_environment_variable
+from lib.models.provider import ProviderAuthError
 
 DEBUG_DIRECTORY = "debug"
 LOSSLESS_EXTENSIONS = {".flac"}
@@ -202,7 +203,11 @@ def truncate(text: str, max_length: int) -> str:
 def format_exception(e: BaseException, max_length: int = 1024) -> str:
     """Format an exception with its traceback."""
 
-    text = "".join(traceback.format_exception(e)).strip() or repr(e)
+    text = (
+        str(e)
+        if isinstance(e, ProviderAuthError)
+        else "".join(traceback.format_exception(e)).strip() or repr(e)
+    )
     if len(text) <= max_length:
         return text
     return "...\n" + text[-(max_length - 4) :]

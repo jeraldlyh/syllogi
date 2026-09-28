@@ -125,7 +125,7 @@ async def get_recommendations(
     )
 
     for track in all_tracks:
-        if len(found) + len(missing) >= num_recommended_tracks:
+        if len(found) >= num_recommended_tracks:
             break
 
         similar_tracks = await recommendation_provider.get_similar_tracks(
@@ -136,7 +136,7 @@ async def get_recommendations(
 
         has_missing = False
         for similar_track in similar_tracks:
-            if len(found) + len(missing) >= num_recommended_tracks:
+            if len(found) >= num_recommended_tracks:
                 break
 
             if similar_track in found or similar_track in missing:
@@ -160,7 +160,7 @@ async def get_recommendations(
                 has_missing = True
 
     for track in recent_tracks:
-        if len(found) + len(missing) >= num_recommendations:
+        if len(found) >= num_recommendations:
             break
 
         if track in found or track in missing:
