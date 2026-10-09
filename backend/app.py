@@ -1,3 +1,4 @@
+import asyncio
 import json
 import logging
 import logging.config
@@ -5,6 +6,7 @@ import os
 from collections.abc import Callable
 from http import HTTPStatus
 
+import httpx
 from dotenv import load_dotenv
 from fastapi import FastAPI, HTTPException, Request
 from fastapi.middleware.cors import CORSMiddleware
@@ -27,6 +29,7 @@ from lib.env import get_environment_variable
 from lib.library import trigger_library_sweep
 from lib.logs import LOG_BACKUP_COUNT, LOG_FILE, LOG_MAX_BYTES
 from lib.providers import get_provider
+from lib.providers.playlist.base import MusicPlaylistProvider
 from lib.providers.playlist.navidrome import NavidromeProvider
 from lib.recommendation import generate_recommendations
 from lib.sync import sync_playlist
@@ -152,6 +155,35 @@ async def ensure_navidrome_user(provider: NavidromeProvider) -> None:
     logger.info("Navidrome credentials verified, admin user seeded in database")
 
 
+async def wait_for_provider_ready(
+    provider: MusicPlaylistProvider,
+    *,
+    max_attempts: int = 8,
+    initial_delay: float = 2.0,
+    max_delay: float = 30.0,
+) -> None:
+    """Retry ensure_download_library_exists() with exponential backoff."""
+
+    delay = initial_delay
+    for attempt in range(1, max_attempts + 1):
+        try:
+            await provider.ensure_download_library_exists()
+            return
+
+        except (httpx.HTTPStatusError, httpx.RequestError) as e:
+            if attempt == max_attempts:
+                raise RuntimeError(
+                    f"Jellyfin did not become ready after {max_attempts} attempts"
+                ) from e
+            logger.warning(
+                f"Jellyfin not ready yet ({e}), retrying in {delay}s "
+                f"(attempt {attempt}/{max_attempts})"
+            )
+
+            await asyncio.sleep(delay)
+            delay = min(delay * 2, max_delay)
+
+
 def create_cron_jobs():
     logger.info("Starting up application and initializing cron jobs")
 
@@ -251,7 +283,7 @@ def create_app() -> FastAPI:
         scheduler.start()
 
         provider = get_provider()
-        await provider.ensure_download_library_exists()
+        await wait_for_provider_ready(provider)
 
         if isinstance(provider, NavidromeProvider):
             await ensure_navidrome_user(provider)

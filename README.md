@@ -4,6 +4,10 @@
 
 # syllogi
 
+[![docker][https://img.shields.io/badge/dynamic/json?url=https://ghcr-badge.elias.eu.org/api/jeraldlyh/syllogi/syllogi&query=downloadCount&label=downloads&logo=docker&color=2496ed]](https://github.com/jeraldlyh/syllogi/pkgs/container/syllogi)
+[![version][https://img.shields.io/github/v/release/jeraldlyh/syllogi]](https://github.com/jeraldlyh/syllogi/releases)
+[![build][https://img.shields.io/github/actions/workflow/status/jeraldlyh/syllogi/release.yml?label=build]](https://github.com/jeraldlyh/syllogi/actions/workflows/release.yml)
+
 **syllogi** is a self-hosted automation tool that keeps your [Jellyfin] or [Navidrome] music library in sync with external playlists from Spotify and YouTube.
 
 It matches tracks against your indexed audio, automatically downloads missing tracks via [yt-dlp] or [slskd], generates personalized recommendations based on your listening history, and lets you browse trending charts, all from a single dashboard.
