@@ -56,6 +56,7 @@ import { capitaliseFirstLetter, cn } from "@/lib/utils";
 import { Info, Loader2, Pencil, Play, Plus, Trash2 } from "lucide-react";
 import React, { useState } from "react";
 import { toast } from "sonner";
+import { useSWRConfig } from "swr";
 import useSWRMutation from "swr/mutation";
 import { Text } from "../common/text";
 import { formatErrorMessage } from "@/lib/errors";
@@ -134,6 +135,7 @@ export const SyncSettings = () => {
     "/sync/generate",
     generateSyncMutation,
   );
+  const { mutate: mutateSessionCache } = useSWRConfig();
 
   const handleAddPlaylist = () => {
     setEditingId(null);
@@ -212,6 +214,7 @@ export const SyncSettings = () => {
         id: toastId,
         description: "Running sync for the playlist...",
       });
+      await mutateSessionCache("/sync_session");
     } catch (error) {
       toast.error("Failed to start sync", {
         id: toastId,

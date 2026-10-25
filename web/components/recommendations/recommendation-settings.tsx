@@ -50,6 +50,7 @@ import { cn } from "@/lib/utils";
 import { X, Pencil, Play, Plus, Trash2 } from "lucide-react";
 import React, { useState } from "react";
 import { toast } from "sonner";
+import { useSWRConfig } from "swr";
 import useSWRMutation from "swr/mutation";
 import { RecommendationStrategyBadge } from "./recommendation-strategy-badge";
 import {
@@ -128,6 +129,7 @@ export const Recommendations = () => {
     useSWRMutation("/recommendation", deleteRecommendationMutation);
   const { trigger: generateRecommendation, isMutating: isGenerating } =
     useSWRMutation("/recommendation/generate", generateRecommendationMutation);
+  const { mutate: mutateSessionCache } = useSWRConfig();
 
   const hasRequiredUsername = (
     username: string,
@@ -263,6 +265,7 @@ export const Recommendations = () => {
         description: `Generating recommendations for ${recommendation.username}`,
         id: toastId,
       });
+      await mutateSessionCache("/recommendation_session");
     } catch (error) {
       toast.error("Failed to start recommendation generation", {
         id: toastId,

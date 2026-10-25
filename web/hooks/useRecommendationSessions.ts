@@ -1,12 +1,10 @@
 import { fetcher } from "@/lib/api";
+import { getSessionRefreshInterval } from "@/lib/utils";
 import { ApiResponse } from "@/lib/types";
 import useSWR from "swr";
 
 export type RecommendationStrategy =
-  | "top_tracks"
-  | "recent_tracks"
-  | "mixed"
-  | "blend";
+  "top_tracks" | "recent_tracks" | "mixed" | "blend";
 export type RecommendationProvider = "lastfm" | "listenbrainz";
 
 export interface RecommendationSession {
@@ -31,7 +29,11 @@ export interface RecommendationSession {
 export const useRecommendationSessions = () => {
   const { data, error, isLoading, mutate } = useSWR<
     ApiResponse<RecommendationSession[]>
-  >("/recommendation_session", fetcher);
+  >("/recommendation_session", fetcher, {
+    refreshInterval: (latestData) =>
+      getSessionRefreshInterval(latestData, ["pending"]),
+    revalidateOnFocus: true,
+  });
 
   return {
     data: data?.data,
