@@ -58,3 +58,15 @@ export const formatSize = (bytes: number): string => {
 export const removeFileExtension = (filename: string): string => {
   return filename.replace(/\.[^.]+$/, "");
 };
+
+export const getSessionRefreshInterval = <T extends { status: string }>(
+  latestData: { data?: T[] } | undefined,
+  activeStatuses: readonly string[],
+): number => {
+  const sessions = latestData?.data ?? [];
+  const hasActive = sessions.some((session) =>
+    activeStatuses.includes(session.status),
+  );
+
+  return hasActive ? 3000 : 30000;
+};

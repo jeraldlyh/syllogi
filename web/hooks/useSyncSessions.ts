@@ -1,4 +1,5 @@
 import { fetcher } from "@/lib/api";
+import { getSessionRefreshInterval } from "@/lib/utils";
 import { ApiResponse } from "@/lib/types";
 import useSWR from "swr";
 
@@ -28,6 +29,11 @@ export const useSyncSessions = () => {
   const { data, error, isLoading, mutate } = useSWR<ApiResponse<SyncSession[]>>(
     "/sync_session",
     fetcher,
+    {
+      refreshInterval: (latestData) =>
+        getSessionRefreshInterval(latestData, ["pending", "in_progress"]),
+      revalidateOnFocus: true,
+    },
   );
 
   return {
