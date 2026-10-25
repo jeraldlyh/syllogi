@@ -152,11 +152,14 @@ async def get_recommendations(
             )
 
             if not provider_track.is_not_found():
+                if missing and len(found) + len(missing) >= num_recommendations:
+                    missing.pop()
                 found.add(similar_track)
                 provider_tracks.append(provider_track)
 
             if not has_missing and provider_track.is_not_found():
-                missing.add(similar_track)
+                if len(found) + len(missing) < num_recommendations:
+                    missing.add(similar_track)
                 has_missing = True
 
     for track in recent_tracks:
@@ -176,9 +179,12 @@ async def get_recommendations(
         )
 
         if provider_track.is_not_found():
-            missing.add(track)
+            if len(found) + len(missing) < num_recommendations:
+                missing.add(track)
             continue
 
+        if missing and len(found) + len(missing) >= num_recommendations:
+            missing.pop()
         found.add(track)
         provider_tracks.append(provider_track)
 

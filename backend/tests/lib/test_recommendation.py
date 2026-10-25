@@ -157,7 +157,6 @@ class TestStrategies:
         )
 
     async def test_mixed_strategy_seeds_half_of_the_recent_tracks(self):
-        """The recent tracks are fetched once and only half of them seed similar tracks."""
         recent_tracks = [
             _make_recommendation_track(track_name=f"Recent Track {index}")
             for index in range(10)
@@ -207,7 +206,6 @@ class TestStrategies:
         ]
 
     async def test_blend_strategy_fills_from_every_blend_user(self):
-        """The familiar tracks are drawn from all blend users, not just the requesting user."""
         alice_tracks = [
             _make_recommendation_track(track_name=f"Alice Track {index}")
             for index in range(4)
@@ -338,7 +336,6 @@ class TestTrackMatching:
         assert provider_tracks == []
 
     async def test_matching_track_skipped_when_not_in_provider(self):
-        """A similar track already marked missing is skipped on a later encounter."""
         seed_track = _make_recommendation_track(track_name="Seed Track")
         similar_track = _make_recommendation_track()
 
@@ -363,6 +360,102 @@ class TestTrackMatching:
         assert found == []
         assert missing.count(similar_track) == 1
         assert provider_tracks == []
+
+    async def test_missing_capped_at_remaining_slots(self):
+        seed_tracks = [
+            _make_recommendation_track(track_name=f"Seed Track {index}")
+            for index in range(3)
+        ]
+        found_similar = _make_recommendation_track(track_name="Found Similar")
+        missing_similars = [
+            _make_recommendation_track(track_name=f"Missing Similar {index}")
+            for index in range(2)
+        ]
+
+        recommendation_provider = _make_recommendation_provider()
+        recommendation_provider.get_top_tracks.return_value = seed_tracks
+        recommendation_provider.get_similar_tracks.side_effect = [
+            [found_similar],
+            [missing_similars[0]],
+            [missing_similars[1]],
+        ]
+
+        music_provider = _make_music_provider_with_tracks([found_similar])
+
+        found, missing, _ = await get_recommendations(
+            recommendation_provider=recommendation_provider,
+            music_provider=music_provider,
+            strategy=RecommendationStrategy.top_tracks,
+            num_recommendations=2,
+            username="user",
+            blend_users=None,
+        )
+
+        assert found == [found_similar]
+        assert missing == [missing_similars[0]]
+
+    async def test_missing_empty_when_found_fills_request(self):
+        seed_track = _make_recommendation_track(track_name="Seed Track")
+        missing_track = _make_recommendation_track(track_name="Missing Track")
+        found_track = _make_recommendation_track(track_name="Found Track")
+
+        recommendation_provider = _make_recommendation_provider()
+        recommendation_provider.get_top_tracks.return_value = [seed_track]
+        recommendation_provider.get_similar_tracks.return_value = [
+            missing_track,
+            found_track,
+        ]
+
+        music_provider = _make_music_provider_with_tracks([found_track])
+
+        found, missing, _ = await get_recommendations(
+            recommendation_provider=recommendation_provider,
+            music_provider=music_provider,
+            strategy=RecommendationStrategy.top_tracks,
+            num_recommendations=1,
+            username="user",
+            blend_users=None,
+        )
+
+        assert found == [found_track]
+        assert missing == []
+
+    async def test_familiar_library_hit_evicts_missing_candidate(self):
+        seed_tracks = [
+            _make_recommendation_track(track_name=f"Seed Track {index}")
+            for index in range(2)
+        ]
+        missing_similars = [
+            _make_recommendation_track(track_name=f"Missing Similar {index}")
+            for index in range(2)
+        ]
+        recent_tracks = [
+            _make_recommendation_track(track_name=f"Recent Track {index}")
+            for index in range(2)
+        ]
+
+        recommendation_provider = _make_recommendation_provider()
+        recommendation_provider.get_top_tracks.return_value = seed_tracks
+        recommendation_provider.get_recent_tracks.return_value = recent_tracks
+        recommendation_provider.get_similar_tracks.side_effect = [
+            [missing_similars[0]],
+            [missing_similars[1]],
+        ]
+
+        music_provider = _make_music_provider_with_tracks(recent_tracks)
+
+        found, missing, provider_tracks = await get_recommendations(
+            recommendation_provider=recommendation_provider,
+            music_provider=music_provider,
+            strategy=RecommendationStrategy.top_tracks,
+            num_recommendations=2,
+            username="user",
+            blend_users=None,
+        )
+
+        assert set(found) == set(recent_tracks)
+        assert missing == []
+        assert len(provider_tracks) == 2
 
 
 class TestFamiliarTracks:
