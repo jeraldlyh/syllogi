@@ -17,7 +17,7 @@ dependencies = [
     "requests",
     "sqlmodel",
     "uvicorn[standard]",
-    "yt-dlp==2026.8.19",
+    "yt-dlp==2026.10.21",
     "spotapi[websocket,redis,pymongo]",
     "pwdlib[argon2]>=0.3.1",
     "cryptography",
