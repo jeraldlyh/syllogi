@@ -14,7 +14,7 @@ COPY web/ .
 
 RUN npm install -g pnpm@9 && pnpm build
 
-FROM python:3.13-slim AS development
+FROM python:3.15-slim AS development
 
 RUN apt-get update \
   && apt-get install -y --no-install-recommends \
@@ -45,7 +45,7 @@ EXPOSE 8000
 
 ENTRYPOINT ["/app/entrypoint.dev.sh"]
 
-FROM python:3.13-slim AS production
+FROM python:3.15-slim AS production
 
 RUN apt-get update \
   && apt-get install -y --no-install-recommends \
