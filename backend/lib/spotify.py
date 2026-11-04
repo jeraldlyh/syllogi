@@ -39,17 +39,26 @@ def get_spotify_playlist_songs(playlist_id: str) -> list[ExternalTrack]:
 
     while offset < playlist_info["data"]["playlistV2"]["content"]["totalCount"]:
         for item in playlist_info["data"]["playlistV2"]["content"]["items"]:
+            item_v2 = item["itemV2"]
+
+            if item_v2.get("__typename") == "EpisodeOrChapterResponseWrapper":
+                logger.warning(
+                    f"Skipping unsupported Spotify playlist item type "
+                    f"{item_v2['__typename']} in playlist {playlist_id}"
+                )
+                continue
+
             album_metadata = item["itemV3"]["data"]["identityTrait"][
                 "contentHierarchyParent"
             ]
             song = ExternalTrack(
-                artist_name=item["itemV2"]["data"]["albumOfTrack"]["artists"]["items"][
-                    0
-                ]["profile"]["name"],
+                artist_name=item_v2["data"]["albumOfTrack"]["artists"]["items"][0][
+                    "profile"
+                ]["name"],
                 year=album_metadata["publishingMetadataTrait"]["firstPublishedAt"][
                     "isoString"
                 ][:4],
-                track_name=item["itemV2"]["data"]["name"],
+                track_name=item_v2["data"]["name"],
                 duration=item["itemV3"]["data"]["consumptionExperienceTrait"][
                     "duration"
                 ]["seconds"],
