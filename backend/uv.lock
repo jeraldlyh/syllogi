@@ -1,5 +1,5 @@
 version = 1
-revision = 3
+revision = 5
 requires-python = "==3.13.*"
 
 [[package]]
@@ -907,11 +907,11 @@ wheels = [
 
 [[package]]
 name = "pwdlib"
-version = "0.3.1"
+version = "0.4.2"
 source = { registry = "https://pypi.org/simple" }
-sdist = { url = "https://files.pythonhosted.org/packages/78/a6/644f28a21cb68920d06b264e72b864ac9bff2377f4757dd4648b5110b3ad/pwdlib-0.3.1.tar.gz", hash = "sha256:2ffd1955c92190d5bfbdc5071bf7d422568b83f943453ebd3d43d031ccba37b1", size = 216951, upload-time = "2026-08-12T08:38:38.383Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/4c/35/dcd08c5125c88d7783b6d2b5bb38d96970f79586e7f75fba79feecfc05b5/pwdlib-0.4.2.tar.gz", hash = "sha256:8f74cfd9c602982a9a05240c5b6484e384d732a891fd3c44befba2be9c4a4748", size = 228154, upload-time = "2026-11-15T13:07:23.013Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/6b/2e/51979293b2337f508597d13ee20db1ac1d43e48086b2ed7de6da213ed46b/pwdlib-0.3.1-py3-none-any.whl", hash = "sha256:944fa439198bed8ac3ea63dac76ea4ae43e2a35f4f21e9e725e82d3c2b97d6a5", size = 9272, upload-time = "2026-08-12T08:38:37.483Z" },
+    { url = "https://files.pythonhosted.org/packages/47/1f/26e4bd61ac0b264fb9f1d181fa35d6e2969b2b6fd874d4cca7531b5babd0/pwdlib-0.4.2-py3-none-any.whl", hash = "sha256:5e03f706382a040a04139f2bbb3378fa964661f8a74e1cec8da34a221c801bcf", size = 9881, upload-time = "2026-11-15T13:07:21.779Z" },
 ]
 
 [package.optional-dependencies]
@@ -1411,7 +1411,7 @@ requires-dist = [
     { name = "httpx" },
     { name = "mutagen" },
     { name = "psycopg", extras = ["binary", "pool"] },
-    { name = "pwdlib", extras = ["argon2"], specifier = ">=0.3.1" },
+    { name = "pwdlib", extras = ["argon2"], specifier = ">=0.4.2" },
     { name = "pyjwt" },
     { name = "python-dotenv" },
     { name = "python-multipart" },
